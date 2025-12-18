@@ -1,8 +1,12 @@
 # Identity Synthesis Design
 
-**Status:** Approved
+**Status:** Implemented
 **Created:** 2025-12-17
 **Context:** Refactoring claims system from bullet-copying to true identity synthesis
+
+## Progress (Last reviewed: 2025-12-18)
+
+This design has been fully implemented. See `2025-12-17-identity-synthesis-implementation.md` for task-level progress.
 
 ## Problem
 

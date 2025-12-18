@@ -1,8 +1,27 @@
 # Idynic Rebuild Plan
 
-**Status:** Ready for execution
+**Status:** In Progress
 **Created:** 2025-12-17
 **Decision:** Full rebuild on Supabase + Vercel, nuke existing AWS infrastructure
+
+## Progress (Last reviewed: 2025-12-18)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 0: Teardown | ⏳ Not Started | AWS cleanup pending |
+| Phase 1: Foundation | ✅ Complete | Next.js 14, Supabase, Vercel deployed |
+| Phase 2: Auth | ✅ Complete | Supabase Auth integrated |
+| Phase 3: Resume Upload | ✅ Complete | PDF extraction, evidence synthesis |
+| Phase 4: Identity View | ✅ Complete | Shows claims with source documents |
+| Phase 5: Opportunities | ✅ Complete | Full job tracking implemented |
+| Phase 6: Matching | ✅ Complete | Vector search + match analysis |
+| Phase 7: Polish | 🔄 In Progress | Some UI polish added |
+| Phase 8: Go Live | ⏳ Not Started | DNS pointing pending |
+
+### Drift Notes
+- Identity synthesis (2-layer model with evidence + claims) was implemented instead of simpler claims-only approach
+- Added type-aware requirement matching (education, certification, skill, experience)
+- Phase 5 and 6 completed ahead of schedule with full implementation
 
 ## Overview
 
@@ -300,7 +319,7 @@ idynic-rebuild/
 
 **Note:** Used `unpdf` instead of `pdf-parse` due to Next.js compatibility issues.
 
-### Phase 4: Identity View (~2 hours) 🔄 IN PROGRESS
+### Phase 4: Identity View (~2 hours) ✅ COMPLETE
 
 | #   | Task                                | Done |
 | --- | ----------------------------------- | ---- |
@@ -308,37 +327,37 @@ idynic-rebuild/
 | 4.2 | Fetch user's claims from DB         | [x]  |
 | 4.3 | Group claims by type                | [x]  |
 | 4.4 | Display claims in clean UI          | [x]  |
-| 4.5 | Show source document for each claim | [ ]  |
+| 4.5 | Show source document for each claim | [x]  |
 
-### Phase 5: Opportunities (~4 hours)
+### Phase 5: Opportunities (~4 hours) ✅ COMPLETE
 
 | #   | Task                                | Done |
 | --- | ----------------------------------- | ---- |
-| 5.1 | Create `/opportunities` page        | [ ]  |
-| 5.2 | Create "Add opportunity" form       | [ ]  |
-| 5.3 | Call GPT-4o-mini for job extraction | [ ]  |
-| 5.4 | Generate embedding for opportunity  | [ ]  |
-| 5.5 | Store opportunity in DB             | [ ]  |
-| 5.6 | List opportunities with basic info  | [ ]  |
-| 5.7 | Add status badges                   | [ ]  |
+| 5.1 | Create `/opportunities` page        | [x]  |
+| 5.2 | Create "Add opportunity" form       | [x]  |
+| 5.3 | Call GPT-4o-mini for job extraction | [x]  |
+| 5.4 | Generate embedding for opportunity  | [x]  |
+| 5.5 | Store opportunity in DB             | [x]  |
+| 5.6 | List opportunities with basic info  | [x]  |
+| 5.7 | Add status badges                   | [x]  |
 
-### Phase 6: Matching (~3 hours)
+### Phase 6: Matching (~3 hours) ✅ COMPLETE
 
 | #   | Task                                      | Done |
 | --- | ----------------------------------------- | ---- |
-| 6.1 | Create vector search function in Postgres | [ ]  |
-| 6.2 | On opportunity save, compute matches      | [ ]  |
-| 6.3 | Create `/opportunities/[id]` detail page  | [ ]  |
-| 6.4 | Display match score prominently           | [ ]  |
-| 6.5 | Show matched claims                       | [ ]  |
-| 6.6 | Show gaps (requirements without matches)  | [ ]  |
+| 6.1 | Create vector search function in Postgres | [x]  |
+| 6.2 | On opportunity save, compute matches      | [x]  |
+| 6.3 | Create `/opportunities/[id]` detail page  | [x]  |
+| 6.4 | Display match score prominently           | [x]  |
+| 6.5 | Show matched claims                       | [x]  |
+| 6.6 | Show gaps (requirements without matches)  | [x]  |
 
-### Phase 7: Polish (~ongoing)
+### Phase 7: Polish (~ongoing) 🔄 IN PROGRESS
 
 | #   | Task                             | Done |
 | --- | -------------------------------- | ---- |
-| 7.1 | Loading states (skeletons)       | [ ]  |
-| 7.2 | Empty states                     | [ ]  |
+| 7.1 | Loading states (skeletons)       | [x]  |
+| 7.2 | Empty states                     | [x]  |
 | 7.3 | Error handling                   | [ ]  |
 | 7.4 | Mobile responsive                | [ ]  |
 | 7.5 | Dark mode                        | [ ]  |
