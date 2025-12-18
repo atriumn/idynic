@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       profiles: {
@@ -31,6 +31,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       documents: {
         Row: {
@@ -63,6 +64,15 @@ export interface Database {
           status?: "pending" | "processing" | "completed" | "failed";
           created_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "documents_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       claims: {
         Row: {
@@ -98,6 +108,22 @@ export interface Database {
           embedding?: number[] | null;
           created_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "claims_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claims_document_id_fkey";
+            columns: ["document_id"];
+            isOneToOne: false;
+            referencedRelation: "documents";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       opportunities: {
         Row: {
@@ -154,6 +180,15 @@ export interface Database {
           embedding?: number[] | null;
           created_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "opportunities_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       matches: {
         Row: {
@@ -180,7 +215,33 @@ export interface Database {
           score?: number;
           created_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "matches_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "matches_opportunity_id_fkey";
+            columns: ["opportunity_id"];
+            isOneToOne: false;
+            referencedRelation: "opportunities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "matches_claim_id_fkey";
+            columns: ["claim_id"];
+            isOneToOne: false;
+            referencedRelation: "claims";
+            referencedColumns: ["id"];
+          }
+        ];
       };
+    };
+    Views: {
+      [_ in never]: never;
     };
     Functions: {
       match_claims: {
@@ -199,6 +260,11 @@ export interface Database {
         }[];
       };
     };
-    Enums: Record<string, never>;
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
-}
+};
