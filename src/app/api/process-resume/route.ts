@@ -7,6 +7,9 @@ import { extractWorkHistory } from "@/lib/ai/extract-work-history";
 import { extractText } from "unpdf";
 import { createHash } from "crypto";
 
+// Vercel Pro plan allows up to 300 seconds (5 min)
+export const maxDuration = 300;
+
 async function parsePdf(buffer: Buffer): Promise<{ text: string }> {
   const uint8Array = new Uint8Array(buffer);
   const { text } = await extractText(uint8Array);
