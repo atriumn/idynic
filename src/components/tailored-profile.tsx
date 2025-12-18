@@ -72,8 +72,12 @@ interface RequirementMatch {
     category: "mustHave" | "niceToHave";
   };
   bestMatch: {
+    id: string;
+    type: string;
     label: string;
-    score: number;
+    description: string | null;
+    confidence: number;
+    similarity: number;
   } | null;
 }
 
