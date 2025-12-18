@@ -352,14 +352,16 @@ idynic-rebuild/
 
 **Note:** Loading states in tailored-profile.tsx. Empty states in identity, opportunities, tailored-profile. Error handling with try-again buttons. Responsive grids throughout. Dark mode via Tailwind dark: classes.
 
-### Phase 8: Go Live (~1 hour)
+### Phase 8: Go Live (~1 hour) ✅ COMPLETE
 
 | #   | Task                                     | Done |
 | --- | ---------------------------------------- | ---- |
-| 8.1 | Point `idynic.com` DNS to Vercel         | [ ]  |
-| 8.2 | Update Supabase Site URL                 | [ ]  |
-| 8.3 | Rename repo: `idynic-rebuild` → `idynic` | [ ]  |
-| 8.4 | Archive `idynic-archive` repo            | [ ]  |
+| 8.1 | Point `idynic.com` DNS to Vercel         | [x]  |
+| 8.2 | Update Supabase Site URL                 | [x]  |
+| 8.3 | Rename repo: `idynic-rebuild` → `idynic` | [x]  |
+| 8.4 | Archive `idynic-archive` repo            | [x]  |
+
+**Note:** Domain `idynic.com` now points to new Vercel deployment. Old repo archived. Supabase Site URL: https://supabase.com/dashboard/project/rqknwvbdomkcbejcxsqz/auth/url-configuration
 
 ---
 
