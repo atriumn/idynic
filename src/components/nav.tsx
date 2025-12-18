@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,14 @@ export function Nav({ user }: NavProps) {
     <nav className="border-b bg-background">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link href="/" className="font-semibold text-lg">
+          <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
+            <Image
+              src="/logo.svg"
+              alt="Idynic"
+              width={28}
+              height={28}
+              className="h-7 w-7"
+            />
             Idynic
           </Link>
           {user && (
