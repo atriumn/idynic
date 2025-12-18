@@ -27,11 +27,11 @@ interface IdentityClaimsListProps {
 }
 
 const CLAIM_TYPE_COLORS: Record<string, string> = {
-  skill: "bg-blue-100 text-blue-800",
-  achievement: "bg-green-100 text-green-800",
-  attribute: "bg-purple-100 text-purple-800",
-  education: "bg-orange-100 text-orange-800",
-  certification: "bg-teal-100 text-teal-800",
+  skill: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  achievement: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  attribute: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+  education: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+  certification: "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200",
 };
 
 const CONFIDENCE_COLORS: Record<string, string> = {
@@ -87,7 +87,7 @@ export function IdentityClaimsList({ claims }: IdentityClaimsListProps) {
                 );
 
                 return (
-                  <Card key={claim.id} className="overflow-hidden">
+                  <Card key={claim.id} className="overflow-hidden transition-shadow hover:shadow-sm">
                     <CardContent className="p-4">
                       <Collapsible>
                         <div className="flex items-start justify-between gap-3">
@@ -127,8 +127,8 @@ export function IdentityClaimsList({ claims }: IdentityClaimsListProps) {
                               {Math.round((claim.confidence ?? 0.5) * 100)}%
                             </span>
                             {evidenceCount > 0 && (
-                              <CollapsibleTrigger className="p-1 hover:bg-muted rounded">
-                                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                              <CollapsibleTrigger className="p-1 hover:bg-muted rounded transition-colors group">
+                                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
                               </CollapsibleTrigger>
                             )}
                           </div>

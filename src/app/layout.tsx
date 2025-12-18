@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Nav } from "@/components/nav";
+import { Providers } from "@/components/providers";
 import { createClient } from "@/lib/supabase/server";
 
 const geistSans = localFont({
@@ -32,12 +33,14 @@ export default async function RootLayout({
   } = await supabase.auth.getUser();
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Nav user={user} />
-        <main>{children}</main>
+        <Providers>
+          <Nav user={user} />
+          <main>{children}</main>
+        </Providers>
       </body>
     </html>
   );

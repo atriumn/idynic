@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { ResumeUpload } from "@/components/resume-upload";
 import { IdentityClaimsList } from "@/components/identity-claims-list";
+import { FileText } from "lucide-react";
 
 export default async function IdentityPage() {
   const supabase = await createClient();
@@ -36,7 +37,7 @@ export default async function IdentityPage() {
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-8">Your Identity</h1>
 
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div className="grid gap-8 lg:grid-cols-[1fr,2fr]">
         <div>
           <h2 className="text-xl font-semibold mb-4">Upload Resume</h2>
           <ResumeUpload />
@@ -49,9 +50,13 @@ export default async function IdentityPage() {
           {claims && claims.length > 0 ? (
             <IdentityClaimsList claims={claims} />
           ) : (
-            <p className="text-muted-foreground">
-              Upload a resume to build your identity.
-            </p>
+            <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed rounded-lg">
+              <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
+              <p className="text-muted-foreground mb-2">No claims yet</p>
+              <p className="text-sm text-muted-foreground/70">
+                Upload a resume to extract your skills, achievements, and credentials.
+              </p>
+            </div>
           )}
         </div>
       </div>

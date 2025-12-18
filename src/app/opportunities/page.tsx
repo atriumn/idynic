@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { AddOpportunityDialog } from "@/components/add-opportunity-dialog";
 import { OpportunityCard } from "@/components/opportunity-card";
+import { Briefcase } from "lucide-react";
 
 export default async function OpportunitiesPage() {
   const supabase = await createClient();
@@ -34,9 +35,11 @@ export default async function OpportunitiesPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground mb-4">
-            No opportunities yet. Add a job posting to get started.
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <Briefcase className="h-16 w-16 text-muted-foreground/30 mb-4" />
+          <h2 className="text-xl font-semibold mb-2">No opportunities yet</h2>
+          <p className="text-muted-foreground mb-6 max-w-md">
+            Add job postings to track opportunities and see how your profile matches.
           </p>
           <AddOpportunityDialog />
         </div>

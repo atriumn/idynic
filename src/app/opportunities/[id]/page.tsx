@@ -3,17 +3,17 @@ import { redirect, notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Building2, ExternalLink, ArrowLeft, Check, X, AlertCircle } from "lucide-react";
+import { Building2, ExternalLink, ArrowLeft, Check, X } from "lucide-react";
 import Link from "next/link";
 import { computeOpportunityMatches } from "@/lib/ai/match-opportunity";
 
 const STATUS_COLORS: Record<string, string> = {
-  tracking: "bg-gray-100 text-gray-800",
-  applied: "bg-blue-100 text-blue-800",
-  interviewing: "bg-yellow-100 text-yellow-800",
-  offer: "bg-green-100 text-green-800",
-  rejected: "bg-red-100 text-red-800",
-  archived: "bg-gray-100 text-gray-500",
+  tracking: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
+  applied: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  interviewing: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+  offer: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  rejected: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+  archived: "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400",
 };
 
 function ScoreRing({ score, label }: { score: number; label: string }) {
@@ -61,8 +61,8 @@ export default async function OpportunityDetailPage({
   const matchResult = await computeOpportunityMatches(id, user.id);
 
   const requirements = opportunity.requirements as {
-    mustHave?: string[];
-    niceToHave?: string[];
+    mustHave?: Array<{ text: string; type: string } | string>;
+    niceToHave?: Array<{ text: string; type: string } | string>;
     responsibilities?: string[];
   } | null;
 
@@ -76,9 +76,9 @@ export default async function OpportunityDetailPage({
         Back to opportunities
       </Link>
 
-      <div className="flex items-start justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold">{opportunity.title}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">{opportunity.title}</h1>
           {opportunity.company && (
             <div className="flex items-center gap-1 text-muted-foreground mt-1">
               <Building2 className="h-4 w-4" />
@@ -86,7 +86,7 @@ export default async function OpportunityDetailPage({
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Badge className={STATUS_COLORS[opportunity.status || "tracking"]} variant="secondary">
             {opportunity.status || "tracking"}
           </Badge>
@@ -116,66 +116,7 @@ export default async function OpportunityDetailPage({
       </Card>
 
       <div className="grid gap-6">
-        {/* Gaps - Requirements you don't match */}
-        {matchResult.gaps.length > 0 && (
-          <Card className="border-red-200">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-red-500" />
-                Gaps ({matchResult.gaps.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {matchResult.gaps.map((gap, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <X className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
-                    <div>
-                      <span>{gap.text}</span>
-                      <Badge variant="outline" className="ml-2 text-xs">
-                        {gap.category === "mustHave" ? "Required" : "Nice-to-have"}
-                      </Badge>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Strengths - Good matches */}
-        {matchResult.strengths.length > 0 && (
-          <Card className="border-green-200">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Check className="h-5 w-5 text-green-500" />
-                Strengths ({matchResult.strengths.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                {matchResult.strengths.slice(0, 8).map((match, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">{match.requirement.text}</span>
-                        <span className="text-xs text-muted-foreground">
-                          ({Math.round(match.bestMatch!.similarity * 100)}%)
-                        </span>
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-0.5">
-                        Matched by: <span className="font-medium">{match.bestMatch!.label}</span>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* All Requirements with Match Status */}
+        {/* Requirements with Match Status */}
         {requirements?.mustHave && requirements.mustHave.length > 0 && (
           <Card>
             <CardHeader className="pb-3">

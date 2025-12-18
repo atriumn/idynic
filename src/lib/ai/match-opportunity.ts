@@ -3,6 +3,11 @@ import { generateEmbeddings } from "./embeddings";
 
 type RequirementType = "education" | "certification" | "skill" | "experience";
 
+interface ClassifiedRequirement {
+  text: string;
+  type: RequirementType;
+}
+
 interface Requirement {
   text: string;
   category: "mustHave" | "niceToHave";
@@ -33,20 +38,7 @@ interface MatchResult {
   strengths: RequirementMatch[];
 }
 
-const MATCH_THRESHOLD = 0.46;
-
-// Keywords to classify requirement types
-const EDUCATION_KEYWORDS = [
-  "degree", "bachelor", "master", "phd", "mba", "bs", "ba", "ms", "ma",
-  "university", "college", "graduate", "undergraduate", "diploma",
-  "computer science", "engineering degree", "business degree"
-];
-
-const CERTIFICATION_KEYWORDS = [
-  "certified", "certification", "certificate", "license", "licensed",
-  "aws certified", "pmp", "cpa", "cissp", "ccna", "scrum master",
-  "google certified", "azure certified"
-];
+const MATCH_THRESHOLD = 0.40;
 
 // Claim types that can match each requirement type
 const VALID_CLAIM_TYPES: Record<RequirementType, string[]> = {
@@ -55,28 +47,6 @@ const VALID_CLAIM_TYPES: Record<RequirementType, string[]> = {
   skill: ["skill", "achievement"],
   experience: ["skill", "achievement", "attribute"],
 };
-
-function classifyRequirement(text: string): RequirementType {
-  const lower = text.toLowerCase();
-
-  // Check for education keywords
-  if (EDUCATION_KEYWORDS.some(kw => lower.includes(kw))) {
-    return "education";
-  }
-
-  // Check for certification keywords
-  if (CERTIFICATION_KEYWORDS.some(kw => lower.includes(kw))) {
-    return "certification";
-  }
-
-  // Check for experience patterns (years of experience)
-  if (/\d+\+?\s*years?/.test(lower) || lower.includes("experience")) {
-    return "experience";
-  }
-
-  // Default to skill
-  return "skill";
-}
 
 export async function computeOpportunityMatches(
   opportunityId: string,
@@ -102,23 +72,30 @@ export async function computeOpportunityMatches(
     };
   }
 
+  // Requirements are now pre-classified during upload
   const reqs = opportunity.requirements as {
-    mustHave?: string[];
-    niceToHave?: string[];
+    mustHave?: ClassifiedRequirement[] | string[];
+    niceToHave?: ClassifiedRequirement[] | string[];
   };
 
-  // Build requirements list with type classification
+  // Handle both old format (string[]) and new format (ClassifiedRequirement[])
+  const normalizeReqs = (
+    items: ClassifiedRequirement[] | string[] | undefined,
+    category: "mustHave" | "niceToHave"
+  ): Requirement[] => {
+    if (!items) return [];
+    return items.map((item) => {
+      if (typeof item === "string") {
+        // Legacy format - default to skill
+        return { text: item, category, type: "skill" as RequirementType };
+      }
+      return { text: item.text, category, type: item.type || "skill" };
+    });
+  };
+
   const requirements: Requirement[] = [
-    ...(reqs.mustHave || []).map((text) => ({
-      text,
-      category: "mustHave" as const,
-      type: classifyRequirement(text),
-    })),
-    ...(reqs.niceToHave || []).map((text) => ({
-      text,
-      category: "niceToHave" as const,
-      type: classifyRequirement(text),
-    })),
+    ...normalizeReqs(reqs.mustHave, "mustHave"),
+    ...normalizeReqs(reqs.niceToHave, "niceToHave"),
   ];
 
   if (requirements.length === 0) {
@@ -143,12 +120,16 @@ export async function computeOpportunityMatches(
     const embedding = embeddings[i];
 
     // Call the match_identity_claims function
-    const { data: matches } = await supabase.rpc("match_identity_claims", {
+    const { data: matches, error } = await supabase.rpc("match_identity_claims", {
       query_embedding: embedding as unknown as string,
       match_user_id: userId,
       match_threshold: MATCH_THRESHOLD,
       match_count: 10, // Get more candidates, then filter by type
     });
+
+    if (error) {
+      console.error(`Error matching requirement "${req.text}":`, error);
+    }
 
     // Filter matches by valid claim types for this requirement type
     const validClaimTypes = VALID_CLAIM_TYPES[req.type];

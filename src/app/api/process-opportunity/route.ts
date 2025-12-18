@@ -6,11 +6,16 @@ import type { Json } from "@/lib/supabase/types";
 
 const openai = new OpenAI();
 
+interface ClassifiedRequirement {
+  text: string;
+  type: "education" | "certification" | "skill" | "experience";
+}
+
 interface ExtractedOpportunity {
   title: string;
   company: string | null;
-  mustHave: string[];
-  niceToHave: string[];
+  mustHave: ClassifiedRequirement[];
+  niceToHave: ClassifiedRequirement[];
   responsibilities: string[];
 }
 
@@ -19,25 +24,37 @@ const EXTRACTION_PROMPT = `Extract job details and requirements from this job po
 Extract:
 - title: The job title (e.g., "Senior Software Engineer", "Product Manager")
 - company: The company name if mentioned, or null if not found
-- mustHave: Required skills, qualifications, or experience (hard requirements)
-- niceToHave: Preferred or bonus qualifications
-- responsibilities: Key job duties and responsibilities
+- mustHave: Required qualifications with classification
+- niceToHave: Preferred qualifications with classification
+- responsibilities: Key job duties
+
+For each requirement, classify as:
+- "education": Degree, diploma, academic qualification (e.g., "Bachelor's in CS", "MBA")
+- "certification": Professional certification/license (e.g., "PMP", "AWS Certified")
+- "skill": Technical skill, tool, competency (e.g., "Python", "communication skills")
+- "experience": Work experience, years in role, demonstrated ability (e.g., "5+ years", "led teams")
 
 Return JSON:
 {
   "title": "Senior Software Engineer",
   "company": "Acme Corp",
-  "mustHave": ["5+ years Python experience", "AWS expertise", ...],
-  "niceToHave": ["Kubernetes experience", "Startup background", ...],
-  "responsibilities": ["Lead technical design", "Mentor junior engineers", ...]
+  "mustHave": [
+    {"text": "5+ years Python experience", "type": "experience"},
+    {"text": "Bachelor's in Computer Science", "type": "education"},
+    {"text": "Strong communication skills", "type": "skill"}
+  ],
+  "niceToHave": [
+    {"text": "AWS Certified Solutions Architect", "type": "certification"},
+    {"text": "Startup background", "type": "experience"}
+  ],
+  "responsibilities": ["Lead technical design", "Mentor junior engineers"]
 }
 
 IMPORTANT:
 - Extract the exact job title from the posting
 - Extract company name if present, null if not
-- Extract specific, actionable requirements
-- Keep each item concise (one skill/requirement per item)
-- Include years of experience where mentioned
+- Keep each requirement concise (one per item)
+- Classify each requirement accurately
 - Return ONLY valid JSON, no markdown
 
 JOB DESCRIPTION:
@@ -100,14 +117,16 @@ export async function POST(request: Request) {
       }
     }
 
+    // Store requirements with their classifications
     const requirements = {
       mustHave: extracted.mustHave,
       niceToHave: extracted.niceToHave,
       responsibilities: extracted.responsibilities,
     };
 
-    // Generate embedding from title + description summary
-    const embeddingText = `${extracted.title} at ${extracted.company || "Unknown"}. ${extracted.mustHave.slice(0, 5).join(". ")}`;
+    // Generate embedding from title + requirement texts
+    const reqTexts = extracted.mustHave.slice(0, 5).map(r => r.text).join(". ");
+    const embeddingText = `${extracted.title} at ${extracted.company || "Unknown"}. ${reqTexts}`;
     const embedding = await generateEmbedding(embeddingText);
 
     // Store opportunity

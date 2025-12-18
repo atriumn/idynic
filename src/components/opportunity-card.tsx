@@ -11,12 +11,12 @@ interface OpportunityCardProps {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  tracking: "bg-gray-100 text-gray-800",
-  applied: "bg-blue-100 text-blue-800",
-  interviewing: "bg-yellow-100 text-yellow-800",
-  offer: "bg-green-100 text-green-800",
-  rejected: "bg-red-100 text-red-800",
-  archived: "bg-gray-100 text-gray-500",
+  tracking: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
+  applied: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  interviewing: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+  offer: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  rejected: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+  archived: "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400",
 };
 
 export function OpportunityCard({ opportunity }: OpportunityCardProps) {
@@ -30,7 +30,7 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
 
   return (
     <Link href={`/opportunities/${opportunity.id}`}>
-      <Card className="hover:shadow-md transition-shadow cursor-pointer">
+      <Card className="hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between gap-2">
             <CardTitle className="text-lg">{opportunity.title}</CardTitle>
