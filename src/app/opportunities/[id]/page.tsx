@@ -3,7 +3,7 @@ import { redirect, notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Building2, ExternalLink, ArrowLeft, Check, X } from "lucide-react";
+import { Building2, ExternalLink, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { computeOpportunityMatches } from "@/lib/ai/match-opportunity";
 import { TailoredProfile } from "@/components/tailored-profile";
@@ -61,12 +61,6 @@ export default async function OpportunityDetailPage({
   // Compute matches
   const matchResult = await computeOpportunityMatches(id, user.id);
 
-  const requirements = opportunity.requirements as {
-    mustHave?: Array<{ text: string; type: string } | string>;
-    niceToHave?: Array<{ text: string; type: string } | string>;
-    responsibilities?: string[];
-  } | null;
-
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <Link
@@ -116,108 +110,11 @@ export default async function OpportunityDetailPage({
         </CardContent>
       </Card>
 
-      {/* Tailored Profile */}
-      <div className="mb-6">
-        <TailoredProfile opportunityId={id} />
-      </div>
-
-      <div className="grid gap-6">
-        {/* Requirements with Match Status */}
-        {requirements?.mustHave && requirements.mustHave.length > 0 && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Required Qualifications</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {matchResult.requirementMatches
-                  .filter((rm) => rm.requirement.category === "mustHave")
-                  .map((rm, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      {rm.bestMatch ? (
-                        <Check className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-                      ) : (
-                        <X className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
-                      )}
-                      <div className="flex-1">
-                        <span className={rm.bestMatch ? "" : "text-muted-foreground"}>
-                          {rm.requirement.text}
-                        </span>
-                        {rm.bestMatch && (
-                          <span className="text-xs text-muted-foreground ml-2">
-                            ({rm.bestMatch.label})
-                          </span>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
-
-        {requirements?.niceToHave && requirements.niceToHave.length > 0 && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Nice to Have</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {matchResult.requirementMatches
-                  .filter((rm) => rm.requirement.category === "niceToHave")
-                  .map((rm, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      {rm.bestMatch ? (
-                        <Check className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-                      ) : (
-                        <X className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
-                      )}
-                      <div className="flex-1">
-                        <span className={rm.bestMatch ? "" : "text-muted-foreground"}>
-                          {rm.requirement.text}
-                        </span>
-                        {rm.bestMatch && (
-                          <span className="text-xs text-muted-foreground ml-2">
-                            ({rm.bestMatch.label})
-                          </span>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
-
-        {requirements?.responsibilities && requirements.responsibilities.length > 0 && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Responsibilities</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {requirements.responsibilities.map((resp, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <span className="text-muted-foreground mt-1">-</span>
-                    <span>{resp}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Original Description</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-              {opportunity.description}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Tailored Profile - includes requirements on Talking Points tab */}
+      <TailoredProfile
+        opportunityId={id}
+        requirementMatches={matchResult.requirementMatches}
+      />
     </div>
   );
 }

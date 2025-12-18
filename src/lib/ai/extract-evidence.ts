@@ -18,12 +18,19 @@ const SYSTEM_PROMPT = `You are an evidence extractor. Extract discrete factual s
 
 const USER_PROMPT = `Extract discrete factual statements from this resume. Each should be:
 - A single accomplishment with measurable impact
+- A venture/project founded or co-founded (treat as accomplishment with founder context)
 - A skill explicitly listed (EACH technology/tool/framework separately)
 - A trait or value indicator
 - An education credential (degree, major, institution)
 - A certification (professional certifications, licenses)
 
 For accomplishments, preserve the full context and specifics (numbers, percentages, scale).
+
+For VENTURES/PROJECTS (often marked with ➔ or under "VENTURES", "PROJECTS" sections):
+- Extract each venture as an accomplishment (the founding/building of it)
+- Context should have role as "Founder", "Co-Founder", or "Co-Owner" and company as the venture name
+- ALSO extract any technologies/skills mentioned in venture descriptions as separate skill_listed items
+  e.g., "AI platform using multi-model LLM workflows and AWS serverless" → extract "multi-model LLM workflows" and "AWS serverless architecture" as skills too
 
 CRITICAL FOR SKILLS - Extract EACH skill as a SEPARATE item:
 - "Go, Next.js, TypeScript, React" → 4 separate skill items: "Go", "Next.js", "TypeScript", "React"
@@ -44,6 +51,11 @@ Return JSON array:
     "text": "Reduced API latency by 40% serving 2M daily users",
     "type": "accomplishment",
     "context": {"role": "Senior Eng Manager", "company": "Acme Corp", "dates": "2020-2023"}
+  },
+  {
+    "text": "Founded AI identity platform that synthesizes user experience using multi-model LLM workflows and AWS serverless architecture",
+    "type": "accomplishment",
+    "context": {"role": "Founder", "company": "Idynic"}
   },
   {
     "text": "Go",
@@ -74,6 +86,7 @@ Return JSON array:
 
 IMPORTANT:
 - Extract EVERY accomplishment bullet as a separate item
+- Extract EVERY venture/project as an accomplishment - these show entrepreneurial initiative!
 - Extract EVERY skill as its own item - split comma-separated lists!
 - If resume says "Python, Go, TypeScript" that's 3 separate skill_listed items
 - Include context (role, company, dates) for accomplishments

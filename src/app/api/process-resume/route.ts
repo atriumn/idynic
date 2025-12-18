@@ -168,7 +168,31 @@ export async function POST(request: Request) {
     // Store work history
     let storedWorkHistory: Array<{ id: string; company: string; title: string }> = [];
     if (workHistoryItems.length > 0) {
-      const workHistoryToInsert = workHistoryItems.map((job, index) => ({
+      // Sort: current roles first (null/Present end_date), then by end_date desc, then by start_date desc
+      const sortedWorkHistory = [...workHistoryItems].sort((a, b) => {
+        const aIsCurrent = !a.end_date || a.end_date.toLowerCase() === "present";
+        const bIsCurrent = !b.end_date || b.end_date.toLowerCase() === "present";
+
+        // Current roles come first
+        if (aIsCurrent && !bIsCurrent) return -1;
+        if (!aIsCurrent && bIsCurrent) return 1;
+
+        // Both current or both ended: sort by start date descending
+        const aYear = parseInt(a.start_date.match(/\d{4}/)?.[0] || "0");
+        const bYear = parseInt(b.start_date.match(/\d{4}/)?.[0] || "0");
+        if (aYear !== bYear) return bYear - aYear;
+
+        // If same start year and both ended, sort by end date descending
+        if (!aIsCurrent && !bIsCurrent) {
+          const aEndYear = parseInt(a.end_date?.match(/\d{4}/)?.[0] || "0");
+          const bEndYear = parseInt(b.end_date?.match(/\d{4}/)?.[0] || "0");
+          return bEndYear - aEndYear;
+        }
+
+        return 0;
+      });
+
+      const workHistoryToInsert = sortedWorkHistory.map((job, index) => ({
         user_id: user.id,
         document_id: document.id,
         company: job.company,
@@ -177,6 +201,7 @@ export async function POST(request: Request) {
         end_date: job.end_date,
         location: job.location,
         summary: job.summary,
+        entry_type: job.entry_type || "work",
         order_index: index,
       }));
 

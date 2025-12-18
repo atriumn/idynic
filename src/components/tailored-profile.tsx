@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, RefreshCw, Check, AlertCircle, Lightbulb, Copy } from "lucide-react";
+import { Loader2, RefreshCw, Check, AlertCircle, Lightbulb, Copy, X } from "lucide-react";
 
 interface TalkingPoints {
   strengths: Array<{
@@ -30,15 +30,33 @@ interface TalkingPoints {
   }>;
 }
 
+interface SkillCategory {
+  category: string;
+  skills: string[];
+}
+
 interface ResumeData {
   summary: string;
-  skills: string[];
+  skills: SkillCategory[];
   experience: Array<{
     company: string;
     title: string;
     dates: string;
     location: string | null;
     bullets: string[];
+  }>;
+  additionalExperience: Array<{
+    company: string;
+    title: string;
+    dates: string;
+    location: string | null;
+    bullets: string[];
+  }>;
+  ventures: Array<{
+    name: string;
+    role: string;
+    status: string | null;
+    description: string | null;
   }>;
   education: Array<{
     institution: string;
@@ -47,12 +65,25 @@ interface ResumeData {
   }>;
 }
 
-interface TailoredProfileProps {
-  opportunityId: string;
+interface RequirementMatch {
+  requirement: {
+    text: string;
+    type: string;
+    category: "mustHave" | "niceToHave";
+  };
+  bestMatch: {
+    label: string;
+    score: number;
+  } | null;
 }
 
-export function TailoredProfile({ opportunityId }: TailoredProfileProps) {
-  const [loading, setLoading] = useState(false);
+interface TailoredProfileProps {
+  opportunityId: string;
+  requirementMatches?: RequirementMatch[];
+}
+
+export function TailoredProfile({ opportunityId, requirementMatches = [] }: TailoredProfileProps) {
+  const [loading, setLoading] = useState(true); // Start true to show loading on mount
   const [regenerating, setRegenerating] = useState(false);
   const [profile, setProfile] = useState<{
     talking_points: TalkingPoints;
@@ -61,6 +92,27 @@ export function TailoredProfile({ opportunityId }: TailoredProfileProps) {
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+
+  // Fetch existing profile on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch(`/api/generate-profile?opportunityId=${opportunityId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.profile) {
+            setProfile(data.profile);
+          }
+        }
+      } catch {
+        // Ignore fetch errors - will show generate button
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [opportunityId]);
 
   const generateProfile = async (regenerate = false) => {
     if (regenerate) {
@@ -267,6 +319,74 @@ export function TailoredProfile({ opportunityId }: TailoredProfileProps) {
               </CardContent>
             </Card>
           )}
+
+          {/* Required Qualifications */}
+          {requirementMatches.filter((rm) => rm.requirement.category === "mustHave").length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Required Qualifications</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2">
+                  {requirementMatches
+                    .filter((rm) => rm.requirement.category === "mustHave")
+                    .map((rm, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        {rm.bestMatch ? (
+                          <Check className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                        ) : (
+                          <X className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+                        )}
+                        <div className="flex-1">
+                          <span className={rm.bestMatch ? "" : "text-muted-foreground"}>
+                            {rm.requirement.text}
+                          </span>
+                          {rm.bestMatch && (
+                            <span className="text-xs text-muted-foreground ml-2">
+                              ({rm.bestMatch.label})
+                            </span>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Nice to Have */}
+          {requirementMatches.filter((rm) => rm.requirement.category === "niceToHave").length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Nice to Have</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2">
+                  {requirementMatches
+                    .filter((rm) => rm.requirement.category === "niceToHave")
+                    .map((rm, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        {rm.bestMatch ? (
+                          <Check className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                        ) : (
+                          <X className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
+                        )}
+                        <div className="flex-1">
+                          <span className={rm.bestMatch ? "" : "text-muted-foreground"}>
+                            {rm.requirement.text}
+                          </span>
+                          {rm.bestMatch && (
+                            <span className="text-xs text-muted-foreground ml-2">
+                              ({rm.bestMatch.label})
+                            </span>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="narrative" className="mt-4">
@@ -315,22 +435,6 @@ export function TailoredProfile({ opportunityId }: TailoredProfileProps) {
             </CardContent>
           </Card>
 
-          {/* Skills */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Skills (Ordered by Relevance)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {resume_data.skills.map((skill, i) => (
-                  <Badge key={i} variant={i < 5 ? "default" : "secondary"}>
-                    {skill}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Experience */}
           <Card>
             <CardHeader className="pb-3">
@@ -349,19 +453,149 @@ export function TailoredProfile({ opportunityId }: TailoredProfileProps) {
                       {job.location && <p>{job.location}</p>}
                     </div>
                   </div>
-                  <ul className="list-disc list-inside space-y-1">
-                    {job.bullets.map((bullet, j) => (
-                      <li
-                        key={j}
-                        className="text-sm"
-                        dangerouslySetInnerHTML={{
-                          __html: bullet.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>"),
-                        }}
-                      />
-                    ))}
-                  </ul>
+                  {job.bullets.length > 0 && (
+                    <ul className="list-disc list-inside space-y-1">
+                      {job.bullets.map((bullet, j) => (
+                        <li
+                          key={j}
+                          className="text-sm"
+                          dangerouslySetInnerHTML={{
+                            __html: bullet.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>"),
+                          }}
+                        />
+                      ))}
+                    </ul>
+                  )}
                 </div>
               ))}
+            </CardContent>
+          </Card>
+
+          {/* Additional Experience - lighter on details, older roles */}
+          {resume_data.additionalExperience?.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Additional Experience</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {resume_data.additionalExperience.map((job, i) => (
+                  <div key={i}>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="font-medium">{job.title}</p>
+                        <p className="text-sm text-muted-foreground">{job.company}</p>
+                      </div>
+                      <div className="text-right text-sm text-muted-foreground">
+                        <p>{job.dates}</p>
+                        {job.location && <p>{job.location}</p>}
+                      </div>
+                    </div>
+                    {job.bullets.length > 0 && (
+                      <ul className="list-disc list-inside space-y-1 mt-1">
+                        {job.bullets.map((bullet, j) => (
+                          <li
+                            key={j}
+                            className="text-sm"
+                            dangerouslySetInnerHTML={{
+                              __html: bullet.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>"),
+                            }}
+                          />
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Ventures */}
+          {resume_data.ventures?.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Ventures & Projects</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {resume_data.ventures.map((venture, i) => (
+                  <div key={i} className="flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{venture.name}</p>
+                        {venture.status && (
+                          <Badge variant="outline" className="text-xs">
+                            {venture.status}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">{venture.role}</p>
+                      {venture.description && (
+                        <p className="text-sm mt-1">{venture.description}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Skills - Grid Layout */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Skills</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Handle both old format (string[]) and new format (SkillCategory[]) */}
+              {Array.isArray(resume_data.skills) && resume_data.skills.length > 0 && (
+                typeof resume_data.skills[0] === "string" ? (
+                  // Old format: flat array of strings - simple grid
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                    {(resume_data.skills as unknown as string[]).map((skill, i) => (
+                      <div
+                        key={i}
+                        className={`px-3 py-1.5 rounded-md text-sm ${
+                          i < 5
+                            ? "bg-primary/10 text-primary font-medium"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {skill}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  // New format: categorized grid
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {(resume_data.skills as SkillCategory[]).map((category, catIndex) => (
+                      <div
+                        key={catIndex}
+                        className={`p-3 rounded-lg border ${
+                          catIndex === 0 ? "bg-primary/5 border-primary/20" : "bg-muted/30 border-border"
+                        }`}
+                      >
+                        <h4 className={`text-xs font-semibold uppercase tracking-wide mb-2 ${
+                          catIndex === 0 ? "text-primary" : "text-muted-foreground"
+                        }`}>
+                          {category.category}
+                        </h4>
+                        <div className="flex flex-wrap gap-1.5">
+                          {category.skills.map((skill, i) => (
+                            <span
+                              key={i}
+                              className={`text-xs px-2 py-0.5 rounded ${
+                                catIndex === 0 && i < 3
+                                  ? "bg-primary/15 text-primary font-medium"
+                                  : "bg-background text-foreground/70"
+                              }`}
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
+              )}
             </CardContent>
           </Card>
 

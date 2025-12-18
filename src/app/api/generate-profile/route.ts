@@ -5,6 +5,42 @@ import { generateNarrative } from "@/lib/ai/generate-narrative";
 import { generateResume } from "@/lib/ai/generate-resume";
 import type { Json } from "@/lib/supabase/types";
 
+// Fetch existing profile (doesn't create one)
+export async function GET(request: Request) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const opportunityId = searchParams.get("opportunityId");
+
+  if (!opportunityId) {
+    return NextResponse.json(
+      { error: "opportunityId is required" },
+      { status: 400 }
+    );
+  }
+
+  const { data: profile } = await supabase
+    .from("tailored_profiles")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("opportunity_id", opportunityId)
+    .single();
+
+  if (!profile) {
+    return NextResponse.json({ profile: null });
+  }
+
+  return NextResponse.json({ profile });
+}
+
 export async function POST(request: Request) {
   const supabase = await createClient();
 

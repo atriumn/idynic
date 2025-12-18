@@ -13,16 +13,30 @@ interface ResumeExperience {
   bullets: string[];
 }
 
+interface ResumeVenture {
+  name: string;
+  role: string;
+  status: string | null;
+  description: string | null;
+}
+
 interface ResumeEducation {
   institution: string;
   degree: string;
   year: string | null;
 }
 
+export interface SkillCategory {
+  category: string;
+  skills: string[];
+}
+
 export interface ResumeData {
   summary: string;
-  skills: string[];
+  skills: SkillCategory[];
   experience: ResumeExperience[];
+  additionalExperience: ResumeExperience[];
+  ventures: ResumeVenture[];
   education: ResumeEducation[];
 }
 
@@ -33,6 +47,7 @@ interface WorkHistoryWithClaims {
   start_date: string;
   end_date: string | null;
   location: string | null;
+  entry_type: string | null;
   claims: Array<{
     id: string;
     label: string;
@@ -48,10 +63,19 @@ function buildBulletsPrompt(
   job: WorkHistoryWithClaims,
   requirements: Array<{ text: string; type: string }>,
   strengths: TalkingPoints["strengths"]
-): string {
+): string | null {
+  // If no claims/evidence, return null - do not fabricate bullets
+  if (job.claims.length === 0) {
+    return null;
+  }
+
   const relevantStrengths = strengths.filter(s =>
     job.claims.some(c => c.id === s.claim_id)
   );
+
+  const framingSection = relevantStrengths.length > 0
+    ? `## Framing Guidance\n${relevantStrengths.map(s => `- ${s.claim_label}: ${s.framing}`).join("\n")}`
+    : "";
 
   return `Generate 3-5 resume bullets for this position:
 
@@ -66,18 +90,17 @@ ${job.claims.map(c => `- ${c.label}: ${c.description || "(no description)"}`).jo
 ## Target Role Requirements (for emphasis)
 ${requirements.slice(0, 5).map(r => `- ${r.text}`).join("\n")}
 
-## Framing Guidance
-${relevantStrengths.map(s => `- ${s.claim_label}: ${s.framing}`).join("\n")}
+${framingSection}
 
 ## Guidelines
-- Each bullet: action verb + achievement + impact/scale
+- Each bullet: action verb + achievement + impact/scale where known
 - Subtly **bold** 1-2 key concepts per bullet that align with requirements
 - Don't keyword-stuff or mirror exact job posting language
-- If this role has few relevant claims, still include 2-3 bullets to maintain career narrative
-- Be honest - only include what the evidence supports
+- ONLY include what the evidence supports - do not fabricate or infer
+- Maintain professional tone
 
-Return JSON array of bullet strings:
-["Led **cloud migration** for 10-person team, reducing costs 40%", ...]`;
+Return a JSON object with a "bullets" key containing an array of strings:
+{"bullets": ["Led **cloud migration** for 10-person team, reducing costs 40%", ...]}`;
 }
 
 export async function generateResume(
@@ -97,7 +120,8 @@ export async function generateResume(
   const requirements = (opportunity?.requirements as { mustHave?: Array<{ text: string; type: string }>; niceToHave?: Array<{ text: string; type: string }> }) || {};
   const allRequirements = [...(requirements.mustHave || []), ...(requirements.niceToHave || [])];
 
-  // Get work history with linked claims
+  // Get work history (excluding ventures) with linked claims
+  // Include null entry_type for backwards compatibility with old data
   const { data: workHistory } = await supabase
     .from("work_history")
     .select(`
@@ -106,9 +130,25 @@ export async function generateResume(
       title,
       start_date,
       end_date,
-      location
+      location,
+      entry_type
     `)
     .eq("user_id", userId)
+    .or("entry_type.is.null,entry_type.in.(work,additional)")
+    .order("order_index", { ascending: true });
+
+  // Get ventures separately
+  const { data: ventureData } = await supabase
+    .from("work_history")
+    .select(`
+      company,
+      title,
+      start_date,
+      end_date,
+      summary
+    `)
+    .eq("user_id", userId)
+    .eq("entry_type", "venture")
     .order("order_index", { ascending: true });
 
   // Get claims with their work_history links via evidence
@@ -157,35 +197,54 @@ export async function generateResume(
 
   // Generate bullets for each job
   const experience: ResumeExperience[] = [];
+  const additionalExperience: ResumeExperience[] = [];
+
   for (const job of workHistoryWithClaims) {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: 0.5,
-      max_tokens: 500,
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: buildBulletsPrompt(job, allRequirements, talkingPoints.strengths) },
-      ],
-    });
+    const prompt = buildBulletsPrompt(job, allRequirements, talkingPoints.strengths);
 
     let bullets: string[] = [];
-    try {
-      const content = response.choices[0]?.message?.content || "{}";
-      const parsed = JSON.parse(content);
-      bullets = Array.isArray(parsed) ? parsed : parsed.bullets || [];
-    } catch {
-      bullets = [`Served as ${job.title}`]; // Fallback
+
+    // Only generate bullets if we have evidence - don't fabricate
+    if (prompt) {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 0.5,
+        max_tokens: 500,
+        response_format: { type: "json_object" },
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: prompt },
+        ],
+      });
+
+      try {
+        const content = response.choices[0]?.message?.content || "{}";
+        const parsed = JSON.parse(content);
+        // Handle various key names the LLM might use
+        bullets = Array.isArray(parsed)
+          ? parsed
+          : parsed.bullets || parsed.resume_bullets || parsed.bullet_points || Object.values(parsed)[0] || [];
+        if (!Array.isArray(bullets)) bullets = [];
+      } catch {
+        bullets = [];
+      }
     }
 
-    experience.push({
+    const entry: ResumeExperience = {
       work_history_id: job.id,
       company: job.company,
       title: job.title,
       dates: `${job.start_date} - ${job.end_date || "Present"}`,
       location: job.location,
       bullets,
-    });
+    };
+
+    // Split into main experience vs additional experience
+    if (job.entry_type === "additional") {
+      additionalExperience.push(entry);
+    } else {
+      experience.push(entry);
+    }
   }
 
   // Generate summary
@@ -209,23 +268,70 @@ Keep it concise, professional, and tailored to the role. No first person ("I am.
 
   const summary = summaryResponse.choices[0]?.message?.content?.trim() || "";
 
-  // Get skills, ordered by relevance
+  // Get all skills, ordered by confidence
   const { data: skillClaims } = await supabase
     .from("identity_claims")
     .select("label")
     .eq("user_id", userId)
     .eq("type", "skill")
-    .order("confidence", { ascending: false })
-    .limit(20);
+    .order("confidence", { ascending: false });
 
-  const skills = (skillClaims || []).map((c) => c.label);
+  const allSkills = (skillClaims || []).map((c) => c.label);
 
   // Reorder skills by relevance to requirements
-  const relevantSkills = skills.filter((s) =>
+  const relevantSkills = allSkills.filter((s) =>
     allRequirements.some((r) => r.text.toLowerCase().includes(s.toLowerCase()))
   );
-  const otherSkills = skills.filter((s) => !relevantSkills.includes(s));
+  const otherSkills = allSkills.filter((s) => !relevantSkills.includes(s));
   const orderedSkills = [...relevantSkills, ...otherSkills];
+
+  // Categorize skills using LLM
+  let categorizedSkills: SkillCategory[] = [];
+  if (orderedSkills.length > 0) {
+    const categorizationResponse = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0,
+      max_tokens: 2000,
+      response_format: { type: "json_object" },
+      messages: [
+        {
+          role: "system",
+          content: "You categorize technical and professional skills into logical groups. Return JSON only.",
+        },
+        {
+          role: "user",
+          content: `Categorize these skills into 4-7 logical groups. Use clear, concise category names (e.g., "Languages", "Cloud & Infrastructure", "Leadership", "AI & ML", "Testing", "Databases").
+
+Skills (in order of relevance - preserve this order within categories):
+${orderedSkills.join(", ")}
+
+Return JSON:
+{
+  "categories": [
+    {"category": "Category Name", "skills": ["skill1", "skill2"]},
+    ...
+  ]
+}
+
+Rules:
+- Each skill appears in exactly one category
+- Preserve the relative ordering of skills within each category (more relevant first)
+- Put categories with more relevant skills first
+- Use 4-7 categories total
+- Keep category names short (1-3 words)`,
+        },
+      ],
+    });
+
+    try {
+      const content = categorizationResponse.choices[0]?.message?.content || "{}";
+      const parsed = JSON.parse(content);
+      categorizedSkills = parsed.categories || [];
+    } catch {
+      // Fallback: put all skills in one category
+      categorizedSkills = [{ category: "Skills", skills: orderedSkills }];
+    }
+  }
 
   // Get education
   const { data: eduClaims } = await supabase
@@ -250,10 +356,32 @@ Keep it concise, professional, and tailored to the role. No first person ("I am.
     };
   });
 
+  // Build ventures list
+  const ventures: ResumeVenture[] = (ventureData || []).map((v) => {
+    // Determine status from end_date
+    let status: string | null = null;
+    if (!v.end_date || v.end_date.toLowerCase() === "present") {
+      status = "Active";
+    } else if (v.end_date.toLowerCase().includes("pre-launch")) {
+      status = "Pre-Launch";
+    } else if (v.end_date.toLowerCase().includes("development")) {
+      status = "In Development";
+    }
+
+    return {
+      name: v.company,
+      role: v.title,
+      status,
+      description: v.summary,
+    };
+  });
+
   return {
     summary,
-    skills: orderedSkills,
+    skills: categorizedSkills,
     experience,
+    additionalExperience,
+    ventures,
     education,
   };
 }
