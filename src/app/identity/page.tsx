@@ -14,12 +14,20 @@ export default async function IdentityPage() {
     redirect("/login");
   }
 
-  // Fetch identity claims with evidence count
+  // Fetch identity claims with evidence and source documents
   const { data: claims } = await supabase
     .from("identity_claims")
     .select(`
       *,
-      claim_evidence(count)
+      claim_evidence(
+        strength,
+        evidence:evidence_id(
+          text,
+          document:document_id(
+            filename
+          )
+        )
+      )
     `)
     .eq("user_id", user.id)
     .order("confidence", { ascending: false });

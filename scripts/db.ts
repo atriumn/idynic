@@ -65,7 +65,7 @@ async function main() {
         .eq("claim_id", claim.id);
       console.log(`\n  ${claim.label} (${(claim.confidence * 100).toFixed(0)}%):`);
       links?.forEach(l => {
-        const ev = l.evidence as { text: string } | null;
+        const ev = l.evidence as unknown as { text: string } | null;
         console.log(`    - [${l.strength}] ${ev?.text?.slice(0, 60)}...`);
       });
     }
@@ -75,7 +75,7 @@ async function main() {
     const seen = new Set<string>();
     const dupes: string[] = [];
     labels.forEach(l => { if (seen.has(l)) dupes.push(l); seen.add(l); });
-    if (dupes.length) console.log("\nDuplicate labels found:", [...new Set(dupes)]);
+    if (dupes.length) console.log("\nDuplicate labels found:", Array.from(new Set(dupes)));
 
     return;
   }

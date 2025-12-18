@@ -37,7 +37,7 @@ interface SynthesisResult {
   match: string | null;  // claim label if matched (used to find claim by label)
   strength: "weak" | "medium" | "strong";
   new_claim: {
-    type: "skill" | "achievement" | "attribute";
+    type: "skill" | "achievement" | "attribute" | "education" | "certification";
     label: string;
     description: string;
   } | null;
@@ -46,7 +46,7 @@ interface SynthesisResult {
 interface EvidenceItem {
   id: string;
   text: string;
-  type: "accomplishment" | "skill_listed" | "trait_indicator";
+  type: "accomplishment" | "skill_listed" | "trait_indicator" | "education" | "certification";
   embedding: number[];
 }
 
@@ -57,6 +57,8 @@ const EVIDENCE_TO_CLAIM_TYPE: Record<EvidenceItem["type"], SynthesisResult["new_
   skill_listed: "skill",
   accomplishment: "achievement",
   trait_indicator: "attribute",
+  education: "education",
+  certification: "certification",
 };
 
 function buildSynthesisPrompt(
@@ -80,25 +82,29 @@ ${candidateList}
 
 Rules:
 1. If evidence clearly supports an existing claim, return match with the claim's label
-2. If evidence is a new capability/achievement/trait, create a new claim
+2. If evidence is a new capability/achievement/trait/degree/cert, create a new claim
 3. New claim labels should be concise (2-4 words), semantic, and reusable
 4. Strength: "strong" = direct evidence, "medium" = related, "weak" = tangential
 5. IMPORTANT: Respect the evidence type when creating new claims:
    - skill_listed → skill (e.g., "Python", "Leadership", "Project Management")
    - accomplishment → achievement (e.g., "Performance Engineering", "Team Scaling")
    - trait_indicator → attribute (e.g., "Thrives in Ambiguity", "Growth Mindset")
+   - education → education (e.g., "BS in Computer Science", "MBA")
+   - certification → certification (e.g., "AWS Solutions Architect", "PMP")
 
 Examples of good claim labels:
 - "Performance Engineering" (not "Reduced API latency")
 - "Distributed Team Leadership" (not "Led teams across continents")
 - "Python" (skill names stay as-is)
 - "Leadership" is a SKILL, not an achievement
+- "BS in Management Information Systems" (education - include degree and major)
+- "AWS Solutions Architect Professional" (certification - include full cert name)
 
 Return JSON:
 {
   "match": "Exact label of matched claim" or null,
   "strength": "weak" | "medium" | "strong",
-  "new_claim": null or {"type": "skill|achievement|attribute", "label": "...", "description": "..."}
+  "new_claim": null or {"type": "skill|achievement|attribute|education|certification", "label": "...", "description": "..."}
 }`;
 }
 
@@ -107,7 +113,7 @@ function isValidNewClaim(claim: unknown): claim is SynthesisResult["new_claim"] 
   const c = claim as Record<string, unknown>;
   return (
     typeof c.type === "string" &&
-    ["skill", "achievement", "attribute"].includes(c.type) &&
+    ["skill", "achievement", "attribute", "education", "certification"].includes(c.type) &&
     typeof c.label === "string" &&
     c.label.length > 0 &&
     typeof c.description === "string"
@@ -131,7 +137,7 @@ export async function synthesizeClaims(
 
     // 1. Find candidate claims via embedding similarity
     const { data: candidates } = await supabase.rpc("find_candidate_claims", {
-      query_embedding: evidence.embedding,
+      query_embedding: evidence.embedding as unknown as string,
       match_user_id: userId,
       match_count: 5,
     });
@@ -228,7 +234,7 @@ export async function synthesizeClaims(
           label: result.new_claim.label,
           description: result.new_claim.description,
           confidence: getBaseConfidence(1) * getStrengthMultiplier(result.strength),
-          embedding: claimEmbedding,
+          embedding: claimEmbedding as unknown as string,
         })
         .select()
         .single();

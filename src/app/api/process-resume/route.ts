@@ -81,7 +81,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error: "Duplicate document",
-          message: `This resume was already uploaded on ${new Date(existingDoc.created_at).toLocaleDateString()}`,
+          message: `This resume was already uploaded on ${new Date(existingDoc.created_at || Date.now()).toLocaleDateString()}`,
           existingDocumentId: existingDoc.id,
         },
         { status: 409 }
@@ -179,7 +179,7 @@ export async function POST(request: Request) {
       evidence_type: item.type,
       text: item.text,
       context: item.context,
-      embedding: embeddings[i],
+      embedding: embeddings[i] as unknown as string,
     }));
 
     const { data: storedEvidence, error: evidenceError } = await supabase
@@ -203,8 +203,8 @@ export async function POST(request: Request) {
     const evidenceWithIds = storedEvidence.map((e) => ({
       id: e.id,
       text: e.text,
-      type: e.evidence_type,
-      embedding: e.embedding as number[],
+      type: e.evidence_type as "accomplishment" | "skill_listed" | "trait_indicator" | "education" | "certification",
+      embedding: e.embedding as unknown as number[],
     }));
 
     let synthesisResult;

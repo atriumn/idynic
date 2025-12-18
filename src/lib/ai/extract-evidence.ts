@@ -4,11 +4,13 @@ const openai = new OpenAI();
 
 export interface ExtractedEvidence {
   text: string;
-  type: "accomplishment" | "skill_listed" | "trait_indicator";
+  type: "accomplishment" | "skill_listed" | "trait_indicator" | "education" | "certification";
   context: {
     role?: string;
     company?: string;
     dates?: string;
+    institution?: string;
+    year?: string;
   } | null;
 }
 
@@ -18,6 +20,8 @@ const USER_PROMPT = `Extract discrete factual statements from this resume. Each 
 - A single accomplishment with measurable impact
 - A skill explicitly listed (EACH technology/tool/framework separately)
 - A trait or value indicator
+- An education credential (degree, major, institution)
+- A certification (professional certifications, licenses)
 
 For accomplishments, preserve the full context and specifics (numbers, percentages, scale).
 
@@ -27,6 +31,12 @@ CRITICAL FOR SKILLS - Extract EACH skill as a SEPARATE item:
 - "Selenium, Playwright, Cypress" → 3 separate items
 - "OpenAI GPT, Anthropic Claude, Llama" → 3 separate items
 - Category headers like "Programming & Development" are NOT skills - extract the actual technologies listed under them
+
+CRITICAL FOR EDUCATION - Extract degrees with full details:
+- Include degree type (BS, BA, MS, MBA, PhD, etc.)
+- Include major/field of study
+- Include institution name
+- Include graduation year if present
 
 Return JSON array:
 [
@@ -41,11 +51,6 @@ Return JSON array:
     "context": null
   },
   {
-    "text": "Next.js",
-    "type": "skill_listed",
-    "context": null
-  },
-  {
     "text": "AWS Lambda",
     "type": "skill_listed",
     "context": null
@@ -54,6 +59,16 @@ Return JSON array:
     "text": "Thrives in ambiguous environments",
     "type": "trait_indicator",
     "context": null
+  },
+  {
+    "text": "BS in Management Information Systems",
+    "type": "education",
+    "context": {"institution": "State University", "year": "2005"}
+  },
+  {
+    "text": "AWS Solutions Architect Professional",
+    "type": "certification",
+    "context": {"year": "2023"}
   }
 ]
 
@@ -62,6 +77,7 @@ IMPORTANT:
 - Extract EVERY skill as its own item - split comma-separated lists!
 - If resume says "Python, Go, TypeScript" that's 3 separate skill_listed items
 - Include context (role, company, dates) for accomplishments
+- Extract ALL degrees and certifications - these are critical for job matching
 - Return ONLY valid JSON array, no markdown
 - Be EXHAUSTIVE - a typical resume skills section has 50-80 individual skills. Don't skip any!
 - Include methodologies (Scrum, Kanban, TDD, BDD), compliance frameworks (HIPAA, SOC2), and soft skills too
@@ -104,7 +120,7 @@ export async function extractEvidence(text: string): Promise<ExtractedEvidence[]
       typeof item.text === "string" &&
       item.text.length > 0 &&
       item.text.length <= MAX_TEXT_LENGTH &&
-      ["accomplishment", "skill_listed", "trait_indicator"].includes(item.type)
+      ["accomplishment", "skill_listed", "trait_indicator", "education", "certification"].includes(item.type)
     );
   } catch {
     throw new Error(`Failed to parse evidence response: ${cleanedContent.slice(0, 200)}`);
