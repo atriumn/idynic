@@ -158,6 +158,7 @@ export type Database = {
           id: string
           text: string
           user_id: string
+          work_history_id: string | null
         }
         Insert: {
           context?: Json | null
@@ -168,6 +169,7 @@ export type Database = {
           id?: string
           text: string
           user_id: string
+          work_history_id?: string | null
         }
         Update: {
           context?: Json | null
@@ -178,6 +180,7 @@ export type Database = {
           id?: string
           text?: string
           user_id?: string
+          work_history_id?: string | null
         }
         Relationships: [
           {
@@ -192,6 +195,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_work_history_id_fkey"
+            columns: ["work_history_id"]
+            isOneToOne: false
+            referencedRelation: "work_history"
             referencedColumns: ["id"]
           },
         ]
@@ -359,6 +369,56 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      work_history: {
+        Row: {
+          company: string
+          created_at: string
+          document_id: string
+          end_date: string | null
+          id: string
+          location: string | null
+          order_index: number
+          start_date: string
+          summary: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          company: string
+          created_at?: string
+          document_id: string
+          end_date?: string | null
+          id?: string
+          location?: string | null
+          order_index?: number
+          start_date: string
+          summary?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          company?: string
+          created_at?: string
+          document_id?: string
+          end_date?: string | null
+          id?: string
+          location?: string | null
+          order_index?: number
+          start_date?: string
+          summary?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_history_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
