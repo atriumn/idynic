@@ -249,16 +249,18 @@ idynic-rebuild/
 
 ## Task Breakdown
 
-### Phase 0: Teardown (~2 hours)
+### Phase 0: Teardown (~2 hours) ✅ COMPLETE
 
 | #   | Task                                                      | Done |
 | --- | --------------------------------------------------------- | ---- |
-| 0.1 | Copy extraction prompts from old codebase to scratch file | [ ]  |
-| 0.2 | Run `cdk destroy --all` on dev account (240966655244)     | [ ]  |
-| 0.3 | Empty and delete S3 buckets (dev)                         | [ ]  |
-| 0.4 | Delete Cognito user pool (dev)                            | [ ]  |
-| 0.5 | Repeat 0.2-0.4 for prod account (485726842524)            | [ ]  |
-| 0.6 | Rename GitHub repo: `idynic` → `idynic-archive`           | [ ]  |
+| 0.1 | Copy extraction prompts from old codebase to scratch file | [x]  |
+| 0.2 | Run `cdk destroy --all` on dev account (240966655244)     | [x]  |
+| 0.3 | Empty and delete S3 buckets (dev)                         | [x]  |
+| 0.4 | Delete Cognito user pool (dev)                            | [x]  |
+| 0.5 | Repeat 0.2-0.4 for prod account (485726842524)            | [x]  |
+| 0.6 | Rename GitHub repo: `idynic` → `idynic-archive`           | [x]  |
+
+**Note:** AWS infrastructure destroyed. Old repo archived at `atriumn/idynic-archive`.
 
 ### Phase 1: Foundation (~2 hours) ✅ COMPLETE
 
