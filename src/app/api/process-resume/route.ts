@@ -4,11 +4,16 @@ import { extractEvidence } from "@/lib/ai/extract-evidence";
 import { synthesizeClaims } from "@/lib/ai/synthesize-claims";
 import { generateEmbeddings } from "@/lib/ai/embeddings";
 import { extractText } from "unpdf";
+import { createHash } from "crypto";
 
 async function parsePdf(buffer: Buffer): Promise<{ text: string }> {
   const uint8Array = new Uint8Array(buffer);
   const { text } = await extractText(uint8Array);
   return { text: text.join("\n") };
+}
+
+function computeContentHash(text: string): string {
+  return createHash("sha256").update(text).digest("hex");
 }
 
 export async function POST(request: Request) {
@@ -48,11 +53,42 @@ export async function POST(request: Request) {
       );
     }
 
-    // Convert file to buffer
+    // Convert file to buffer and extract text
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Upload to Supabase Storage
+    // Extract text from PDF first (for dupe check before storage upload)
+    const pdfData = await parsePdf(buffer);
+    const rawText = pdfData.text;
+
+    if (!rawText || rawText.trim().length === 0) {
+      return NextResponse.json(
+        { error: "Could not extract text from PDF" },
+        { status: 400 }
+      );
+    }
+
+    // Check for duplicate document
+    const contentHash = computeContentHash(rawText);
+    const { data: existingDoc } = await supabase
+      .from("documents")
+      .select("id, filename, created_at")
+      .eq("user_id", user.id)
+      .eq("content_hash", contentHash)
+      .single();
+
+    if (existingDoc) {
+      return NextResponse.json(
+        {
+          error: "Duplicate document",
+          message: `This resume was already uploaded on ${new Date(existingDoc.created_at).toLocaleDateString()}`,
+          existingDocumentId: existingDoc.id,
+        },
+        { status: 409 }
+      );
+    }
+
+    // Upload to Supabase Storage (only after dupe check passes)
     const filename = `${user.id}/${Date.now()}-${file.name}`;
     const { error: uploadError } = await supabase.storage
       .from("resumes")
@@ -69,17 +105,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Extract text from PDF
-    const pdfData = await parsePdf(buffer);
-    const rawText = pdfData.text;
-
-    if (!rawText || rawText.trim().length === 0) {
-      return NextResponse.json(
-        { error: "Could not extract text from PDF" },
-        { status: 400 }
-      );
-    }
-
     // Create document record
     const { data: document, error: docError } = await supabase
       .from("documents")
@@ -89,6 +114,7 @@ export async function POST(request: Request) {
         filename: file.name,
         storage_path: filename,
         raw_text: rawText,
+        content_hash: contentHash,
         status: "processing" as const,
       })
       .select()

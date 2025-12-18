@@ -41,6 +41,7 @@ export type Database = {
           filename: string | null;
           storage_path: string | null;
           raw_text: string | null;
+          content_hash: string | null;
           status: "pending" | "processing" | "completed" | "failed";
           created_at: string;
         };
@@ -51,6 +52,7 @@ export type Database = {
           filename?: string | null;
           storage_path?: string | null;
           raw_text?: string | null;
+          content_hash?: string | null;
           status?: "pending" | "processing" | "completed" | "failed";
           created_at?: string;
         };
@@ -61,6 +63,7 @@ export type Database = {
           filename?: string | null;
           storage_path?: string | null;
           raw_text?: string | null;
+          content_hash?: string | null;
           status?: "pending" | "processing" | "completed" | "failed";
           created_at?: string;
         };
