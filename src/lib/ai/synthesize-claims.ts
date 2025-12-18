@@ -1,8 +1,28 @@
 import OpenAI from "openai";
 import { createClient } from "@/lib/supabase/server";
 import { generateEmbedding } from "./embeddings";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/types";
 
 const openai = new OpenAI();
+
+// Confidence base scores calibrated for evidence count
+const CONFIDENCE_BASE = {
+  SINGLE_EVIDENCE: 0.5,   // One data point is tentative
+  DOUBLE_EVIDENCE: 0.7,   // Two corroborating sources
+  TRIPLE_EVIDENCE: 0.8,   // Three sources provides high confidence
+  MULTIPLE_EVIDENCE: 0.9, // 4+ sources is nearly certain
+} as const;
+
+// Strength multipliers for evidence quality
+const STRENGTH_MULTIPLIER = {
+  strong: 1.2,  // Direct, clear evidence
+  medium: 1.0,  // Related evidence
+  weak: 0.7,    // Tangential connection
+} as const;
+
+const MAX_CONFIDENCE = 0.95;
+const MAX_EVIDENCE_TEXT_LENGTH = 5000;
 
 interface CandidateClaim {
   id: string;
@@ -14,7 +34,7 @@ interface CandidateClaim {
 }
 
 interface SynthesisResult {
-  match: string | null;  // claim ID if matched
+  match: string | null;  // claim label if matched (used to find claim by label)
   strength: "weak" | "medium" | "strong";
   new_claim: {
     type: "skill" | "achievement" | "attribute";
@@ -62,6 +82,18 @@ Return JSON:
 }`;
 }
 
+function isValidNewClaim(claim: unknown): claim is SynthesisResult["new_claim"] {
+  if (!claim || typeof claim !== "object") return false;
+  const c = claim as Record<string, unknown>;
+  return (
+    typeof c.type === "string" &&
+    ["skill", "achievement", "attribute"].includes(c.type) &&
+    typeof c.label === "string" &&
+    c.label.length > 0 &&
+    typeof c.description === "string"
+  );
+}
+
 export async function synthesizeClaims(
   userId: string,
   evidenceItems: EvidenceItem[]
@@ -71,6 +103,12 @@ export async function synthesizeClaims(
   let claimsUpdated = 0;
 
   for (const evidence of evidenceItems) {
+    // Skip overly long evidence
+    if (evidence.text.length > MAX_EVIDENCE_TEXT_LENGTH) {
+      console.warn("Skipping evidence exceeding max length:", evidence.text.slice(0, 100));
+      continue;
+    }
+
     // 1. Find candidate claims via embedding similarity
     const { data: candidates } = await supabase.rpc("find_candidate_claims", {
       query_embedding: evidence.embedding,
@@ -106,18 +144,34 @@ export async function synthesizeClaims(
       // Find the matched claim
       const matchedClaim = candidates.find(c => c.label === result.match);
       if (matchedClaim) {
-        // Link evidence to existing claim
-        await supabase.from("claim_evidence").insert({
-          claim_id: matchedClaim.id,
-          evidence_id: evidence.id,
-          strength: result.strength,
-        });
+        // Link evidence to existing claim (upsert to handle duplicates)
+        const { error: linkError } = await supabase
+          .from("claim_evidence")
+          .upsert(
+            {
+              claim_id: matchedClaim.id,
+              evidence_id: evidence.id,
+              strength: result.strength,
+            },
+            { onConflict: "claim_id,evidence_id", ignoreDuplicates: true }
+          );
+
+        if (linkError) {
+          console.error("Failed to link evidence:", linkError);
+          continue;
+        }
 
         // Recalculate confidence
         await recalculateConfidence(supabase, matchedClaim.id);
         claimsUpdated++;
       }
     } else if (result.new_claim) {
+      // Validate new_claim structure
+      if (!isValidNewClaim(result.new_claim)) {
+        console.error("Invalid new_claim structure:", result.new_claim);
+        continue;
+      }
+
       // Create new claim
       const claimEmbedding = await generateEmbedding(result.new_claim.label);
 
@@ -149,7 +203,10 @@ export async function synthesizeClaims(
   return { claimsCreated, claimsUpdated };
 }
 
-async function recalculateConfidence(supabase: any, claimId: string): Promise<void> {
+async function recalculateConfidence(
+  supabase: SupabaseClient<Database>,
+  claimId: string
+): Promise<void> {
   // Get all evidence for this claim
   const { data: links } = await supabase
     .from("claim_evidence")
@@ -159,10 +216,12 @@ async function recalculateConfidence(supabase: any, claimId: string): Promise<vo
   if (!links || links.length === 0) return;
 
   const count = links.length;
-  const avgMultiplier = links.reduce((sum: number, l: { strength: string }) =>
-    sum + getStrengthMultiplier(l.strength), 0) / count;
+  const avgMultiplier = links.reduce(
+    (sum, l) => sum + getStrengthMultiplier(l.strength),
+    0
+  ) / count;
 
-  const confidence = Math.min(0.95, getBaseConfidence(count) * avgMultiplier);
+  const confidence = Math.min(MAX_CONFIDENCE, getBaseConfidence(count) * avgMultiplier);
 
   await supabase
     .from("identity_claims")
@@ -171,17 +230,12 @@ async function recalculateConfidence(supabase: any, claimId: string): Promise<vo
 }
 
 function getBaseConfidence(evidenceCount: number): number {
-  if (evidenceCount >= 4) return 0.9;
-  if (evidenceCount === 3) return 0.8;
-  if (evidenceCount === 2) return 0.7;
-  return 0.5;
+  if (evidenceCount >= 4) return CONFIDENCE_BASE.MULTIPLE_EVIDENCE;
+  if (evidenceCount === 3) return CONFIDENCE_BASE.TRIPLE_EVIDENCE;
+  if (evidenceCount === 2) return CONFIDENCE_BASE.DOUBLE_EVIDENCE;
+  return CONFIDENCE_BASE.SINGLE_EVIDENCE;
 }
 
 function getStrengthMultiplier(strength: string): number {
-  switch (strength) {
-    case "strong": return 1.2;
-    case "medium": return 1.0;
-    case "weak": return 0.7;
-    default: return 1.0;
-  }
+  return STRENGTH_MULTIPLIER[strength as keyof typeof STRENGTH_MULTIPLIER] ?? STRENGTH_MULTIPLIER.medium;
 }

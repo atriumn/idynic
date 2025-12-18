@@ -80,9 +80,12 @@ export async function extractEvidence(text: string): Promise<ExtractedEvidence[]
       throw new Error("Response is not an array");
     }
 
+    const MAX_TEXT_LENGTH = 5000;
     return parsed.filter(item =>
       item.text &&
       typeof item.text === "string" &&
+      item.text.length > 0 &&
+      item.text.length <= MAX_TEXT_LENGTH &&
       ["accomplishment", "skill_listed", "trait_indicator"].includes(item.type)
     );
   } catch {
