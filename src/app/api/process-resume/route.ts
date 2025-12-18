@@ -203,6 +203,7 @@ export async function POST(request: Request) {
     const evidenceWithIds = storedEvidence.map((e) => ({
       id: e.id,
       text: e.text,
+      type: e.evidence_type,
       embedding: e.embedding as number[],
     }));
 

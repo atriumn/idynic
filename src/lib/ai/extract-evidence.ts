@@ -16,11 +16,17 @@ const SYSTEM_PROMPT = `You are an evidence extractor. Extract discrete factual s
 
 const USER_PROMPT = `Extract discrete factual statements from this resume. Each should be:
 - A single accomplishment with measurable impact
-- A skill explicitly listed
+- A skill explicitly listed (EACH technology/tool/framework separately)
 - A trait or value indicator
 
 For accomplishments, preserve the full context and specifics (numbers, percentages, scale).
-For skills, extract each skill individually.
+
+CRITICAL FOR SKILLS - Extract EACH skill as a SEPARATE item:
+- "Go, Next.js, TypeScript, React" → 4 separate skill items: "Go", "Next.js", "TypeScript", "React"
+- "AWS (Lambda, DynamoDB, Cognito)" → 4 separate items: "AWS", "AWS Lambda", "AWS DynamoDB", "AWS Cognito"
+- "Selenium, Playwright, Cypress" → 3 separate items
+- "OpenAI GPT, Anthropic Claude, Llama" → 3 separate items
+- Category headers like "Programming & Development" are NOT skills - extract the actual technologies listed under them
 
 Return JSON array:
 [
@@ -30,7 +36,17 @@ Return JSON array:
     "context": {"role": "Senior Eng Manager", "company": "Acme Corp", "dates": "2020-2023"}
   },
   {
-    "text": "Python",
+    "text": "Go",
+    "type": "skill_listed",
+    "context": null
+  },
+  {
+    "text": "Next.js",
+    "type": "skill_listed",
+    "context": null
+  },
+  {
+    "text": "AWS Lambda",
     "type": "skill_listed",
     "context": null
   },
@@ -43,18 +59,20 @@ Return JSON array:
 
 IMPORTANT:
 - Extract EVERY accomplishment bullet as a separate item
-- Extract EVERY skill individually (not grouped)
+- Extract EVERY skill as its own item - split comma-separated lists!
+- If resume says "Python, Go, TypeScript" that's 3 separate skill_listed items
 - Include context (role, company, dates) for accomplishments
 - Return ONLY valid JSON array, no markdown
+- Be EXHAUSTIVE - a typical resume skills section has 50-80 individual skills. Don't skip any!
+- Include methodologies (Scrum, Kanban, TDD, BDD), compliance frameworks (HIPAA, SOC2), and soft skills too
 
 RESUME TEXT:
 `;
 
 export async function extractEvidence(text: string): Promise<ExtractedEvidence[]> {
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: 0,
-    max_tokens: 16000,
+    model: "gpt-5-mini",
+    max_completion_tokens: 16000,
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
       { role: "user", content: USER_PROMPT + text },

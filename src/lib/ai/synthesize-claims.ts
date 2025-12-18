@@ -46,19 +46,34 @@ interface SynthesisResult {
 interface EvidenceItem {
   id: string;
   text: string;
+  type: "accomplishment" | "skill_listed" | "trait_indicator";
   embedding: number[];
 }
 
 const SYNTHESIS_SYSTEM_PROMPT = `You are an identity synthesizer. Given evidence and candidate claims, determine if the evidence supports an existing claim or requires a new one. Return ONLY valid JSON.`;
 
-function buildSynthesisPrompt(evidenceText: string, candidates: CandidateClaim[]): string {
+// Map evidence types to claim types
+const EVIDENCE_TO_CLAIM_TYPE: Record<EvidenceItem["type"], SynthesisResult["new_claim"] extends { type: infer T } | null ? T : never> = {
+  skill_listed: "skill",
+  accomplishment: "achievement",
+  trait_indicator: "attribute",
+};
+
+function buildSynthesisPrompt(
+  evidenceText: string,
+  evidenceType: EvidenceItem["type"],
+  candidates: CandidateClaim[]
+): string {
   const candidateList = candidates.length > 0
     ? candidates.map((c, i) => `${i + 1}. "${c.label}" (${c.type}) - ${c.description || "No description"}`).join("\n")
     : "No existing claims yet.";
 
+  const expectedClaimType = EVIDENCE_TO_CLAIM_TYPE[evidenceType];
+
   return `Given this evidence, determine if it supports an existing claim or requires a new one.
 
 EVIDENCE: "${evidenceText}"
+EVIDENCE TYPE: ${evidenceType} → This should become a "${expectedClaimType}" claim unless it clearly matches an existing claim of a different type.
 
 CANDIDATE CLAIMS:
 ${candidateList}
@@ -68,11 +83,16 @@ Rules:
 2. If evidence is a new capability/achievement/trait, create a new claim
 3. New claim labels should be concise (2-4 words), semantic, and reusable
 4. Strength: "strong" = direct evidence, "medium" = related, "weak" = tangential
+5. IMPORTANT: Respect the evidence type when creating new claims:
+   - skill_listed → skill (e.g., "Python", "Leadership", "Project Management")
+   - accomplishment → achievement (e.g., "Performance Engineering", "Team Scaling")
+   - trait_indicator → attribute (e.g., "Thrives in Ambiguity", "Growth Mindset")
 
 Examples of good claim labels:
 - "Performance Engineering" (not "Reduced API latency")
 - "Distributed Team Leadership" (not "Led teams across continents")
 - "Python" (skill names stay as-is)
+- "Leadership" is a SKILL, not an achievement
 
 Return JSON:
 {
@@ -123,7 +143,7 @@ export async function synthesizeClaims(
       max_tokens: 500,
       messages: [
         { role: "system", content: SYNTHESIS_SYSTEM_PROMPT },
-        { role: "user", content: buildSynthesisPrompt(evidence.text, candidates || []) },
+        { role: "user", content: buildSynthesisPrompt(evidence.text, evidence.type, candidates || []) },
       ],
     });
 
@@ -169,6 +189,31 @@ export async function synthesizeClaims(
       // Validate new_claim structure
       if (!isValidNewClaim(result.new_claim)) {
         console.error("Invalid new_claim structure:", result.new_claim);
+        continue;
+      }
+
+      // Check if a claim with this label already exists (any type)
+      const { data: existingClaim } = await supabase
+        .from("identity_claims")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("label", result.new_claim.label)
+        .single();
+
+      if (existingClaim) {
+        // Link evidence to existing claim instead of creating duplicate
+        await supabase
+          .from("claim_evidence")
+          .upsert(
+            {
+              claim_id: existingClaim.id,
+              evidence_id: evidence.id,
+              strength: result.strength,
+            },
+            { onConflict: "claim_id,evidence_id", ignoreDuplicates: true }
+          );
+        await recalculateConfidence(supabase, existingClaim.id);
+        claimsUpdated++;
         continue;
       }
 
