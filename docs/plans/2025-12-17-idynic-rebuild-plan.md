@@ -300,7 +300,7 @@ idynic-rebuild/
 
 **Note:** Used `unpdf` instead of `pdf-parse` due to Next.js compatibility issues.
 
-### Phase 4: Identity View (~2 hours) 🔄 IN PROGRESS
+### Phase 4: Identity View (~2 hours) ✅ COMPLETE
 
 | #   | Task                                | Done |
 | --- | ----------------------------------- | ---- |
@@ -308,41 +308,47 @@ idynic-rebuild/
 | 4.2 | Fetch user's claims from DB         | [x]  |
 | 4.3 | Group claims by type                | [x]  |
 | 4.4 | Display claims in clean UI          | [x]  |
-| 4.5 | Show source document for each claim | [ ]  |
+| 4.5 | Show source document for each claim | [x]  |
 
-### Phase 5: Opportunities (~4 hours)
+**Note:** Source documents shown in identity-claims-list.tsx (lines 80-87, 114-118).
+
+### Phase 5: Opportunities (~4 hours) ✅ COMPLETE
 
 | #   | Task                                | Done |
 | --- | ----------------------------------- | ---- |
-| 5.1 | Create `/opportunities` page        | [ ]  |
-| 5.2 | Create "Add opportunity" form       | [ ]  |
-| 5.3 | Call GPT-4o-mini for job extraction | [ ]  |
-| 5.4 | Generate embedding for opportunity  | [ ]  |
-| 5.5 | Store opportunity in DB             | [ ]  |
-| 5.6 | List opportunities with basic info  | [ ]  |
-| 5.7 | Add status badges                   | [ ]  |
+| 5.1 | Create `/opportunities` page        | [x]  |
+| 5.2 | Create "Add opportunity" form       | [x]  |
+| 5.3 | Call GPT-4o-mini for job extraction | [x]  |
+| 5.4 | Generate embedding for opportunity  | [x]  |
+| 5.5 | Store opportunity in DB             | [x]  |
+| 5.6 | List opportunities with basic info  | [x]  |
+| 5.7 | Add status badges                   | [x]  |
 
-### Phase 6: Matching (~3 hours)
+### Phase 6: Matching (~3 hours) ✅ COMPLETE
 
 | #   | Task                                      | Done |
 | --- | ----------------------------------------- | ---- |
-| 6.1 | Create vector search function in Postgres | [ ]  |
-| 6.2 | On opportunity save, compute matches      | [ ]  |
-| 6.3 | Create `/opportunities/[id]` detail page  | [ ]  |
-| 6.4 | Display match score prominently           | [ ]  |
-| 6.5 | Show matched claims                       | [ ]  |
-| 6.6 | Show gaps (requirements without matches)  | [ ]  |
+| 6.1 | Create vector search function in Postgres | [x]  |
+| 6.2 | On opportunity save, compute matches      | [x]  |
+| 6.3 | Create `/opportunities/[id]` detail page  | [x]  |
+| 6.4 | Display match score prominently           | [x]  |
+| 6.5 | Show matched claims                       | [x]  |
+| 6.6 | Show gaps (requirements without matches)  | [x]  |
 
-### Phase 7: Polish (~ongoing)
+**Note:** Matching uses `match_identity_claims` RPC with vector search. Scores show overall, must-have, and nice-to-have percentages.
+
+### Phase 7: Polish (~ongoing) ✅ COMPLETE
 
 | #   | Task                             | Done |
 | --- | -------------------------------- | ---- |
-| 7.1 | Loading states (skeletons)       | [ ]  |
-| 7.2 | Empty states                     | [ ]  |
-| 7.3 | Error handling                   | [ ]  |
-| 7.4 | Mobile responsive                | [ ]  |
-| 7.5 | Dark mode                        | [ ]  |
-| 7.6 | Visual polish (animations, etc.) | [ ]  |
+| 7.1 | Loading states (skeletons)       | [x]  |
+| 7.2 | Empty states                     | [x]  |
+| 7.3 | Error handling                   | [x]  |
+| 7.4 | Mobile responsive                | [x]  |
+| 7.5 | Dark mode                        | [x]  |
+| 7.6 | Visual polish (animations, etc.) | [x]  |
+
+**Note:** Loading states in tailored-profile.tsx. Empty states in identity, opportunities, tailored-profile. Error handling with try-again buttons. Responsive grids throughout. Dark mode via Tailwind dark: classes.
 
 ### Phase 8: Go Live (~1 hour)
 

@@ -1,12 +1,19 @@
 # Profile Tailoring Implementation Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **Status:** ✅ COMPLETE (2025-12-18)
 
 **Goal:** Generate tailored solution profiles (talking points, narrative, resume) that map user experience to opportunity requirements.
 
 **Architecture:** Extract work history during resume processing, store alongside evidence. On-demand generation produces talking points (foundation), then derives narrative and resume from them. All outputs stored in `tailored_profiles` table.
 
 **Tech Stack:** Next.js, Supabase (Postgres), OpenAI GPT-4o-mini, TypeScript
+
+**Enhancements Added:**
+- Skills categorization via LLM (4-7 categories, grid layout)
+- Additional Experience section (lighter detail for older roles)
+- Ventures & Projects section with status badges
+- Auto-fetch existing profile on page load
+- Work history includes entry_type (work, additional, venture)
 
 ---
 
