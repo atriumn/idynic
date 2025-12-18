@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Building2, ExternalLink, ArrowLeft, Check, X } from "lucide-react";
 import Link from "next/link";
 import { computeOpportunityMatches } from "@/lib/ai/match-opportunity";
+import { TailoredProfile } from "@/components/tailored-profile";
 
 const STATUS_COLORS: Record<string, string> = {
   tracking: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
@@ -114,6 +115,11 @@ export default async function OpportunityDetailPage({
           </div>
         </CardContent>
       </Card>
+
+      {/* Tailored Profile */}
+      <div className="mb-6">
+        <TailoredProfile opportunityId={id} />
+      </div>
 
       <div className="grid gap-6">
         {/* Requirements with Match Status */}
