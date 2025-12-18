@@ -1,13 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-import { extractResume, type ResumeExtraction } from "@/lib/ai/extract-resume";
+import { extractEvidence } from "@/lib/ai/extract-evidence";
+import { synthesizeClaims } from "@/lib/ai/synthesize-claims";
 import { generateEmbeddings } from "@/lib/ai/embeddings";
-import type { Json } from "@/lib/supabase/types";
+import { extractText } from "unpdf";
 
-// Dynamic import to avoid build-time file access issues
 async function parsePdf(buffer: Buffer): Promise<{ text: string }> {
-  const pdfParse = (await import("pdf-parse")).default;
-  return pdfParse(buffer);
+  const uint8Array = new Uint8Array(buffer);
+  const { text } = await extractText(uint8Array);
+  return { text: text.join("\n") };
 }
 
 export async function POST(request: Request) {
@@ -101,41 +102,38 @@ export async function POST(request: Request) {
       );
     }
 
-    // Extract structured data using GPT-4o-mini
-    let extraction: ResumeExtraction;
+    // === PASS 1: Extract Evidence ===
+    let evidenceItems;
     try {
-      extraction = await extractResume(rawText);
+      evidenceItems = await extractEvidence(rawText);
     } catch (err) {
-      console.error("Extraction error:", err);
+      console.error("Evidence extraction error:", err);
       await supabase
         .from("documents")
         .update({ status: "failed" })
         .eq("id", document.id);
       return NextResponse.json(
-        { error: "Failed to extract resume data" },
+        { error: "Failed to extract evidence from resume" },
         { status: 500 }
       );
     }
 
-    // Convert extraction to claims
-    const claims = extractionToClaims(extraction, user.id, document.id);
-
-    if (claims.length === 0) {
+    if (evidenceItems.length === 0) {
       await supabase
         .from("documents")
         .update({ status: "completed" })
         .eq("id", document.id);
       return NextResponse.json({
-        message: "Resume processed but no claims extracted",
+        message: "Resume processed but no evidence extracted",
         documentId: document.id,
       });
     }
 
-    // Generate embeddings for all claims
-    const claimTexts = claims.map((c) => c.text);
+    // Generate embeddings for evidence
+    const evidenceTexts = evidenceItems.map((e) => e.text);
     let embeddings: number[][];
     try {
-      embeddings = await generateEmbeddings(claimTexts);
+      embeddings = await generateEmbeddings(evidenceTexts);
     } catch (err) {
       console.error("Embeddings error:", err);
       await supabase
@@ -148,30 +146,47 @@ export async function POST(request: Request) {
       );
     }
 
-    // Insert claims with embeddings
-    const claimsToInsert = claims.map((claim, i) => ({
-      user_id: claim.userId,
-      document_id: claim.documentId,
-      claim_type: claim.claimType,
-      value: claim.value as Json,
-      evidence_text: claim.text,
+    // Store evidence items
+    const evidenceToInsert = evidenceItems.map((item, i) => ({
+      user_id: user.id,
+      document_id: document.id,
+      evidence_type: item.type,
+      text: item.text,
+      context: item.context,
       embedding: embeddings[i],
     }));
 
-    const { error: claimsError } = await supabase
-      .from("claims")
-      .insert(claimsToInsert);
+    const { data: storedEvidence, error: evidenceError } = await supabase
+      .from("evidence")
+      .insert(evidenceToInsert)
+      .select();
 
-    if (claimsError) {
-      console.error("Claims insert error:", claimsError);
+    if (evidenceError || !storedEvidence) {
+      console.error("Evidence insert error:", evidenceError);
       await supabase
         .from("documents")
         .update({ status: "failed" })
         .eq("id", document.id);
       return NextResponse.json(
-        { error: "Failed to store claims" },
+        { error: "Failed to store evidence" },
         { status: 500 }
       );
+    }
+
+    // === PASS 2: Synthesize Claims ===
+    const evidenceWithIds = storedEvidence.map((e) => ({
+      id: e.id,
+      text: e.text,
+      embedding: e.embedding as number[],
+    }));
+
+    let synthesisResult;
+    try {
+      synthesisResult = await synthesizeClaims(user.id, evidenceWithIds);
+    } catch (err) {
+      console.error("Synthesis error:", err);
+      // Don't fail completely - evidence is stored, synthesis can be retried
+      synthesisResult = { claimsCreated: 0, claimsUpdated: 0 };
     }
 
     // Update document status
@@ -183,7 +198,9 @@ export async function POST(request: Request) {
     return NextResponse.json({
       message: "Resume processed successfully",
       documentId: document.id,
-      claimsCount: claims.length,
+      evidenceCount: storedEvidence.length,
+      claimsCreated: synthesisResult.claimsCreated,
+      claimsUpdated: synthesisResult.claimsUpdated,
     });
   } catch (err) {
     console.error("Unexpected error:", err);
@@ -192,103 +209,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
-
-interface Claim {
-  userId: string;
-  documentId: string;
-  claimType: string;
-  value: Record<string, unknown>;
-  text: string;
-}
-
-function extractionToClaims(
-  extraction: ResumeExtraction,
-  userId: string,
-  documentId: string
-): Claim[] {
-  const claims: Claim[] = [];
-
-  // Contact info as a single claim
-  if (extraction.contact?.name) {
-    claims.push({
-      userId,
-      documentId,
-      claimType: "contact",
-      value: extraction.contact,
-      text: `${extraction.contact.name}, ${extraction.contact.email || ""}, ${extraction.contact.location || ""}`.trim(),
-    });
-  }
-
-  // Summary
-  if (extraction.summary) {
-    claims.push({
-      userId,
-      documentId,
-      claimType: "summary",
-      value: { summary: extraction.summary },
-      text: extraction.summary,
-    });
-  }
-
-  // Experience - each role is a claim
-  for (const exp of extraction.experience || []) {
-    const text = `${exp.role} at ${exp.company}${exp.location ? `, ${exp.location}` : ""}. ${exp.bullets?.join(" ") || ""}`;
-    claims.push({
-      userId,
-      documentId,
-      claimType: "experience",
-      value: exp,
-      text,
-    });
-  }
-
-  // Education - each degree is a claim
-  for (const edu of extraction.education || []) {
-    const text = `${edu.degree || "Degree"} in ${edu.field || "Field"} from ${edu.school}`;
-    claims.push({
-      userId,
-      documentId,
-      claimType: "education",
-      value: edu,
-      text,
-    });
-  }
-
-  // Skills - each skill is a claim
-  for (const skill of extraction.skills || []) {
-    claims.push({
-      userId,
-      documentId,
-      claimType: "skill",
-      value: { skill },
-      text: skill,
-    });
-  }
-
-  // Certifications
-  for (const cert of extraction.certifications || []) {
-    const text = `${cert.name}${cert.issuer ? ` from ${cert.issuer}` : ""}`;
-    claims.push({
-      userId,
-      documentId,
-      claimType: "certification",
-      value: cert,
-      text,
-    });
-  }
-
-  // Projects
-  for (const project of extraction.projects || []) {
-    const text = `${project.name}: ${project.description || ""} ${project.bullets?.join(" ") || ""}`.trim();
-    claims.push({
-      userId,
-      documentId,
-      claimType: "project",
-      value: project,
-      text,
-    });
-  }
-
-  return claims;
 }
