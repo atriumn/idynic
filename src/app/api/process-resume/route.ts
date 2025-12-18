@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { extractEvidence } from "@/lib/ai/extract-evidence";
 import { synthesizeClaims } from "@/lib/ai/synthesize-claims";
 import { generateEmbeddings } from "@/lib/ai/embeddings";
+import { extractWorkHistory } from "@/lib/ai/extract-work-history";
 import { extractText } from "unpdf";
 import { createHash } from "crypto";
 
@@ -155,6 +156,42 @@ export async function POST(request: Request) {
       });
     }
 
+    // === PASS 1.5: Extract Work History ===
+    let workHistoryItems: Awaited<ReturnType<typeof extractWorkHistory>>;
+    try {
+      workHistoryItems = await extractWorkHistory(rawText);
+    } catch (err) {
+      console.error("Work history extraction error:", err);
+      workHistoryItems = []; // Non-fatal, continue without work history
+    }
+
+    // Store work history
+    let storedWorkHistory: Array<{ id: string; company: string; title: string }> = [];
+    if (workHistoryItems.length > 0) {
+      const workHistoryToInsert = workHistoryItems.map((job, index) => ({
+        user_id: user.id,
+        document_id: document.id,
+        company: job.company,
+        title: job.title,
+        start_date: job.start_date,
+        end_date: job.end_date,
+        location: job.location,
+        summary: job.summary,
+        order_index: index,
+      }));
+
+      const { data: whData, error: whError } = await supabase
+        .from("work_history")
+        .insert(workHistoryToInsert)
+        .select("id, company, title");
+
+      if (whError) {
+        console.error("Work history insert error:", whError);
+      } else {
+        storedWorkHistory = whData || [];
+      }
+    }
+
     // Generate embeddings for evidence
     const evidenceTexts = evidenceItems.map((e) => e.text);
     let embeddings: number[][];
@@ -199,6 +236,27 @@ export async function POST(request: Request) {
       );
     }
 
+    // Link evidence to work history based on context matching
+    if (storedWorkHistory.length > 0 && storedEvidence.length > 0) {
+      for (const evidence of storedEvidence) {
+        const context = evidence.context as { role?: string; company?: string } | null;
+        if (context?.company || context?.role) {
+          // Find matching work history entry
+          const match = storedWorkHistory.find(
+            (wh) =>
+              (context.company && wh.company.toLowerCase().includes(context.company.toLowerCase())) ||
+              (context.role && wh.title.toLowerCase().includes(context.role.toLowerCase()))
+          );
+          if (match) {
+            await supabase
+              .from("evidence")
+              .update({ work_history_id: match.id })
+              .eq("id", evidence.id);
+          }
+        }
+      }
+    }
+
     // === PASS 2: Synthesize Claims ===
     const evidenceWithIds = storedEvidence.map((e) => ({
       id: e.id,
@@ -226,6 +284,7 @@ export async function POST(request: Request) {
       message: "Resume processed successfully",
       documentId: document.id,
       evidenceCount: storedEvidence.length,
+      workHistoryCount: storedWorkHistory.length,
       claimsCreated: synthesisResult.claimsCreated,
       claimsUpdated: synthesisResult.claimsUpdated,
     });
