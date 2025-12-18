@@ -370,6 +370,44 @@ export type Database = {
         }
         Relationships: []
       }
+      tailored_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          narrative: string | null
+          opportunity_id: string
+          resume_data: Json | null
+          talking_points: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          narrative?: string | null
+          opportunity_id: string
+          resume_data?: Json | null
+          talking_points: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          narrative?: string | null
+          opportunity_id?: string
+          resume_data?: Json | null
+          talking_points?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tailored_profiles_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       work_history: {
         Row: {
           company: string
