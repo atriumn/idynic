@@ -196,10 +196,10 @@ export function TailoredProfile({
     if (field === "narrative") {
       setProfile({ ...profile, narrative: newValue });
     } else {
-      const resumeData = { ...profile.resume_data };
-      // Handle nested updates using the field path
+      // Deep clone to avoid mutation issues
+      const resumeData = JSON.parse(JSON.stringify(profile.resume_data));
       const keys = field.split(".");
-      let current: Record<string, unknown> = resumeData as Record<string, unknown>;
+      let current: Record<string, unknown> = resumeData;
       for (let i = 0; i < keys.length - 1; i++) {
         current = current[keys[i]] as Record<string, unknown>;
       }
