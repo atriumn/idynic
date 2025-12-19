@@ -214,6 +214,7 @@ export type Database = {
           embedding: string | null
           id: string
           label: string
+          source: string | null
           type: string
           updated_at: string | null
           user_id: string
@@ -225,6 +226,7 @@ export type Database = {
           embedding?: string | null
           id?: string
           label: string
+          source?: string | null
           type: string
           updated_at?: string | null
           user_id: string
@@ -236,6 +238,7 @@ export type Database = {
           embedding?: string | null
           id?: string
           label?: string
+          source?: string | null
           type?: string
           updated_at?: string | null
           user_id?: string
@@ -354,6 +357,7 @@ export type Database = {
           id: string
           linkedin: string | null
           location: string | null
+          logo_url: string | null
           name: string | null
           phone: string | null
           updated_at: string | null
@@ -366,6 +370,7 @@ export type Database = {
           id: string
           linkedin?: string | null
           location?: string | null
+          logo_url?: string | null
           name?: string | null
           phone?: string | null
           updated_at?: string | null
@@ -378,6 +383,7 @@ export type Database = {
           id?: string
           linkedin?: string | null
           location?: string | null
+          logo_url?: string | null
           name?: string | null
           phone?: string | null
           updated_at?: string | null
@@ -668,4 +674,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-
