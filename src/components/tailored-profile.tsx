@@ -9,6 +9,8 @@ import { Loader2, RefreshCw, Check, AlertCircle, Lightbulb, Copy, X, Eye } from 
 import { ResumePDFViewer, ResumePDFDownload } from "@/components/resume-pdf";
 import type { ResumeDocumentProps } from "@/components/resume-pdf";
 import { CompanyLogo } from "@/components/company-logo";
+import { EditableText } from "@/components/editable-text";
+import { RegenerateWarningDialog } from "@/components/regenerate-warning-dialog";
 
 interface TalkingPoints {
   strengths: Array<{
@@ -121,6 +123,8 @@ export function TailoredProfile({
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const [editedFields, setEditedFields] = useState<string[]>([]);
+  const [showRegenerateWarning, setShowRegenerateWarning] = useState(false);
 
   // Fetch existing profile on mount
   useEffect(() => {
@@ -131,6 +135,9 @@ export function TailoredProfile({
           const data = await response.json();
           if (data.profile) {
             setProfile(data.profile);
+            if (data.profile?.edited_fields) {
+              setEditedFields(data.profile.edited_fields);
+            }
           }
         }
       } catch {
@@ -164,6 +171,7 @@ export function TailoredProfile({
 
       const data = await response.json();
       setProfile(data.profile);
+      setEditedFields([]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -179,6 +187,40 @@ export function TailoredProfile({
       setTimeout(() => setCopied(null), 2000);
     } catch {
       setError("Failed to copy to clipboard. Please check permissions.");
+    }
+  };
+
+  const handleContentUpdate = (newValue: string, field: string) => {
+    if (!profile) return;
+
+    if (field === "narrative") {
+      setProfile({ ...profile, narrative: newValue });
+    } else {
+      const resumeData = { ...profile.resume_data };
+      // Handle nested updates using the field path
+      const keys = field.split(".");
+      let current: Record<string, unknown> = resumeData as Record<string, unknown>;
+      for (let i = 0; i < keys.length - 1; i++) {
+        current = current[keys[i]] as Record<string, unknown>;
+      }
+      current[keys[keys.length - 1]] = newValue;
+      setProfile({ ...profile, resume_data: resumeData });
+    }
+
+    if (!editedFields.includes(field)) {
+      setEditedFields([...editedFields, field]);
+    }
+  };
+
+  const handleRevert = (field: string) => {
+    setEditedFields(editedFields.filter((f) => f !== field));
+  };
+
+  const handleRegenerateClick = () => {
+    if (editedFields.length > 0) {
+      setShowRegenerateWarning(true);
+    } else {
+      generateProfile(true);
     }
   };
 
@@ -258,7 +300,7 @@ export function TailoredProfile({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => generateProfile(true)}
+          onClick={handleRegenerateClick}
           disabled={regenerating}
         >
           {regenerating ? (
@@ -452,9 +494,17 @@ export function TailoredProfile({
               </Button>
             </CardHeader>
             <CardContent>
-              <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                {narrative}
-              </p>
+              <EditableText
+                value={narrative}
+                fieldPath="narrative"
+                contentType="narrative"
+                isEdited={editedFields.includes("narrative")}
+                opportunityId={opportunityId}
+                onUpdate={handleContentUpdate}
+                onRevert={handleRevert}
+                className="whitespace-pre-wrap text-sm leading-relaxed"
+                multiline
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -500,7 +550,17 @@ export function TailoredProfile({
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm">{resume_data.summary}</p>
+                  <EditableText
+                    value={resume_data.summary}
+                    fieldPath="summary"
+                    contentType="summary"
+                    isEdited={editedFields.includes("summary")}
+                    opportunityId={opportunityId}
+                    onUpdate={handleContentUpdate}
+                    onRevert={handleRevert}
+                    className="text-sm"
+                    multiline
+                  />
                 </CardContent>
               </Card>
 
@@ -533,13 +593,17 @@ export function TailoredProfile({
                   {job.bullets.length > 0 && (
                     <ul className="list-disc list-inside space-y-1 ml-11">
                       {job.bullets.map((bullet, j) => (
-                        <li
-                          key={j}
-                          className="text-sm"
-                          dangerouslySetInnerHTML={{
-                            __html: bullet.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>"),
-                          }}
-                        />
+                        <li key={j} className="text-sm">
+                          <EditableText
+                            value={bullet.replace(/\*\*(.*?)\*\*/g, "$1")}
+                            fieldPath={`experience.${i}.bullets.${j}`}
+                            contentType="bullet"
+                            isEdited={editedFields.includes(`experience.${i}.bullets.${j}`)}
+                            opportunityId={opportunityId}
+                            onUpdate={handleContentUpdate}
+                            onRevert={handleRevert}
+                          />
+                        </li>
                       ))}
                     </ul>
                   )}
@@ -578,13 +642,17 @@ export function TailoredProfile({
                     {job.bullets.length > 0 && (
                       <ul className="list-disc list-inside space-y-1 mt-1 ml-10">
                         {job.bullets.map((bullet, j) => (
-                          <li
-                            key={j}
-                            className="text-sm"
-                            dangerouslySetInnerHTML={{
-                              __html: bullet.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>"),
-                            }}
-                          />
+                          <li key={j} className="text-sm">
+                            <EditableText
+                              value={bullet.replace(/\*\*(.*?)\*\*/g, "$1")}
+                              fieldPath={`additionalExperience.${i}.bullets.${j}`}
+                              contentType="bullet"
+                              isEdited={editedFields.includes(`additionalExperience.${i}.bullets.${j}`)}
+                              opportunityId={opportunityId}
+                              onUpdate={handleContentUpdate}
+                              onRevert={handleRevert}
+                            />
+                          </li>
                         ))}
                       </ul>
                     )}
@@ -709,6 +777,13 @@ export function TailoredProfile({
           )}
         </TabsContent>
       </Tabs>
+
+      <RegenerateWarningDialog
+        open={showRegenerateWarning}
+        onOpenChange={setShowRegenerateWarning}
+        editedFieldCount={editedFields.length}
+        onConfirm={() => generateProfile(true)}
+      />
     </div>
   );
 }
