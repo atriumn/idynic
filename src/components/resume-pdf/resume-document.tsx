@@ -3,6 +3,7 @@ import {
   Page,
   Text,
   View,
+  Image,
   StyleSheet,
 } from "@react-pdf/renderer";
 
@@ -18,17 +19,19 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderBottomWidth: 2,
     borderBottomColor: "#2563eb",
-    paddingBottom: 12,
+    paddingBottom: 15,
   },
   name: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 700,
-    marginBottom: 4,
+    marginBottom: 8,
     color: "#111827",
+    letterSpacing: 0.5,
   },
   contactInfo: {
-    fontSize: 10,
+    fontSize: 11,
     color: "#4b5563",
+    marginTop: 4,
   },
   section: {
     marginBottom: 16,
@@ -53,6 +56,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 4,
+  },
+  experienceLeft: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+  },
+  companyLogo: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+  },
+  jobInfo: {
+    flexDirection: "column",
   },
   jobTitle: {
     fontSize: 11,
@@ -132,6 +148,7 @@ interface SkillCategory {
 
 interface Experience {
   company: string;
+  companyDomain?: string | null;
   title: string;
   dates: string;
   location: string | null;
@@ -155,12 +172,23 @@ export interface ResumeDocumentProps {
   name: string;
   email?: string;
   phone?: string;
+  location?: string;
+  linkedin?: string;
+  github?: string;
+  website?: string;
   summary: string;
   skills: SkillCategory[];
   experience: Experience[];
   additionalExperience?: Experience[];
   ventures?: Venture[];
   education: Education[];
+}
+
+// Get logo URL for a company domain using logo.dev
+function getLogoUrl(domain: string | null | undefined): string | null {
+  if (!domain) return null;
+  const cleanDomain = domain.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  return `https://img.logo.dev/${cleanDomain}?token=pk_b3U88G0OTNKjNTpAlTU_OQ&retina=true`;
 }
 
 // Parse **bold** text into segments
@@ -202,6 +230,10 @@ export function ResumeDocument({
   name,
   email,
   phone,
+  location,
+  linkedin,
+  github,
+  website,
   summary,
   skills,
   experience,
@@ -209,7 +241,15 @@ export function ResumeDocument({
   ventures = [],
   education,
 }: ResumeDocumentProps) {
-  const contactParts = [email, phone].filter(Boolean).join(" | ");
+  // Build contact line: email | phone | location
+  const primaryContact = [email, phone, location].filter(Boolean).join(" | ");
+
+  // Build links line: LinkedIn | GitHub | Website (show clean URLs)
+  const links = [
+    linkedin && `LinkedIn: ${linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//, "").replace(/\/$/, "")}`,
+    github && `GitHub: ${github.replace(/^https?:\/\/(www\.)?github\.com\//, "").replace(/\/$/, "")}`,
+    website && website.replace(/^https?:\/\//, "").replace(/\/$/, ""),
+  ].filter(Boolean).join(" | ");
 
   return (
     <Document>
@@ -217,7 +257,8 @@ export function ResumeDocument({
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.name}>{name}</Text>
-          {contactParts && <Text style={styles.contactInfo}>{contactParts}</Text>}
+          {primaryContact && <Text style={styles.contactInfo}>{primaryContact}</Text>}
+          {links && <Text style={styles.contactInfo}>{links}</Text>}
         </View>
 
         {/* Summary */}
@@ -232,23 +273,31 @@ export function ResumeDocument({
         {experience.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Experience</Text>
-            {experience.map((job, idx) => (
-              <View key={idx} style={styles.experienceItem}>
-                <View style={styles.experienceHeader}>
-                  <View>
-                    <Text style={styles.jobTitle}>{job.title}</Text>
-                    <Text style={styles.company}>{job.company}{job.location ? ` - ${job.location}` : ""}</Text>
+            {experience.map((job, idx) => {
+              const logoUrl = getLogoUrl(job.companyDomain);
+              return (
+                <View key={idx} style={styles.experienceItem}>
+                  <View style={styles.experienceHeader}>
+                    <View style={styles.experienceLeft}>
+                      {logoUrl && (
+                        <Image src={logoUrl} style={styles.companyLogo} />
+                      )}
+                      <View style={styles.jobInfo}>
+                        <Text style={styles.jobTitle}>{job.title}</Text>
+                        <Text style={styles.company}>{job.company}{job.location ? ` - ${job.location}` : ""}</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.dates}>{job.dates}</Text>
                   </View>
-                  <Text style={styles.dates}>{job.dates}</Text>
+                  {job.bullets.map((bullet, bIdx) => (
+                    <View key={bIdx} style={styles.bullet}>
+                      <Text style={styles.bulletPoint}>•</Text>
+                      <BulletText text={bullet} />
+                    </View>
+                  ))}
                 </View>
-                {job.bullets.map((bullet, bIdx) => (
-                  <View key={bIdx} style={styles.bullet}>
-                    <Text style={styles.bulletPoint}>•</Text>
-                    <BulletText text={bullet} />
-                  </View>
-                ))}
-              </View>
-            ))}
+              );
+            })}
           </View>
         )}
 
@@ -256,23 +305,31 @@ export function ResumeDocument({
         {additionalExperience.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Additional Experience</Text>
-            {additionalExperience.map((job, idx) => (
-              <View key={idx} style={styles.experienceItem}>
-                <View style={styles.experienceHeader}>
-                  <View>
-                    <Text style={styles.jobTitle}>{job.title}</Text>
-                    <Text style={styles.company}>{job.company}</Text>
+            {additionalExperience.map((job, idx) => {
+              const logoUrl = getLogoUrl(job.companyDomain);
+              return (
+                <View key={idx} style={styles.experienceItem}>
+                  <View style={styles.experienceHeader}>
+                    <View style={styles.experienceLeft}>
+                      {logoUrl && (
+                        <Image src={logoUrl} style={styles.companyLogo} />
+                      )}
+                      <View style={styles.jobInfo}>
+                        <Text style={styles.jobTitle}>{job.title}</Text>
+                        <Text style={styles.company}>{job.company}</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.dates}>{job.dates}</Text>
                   </View>
-                  <Text style={styles.dates}>{job.dates}</Text>
+                  {job.bullets.map((bullet, bIdx) => (
+                    <View key={bIdx} style={styles.bullet}>
+                      <Text style={styles.bulletPoint}>•</Text>
+                      <BulletText text={bullet} />
+                    </View>
+                  ))}
                 </View>
-                {job.bullets.map((bullet, bIdx) => (
-                  <View key={bIdx} style={styles.bullet}>
-                    <Text style={styles.bulletPoint}>•</Text>
-                    <BulletText text={bullet} />
-                  </View>
-                ))}
-              </View>
-            ))}
+              );
+            })}
           </View>
         )}
 

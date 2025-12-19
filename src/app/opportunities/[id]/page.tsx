@@ -58,10 +58,10 @@ export default async function OpportunityDetailPage({
     notFound();
   }
 
-  // Fetch user profile for name
+  // Fetch user profile for name and contact info
   const { data: userProfile } = await supabase
     .from("profiles")
-    .select("name")
+    .select("name, phone, location, linkedin, github, website")
     .eq("id", user.id)
     .single();
 
@@ -123,6 +123,11 @@ export default async function OpportunityDetailPage({
         requirementMatches={matchResult.requirementMatches}
         userName={userProfile?.name || user.email?.split("@")[0] || "Your Name"}
         userEmail={user.email}
+        userPhone={userProfile?.phone ?? undefined}
+        userLocation={userProfile?.location ?? undefined}
+        userLinkedin={userProfile?.linkedin ?? undefined}
+        userGithub={userProfile?.github ?? undefined}
+        userWebsite={userProfile?.website ?? undefined}
         opportunityCompany={opportunity.company ?? undefined}
       />
     </div>

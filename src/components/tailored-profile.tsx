@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, RefreshCw, Check, AlertCircle, Lightbulb, Copy, X, Eye } from "lucide-react";
 import { ResumePDFViewer, ResumePDFDownload } from "@/components/resume-pdf";
 import type { ResumeDocumentProps } from "@/components/resume-pdf";
+import { CompanyLogo } from "@/components/company-logo";
 
 interface TalkingPoints {
   strengths: Array<{
@@ -42,6 +43,7 @@ interface ResumeData {
   skills: SkillCategory[];
   experience: Array<{
     company: string;
+    companyDomain?: string | null;
     title: string;
     dates: string;
     location: string | null;
@@ -49,6 +51,7 @@ interface ResumeData {
   }>;
   additionalExperience: Array<{
     company: string;
+    companyDomain?: string | null;
     title: string;
     dates: string;
     location: string | null;
@@ -88,6 +91,11 @@ interface TailoredProfileProps {
   requirementMatches?: RequirementMatch[];
   userName?: string;
   userEmail?: string;
+  userPhone?: string;
+  userLocation?: string;
+  userLinkedin?: string;
+  userGithub?: string;
+  userWebsite?: string;
   opportunityCompany?: string;
 }
 
@@ -96,6 +104,11 @@ export function TailoredProfile({
   requirementMatches = [],
   userName,
   userEmail,
+  userPhone,
+  userLocation,
+  userLinkedin,
+  userGithub,
+  userWebsite,
   opportunityCompany,
 }: TailoredProfileProps) {
   const [loading, setLoading] = useState(true); // Start true to show loading on mount
@@ -225,7 +238,11 @@ export function TailoredProfile({
   const pdfData: ResumeDocumentProps | null = resume_data ? {
     name: userName || "Your Name",
     email: userEmail,
-    phone: undefined,
+    phone: userPhone,
+    location: userLocation,
+    linkedin: userLinkedin,
+    github: userGithub,
+    website: userWebsite,
     summary: resume_data.summary || "",
     skills: resume_data.skills || [],
     experience: resume_data.experience || [],
@@ -496,9 +513,17 @@ export function TailoredProfile({
               {resume_data.experience.map((job, i) => (
                 <div key={i}>
                   <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <p className="font-semibold">{job.title}</p>
-                      <p className="text-sm text-muted-foreground">{job.company}</p>
+                    <div className="flex items-start gap-3">
+                      <CompanyLogo
+                        domain={job.companyDomain}
+                        companyName={job.company}
+                        size={32}
+                        className="mt-0.5 shrink-0"
+                      />
+                      <div>
+                        <p className="font-semibold">{job.title}</p>
+                        <p className="text-sm text-muted-foreground">{job.company}</p>
+                      </div>
                     </div>
                     <div className="text-right text-sm text-muted-foreground">
                       <p>{job.dates}</p>
@@ -506,7 +531,7 @@ export function TailoredProfile({
                     </div>
                   </div>
                   {job.bullets.length > 0 && (
-                    <ul className="list-disc list-inside space-y-1">
+                    <ul className="list-disc list-inside space-y-1 ml-11">
                       {job.bullets.map((bullet, j) => (
                         <li
                           key={j}
@@ -533,9 +558,17 @@ export function TailoredProfile({
                 {resume_data.additionalExperience.map((job, i) => (
                   <div key={i}>
                     <div className="flex items-start justify-between">
-                      <div>
-                        <p className="font-medium">{job.title}</p>
-                        <p className="text-sm text-muted-foreground">{job.company}</p>
+                      <div className="flex items-start gap-3">
+                        <CompanyLogo
+                          domain={job.companyDomain}
+                          companyName={job.company}
+                          size={28}
+                          className="mt-0.5 shrink-0"
+                        />
+                        <div>
+                          <p className="font-medium">{job.title}</p>
+                          <p className="text-sm text-muted-foreground">{job.company}</p>
+                        </div>
                       </div>
                       <div className="text-right text-sm text-muted-foreground">
                         <p>{job.dates}</p>
@@ -543,7 +576,7 @@ export function TailoredProfile({
                       </div>
                     </div>
                     {job.bullets.length > 0 && (
-                      <ul className="list-disc list-inside space-y-1 mt-1">
+                      <ul className="list-disc list-inside space-y-1 mt-1 ml-10">
                         {job.bullets.map((bullet, j) => (
                           <li
                             key={j}

@@ -116,10 +116,9 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
               }
 
               if (data.done) {
-                // Mark final phase as complete
-                if (currentPhase) {
-                  setCompletedPhases(prev => new Set([...Array.from(prev), currentPhase]));
-                }
+                // Mark all phases as complete
+                setCompletedPhases(new Set(["parsing", "extracting", "embeddings", "synthesis"] as Phase[]));
+                setCurrentPhase(null);
                 setIsComplete(true);
                 onUploadComplete?.();
                 router.refresh();

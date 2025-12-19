@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { extractEvidence } from "@/lib/ai/extract-evidence";
 import { extractWorkHistory } from "@/lib/ai/extract-work-history";
+import { extractResume } from "@/lib/ai/extract-resume";
 import { generateEmbeddings } from "@/lib/ai/embeddings";
 import { synthesizeClaimsBatch } from "@/lib/ai/synthesize-claims-batch";
 import { extractHighlights } from "@/lib/resume/extract-highlights";
@@ -111,8 +112,8 @@ export async function POST(request: Request) {
 
       const filename = `${user.id}/${Date.now()}-${file.name}`;
 
-      // Run in parallel: evidence, work history, storage upload
-      const [evidenceResult, workHistoryResult] = await Promise.all([
+      // Run in parallel: evidence, work history, contact info, storage upload
+      const [evidenceResult, workHistoryResult, resumeResult] = await Promise.all([
         extractEvidence(rawText).catch(err => {
           console.error("Evidence extraction error:", err);
           return [];
@@ -120,6 +121,10 @@ export async function POST(request: Request) {
         extractWorkHistory(rawText).catch(err => {
           console.error("Work history extraction error:", err);
           return [];
+        }),
+        extractResume(rawText).catch(err => {
+          console.error("Resume extraction error:", err);
+          return null;
         }),
         // Fire-and-forget storage upload
         supabase.storage
@@ -132,6 +137,33 @@ export async function POST(request: Request) {
 
       const evidenceItems = evidenceResult;
       const workHistoryItems = workHistoryResult;
+
+      // Update profile with extracted contact info (defensive - only update non-null fields)
+      if (resumeResult?.contact) {
+        const contact = resumeResult.contact;
+        const profileUpdates: Record<string, string> = {};
+
+        // Only include fields that have values
+        if (contact.name) profileUpdates.name = contact.name;
+        if (contact.phone) profileUpdates.phone = contact.phone;
+        if (contact.location) profileUpdates.location = contact.location;
+        if (contact.linkedin) profileUpdates.linkedin = contact.linkedin;
+        if (contact.github) profileUpdates.github = contact.github;
+        if (contact.website) profileUpdates.website = contact.website;
+
+        // Only update if we have something to update
+        if (Object.keys(profileUpdates).length > 0) {
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .update(profileUpdates)
+            .eq("id", user.id);
+
+          if (profileError) {
+            console.error("Profile update error:", profileError);
+            // Non-fatal - continue processing
+          }
+        }
+      }
 
       // Send highlights
       const highlights = extractHighlights(evidenceItems, workHistoryItems);
@@ -197,6 +229,7 @@ export async function POST(request: Request) {
           user_id: user.id,
           document_id: document.id,
           company: job.company,
+          company_domain: job.company_domain,
           title: job.title,
           start_date: job.start_date,
           end_date: job.end_date,

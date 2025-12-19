@@ -7,6 +7,7 @@ const openai = new OpenAI();
 interface ResumeExperience {
   work_history_id: string;
   company: string;
+  companyDomain: string | null;
   title: string;
   dates: string;
   location: string | null;
@@ -43,6 +44,7 @@ export interface ResumeData {
 interface WorkHistoryWithClaims {
   id: string;
   company: string;
+  company_domain: string | null;
   title: string;
   start_date: string;
   end_date: string | null;
@@ -127,6 +129,7 @@ export async function generateResume(
     .select(`
       id,
       company,
+      company_domain,
       title,
       start_date,
       end_date,
@@ -233,6 +236,7 @@ export async function generateResume(
     const entry: ResumeExperience = {
       work_history_id: job.id,
       company: job.company,
+      companyDomain: job.company_domain,
       title: job.title,
       dates: `${job.start_date} - ${job.end_date || "Present"}`,
       location: job.location,

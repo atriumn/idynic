@@ -4,6 +4,7 @@ const openai = new OpenAI();
 
 export interface ExtractedJob {
   company: string;
+  company_domain: string | null;
   title: string;
   start_date: string;
   end_date: string | null;
@@ -21,6 +22,7 @@ const USER_PROMPT = `Extract all professional entries from this resume, includin
 
 For each entry, extract:
 - company: Company/organization/venture name
+- company_domain: The company's website domain (e.g., "google.com", "meta.com", "mckinsey.com"). Use your knowledge of well-known companies. For small/unknown companies or personal ventures, use null.
 - title: Job title/role (e.g., "Founder", "Co-Owner", "Principal Owner")
 - start_date: Start date (format as written, e.g., "Jan 2020", "2020", "January 2020")
 - end_date: End date, or null if current/ongoing (look for "Present", "Current", "In Development", "Pre-Launch", etc.)
@@ -36,6 +38,7 @@ Return JSON array:
 [
   {
     "company": "My Startup",
+    "company_domain": null,
     "title": "Founder",
     "start_date": "2021",
     "end_date": null,
@@ -44,7 +47,8 @@ Return JSON array:
     "entry_type": "venture"
   },
   {
-    "company": "Acme Corp",
+    "company": "Google",
+    "company_domain": "google.com",
     "title": "Senior Engineer",
     "start_date": "2020",
     "end_date": "2024",
@@ -63,6 +67,7 @@ IMPORTANT:
 - If dates are unclear, make best effort (year only is fine)
 - Return ONLY valid JSON array, no markdown
 - Do NOT skip any ventures - each one is a separate entry!
+- For company_domain: use well-known domains (e.g., "Amazon" → "amazon.com", "McKinsey & Company" → "mckinsey.com"). Use null for personal ventures or unknown companies.
 
 RESUME TEXT:
 `;

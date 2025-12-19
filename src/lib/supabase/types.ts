@@ -370,23 +370,38 @@ export type Database = {
         Row: {
           created_at: string | null
           email: string | null
+          github: string | null
           id: string
+          linkedin: string | null
+          location: string | null
           name: string | null
+          phone: string | null
           updated_at: string | null
+          website: string | null
         }
         Insert: {
           created_at?: string | null
           email?: string | null
+          github?: string | null
           id: string
+          linkedin?: string | null
+          location?: string | null
           name?: string | null
+          phone?: string | null
           updated_at?: string | null
+          website?: string | null
         }
         Update: {
           created_at?: string | null
           email?: string | null
+          github?: string | null
           id?: string
+          linkedin?: string | null
+          location?: string | null
           name?: string | null
+          phone?: string | null
           updated_at?: string | null
+          website?: string | null
         }
         Relationships: []
       }
@@ -431,6 +446,7 @@ export type Database = {
       work_history: {
         Row: {
           company: string
+          company_domain: string | null
           created_at: string
           document_id: string
           end_date: string | null
@@ -445,6 +461,7 @@ export type Database = {
         }
         Insert: {
           company: string
+          company_domain?: string | null
           created_at?: string
           document_id: string
           end_date?: string | null
@@ -459,6 +476,7 @@ export type Database = {
         }
         Update: {
           company?: string
+          company_domain?: string | null
           created_at?: string
           document_id?: string
           end_date?: string | null
