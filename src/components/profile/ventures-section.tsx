@@ -254,6 +254,7 @@ export function VenturesSection({ items, onUpdate }: VenturesSectionProps) {
                     <div key={item.id} className="flex items-start justify-between p-4 border rounded-lg">
                       <div className="flex gap-3">
                         {item.company_domain && (
+                          /* eslint-disable-next-line @next/next/no-img-element */
                           <img
                             src={`https://logo.clearbit.com/${item.company_domain}`}
                             alt=""
