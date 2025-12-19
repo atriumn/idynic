@@ -56,6 +56,12 @@ export function Nav({ user }: NavProps) {
               >
                 Opportunities
               </Link>
+              <Link
+                href="/shared-links"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Shared Links
+              </Link>
             </div>
           )}
         </div>
