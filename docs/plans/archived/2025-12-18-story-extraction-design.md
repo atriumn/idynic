@@ -1,7 +1,8 @@
 # Story Extraction Design
 
 **Date:** 2025-12-18
-**Status:** Approved
+**Status:** ✅ Implemented (2025-12-18)
+**Last reviewed:** 2025-12-19
 
 ## Overview
 
