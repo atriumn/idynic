@@ -58,6 +58,13 @@ export default async function OpportunityDetailPage({
     notFound();
   }
 
+  // Fetch user profile for name
+  const { data: userProfile } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", user.id)
+    .single();
+
   // Compute matches
   const matchResult = await computeOpportunityMatches(id, user.id);
 
@@ -114,6 +121,9 @@ export default async function OpportunityDetailPage({
       <TailoredProfile
         opportunityId={id}
         requirementMatches={matchResult.requirementMatches}
+        userName={userProfile?.full_name || user.email?.split("@")[0] || "Your Name"}
+        userEmail={user.email}
+        opportunityCompany={opportunity.company}
       />
     </div>
   );
