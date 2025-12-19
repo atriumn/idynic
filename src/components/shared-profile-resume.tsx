@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { ResumePDFDownload } from "@/components/resume-pdf";
+import type { ResumeDocumentProps } from "@/components/resume-pdf";
 
 interface SharedProfileResumeProps {
   resumeData: Record<string, unknown>;
@@ -16,19 +16,29 @@ interface SharedProfileResumeProps {
   };
 }
 
-/**
- * Placeholder component for PDF download functionality.
- * Will be implemented in Task 12 to integrate with ResumePDFDownload component.
- */
 export function SharedProfileResume({
   resumeData,
   candidateName,
   candidateContact,
 }: SharedProfileResumeProps) {
+  // Cast and merge candidate contact info into resume data
+  const data = resumeData as ResumeDocumentProps;
+
+  const resumeWithContact: ResumeDocumentProps = {
+    ...data,
+    name: candidateName || data.name || "Candidate",
+    email: candidateContact.email || data.email,
+    phone: candidateContact.phone || data.phone,
+    location: candidateContact.location || data.location,
+    linkedin: candidateContact.linkedin || data.linkedin,
+    github: candidateContact.github || data.github,
+    website: candidateContact.website || data.website,
+  };
+
   return (
-    <Button variant="outline" size="sm" disabled>
-      <Download className="h-4 w-4 mr-2" />
-      Download PDF
-    </Button>
+    <ResumePDFDownload
+      data={resumeWithContact}
+      filename={`${candidateName || "resume"}.pdf`}
+    />
   );
 }
