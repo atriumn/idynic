@@ -1,4 +1,5 @@
 export type ProcessingPhase =
+  | "validating"
   | "parsing"
   | "extracting"
   | "embeddings"
