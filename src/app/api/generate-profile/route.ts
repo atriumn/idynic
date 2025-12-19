@@ -116,7 +116,10 @@ export async function POST(request: Request) {
         opportunity_id: opportunityId,
         talking_points: talkingPoints as unknown as Json,
         narrative,
+        narrative_original: narrative,
         resume_data: resumeData as unknown as Json,
+        resume_data_original: resumeData as unknown as Json,
+        edited_fields: [],
       })
       .select()
       .single();
