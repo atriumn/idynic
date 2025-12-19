@@ -23,6 +23,27 @@ export async function rewriteContent({
   instruction,
   selection,
 }: RewriteOptions): Promise<string> {
+  // Input validation
+  if (!content || content.trim().length === 0) {
+    throw new Error("Content cannot be empty");
+  }
+
+  if (!instruction || instruction.trim().length === 0) {
+    throw new Error("Instruction cannot be empty");
+  }
+
+  if (selection) {
+    if (selection.start < 0 || selection.end < 0) {
+      throw new Error("Selection indices cannot be negative");
+    }
+    if (selection.start > selection.end) {
+      throw new Error("Selection start must be less than or equal to end");
+    }
+    if (selection.end > content.length) {
+      throw new Error("Selection end is out of bounds");
+    }
+  }
+
   const context = CONTENT_TYPE_CONTEXT[contentType];
 
   let prompt: string;
@@ -35,11 +56,14 @@ export async function rewriteContent({
 
     prompt = `You are editing ${context}.
 
-The full text is:
-"${content}"
+The text before the selection:
+"${before}"
 
-The user has selected this portion:
+The user has selected this portion to rewrite:
 "${selected}"
+
+The text after the selection:
+"${after}"
 
 Instruction: ${instruction}
 
