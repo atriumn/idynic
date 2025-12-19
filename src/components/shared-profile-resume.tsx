@@ -22,7 +22,7 @@ export function SharedProfileResume({
   candidateContact,
 }: SharedProfileResumeProps) {
   // Cast and merge candidate contact info into resume data
-  const data = resumeData as ResumeDocumentProps;
+  const data = resumeData as unknown as ResumeDocumentProps;
 
   const resumeWithContact: ResumeDocumentProps = {
     ...data,

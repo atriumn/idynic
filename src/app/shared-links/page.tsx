@@ -17,7 +17,8 @@ export default async function SharedLinksPage() {
   }
 
   // Fetch all shared links for the user with related data
-  const { data: links } = await supabase
+  // Type assertion needed until types are regenerated after migration
+  const { data: links } = await (supabase as any)
     .from("shared_links")
     .select(`
       id,
