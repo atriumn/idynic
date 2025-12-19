@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -128,7 +128,8 @@ export function EditableText({
       const data = await response.json();
       onUpdate(data.value, fieldPath);
       setIsEditing(false);
-    } catch {
+    } catch (err) {
+      console.error("Failed to save edit:", err);
       setError("Failed to save. Try again.");
     } finally {
       setIsLoading(false);
@@ -153,7 +154,8 @@ export function EditableText({
       const data = await response.json();
       setEditValue(data.value);
       onUpdate(data.value, fieldPath);
-    } catch {
+    } catch (err) {
+      console.error("Failed to process AI edit:", err);
       setError("AI edit failed. Try again.");
     } finally {
       setIsLoading(false);
@@ -180,7 +182,8 @@ export function EditableText({
       setEditValue(data.value);
       onRevert(fieldPath);
       setIsEditing(false);
-    } catch {
+    } catch (err) {
+      console.error("Failed to revert:", err);
       setError("Failed to revert. Try again.");
     } finally {
       setIsLoading(false);
