@@ -16,16 +16,20 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
 function setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): void {
   const keys = path.split(".");
   const lastKey = keys.pop()!;
-  const target = keys.reduce((current, key) => {
-    if (current && typeof current === "object") {
-      return (current as Record<string, unknown>)[key] as Record<string, unknown>;
-    }
-    return current;
-  }, obj as Record<string, unknown>);
 
-  if (target && typeof target === "object") {
-    target[lastKey] = value;
+  let current: Record<string, unknown> = obj;
+  for (const key of keys) {
+    if (!current || typeof current !== "object" || !(key in current)) {
+      throw new Error(`Cannot set nested value: path "${path}" does not exist`);
+    }
+    current = current[key] as Record<string, unknown>;
   }
+
+  if (!current || typeof current !== "object") {
+    throw new Error(`Cannot set nested value: invalid target at "${path}"`);
+  }
+
+  current[lastKey] = value;
 }
 
 function inferContentType(field: string): ContentType {
@@ -80,7 +84,12 @@ export async function PATCH(
       .eq("opportunity_id", opportunityId)
       .single();
 
-    if (fetchError || !profile) {
+    if (fetchError) {
+      console.error("Database error fetching profile:", fetchError);
+      return NextResponse.json({ error: "Database error" }, { status: 500 });
+    }
+
+    if (!profile) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
 
@@ -123,7 +132,7 @@ export async function PATCH(
       updatePayload.narrative = newValue;
     } else {
       // Update nested field in resume_data
-      const resumeData = { ...(profile.resume_data as Record<string, unknown>) };
+      const resumeData = JSON.parse(JSON.stringify(profile.resume_data));
       setNestedValue(resumeData, field, newValue);
       updatePayload.resume_data = resumeData as Json;
     }
