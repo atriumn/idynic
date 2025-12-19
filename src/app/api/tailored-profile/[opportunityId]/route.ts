@@ -193,7 +193,12 @@ export async function POST(
       .eq("opportunity_id", opportunityId)
       .single();
 
-    if (fetchError || !profile) {
+    if (fetchError) {
+      console.error("Database error fetching profile:", fetchError);
+      return NextResponse.json({ error: "Database error" }, { status: 500 });
+    }
+
+    if (!profile) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
 
