@@ -5,7 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, RefreshCw, Check, AlertCircle, Lightbulb, Copy, X } from "lucide-react";
+import { Loader2, RefreshCw, Check, AlertCircle, Lightbulb, Copy, X, Eye, FileText, Download } from "lucide-react";
+import dynamic from "next/dynamic";
+import type { ResumeDocumentProps } from "@/components/resume-pdf";
+
+// Dynamic import PDF components to avoid SSR issues
+const ResumePDFViewer = dynamic(
+  () => import("@/components/resume-pdf").then((mod) => mod.ResumePDFViewer),
+  { ssr: false }
+);
+
+const ResumePDFDownload = dynamic(
+  () => import("@/components/resume-pdf").then((mod) => mod.ResumePDFDownload),
+  { ssr: false }
+);
 
 interface TalkingPoints {
   strengths: Array<{
@@ -84,11 +97,21 @@ interface RequirementMatch {
 interface TailoredProfileProps {
   opportunityId: string;
   requirementMatches?: RequirementMatch[];
+  userName?: string;
+  userEmail?: string;
+  opportunityCompany?: string;
 }
 
-export function TailoredProfile({ opportunityId, requirementMatches = [] }: TailoredProfileProps) {
+export function TailoredProfile({
+  opportunityId,
+  requirementMatches = [],
+  userName,
+  userEmail,
+  opportunityCompany,
+}: TailoredProfileProps) {
   const [loading, setLoading] = useState(true); // Start true to show loading on mount
   const [regenerating, setRegenerating] = useState(false);
+  const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [profile, setProfile] = useState<{
     talking_points: TalkingPoints;
     narrative: string;
@@ -208,6 +231,19 @@ export function TailoredProfile({ opportunityId, requirementMatches = [] }: Tail
   if (!profile) return null;
 
   const { talking_points, narrative, resume_data } = profile;
+
+  // Build PDF document data from resume
+  const pdfData: ResumeDocumentProps | null = resume_data ? {
+    name: userName || "Your Name",
+    email: userEmail,
+    phone: undefined,
+    summary: resume_data.summary || "",
+    skills: resume_data.skills || [],
+    experience: resume_data.experience || [],
+    additionalExperience: resume_data.additionalExperience || [],
+    ventures: resume_data.ventures || [],
+    education: resume_data.education || [],
+  } : null;
 
   return (
     <div className="space-y-4">
@@ -418,26 +454,49 @@ export function TailoredProfile({ opportunityId, requirementMatches = [] }: Tail
         </TabsContent>
 
         <TabsContent value="resume" className="mt-4 space-y-4">
-          {/* Summary */}
-          <Card>
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
-              <CardTitle className="text-base">Professional Summary</CardTitle>
+          {/* PDF Controls */}
+          {pdfData && (
+            <div className="flex items-center gap-2 pb-2 border-b">
               <Button
-                variant="ghost"
+                variant={showPDFPreview ? "default" : "outline"}
                 size="sm"
-                onClick={() => copyToClipboard(resume_data.summary, "summary")}
+                onClick={() => setShowPDFPreview(!showPDFPreview)}
               >
-                {copied === "summary" ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
+                <Eye className="h-4 w-4 mr-1" />
+                {showPDFPreview ? "HTML View" : "PDF Preview"}
               </Button>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm">{resume_data.summary}</p>
-            </CardContent>
-          </Card>
+              <ResumePDFDownload
+                data={pdfData}
+                filename={`resume-${opportunityCompany?.toLowerCase().replace(/\s+/g, "-") || "tailored"}.pdf`}
+              />
+            </div>
+          )}
+
+          {/* PDF Preview */}
+          {showPDFPreview && pdfData ? (
+            <ResumePDFViewer data={pdfData} />
+          ) : (
+            <>
+              {/* Summary */}
+              <Card>
+                <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                  <CardTitle className="text-base">Professional Summary</CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => copyToClipboard(resume_data.summary, "summary")}
+                  >
+                    {copied === "summary" ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm">{resume_data.summary}</p>
+                </CardContent>
+              </Card>
 
           {/* Experience */}
           <Card>
@@ -623,6 +682,8 @@ export function TailoredProfile({ opportunityId, requirementMatches = [] }: Tail
                 ))}
               </CardContent>
             </Card>
+          )}
+          </>
           )}
         </TabsContent>
       </Tabs>
