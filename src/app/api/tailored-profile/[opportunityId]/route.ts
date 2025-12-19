@@ -126,7 +126,7 @@ export async function PATCH(
       editedFields.push(field);
     }
 
-    let updatePayload: Record<string, unknown> = { edited_fields: editedFields };
+    const updatePayload: Record<string, unknown> = { edited_fields: editedFields };
 
     if (field === "narrative") {
       updatePayload.narrative = newValue;

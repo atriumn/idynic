@@ -98,5 +98,12 @@ Rewrite the text according to the instruction. Keep similar length unless the in
     throw new Error("No response from OpenAI");
   }
 
-  return result.trim();
+  // Strip any quotes the AI may have added despite instructions
+  let cleaned = result.trim();
+  if ((cleaned.startsWith('"') && cleaned.endsWith('"')) ||
+      (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
+    cleaned = cleaned.slice(1, -1);
+  }
+
+  return cleaned;
 }

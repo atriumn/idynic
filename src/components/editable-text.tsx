@@ -203,7 +203,7 @@ export function EditableText({
 
   if (!isEditing) {
     return (
-      <div className={`group relative ${className}`}>
+      <span className={`group/editable inline ${className}`}>
         <span
           className="cursor-pointer hover:bg-muted/50 rounded px-1 -mx-1 transition-colors"
           onClick={() => setIsEditing(true)}
@@ -218,12 +218,12 @@ export function EditableText({
         <Button
           variant="ghost"
           size="sm"
-          className="opacity-0 group-hover:opacity-100 absolute -right-8 top-0 h-6 w-6 p-0"
+          className="opacity-0 group-hover/editable:opacity-100 ml-1 h-5 w-5 p-0 inline-flex align-middle"
           onClick={() => setIsEditing(true)}
         >
           <Pencil className="h-3 w-3" />
         </Button>
-      </div>
+      </span>
     );
   }
 
