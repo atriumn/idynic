@@ -97,6 +97,18 @@ export async function POST(request: Request) {
       // === PHASE: Extracting (parallel) ===
       sse.send({ phase: "extracting" });
 
+      // Background ticker for extraction phase
+      const extractionMessages = [
+        "reading your story...", "scanning achievements...", "parsing experience...",
+        "finding skills...", "analyzing roles...", "extracting details...",
+        "understanding context...", "identifying patterns...", "processing history...",
+      ];
+      let extractionIndex = 0;
+      const extractionTicker = setInterval(() => {
+        sse.send({ highlight: extractionMessages[extractionIndex % extractionMessages.length] });
+        extractionIndex++;
+      }, 2000);
+
       const filename = `${user.id}/${Date.now()}-${file.name}`;
 
       // Run in parallel: evidence, work history, storage upload
@@ -115,6 +127,8 @@ export async function POST(request: Request) {
           .upload(filename, buffer, { contentType: "application/pdf", upsert: false })
           .catch(err => console.error("Storage upload error:", err)),
       ]);
+
+      clearInterval(extractionTicker);
 
       const evidenceItems = evidenceResult;
       const workHistoryItems = workHistoryResult;
@@ -277,15 +291,35 @@ export async function POST(request: Request) {
       }));
 
       let synthesisResult = { claimsCreated: 0, claimsUpdated: 0 };
+
+      // Background ticker for constant visual feedback
+      const tickerMessages = [
+        "analyzing patterns...", "connecting experiences...", "finding themes...",
+        "mapping skills...", "building narrative...", "discovering strengths...",
+        "processing achievements...", "linking evidence...", "synthesizing identity...",
+        "evaluating expertise...", "recognizing talents...", "compiling insights...",
+      ];
+      let tickerIndex = 0;
+      const ticker = setInterval(() => {
+        sse.send({ highlight: tickerMessages[tickerIndex % tickerMessages.length] });
+        tickerIndex++;
+      }, 2000);
+
       try {
         synthesisResult = await synthesizeClaimsBatch(
           user.id,
           evidenceWithIds,
           (progress) => {
             sse.send({ phase: "synthesis", progress: `${progress.current}/${progress.total}` });
+          },
+          (claimUpdate) => {
+            const prefix = claimUpdate.action === "created" ? "+" : "~";
+            sse.send({ highlight: `${prefix} ${claimUpdate.label}` });
           }
         );
+        clearInterval(ticker);
       } catch (err) {
+        clearInterval(ticker);
         console.error("Synthesis error:", err);
         sse.send({ warning: "Claim synthesis partially failed, some claims may be missing" });
       }

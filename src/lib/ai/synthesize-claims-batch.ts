@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { createClient } from "@/lib/supabase/server";
-import { generateEmbedding } from "./embeddings";
+import { generateEmbeddings } from "./embeddings";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 
@@ -108,10 +108,16 @@ export interface BatchSynthesisProgress {
   total: number;
 }
 
+export interface ClaimUpdate {
+  action: "created" | "matched";
+  label: string;
+}
+
 export async function synthesizeClaimsBatch(
   userId: string,
   evidenceItems: EvidenceItem[],
-  onProgress?: (progress: BatchSynthesisProgress) => void
+  onProgress?: (progress: BatchSynthesisProgress) => void,
+  onClaimUpdate?: (update: ClaimUpdate) => void
 ): Promise<{ claimsCreated: number; claimsUpdated: number }> {
   const supabase = await createClient();
   let claimsCreated = 0;
@@ -126,11 +132,31 @@ export async function synthesizeClaimsBatch(
 
   const claims = existingClaims || [];
   const batches = chunk(evidenceItems, BATCH_SIZE);
+  const claimIdsToRecalc = new Set<string>();
+
+  // Fun filler messages to keep the UI feeling alive
+  const fillerMessages = [
+    "connecting the dots...",
+    "seeing patterns emerge...",
+    "this is getting interesting...",
+    "building your story...",
+    "finding your superpowers...",
+    "almost there...",
+    "deep in thought...",
+    "piecing it together...",
+  ];
+  let fillerIndex = 0;
 
   for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
     const batch = batches[batchIndex];
 
     onProgress?.({ current: batchIndex + 1, total: batches.length });
+
+    // Send a filler message every other batch to keep UI active
+    if (batchIndex % 2 === 1) {
+      onClaimUpdate?.({ action: "matched", label: fillerMessages[fillerIndex % fillerMessages.length] });
+      fillerIndex++;
+    }
 
     try {
       const response = await openai.chat.completions.create({
@@ -155,7 +181,12 @@ export async function synthesizeClaimsBatch(
         continue;
       }
 
-      // Process each decision
+      // First pass: handle matches and collect new claims needing embeddings
+      const newClaimsToCreate: Array<{
+        decision: BatchDecision;
+        evidence: EvidenceItem;
+      }> = [];
+
       for (const decision of decisions) {
         const evidence = batch.find(e => e.id === decision.evidence_id);
         if (!evidence) continue;
@@ -174,7 +205,8 @@ export async function synthesizeClaimsBatch(
                 },
                 { onConflict: "claim_id,evidence_id", ignoreDuplicates: true }
               );
-            await recalculateConfidence(supabase, matchedClaim.id);
+            claimIdsToRecalc.add(matchedClaim.id);
+            onClaimUpdate?.({ action: "matched", label: matchedClaim.label });
             claimsUpdated++;
           }
         } else if (decision.new_claim) {
@@ -193,46 +225,68 @@ export async function synthesizeClaimsBatch(
                 },
                 { onConflict: "claim_id,evidence_id", ignoreDuplicates: true }
               );
-            await recalculateConfidence(supabase, existingClaim.id);
+            claimIdsToRecalc.add(existingClaim.id);
+            onClaimUpdate?.({ action: "matched", label: existingClaim.label });
             claimsUpdated++;
           } else {
-            // Create new claim
-            const claimEmbedding = await generateEmbedding(decision.new_claim.label);
+            // Collect for batch embedding generation
+            newClaimsToCreate.push({ decision, evidence });
+          }
+        }
+      }
 
-            const { data: newClaim, error } = await supabase
-              .from("identity_claims")
-              .insert({
-                user_id: userId,
-                type: decision.new_claim.type,
-                label: decision.new_claim.label,
-                description: decision.new_claim.description,
-                confidence: getBaseConfidence(1) * getStrengthMultiplier(decision.strength),
-                embedding: claimEmbedding as unknown as string,
-              })
-              .select()
-              .single();
+      // Generate embeddings for all new claims in one batch call
+      if (newClaimsToCreate.length > 0) {
+        const labels = newClaimsToCreate.map(c => c.decision.new_claim!.label);
+        const embeddings = await generateEmbeddings(labels);
 
-            if (newClaim && !error) {
-              await supabase.from("claim_evidence").insert({
-                claim_id: newClaim.id,
-                evidence_id: evidence.id,
-                strength: decision.strength,
-              });
-              // Add to local claims list for subsequent batches
-              claims.push({
-                id: newClaim.id,
-                type: decision.new_claim.type,
-                label: decision.new_claim.label,
-                description: decision.new_claim.description,
-              });
-              claimsCreated++;
-            }
+        // Create all new claims with their embeddings
+        for (let i = 0; i < newClaimsToCreate.length; i++) {
+          const { decision, evidence } = newClaimsToCreate[i];
+          const claimEmbedding = embeddings[i];
+
+          const { data: newClaim, error } = await supabase
+            .from("identity_claims")
+            .insert({
+              user_id: userId,
+              type: decision.new_claim!.type,
+              label: decision.new_claim!.label,
+              description: decision.new_claim!.description,
+              confidence: getBaseConfidence(1) * getStrengthMultiplier(decision.strength),
+              embedding: claimEmbedding as unknown as string,
+            })
+            .select()
+            .single();
+
+          if (newClaim && !error) {
+            await supabase.from("claim_evidence").insert({
+              claim_id: newClaim.id,
+              evidence_id: evidence.id,
+              strength: decision.strength,
+            });
+            // Add to local claims list for subsequent batches
+            claims.push({
+              id: newClaim.id,
+              type: decision.new_claim!.type,
+              label: decision.new_claim!.label,
+              description: decision.new_claim!.description,
+            });
+            onClaimUpdate?.({ action: "created", label: decision.new_claim!.label });
+            claimsCreated++;
           }
         }
       }
     } catch (err) {
       console.error(`Batch ${batchIndex + 1} failed:`, err);
       // Continue with remaining batches
+    }
+  }
+
+  // Bulk recalculate confidence for all affected claims at the end
+  if (claimIdsToRecalc.size > 0) {
+    onClaimUpdate?.({ action: "matched", label: "calculating confidence scores..." });
+    for (const claimId of Array.from(claimIdsToRecalc)) {
+      await recalculateConfidence(supabase, claimId);
     }
   }
 
