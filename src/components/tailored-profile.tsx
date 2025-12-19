@@ -6,19 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, RefreshCw, Check, AlertCircle, Lightbulb, Copy, X, Eye } from "lucide-react";
-import dynamic from "next/dynamic";
+import { ResumePDFViewer, ResumePDFDownload } from "@/components/resume-pdf";
 import type { ResumeDocumentProps } from "@/components/resume-pdf";
-
-// Dynamic import PDF components to avoid SSR issues
-const ResumePDFViewer = dynamic(
-  () => import("@/components/resume-pdf").then((mod) => mod.ResumePDFViewer),
-  { ssr: false }
-);
-
-const ResumePDFDownload = dynamic(
-  () => import("@/components/resume-pdf").then((mod) => mod.ResumePDFDownload),
-  { ssr: false }
-);
 
 interface TalkingPoints {
   strengths: Array<{
