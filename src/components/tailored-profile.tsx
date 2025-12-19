@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, RefreshCw, Check, AlertCircle, Lightbulb, Copy, X, Eye, FileText, Download } from "lucide-react";
+import { Loader2, RefreshCw, Check, AlertCircle, Lightbulb, Copy, X, Eye } from "lucide-react";
 import dynamic from "next/dynamic";
 import type { ResumeDocumentProps } from "@/components/resume-pdf";
 
