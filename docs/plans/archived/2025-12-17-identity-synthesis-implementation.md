@@ -1,8 +1,30 @@
 # Identity Synthesis Implementation Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **Status:** ✅ COMPLETE (2025-12-17)
 
 **Goal:** Replace bullet-copying with true identity synthesis using a two-layer model (evidence + synthesized claims).
+
+---
+
+## Progress (Last reviewed: 2025-12-19)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Database Migration | ✅ Complete | Tables: evidence, identity_claims, claim_evidence |
+| Task 2: Update TypeScript Types | ✅ Complete | Types regenerated from schema |
+| Task 3: Create Evidence Extraction Module | ✅ Complete | `src/lib/ai/extract-evidence.ts` |
+| Task 4: Create Claim Synthesis Module | ✅ Complete | `src/lib/ai/synthesize-claims.ts` |
+| Task 5: Update Process Resume API Route | ✅ Complete | Integrated evidence extraction + synthesis |
+| Task 6: Update Identity Page | ✅ Complete | Shows synthesized claims |
+| Task 7: Create Identity Claims List Component | ✅ Complete | `src/components/identity-claims-list.tsx` |
+| Task 8: Test End-to-End | ✅ Complete | Verified working |
+
+### Drift Notes
+Implementation matched plan closely. Later enhanced by:
+- Resume upload performance improvements (SSE streaming, batched synthesis)
+- Story extraction integration (reuses synthesis pipeline)
+
+---
 
 **Architecture:** Upload → Extract evidence (Pass 1) → Synthesize claims (Pass 2). Evidence is immutable facts from sources. Claims are synthesized identity that evolves as new evidence arrives.
 
