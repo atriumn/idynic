@@ -157,3 +157,83 @@ export async function PATCH(
     return NextResponse.json({ error: "Failed to process edit" }, { status: 500 });
   }
 }
+
+interface RevertBody {
+  field: string;
+}
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ opportunityId: string }> }
+) {
+  const supabase = await createClient();
+  const { opportunityId } = await params;
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const body: RevertBody = await request.json();
+    const { field } = body;
+
+    if (!field) {
+      return NextResponse.json({ error: "field is required" }, { status: 400 });
+    }
+
+    // Fetch current profile with originals
+    const { data: profile, error: fetchError } = await supabase
+      .from("tailored_profiles")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("opportunity_id", opportunityId)
+      .single();
+
+    if (fetchError || !profile) {
+      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+    }
+
+    let originalValue: string;
+    let updatePayload: Record<string, unknown>;
+
+    if (field === "narrative") {
+      originalValue = profile.narrative_original || "";
+      updatePayload = { narrative: originalValue };
+    } else {
+      // Get from resume_data_original
+      const originalData = profile.resume_data_original as Record<string, unknown>;
+      originalValue = String(getNestedValue(originalData, field) || "");
+
+      // Update resume_data with original value
+      const resumeData = JSON.parse(JSON.stringify(profile.resume_data));
+      setNestedValue(resumeData, field, originalValue);
+      updatePayload = { resume_data: resumeData as Json };
+    }
+
+    // Remove field from edited_fields
+    const editedFields = (profile.edited_fields || []).filter((f: string) => f !== field);
+    updatePayload.edited_fields = editedFields;
+
+    const { error: updateError } = await supabase
+      .from("tailored_profiles")
+      .update(updatePayload)
+      .eq("id", profile.id);
+
+    if (updateError) {
+      console.error("Failed to revert:", updateError);
+      return NextResponse.json({ error: "Failed to revert" }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      field,
+      value: originalValue,
+    });
+  } catch (err) {
+    console.error("Revert error:", err);
+    return NextResponse.json({ error: "Failed to revert" }, { status: 500 });
+  }
+}
