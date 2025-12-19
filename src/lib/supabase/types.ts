@@ -7,30 +7,10 @@ export type Json =
   | Json[]
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
@@ -408,28 +388,37 @@ export type Database = {
       tailored_profiles: {
         Row: {
           created_at: string
+          edited_fields: string[] | null
           id: string
           narrative: string | null
+          narrative_original: string | null
           opportunity_id: string
           resume_data: Json | null
+          resume_data_original: Json | null
           talking_points: Json
           user_id: string
         }
         Insert: {
           created_at?: string
+          edited_fields?: string[] | null
           id?: string
           narrative?: string | null
+          narrative_original?: string | null
           opportunity_id: string
           resume_data?: Json | null
+          resume_data_original?: Json | null
           talking_points: Json
           user_id: string
         }
         Update: {
           created_at?: string
+          edited_fields?: string[] | null
           id?: string
           narrative?: string | null
+          narrative_original?: string | null
           opportunity_id?: string
           resume_data?: Json | null
+          resume_data_original?: Json | null
           talking_points?: Json
           user_id?: string
         }
@@ -450,7 +439,6 @@ export type Database = {
           created_at: string
           document_id: string
           end_date: string | null
-          entry_type: string | null
           id: string
           location: string | null
           order_index: number
@@ -465,7 +453,6 @@ export type Database = {
           created_at?: string
           document_id: string
           end_date?: string | null
-          entry_type?: string | null
           id?: string
           location?: string | null
           order_index?: number
@@ -480,7 +467,6 @@ export type Database = {
           created_at?: string
           document_id?: string
           end_date?: string | null
-          entry_type?: string | null
           id?: string
           location?: string | null
           order_index?: number
@@ -678,9 +664,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },
