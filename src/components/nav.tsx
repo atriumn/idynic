@@ -39,6 +39,12 @@ export function Nav({ user }: NavProps) {
           {user && (
             <div className="flex items-center gap-4">
               <Link
+                href="/profile"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Profile
+              </Link>
+              <Link
                 href="/identity"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
