@@ -17,7 +17,7 @@ export default async function IdentityPage() {
   }
 
   // Fetch identity claims with evidence and source documents
-  const { data: claims } = await supabase
+  const { data: claims, error: claimsError } = await supabase
     .from("identity_claims")
     .select(`
       *,
@@ -33,6 +33,8 @@ export default async function IdentityPage() {
     `)
     .eq("user_id", user.id)
     .order("confidence", { ascending: false });
+
+  console.log("[identity] Claims query:", { count: claims?.length, error: claimsError });
 
   return (
     <div className="container mx-auto py-8 px-4">

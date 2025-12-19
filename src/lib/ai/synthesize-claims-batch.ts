@@ -258,6 +258,10 @@ export async function synthesizeClaimsBatch(
             .select()
             .single();
 
+          if (error) {
+            console.error("[synthesis] Failed to insert claim:", error, decision.new_claim);
+          }
+
           if (newClaim && !error) {
             await supabase.from("claim_evidence").insert({
               claim_id: newClaim.id,

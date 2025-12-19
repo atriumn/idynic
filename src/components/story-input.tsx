@@ -39,6 +39,7 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
   const [completedPhases, setCompletedPhases] = useState<Set<Phase>>(new Set());
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [isComplete, setIsComplete] = useState(false);
+  const [summary, setSummary] = useState<{ created: number; updated: number } | null>(null);
   const highlightIdRef = useRef(0);
 
   const charCount = text.length;
@@ -55,6 +56,7 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
     setCompletedPhases(new Set());
     setHighlights([]);
     setIsComplete(false);
+    setSummary(null);
 
     try {
       const response = await fetch("/api/process-story", {
@@ -113,6 +115,10 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
                 setCompletedPhases(prev => new Set([...Array.from(prev), lastPhase]));
               }
               setIsComplete(true);
+              setSummary({
+                created: data.summary?.claimsCreated || 0,
+                updated: data.summary?.claimsUpdated || 0,
+              });
               setText("");
               onSubmitComplete?.();
               router.refresh();
@@ -197,8 +203,16 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
               </div>
             )}
 
-            {isComplete && (
-              <p className="text-sm font-medium text-green-600">Processing complete!</p>
+            {isComplete && summary && (
+              <div className="rounded-md bg-green-50 border border-green-200 p-3 text-sm">
+                <p className="font-medium text-green-800">Processing complete!</p>
+                <p className="text-green-700 mt-1">
+                  {summary.created > 0 && `+${summary.created} new claim${summary.created > 1 ? 's' : ''}`}
+                  {summary.created > 0 && summary.updated > 0 && ', '}
+                  {summary.updated > 0 && `${summary.updated} updated`}
+                  {summary.created === 0 && summary.updated === 0 && 'No new claims (may match existing)'}
+                </p>
+              </div>
             )}
           </div>
         ) : (

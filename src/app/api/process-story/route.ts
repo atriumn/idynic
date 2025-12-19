@@ -85,7 +85,10 @@ export async function POST(request: Request) {
 
       let evidenceItems;
       try {
+        console.log("[story] Starting evidence extraction...");
+        const extractStart = Date.now();
         evidenceItems = await extractStoryEvidence(text);
+        console.log(`[story] Evidence extraction done in ${Date.now() - extractStart}ms, found ${evidenceItems.length} items`);
       } catch (err) {
         clearInterval(extractionTicker);
         console.error("Evidence extraction error:", err);
@@ -144,11 +147,14 @@ export async function POST(request: Request) {
 
       // === PHASE: Embeddings ===
       sse.send({ phase: "embeddings" });
+      console.log(`[story] Starting embeddings for ${evidenceItems.length} items...`);
+      const embeddingsStart = Date.now();
 
       const evidenceTexts = evidenceItems.map((e) => e.text);
       let embeddings: number[][];
       try {
         embeddings = await generateEmbeddings(evidenceTexts);
+        console.log(`[story] Embeddings done in ${Date.now() - embeddingsStart}ms`);
       } catch (err) {
         console.error("Embeddings error:", err);
         await supabase
@@ -188,6 +194,8 @@ export async function POST(request: Request) {
 
       // === PHASE: Synthesis ===
       sse.send({ phase: "synthesis", progress: "0/?" });
+      console.log(`[story] Starting synthesis for ${storedEvidence.length} evidence items...`);
+      const synthesisStart = Date.now();
 
       const evidenceWithIds = storedEvidence.map((e) => ({
         id: e.id,
@@ -212,6 +220,7 @@ export async function POST(request: Request) {
           user.id,
           evidenceWithIds,
           (progress) => {
+            console.log(`[story] Synthesis progress: ${progress.current}/${progress.total}`);
             sse.send({ phase: "synthesis", progress: `${progress.current}/${progress.total}` });
           },
           (claimUpdate) => {
@@ -220,9 +229,11 @@ export async function POST(request: Request) {
           }
         );
         clearInterval(ticker);
+        console.log(`[story] Synthesis done in ${Date.now() - synthesisStart}ms - created: ${synthesisResult.claimsCreated}, updated: ${synthesisResult.claimsUpdated}`);
       } catch (err) {
         clearInterval(ticker);
         console.error("Synthesis error:", err);
+        console.log(`[story] Synthesis failed after ${Date.now() - synthesisStart}ms`);
         sse.send({ warning: "Claim synthesis partially failed" });
       }
 
