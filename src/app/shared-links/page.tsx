@@ -3,17 +3,7 @@ import { redirect } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link2 } from "lucide-react";
 import Link from "next/link";
-
-// Placeholder for SharedLinksTable - will be created in Task 9
-function SharedLinksTable({ links }: { links: unknown[] }) {
-  return (
-    <div className="rounded-md border p-8 text-center text-muted-foreground">
-      SharedLinksTable component will be implemented in Task 9
-      <br />
-      <span className="text-sm">({links.length} links to display)</span>
-    </div>
-  );
-}
+import { SharedLinksTable } from "@/components/shared-links-table";
 
 export default async function SharedLinksPage() {
   const supabase = await createClient();
