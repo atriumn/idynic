@@ -7,6 +7,7 @@ import { Building2, ExternalLink, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { computeOpportunityMatches } from "@/lib/ai/match-opportunity";
 import { TailoredProfile } from "@/components/tailored-profile";
+import { ShareLinkModal } from "@/components/share-link-modal";
 
 const STATUS_COLORS: Record<string, string> = {
   tracking: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
@@ -65,6 +66,39 @@ export default async function OpportunityDetailPage({
     .eq("id", user.id)
     .single();
 
+  // Fetch existing shared link for this opportunity's tailored profile
+  const { data: tailoredProfile } = await supabase
+    .from("tailored_profiles")
+    .select("id")
+    .eq("opportunity_id", id)
+    .eq("user_id", user.id)
+    .single();
+
+  let existingSharedLink = null;
+  if (tailoredProfile) {
+    const { data: sharedLink } = await supabase
+      .from("shared_links")
+      .select(`
+        id,
+        token,
+        expires_at,
+        revoked_at,
+        shared_link_views (id)
+      `)
+      .eq("tailored_profile_id", tailoredProfile.id)
+      .single();
+
+    if (sharedLink) {
+      existingSharedLink = {
+        id: sharedLink.id,
+        token: sharedLink.token,
+        expiresAt: sharedLink.expires_at as string,
+        revokedAt: sharedLink.revoked_at as string | null,
+        viewCount: (sharedLink.shared_link_views as any[] | null)?.length || 0,
+      };
+    }
+  }
+
   // Compute matches
   const matchResult = await computeOpportunityMatches(id, user.id);
 
@@ -99,6 +133,12 @@ export default async function OpportunityDetailPage({
                 View posting
               </a>
             </Button>
+          )}
+          {tailoredProfile && (
+            <ShareLinkModal
+              tailoredProfileId={tailoredProfile.id}
+              existingLink={existingSharedLink}
+            />
           )}
         </div>
       </div>
