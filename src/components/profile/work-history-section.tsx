@@ -58,7 +58,6 @@ const EMPTY_ITEM: Omit<WorkHistoryItem, "id" | "order_index"> = {
 
 export function WorkHistorySection({ items, onUpdate }: WorkHistorySectionProps) {
   const [isOpen, setIsOpen] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<WorkHistoryItem>>({});
   const [isAdding, setIsAdding] = useState(false);
@@ -231,10 +230,6 @@ export function WorkHistorySection({ items, onUpdate }: WorkHistorySectionProps)
                 {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                 <CardTitle className="text-lg">Work History ({items.length})</CardTitle>
               </CollapsibleTrigger>
-              <Button variant="ghost" size="sm" onClick={() => setIsEditing(!isEditing)}>
-                <Pencil className="h-4 w-4 mr-1" />
-                {isEditing ? "Done" : "Edit"}
-              </Button>
             </div>
           </CardHeader>
           <CollapsibleContent>
@@ -279,16 +274,14 @@ export function WorkHistorySection({ items, onUpdate }: WorkHistorySectionProps)
                           </p>
                         </div>
                       </div>
-                      {isEditing && (
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => setDeleteId(item.id)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      )}
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => setDeleteId(item.id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </div>
                   )
                 )
@@ -306,7 +299,7 @@ export function WorkHistorySection({ items, onUpdate }: WorkHistorySectionProps)
                 )
               )}
 
-              {isEditing && !isAdding && (
+              {!isAdding && (
                 <Button variant="outline" className="w-full" onClick={() => setIsAdding(true)}>
                   <Plus className="h-4 w-4 mr-1" />
                   Add Work History

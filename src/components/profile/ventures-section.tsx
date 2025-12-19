@@ -58,7 +58,6 @@ const EMPTY_ITEM: Omit<VentureItem, "id" | "order_index"> = {
 
 export function VenturesSection({ items, onUpdate }: VenturesSectionProps) {
   const [isOpen, setIsOpen] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<VentureItem>>({});
   const [isAdding, setIsAdding] = useState(false);
@@ -191,12 +190,21 @@ export function VenturesSection({ items, onUpdate }: VenturesSectionProps) {
             placeholder="e.g., Active, Acquired, Dec 2023"
           />
         </div>
-        <div className="space-y-2 sm:col-span-2">
+        <div className="space-y-2">
           <Label>Website Domain (for logo)</Label>
           <Input
             value={data.company_domain || ""}
             onChange={(e) => setData({ ...data, company_domain: e.target.value || null })}
             placeholder="e.g., myproject.com"
+          />
+        </div>
+        <div className="space-y-2 sm:col-span-2">
+          <Label>Description</Label>
+          <textarea
+            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            value={data.summary || ""}
+            onChange={(e) => setData({ ...data, summary: e.target.value || null })}
+            placeholder="Brief description of the venture/project and your role"
           />
         </div>
       </div>
@@ -223,10 +231,6 @@ export function VenturesSection({ items, onUpdate }: VenturesSectionProps) {
                 {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                 <CardTitle className="text-lg">Ventures & Projects ({items.length})</CardTitle>
               </CollapsibleTrigger>
-              <Button variant="ghost" size="sm" onClick={() => setIsEditing(!isEditing)}>
-                <Pencil className="h-4 w-4 mr-1" />
-                {isEditing ? "Done" : "Edit"}
-              </Button>
             </div>
           </CardHeader>
           <CollapsibleContent>
@@ -268,18 +272,19 @@ export function VenturesSection({ items, onUpdate }: VenturesSectionProps) {
                           <p className="text-xs text-muted-foreground">
                             {item.start_date} - {item.end_date || "Active"}
                           </p>
+                          {item.summary && (
+                            <p className="text-sm mt-2 text-muted-foreground">{item.summary}</p>
+                          )}
                         </div>
                       </div>
-                      {isEditing && (
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => setDeleteId(item.id)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      )}
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => setDeleteId(item.id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </div>
                   )
                 )
@@ -297,7 +302,7 @@ export function VenturesSection({ items, onUpdate }: VenturesSectionProps) {
                 )
               )}
 
-              {isEditing && !isAdding && (
+              {!isAdding && (
                 <Button variant="outline" className="w-full" onClick={() => setIsAdding(true)}>
                   <Plus className="h-4 w-4 mr-1" />
                   Add Venture

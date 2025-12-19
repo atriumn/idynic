@@ -34,7 +34,6 @@ const EMPTY_ITEM = { school: "", degree: "", field: "", start_date: "", end_date
 
 export function EducationSection({ items, onUpdate }: EducationSectionProps) {
   const [isOpen, setIsOpen] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState(EMPTY_ITEM);
   const [isAdding, setIsAdding] = useState(false);
@@ -207,10 +206,6 @@ export function EducationSection({ items, onUpdate }: EducationSectionProps) {
                 {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                 <CardTitle className="text-lg">Education ({items.length})</CardTitle>
               </CollapsibleTrigger>
-              <Button variant="ghost" size="sm" onClick={() => setIsEditing(!isEditing)}>
-                <Pencil className="h-4 w-4 mr-1" />
-                {isEditing ? "Done" : "Edit"}
-              </Button>
             </div>
           </CardHeader>
           <CollapsibleContent>
@@ -249,16 +244,14 @@ export function EducationSection({ items, onUpdate }: EducationSectionProps) {
                           </p>
                         )}
                       </div>
-                      {isEditing && (
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => setDeleteId(item.id)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      )}
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => setDeleteId(item.id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </div>
                   )
                 )
@@ -276,7 +269,7 @@ export function EducationSection({ items, onUpdate }: EducationSectionProps) {
                 )
               )}
 
-              {isEditing && !isAdding && (
+              {!isAdding && (
                 <Button variant="outline" className="w-full" onClick={() => setIsAdding(true)}>
                   <Plus className="h-4 w-4 mr-1" />
                   Add Education

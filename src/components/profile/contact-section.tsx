@@ -36,6 +36,44 @@ const FIELD_LABELS: Record<keyof ContactData, string> = {
   logo_url: "Logo URL",
 };
 
+// Normalize URL for display/linking - handles malformed extractions
+function normalizeUrl(value: string, field: string): string {
+  if (!value) return value;
+
+  // Already a proper URL
+  if (value.startsWith("http://") || value.startsWith("https://")) {
+    return value;
+  }
+
+  // LinkedIn: extract username from various formats
+  if (field === "linkedin") {
+    // Match /in/username pattern
+    const inMatch = value.match(/\/in\/([a-zA-Z0-9-]+)/);
+    if (inMatch) {
+      return `https://linkedin.com/in/${inMatch[1]}`;
+    }
+    // Just a username
+    if (!value.includes("/") && !value.includes(".")) {
+      return `https://linkedin.com/in/${value}`;
+    }
+  }
+
+  // GitHub: extract username
+  if (field === "github") {
+    // Already has github.com
+    if (value.toLowerCase().includes("github.com")) {
+      return value.startsWith("http") ? value : `https://${value}`;
+    }
+    // Just a username
+    if (!value.includes("/") && !value.includes(".")) {
+      return `https://github.com/${value}`;
+    }
+  }
+
+  // Default: prepend https://
+  return `https://${value}`;
+}
+
 export function ContactSection({ contact, onUpdate }: ContactSectionProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -132,8 +170,13 @@ export function ContactSection({ contact, onUpdate }: ContactSectionProps) {
                     <dd className="text-sm">
                       {contact[field] ? (
                         field.includes("url") || field === "linkedin" || field === "github" || field === "website" ? (
-                          <a href={contact[field]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                            {contact[field]}
+                          <a
+                            href={normalizeUrl(contact[field] as string, field)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline break-all"
+                          >
+                            {normalizeUrl(contact[field] as string, field)}
                           </a>
                         ) : (
                           contact[field]
