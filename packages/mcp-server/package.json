@@ -7,14 +7,24 @@
   "bin": {
     "idynic-mcp": "dist/index.js"
   },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build"
   },
-  "keywords": ["mcp", "idynic", "career", "ai"],
+  "keywords": ["mcp", "idynic", "career", "ai", "claude"],
   "author": "Atriumn",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/atriumn/idynic.git",
+    "directory": "packages/mcp-server"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "zod": "^3.25.0"
