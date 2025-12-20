@@ -7,33 +7,60 @@ export type Json =
   | Json[]
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
+      api_keys: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          revoked_at: string | null
+          scopes: string[] | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          key_hash: string
+          key_prefix: string
+          last_used_at?: string | null
+          name: string
+          revoked_at?: string | null
+          scopes?: string[] | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          revoked_at?: string | null
+          scopes?: string[] | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       claim_evidence: {
         Row: {
           claim_id: string
@@ -554,7 +581,6 @@ export type Database = {
           created_at: string
           document_id: string
           end_date: string | null
-          entry_type: string | null
           id: string
           location: string | null
           order_index: number
@@ -569,7 +595,6 @@ export type Database = {
           created_at?: string
           document_id: string
           end_date?: string | null
-          entry_type?: string | null
           id?: string
           location?: string | null
           order_index?: number
@@ -584,7 +609,6 @@ export type Database = {
           created_at?: string
           document_id?: string
           end_date?: string | null
-          entry_type?: string | null
           id?: string
           location?: string | null
           order_index?: number
@@ -623,7 +647,6 @@ export type Database = {
           type: string
         }[]
       }
-      get_shared_profile: { Args: { p_token: string }; Returns: Json }
       match_claims: {
         Args: {
           match_count: number
@@ -783,9 +806,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },
