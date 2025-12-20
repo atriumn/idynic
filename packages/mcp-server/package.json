@@ -1,0 +1,29 @@
+{
+  "name": "@idynic/mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for Idynic - AI career companion",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "idynic-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js"
+  },
+  "keywords": ["mcp", "idynic", "career", "ai"],
+  "author": "Atriumn",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
