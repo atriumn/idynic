@@ -2,6 +2,23 @@
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
+import { IdynicClient } from "./client.js";
+import { tools, executeTool } from "./tools.js";
+
+// Get API key from environment
+const apiKey = process.env.IDYNIC_API_KEY;
+const baseUrl = process.env.IDYNIC_API_URL || "https://idynic.com/api/v1";
+
+if (!apiKey) {
+  console.error("Error: IDYNIC_API_KEY environment variable is required");
+  process.exit(1);
+}
+
+const client = new IdynicClient(apiKey, baseUrl);
 
 const server = new Server(
   {
@@ -15,6 +32,17 @@ const server = new Server(
     },
   }
 );
+
+// List available tools
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  return { tools };
+});
+
+// Execute tool
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  const { name, arguments: args } = request.params;
+  return executeTool(client, name, args);
+});
 
 async function main() {
   const transport = new StdioServerTransport();
