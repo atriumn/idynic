@@ -6,10 +6,19 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import type { User } from "@supabase/supabase-js";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { User, ChevronDown } from "lucide-react";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface NavProps {
-  user: User | null;
+  user: SupabaseUser | null;
 }
 
 export function Nav({ user }: NavProps) {
@@ -39,12 +48,6 @@ export function Nav({ user }: NavProps) {
           {user && (
             <div className="flex items-center gap-4">
               <Link
-                href="/profile"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Profile
-              </Link>
-              <Link
                 href="/identity"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
@@ -56,26 +59,48 @@ export function Nav({ user }: NavProps) {
               >
                 Opportunities
               </Link>
-              <Link
-                href="/shared-links"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Shared Links
-              </Link>
             </div>
           )}
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
           {user ? (
-            <>
-              <span className="text-sm text-muted-foreground hidden sm:inline">
-                {user.email}
-              </span>
-              <Button variant="outline" size="sm" onClick={handleLogout}>
-                Logout
-              </Button>
-            </>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-1">
+                  <User className="h-4 w-4" />
+                  <span className="hidden sm:inline max-w-[150px] truncate">
+                    {user.email}
+                  </span>
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium">Account</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {user.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/profile" className="cursor-pointer">
+                    Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/shared-links" className="cursor-pointer">
+                    Shared Links
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Button asChild size="sm">
               <Link href="/login">Login</Link>
