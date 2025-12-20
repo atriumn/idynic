@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { hashApiKey, isValidApiKeyFormat } from './keys';
 
 export interface ApiAuthResult {
@@ -55,9 +55,9 @@ export async function validateApiKey(
     );
   }
 
-  // Look up key in database
+  // Look up key in database using service role (bypasses RLS)
   const keyHash = hashApiKey(key);
-  const supabase = await createClient();
+  const supabase = createServiceRoleClient();
 
   const { data: apiKey, error } = await supabase
     .from('api_keys')

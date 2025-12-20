@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { validateApiKey, isAuthError } from '@/lib/api/auth';
 import { apiSuccess } from '@/lib/api/response';
 
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   }
 
   const { userId } = authResult;
-  const supabase = await createClient();
+  const supabase = createServiceRoleClient();
 
   // Parse query params
   const { searchParams } = new URL(request.url);
