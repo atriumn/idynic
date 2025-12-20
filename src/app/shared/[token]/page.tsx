@@ -1,9 +1,48 @@
 import { notFound } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mail, Phone, MapPin, Linkedin, Github, Building2 } from "lucide-react";
 import Image from "next/image";
 import { SharedProfileResume } from "@/components/shared-profile-resume";
 import { RecruiterWaitlistCTA } from "@/components/recruiter-waitlist-cta";
+import { CompanyLogo } from "@/components/company-logo";
+
+interface SkillCategory {
+  category: string;
+  skills: string[];
+}
+
+interface ResumeData {
+  summary?: string;
+  skills?: SkillCategory[] | string[];
+  experience?: Array<{
+    company: string;
+    companyDomain?: string | null;
+    title: string;
+    dates: string;
+    location?: string | null;
+    bullets: string[];
+  }>;
+  additionalExperience?: Array<{
+    company: string;
+    companyDomain?: string | null;
+    title: string;
+    dates: string;
+    location?: string | null;
+    bullets: string[];
+  }>;
+  ventures?: Array<{
+    name: string;
+    role: string;
+    status?: string | null;
+    description?: string | null;
+  }>;
+  education?: Array<{
+    institution: string;
+    degree: string;
+    year?: string | null;
+  }>;
+}
 
 interface SharedProfileData {
   candidate: {
@@ -21,7 +60,7 @@ interface SharedProfileData {
     company: string | null;
   };
   narrative: string | null;
-  resumeData: Record<string, unknown>;
+  resumeData: ResumeData;
 }
 
 async function getSharedProfile(token: string): Promise<{
@@ -111,7 +150,7 @@ export default async function SharedProfilePage({
               </div>
             </div>
             <SharedProfileResume
-              resumeData={resumeData}
+              resumeData={resumeData as Record<string, unknown>}
               candidateName={candidate.name}
               candidateContact={{
                 email: candidate.email,
@@ -170,25 +209,234 @@ export default async function SharedProfilePage({
         </div>
       </header>
 
-      {/* Content */}
+      {/* Content with Tabs */}
       <main className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Narrative */}
-        {narrative && (
-          <section className="mb-8">
-            <h2 className="text-lg font-semibold mb-3">About</h2>
+        <Tabs defaultValue="narrative">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="narrative">Narrative</TabsTrigger>
+            <TabsTrigger value="resume">Resume</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="narrative" className="mt-4">
             <Card>
-              <CardContent className="pt-4">
-                <p className="whitespace-pre-wrap">{narrative}</p>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Cover Letter Narrative</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                  {narrative || "No narrative available."}
+                </p>
               </CardContent>
             </Card>
-          </section>
-        )}
+          </TabsContent>
 
-        {/* Resume */}
-        <section>
-          <h2 className="text-lg font-semibold mb-3">Resume</h2>
-          <SharedProfileResumeInline resumeData={resumeData} />
-        </section>
+          <TabsContent value="resume" className="mt-4 space-y-4">
+            {/* Summary */}
+            {resumeData.summary && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Professional Summary</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm">{resumeData.summary}</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Experience */}
+            {resumeData.experience && resumeData.experience.length > 0 && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Experience</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {resumeData.experience.map((job, i) => (
+                    <div key={i}>
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-start gap-3">
+                          <CompanyLogo
+                            domain={job.companyDomain}
+                            companyName={job.company}
+                            size={32}
+                            className="mt-0.5 shrink-0"
+                          />
+                          <div>
+                            <p className="font-semibold">{job.title}</p>
+                            <p className="text-sm text-muted-foreground">{job.company}</p>
+                          </div>
+                        </div>
+                        <div className="text-right text-sm text-muted-foreground">
+                          <p>{job.dates}</p>
+                          {job.location && <p>{job.location}</p>}
+                        </div>
+                      </div>
+                      {job.bullets && job.bullets.length > 0 && (
+                        <ul className="list-disc list-inside space-y-1 ml-11">
+                          {job.bullets.map((bullet, j) => (
+                            <li key={j} className="text-sm">
+                              {bullet.replace(/\*\*(.*?)\*\*/g, "$1")}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Additional Experience */}
+            {resumeData.additionalExperience && resumeData.additionalExperience.length > 0 && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Additional Experience</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {resumeData.additionalExperience.map((job, i) => (
+                    <div key={i}>
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-3">
+                          <CompanyLogo
+                            domain={job.companyDomain}
+                            companyName={job.company}
+                            size={28}
+                            className="mt-0.5 shrink-0"
+                          />
+                          <div>
+                            <p className="font-medium">{job.title}</p>
+                            <p className="text-sm text-muted-foreground">{job.company}</p>
+                          </div>
+                        </div>
+                        <div className="text-right text-sm text-muted-foreground">
+                          <p>{job.dates}</p>
+                          {job.location && <p>{job.location}</p>}
+                        </div>
+                      </div>
+                      {job.bullets && job.bullets.length > 0 && (
+                        <ul className="list-disc list-inside space-y-1 mt-1 ml-10">
+                          {job.bullets.map((bullet, j) => (
+                            <li key={j} className="text-sm">
+                              {bullet.replace(/\*\*(.*?)\*\*/g, "$1")}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Ventures */}
+            {resumeData.ventures && resumeData.ventures.length > 0 && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Ventures & Projects</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {resumeData.ventures.map((venture, i) => (
+                    <div key={i}>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{venture.name}</p>
+                        {venture.status && (
+                          <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                            {venture.status}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">{venture.role}</p>
+                      {venture.description && (
+                        <p className="text-sm mt-1">{venture.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Skills */}
+            {resumeData.skills && resumeData.skills.length > 0 && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Skills</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {typeof resumeData.skills[0] === "string" ? (
+                    // Old format: flat array of strings
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {(resumeData.skills as string[]).map((skill, i) => (
+                        <div
+                          key={i}
+                          className={`px-3 py-1.5 rounded-md text-sm ${
+                            i < 5
+                              ? "bg-primary/10 text-primary font-medium"
+                              : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {skill}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    // New format: categorized
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {(resumeData.skills as SkillCategory[]).map((category, catIndex) => (
+                        <div
+                          key={catIndex}
+                          className={`p-3 rounded-lg border ${
+                            catIndex === 0 ? "bg-primary/5 border-primary/20" : "bg-muted/30 border-border"
+                          }`}
+                        >
+                          <h4 className={`text-xs font-semibold uppercase tracking-wide mb-2 ${
+                            catIndex === 0 ? "text-primary" : "text-muted-foreground"
+                          }`}>
+                            {category.category}
+                          </h4>
+                          <div className="flex flex-wrap gap-1.5">
+                            {category.skills.map((skill, i) => (
+                              <span
+                                key={i}
+                                className={`text-xs px-2 py-0.5 rounded ${
+                                  catIndex === 0 && i < 3
+                                    ? "bg-primary/15 text-primary font-medium"
+                                    : "bg-background text-foreground/70"
+                                }`}
+                              >
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Education */}
+            {resumeData.education && resumeData.education.length > 0 && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Education</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {resumeData.education.map((edu, i) => (
+                    <div key={i} className="flex justify-between">
+                      <div>
+                        <p className="font-medium">{edu.degree}</p>
+                        <p className="text-sm text-muted-foreground">{edu.institution}</p>
+                      </div>
+                      {edu.year && (
+                        <p className="text-sm text-muted-foreground">{edu.year}</p>
+                      )}
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
       </main>
 
       {/* Footer */}
@@ -204,105 +452,5 @@ export default async function SharedProfilePage({
         </div>
       </footer>
     </div>
-  );
-}
-
-// Inline resume component (simplified view)
-function SharedProfileResumeInline({ resumeData }: { resumeData: Record<string, unknown> }) {
-  const data = resumeData as {
-    summary?: string;
-    skills?: Array<{ category: string; skills: string[] }>;
-    experience?: Array<{
-      company: string;
-      title: string;
-      dates: string;
-      location?: string;
-      bullets: string[];
-    }>;
-    education?: Array<{
-      institution: string;
-      degree: string;
-      year?: string;
-    }>;
-  };
-
-  return (
-    <Card>
-      <CardContent className="pt-4 space-y-6">
-        {/* Summary */}
-        {data.summary && (
-          <div>
-            <h3 className="font-semibold mb-2">Summary</h3>
-            <p className="text-muted-foreground">{data.summary}</p>
-          </div>
-        )}
-
-        {/* Skills */}
-        {data.skills && data.skills.length > 0 && (
-          <div>
-            <h3 className="font-semibold mb-2">Skills</h3>
-            <div className="space-y-2">
-              {data.skills.map((cat, i) => (
-                <div key={i}>
-                  <span className="text-sm font-medium">{cat.category}: </span>
-                  <span className="text-sm text-muted-foreground">{cat.skills.join(", ")}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Experience */}
-        {data.experience && data.experience.length > 0 && (
-          <div>
-            <h3 className="font-semibold mb-3">Experience</h3>
-            <div className="space-y-4">
-              {data.experience.map((exp, i) => (
-                <div key={i}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="font-medium">{exp.title}</div>
-                      <div className="text-sm text-muted-foreground">{exp.company}</div>
-                    </div>
-                    <div className="text-sm text-muted-foreground text-right">
-                      {exp.dates}
-                      {exp.location && <div>{exp.location}</div>}
-                    </div>
-                  </div>
-                  {exp.bullets && exp.bullets.length > 0 && (
-                    <ul className="mt-2 space-y-1">
-                      {exp.bullets.map((bullet, j) => (
-                        <li key={j} className="text-sm text-muted-foreground flex gap-2">
-                          <span className="text-muted-foreground/50">•</span>
-                          {bullet}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Education */}
-        {data.education && data.education.length > 0 && (
-          <div>
-            <h3 className="font-semibold mb-2">Education</h3>
-            <div className="space-y-2">
-              {data.education.map((edu, i) => (
-                <div key={i} className="flex justify-between">
-                  <div>
-                    <div className="font-medium">{edu.degree}</div>
-                    <div className="text-sm text-muted-foreground">{edu.institution}</div>
-                  </div>
-                  {edu.year && <div className="text-sm text-muted-foreground">{edu.year}</div>}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
   );
 }
