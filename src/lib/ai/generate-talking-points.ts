@@ -1,5 +1,7 @@
 import OpenAI from "openai";
 import { createClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/types";
 
 const openai = new OpenAI();
 
@@ -126,12 +128,13 @@ IMPORTANT:
 
 export async function generateTalkingPoints(
   opportunityId: string,
-  userId: string
+  userId: string,
+  supabase?: SupabaseClient<Database>
 ): Promise<TalkingPoints> {
-  const supabase = await createClient();
+  const client = supabase || await createClient();
 
   // Get opportunity requirements
-  const { data: opportunity, error: oppError } = await supabase
+  const { data: opportunity, error: oppError } = await client
     .from("opportunities")
     .select("requirements")
     .eq("id", opportunityId)
@@ -160,7 +163,7 @@ export async function generateTalkingPoints(
   }
 
   // Get user's claims with evidence
-  const { data: claims, error: claimsError } = await supabase
+  const { data: claims, error: claimsError } = await client
     .from("identity_claims")
     .select(`
       id,

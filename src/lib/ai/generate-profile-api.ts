@@ -65,13 +65,13 @@ export async function generateProfileWithClient(
   }
 
   // Generate new profile
-  const talkingPoints = await generateTalkingPoints(opportunityId, userId);
+  const talkingPoints = await generateTalkingPoints(opportunityId, userId, supabase);
   const narrative = await generateNarrative(
     talkingPoints,
     opportunity.title,
     opportunity.company
   );
-  const resumeData = await generateResume(userId, opportunityId, talkingPoints);
+  const resumeData = await generateResume(userId, opportunityId, talkingPoints, supabase);
 
   // Store profile
   const { data: profile, error } = await supabase
