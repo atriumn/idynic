@@ -28,8 +28,7 @@ export async function GET(request: NextRequest) {
       description,
       requirements,
       status,
-      created_at,
-      updated_at
+      created_at
     `)
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
