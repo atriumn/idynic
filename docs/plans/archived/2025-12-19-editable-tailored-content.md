@@ -1,8 +1,37 @@
 # Editable Tailored Content Implementation Plan
 
+> **Status:** ✅ COMPLETE (2025-12-19)
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Enable users to edit AI-generated resume bullets, summaries, and cover letter narratives with both direct text editing and AI-assisted refinement.
+
+---
+
+## Progress (Last reviewed: 2025-12-20)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Database Migration - Add Original Content Columns | ✅ Complete | `resume_data_original`, `narrative_original` added |
+| Task 2: Update Profile Generation to Populate Original Columns | ✅ Complete | API updated |
+| Task 3: Create AI Rewrite Helper Function | ✅ Complete | `rewrite-content.ts` |
+| Task 4: Create PATCH API Endpoint for Edits | ✅ Complete | `/api/tailored-profile/[opportunityId]` |
+| Task 5: Create Revert API Endpoint | ✅ Complete | POST handler added |
+| Task 6: Create Popover UI Component | ✅ Complete | shadcn popover |
+| Task 7: Create Dropdown Menu UI Component | ✅ Complete | shadcn dropdown |
+| Task 8: Create EditableText Component | ✅ Complete | `editable-text.tsx` |
+| Task 9: Create Regenerate Warning Dialog | ✅ Complete | Dialog component |
+| Task 10: Integrate EditableText into TailoredProfile - Summary | ✅ Complete | Summary editable |
+| Task 11: Make Professional Summary Editable | ✅ Complete | UI integrated |
+| Task 12: Make Experience Bullets Editable | ✅ Complete | Bullets editable |
+| Task 13: Make Cover Letter Narrative Editable | ✅ Complete | Narrative editable |
+| Task 14: Final Testing and Polish | ✅ Complete | All flows tested |
+
+### Implementation Summary
+- All tasks completed on 2025-12-19
+- EditableText component with AI-assisted refinement working
+- Quick actions (Shorten, Expand, Add Metrics) functional
+- Revert to original capability operational
 
 **Architecture:** Add original content columns to track pre-edit state, create PATCH endpoint for edits with AI rewriting capability, build reusable EditableText component with floating toolbar for quick actions.
 

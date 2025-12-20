@@ -1,8 +1,46 @@
 # Idynic Rebuild Plan
 
-**Status:** Ready for execution
+**Status:** 🎉 MVP COMPLETE + Extended Features
 **Created:** 2025-12-17
+**Last Reviewed:** 2025-12-20
 **Decision:** Full rebuild on Supabase + Vercel, nuke existing AWS infrastructure
+
+---
+
+## Progress Summary (2025-12-20)
+
+All MVP features complete, plus significant extensions beyond original scope.
+
+### MVP Features (All Complete ✅)
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Resume Upload | ✅ Complete | SSE streaming, ~60-90s processing |
+| Identity Synthesis | ✅ Complete | Two-layer model (evidence + claims) |
+| Opportunity Tracking | ✅ Complete | Add, edit, delete opportunities |
+| Profile Tailoring | ✅ Complete | Tailored resume + cover letter |
+
+### Extended Features (All Complete ✅)
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Story Capture | ✅ Complete | Originally NOT in scope |
+| Profile Sharing | ✅ Complete | Share links with view tracking |
+| PDF Generation | ✅ Complete | @react-pdf/renderer |
+| Editable Content | ✅ Complete | AI-assisted refinement |
+| Profile Management | ✅ Complete | Full CRUD for all sections |
+| External API | ✅ Complete | API keys + v1 endpoints (PR #6) |
+
+### Archived Implementation Plans
+- `2025-12-17-identity-synthesis-implementation.md` ✅
+- `2025-12-18-resume-upload-performance-plan.md` ✅
+- `2025-12-18-story-extraction-plan.md` ✅
+- `2025-12-18-profile-tailoring-plan.md` ✅
+- `2025-12-18-pdf-resume-generation.md` ✅
+- `2025-12-19-profile-sharing-implementation.md` ✅
+- `2025-12-19-editable-tailored-content.md` ✅
+- `2025-12-19-profile-management-plan.md` ✅
+- `2025-12-19-external-api-phase1.md` ✅
+
+---
 
 ## Overview
 
@@ -31,10 +69,10 @@ A complete rebuild of Idynic on a simpler stack. We're nuking the existing 26 Dy
 
 **NOT building (yet):**
 
-- Story capture
+- ~~Story capture~~ ✅ Built on 2025-12-18
 - Gmail integration
 - Interview prep
-- Public sharing/profiles
+- ~~Public sharing/profiles~~ ✅ Built on 2025-12-19
 - Kanban board
 
 ---
