@@ -7,10 +7,30 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.1"
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -391,6 +411,95 @@ export type Database = {
         }
         Relationships: []
       }
+      recruiter_waitlist: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      shared_link_views: {
+        Row: {
+          id: string
+          shared_link_id: string
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          shared_link_id: string
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          shared_link_id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_link_views_shared_link_id_fkey"
+            columns: ["shared_link_id"]
+            isOneToOne: false
+            referencedRelation: "shared_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shared_links: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          revoked_at: string | null
+          tailored_profile_id: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          revoked_at?: string | null
+          tailored_profile_id: string
+          token: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          revoked_at?: string | null
+          tailored_profile_id?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_links_tailored_profile_id_fkey"
+            columns: ["tailored_profile_id"]
+            isOneToOne: true
+            referencedRelation: "tailored_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shared_links_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tailored_profiles: {
         Row: {
           created_at: string
@@ -445,6 +554,7 @@ export type Database = {
           created_at: string
           document_id: string
           end_date: string | null
+          entry_type: string | null
           id: string
           location: string | null
           order_index: number
@@ -459,6 +569,7 @@ export type Database = {
           created_at?: string
           document_id: string
           end_date?: string | null
+          entry_type?: string | null
           id?: string
           location?: string | null
           order_index?: number
@@ -473,6 +584,7 @@ export type Database = {
           created_at?: string
           document_id?: string
           end_date?: string | null
+          entry_type?: string | null
           id?: string
           location?: string | null
           order_index?: number
@@ -511,6 +623,7 @@ export type Database = {
           type: string
         }[]
       }
+      get_shared_profile: { Args: { p_token: string }; Returns: Json }
       match_claims: {
         Args: {
           match_count: number
@@ -670,7 +783,11 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
 } as const
+

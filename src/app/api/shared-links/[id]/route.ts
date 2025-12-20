@@ -18,8 +18,7 @@ export async function PATCH(
     const body = await request.json();
     const { action, expiresInDays } = body;
 
-    // Verify ownership (type assertion needed - shared_links types not generated yet)
-    const { data: link } = await (supabase as any)
+    const { data: link } = await supabase
       .from("shared_links")
       .select("id")
       .eq("id", id)
@@ -31,7 +30,7 @@ export async function PATCH(
     }
 
     if (action === "revoke") {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("shared_links")
         .update({ revoked_at: new Date().toISOString() })
         .eq("id", id);
@@ -51,7 +50,7 @@ export async function PATCH(
         expiresAt.setFullYear(expiresAt.getFullYear() + 10);
       }
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("shared_links")
         .update({
           expires_at: expiresAt.toISOString(),
@@ -86,8 +85,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Type assertion needed - shared_links types not generated yet
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from("shared_links")
     .delete()
     .eq("id", id)

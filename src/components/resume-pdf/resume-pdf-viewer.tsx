@@ -5,6 +5,46 @@ import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ResumeDocumentProps } from "./resume-document";
 
+// Type declarations for pdf.js loaded from CDN
+interface PDFPageViewport {
+  width: number;
+  height: number;
+}
+
+interface PDFRenderTask {
+  promise: Promise<void>;
+}
+
+interface PDFPageProxy {
+  getViewport(options: { scale: number }): PDFPageViewport;
+  render(params: {
+    canvasContext: CanvasRenderingContext2D;
+    viewport: PDFPageViewport;
+  }): PDFRenderTask;
+}
+
+interface PDFDocumentProxy {
+  numPages: number;
+  getPage(pageNumber: number): Promise<PDFPageProxy>;
+}
+
+interface PDFDocumentLoadingTask {
+  promise: Promise<PDFDocumentProxy>;
+}
+
+interface PDFJSLib {
+  GlobalWorkerOptions: {
+    workerSrc: string;
+  };
+  getDocument(params: { data: ArrayBuffer }): PDFDocumentLoadingTask;
+}
+
+declare global {
+  interface Window {
+    pdfjsLib?: PDFJSLib;
+  }
+}
+
 interface ResumePDFViewerProps {
   data: ResumeDocumentProps;
 }
@@ -14,7 +54,7 @@ export function ResumePDFViewer({ data }: ResumePDFViewerProps) {
   const [isClient, setIsClient] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [pdfDoc, setPdfDoc] = useState<any>(null);
+  const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [pageNum, setPageNum] = useState(1);
   const [numPages, setNumPages] = useState(0);
   const scale = 1.5; // Fixed scale for consistent rendering
@@ -31,8 +71,10 @@ export function ResumePDFViewer({ data }: ResumePDFViewerProps) {
     script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
     script.async = true;
     script.onload = () => {
-      (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      if (window.pdfjsLib) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      }
     };
     document.body.appendChild(script);
 
@@ -53,7 +95,7 @@ export function ResumePDFViewer({ data }: ResumePDFViewerProps) {
         setError(null);
 
         // Wait for pdf.js to load
-        while (!(window as any).pdfjsLib) {
+        while (!window.pdfjsLib) {
           await new Promise(r => setTimeout(r, 100));
           if (cancelled) return;
         }
@@ -75,8 +117,7 @@ export function ResumePDFViewer({ data }: ResumePDFViewerProps) {
         if (cancelled) return;
 
         // Load with pdf.js
-        const pdfjsLib = (window as any).pdfjsLib;
-        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+        const loadingTask = window.pdfjsLib!.getDocument({ data: arrayBuffer });
         const pdfDocument = await loadingTask.promise;
 
         if (cancelled) return;
@@ -104,11 +145,12 @@ export function ResumePDFViewer({ data }: ResumePDFViewerProps) {
   useEffect(() => {
     if (!pdfDoc || !canvasRef.current) return;
 
+    const doc = pdfDoc; // Capture for async context
     let cancelled = false;
 
     async function renderPage() {
       try {
-        const page = await pdfDoc.getPage(pageNum);
+        const page = await doc.getPage(pageNum);
 
         if (cancelled) return;
 

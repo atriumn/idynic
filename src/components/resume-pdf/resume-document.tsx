@@ -279,7 +279,9 @@ export function ResumeDocument({
                 <View key={idx} style={styles.experienceItem}>
                   <View style={styles.experienceHeader}>
                     <View style={styles.experienceLeft}>
+                      {/* @react-pdf/renderer Image does not support alt prop - not HTML */}
                       {logoUrl && (
+                        // eslint-disable-next-line jsx-a11y/alt-text
                         <Image src={logoUrl} style={styles.companyLogo} />
                       )}
                       <View style={styles.jobInfo}>
@@ -311,7 +313,9 @@ export function ResumeDocument({
                 <View key={idx} style={styles.experienceItem}>
                   <View style={styles.experienceHeader}>
                     <View style={styles.experienceLeft}>
+                      {/* @react-pdf/renderer Image does not support alt prop - not HTML */}
                       {logoUrl && (
+                        // eslint-disable-next-line jsx-a11y/alt-text
                         <Image src={logoUrl} style={styles.companyLogo} />
                       )}
                       <View style={styles.jobInfo}>

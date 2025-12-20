@@ -15,8 +15,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Type assertion needed since recruiter_waitlist table types haven't been generated yet
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("recruiter_waitlist")
       .insert({ email: email.toLowerCase().trim() });
 

@@ -76,8 +76,7 @@ export default async function OpportunityDetailPage({
 
   let existingSharedLink = null;
   if (tailoredProfile) {
-    // Type assertion needed until types are regenerated after migration
-    const { data: sharedLink } = await (supabase as any)
+    const { data: sharedLink } = await supabase
       .from("shared_links")
       .select(`
         id,
@@ -95,7 +94,7 @@ export default async function OpportunityDetailPage({
         token: sharedLink.token,
         expiresAt: sharedLink.expires_at as string,
         revokedAt: sharedLink.revoked_at as string | null,
-        viewCount: (sharedLink.shared_link_views as any[] | null)?.length || 0,
+        viewCount: (sharedLink.shared_link_views as { id: string }[] | null)?.length || 0,
       };
     }
   }

@@ -5,6 +5,30 @@ import { Link2 } from "lucide-react";
 import Link from "next/link";
 import { SharedLinksTable } from "@/components/shared-links-table";
 
+interface SharedLinkView {
+  id: string;
+  viewed_at: string;
+}
+
+interface SharedLinkWithRelations {
+  id: string;
+  token: string;
+  expires_at: string;
+  revoked_at: string | null;
+  created_at: string;
+  tailored_profile_id: string;
+  tailored_profiles: {
+    id: string;
+    opportunity_id: string;
+    opportunities: {
+      id: string;
+      title: string;
+      company: string | null;
+    };
+  };
+  shared_link_views: SharedLinkView[] | null;
+}
+
 export default async function SharedLinksPage() {
   const supabase = await createClient();
 
@@ -16,9 +40,7 @@ export default async function SharedLinksPage() {
     redirect("/login");
   }
 
-  // Fetch all shared links for the user with related data
-  // Type assertion needed until types are regenerated after migration
-  const { data: links } = await (supabase as any)
+  const { data: links } = await supabase
     .from("shared_links")
     .select(`
       id,
@@ -45,8 +67,7 @@ export default async function SharedLinksPage() {
     .order("created_at", { ascending: false });
 
   // Transform the data for the table component
-  // Using type assertions since types aren't regenerated yet
-  const transformedLinks = links?.map((link: any) => ({
+  const transformedLinks = (links as SharedLinkWithRelations[] | null)?.map((link) => ({
     id: link.id,
     token: link.token,
     expiresAt: link.expires_at,
@@ -57,7 +78,7 @@ export default async function SharedLinksPage() {
     opportunityTitle: link.tailored_profiles.opportunities.title,
     company: link.tailored_profiles.opportunities.company,
     viewCount: link.shared_link_views?.length || 0,
-    views: link.shared_link_views?.map((v: any) => v.viewed_at).sort().reverse() || [],
+    views: link.shared_link_views?.map((v) => v.viewed_at).sort().reverse() || [],
   })) || [];
 
   return (

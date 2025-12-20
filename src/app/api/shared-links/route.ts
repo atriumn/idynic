@@ -2,6 +2,29 @@ import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 
+// Types for the joined query results
+interface SharedLinkView {
+  id: string;
+  viewed_at: string;
+}
+
+interface SharedLinkWithRelations {
+  id: string;
+  token: string;
+  expires_at: string;
+  revoked_at: string | null;
+  created_at: string;
+  tailored_profile_id: string;
+  tailored_profiles: {
+    opportunities: {
+      id: string;
+      title: string;
+      company: string | null;
+    };
+  };
+  shared_link_views: SharedLinkView[] | null;
+}
+
 function generateToken(): string {
   return randomBytes(16).toString("hex");
 }
@@ -15,8 +38,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Type assertion needed since shared_links table types haven't been generated yet
-  const { data: links, error } = await (supabase as any)
+  const { data: links, error } = await supabase
     .from("shared_links")
     .select(`
       id,
@@ -48,7 +70,7 @@ export async function GET() {
   }
 
   // Transform to include view count and opportunity info
-  const transformed = links?.map((link: any) => ({
+  const transformed = (links as SharedLinkWithRelations[] | null)?.map((link) => ({
     id: link.id,
     token: link.token,
     expiresAt: link.expires_at,
@@ -56,12 +78,12 @@ export async function GET() {
     createdAt: link.created_at,
     tailoredProfileId: link.tailored_profile_id,
     opportunity: {
-      id: (link.tailored_profiles as any).opportunities.id,
-      title: (link.tailored_profiles as any).opportunities.title,
-      company: (link.tailored_profiles as any).opportunities.company,
+      id: link.tailored_profiles.opportunities.id,
+      title: link.tailored_profiles.opportunities.title,
+      company: link.tailored_profiles.opportunities.company,
     },
-    viewCount: (link.shared_link_views as any[])?.length || 0,
-    views: (link.shared_link_views as any[])?.map((v: any) => ({
+    viewCount: link.shared_link_views?.length || 0,
+    views: link.shared_link_views?.map((v) => ({
       id: v.id,
       viewedAt: v.viewed_at,
     })) || [],
@@ -105,8 +127,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if link already exists (type assertion needed - shared_links types not generated yet)
-    const { data: existingLink } = await (supabase as any)
+    const { data: existingLink } = await supabase
       .from("shared_links")
       .select("id")
       .eq("tailored_profile_id", tailoredProfileId)
@@ -128,9 +149,8 @@ export async function POST(request: Request) {
       expiresAt.setFullYear(expiresAt.getFullYear() + 10);
     }
 
-    // Create the link (type assertion needed - shared_links types not generated yet)
     const token = generateToken();
-    const { data: newLink, error } = await (supabase as any)
+    const { data: newLink, error } = await supabase
       .from("shared_links")
       .insert({
         tailored_profile_id: tailoredProfileId,

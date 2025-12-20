@@ -104,7 +104,7 @@ export function ShareLinkModal({
       setLink({ ...link, revokedAt: new Date().toISOString() });
       toast.success("Link revoked");
       onLinkRevoked?.();
-    } catch (err) {
+    } catch {
       toast.error("Failed to revoke link");
     } finally {
       setLoading(false);
@@ -129,7 +129,7 @@ export function ShareLinkModal({
       const data = await res.json();
       setLink({ ...link, expiresAt: data.expiresAt, revokedAt: null });
       toast.success("Link extended");
-    } catch (err) {
+    } catch {
       toast.error("Failed to extend link");
     } finally {
       setLoading(false);
