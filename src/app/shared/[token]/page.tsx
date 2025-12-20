@@ -273,9 +273,9 @@ export default async function SharedProfilePage({
                       {job.bullets && job.bullets.length > 0 && (
                         <ul className="list-disc list-inside space-y-1 ml-11">
                           {job.bullets.map((bullet, j) => (
-                            <li key={j} className="text-sm">
-                              {bullet.replace(/\*\*(.*?)\*\*/g, "$1")}
-                            </li>
+                            <li key={j} className="text-sm" dangerouslySetInnerHTML={{
+                              __html: bullet.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                            }} />
                           ))}
                         </ul>
                       )}
@@ -315,9 +315,9 @@ export default async function SharedProfilePage({
                       {job.bullets && job.bullets.length > 0 && (
                         <ul className="list-disc list-inside space-y-1 mt-1 ml-10">
                           {job.bullets.map((bullet, j) => (
-                            <li key={j} className="text-sm">
-                              {bullet.replace(/\*\*(.*?)\*\*/g, "$1")}
-                            </li>
+                            <li key={j} className="text-sm" dangerouslySetInnerHTML={{
+                              __html: bullet.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                            }} />
                           ))}
                         </ul>
                       )}
