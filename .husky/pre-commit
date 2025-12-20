@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Run lint-staged for linting
+pnpm exec lint-staged
+
+# Run TypeScript type checking
+pnpm exec tsc --noEmit

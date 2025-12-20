@@ -581,6 +581,7 @@ export type Database = {
           created_at: string
           document_id: string
           end_date: string | null
+          entry_type: string | null
           id: string
           location: string | null
           order_index: number
@@ -595,6 +596,7 @@ export type Database = {
           created_at?: string
           document_id: string
           end_date?: string | null
+          entry_type?: string | null
           id?: string
           location?: string | null
           order_index?: number
@@ -609,6 +611,7 @@ export type Database = {
           created_at?: string
           document_id?: string
           end_date?: string | null
+          entry_type?: string | null
           id?: string
           location?: string | null
           order_index?: number
@@ -647,6 +650,7 @@ export type Database = {
           type: string
         }[]
       }
+      get_shared_profile: { Args: { p_token: string }; Returns: Json }
       match_claims: {
         Args: {
           match_count: number
@@ -810,4 +814,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-

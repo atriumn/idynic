@@ -55,7 +55,7 @@ export function ApiKeysClient({ initialKeys }: Props) {
         ...prev,
       ]);
       setNewKeyName('');
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to create API key',
@@ -74,7 +74,7 @@ export function ApiKeysClient({ initialKeys }: Props) {
         title: 'Key revoked',
         description: 'The API key has been revoked',
       });
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to revoke API key',
