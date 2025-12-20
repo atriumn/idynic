@@ -43,10 +43,9 @@ export async function GET(request: NextRequest) {
   const education = claims?.filter(c => c.type === 'education') || [];
   const certifications = claims?.filter(c => c.type === 'certification') || [];
 
-  // Separate work history by type
-  const experience = workHistory?.filter(w => w.entry_type === 'work') || [];
-  const ventures = workHistory?.filter(w => w.entry_type === 'venture') || [];
-  const additional = workHistory?.filter(w => w.entry_type === 'additional') || [];
+  // Note: work_history table doesn't have entry_type field yet
+  // For now, return all work history in experience array
+  const experience = workHistory || [];
 
   return apiSuccess({
     contact: {
@@ -54,14 +53,14 @@ export async function GET(request: NextRequest) {
       email: profile.email,
       phone: profile.phone,
       location: profile.location,
-      linkedin_url: profile.linkedin_url,
-      github_url: profile.github_url,
-      website_url: profile.website_url,
+      linkedin_url: profile.linkedin,
+      github_url: profile.github,
+      website_url: profile.website,
       logo_url: profile.logo_url,
     },
     experience,
-    ventures,
-    additional_experience: additional,
+    ventures: [],
+    additional_experience: [],
     skills: skills.map(s => ({
       id: s.id,
       label: s.label,
