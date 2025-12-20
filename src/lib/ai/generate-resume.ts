@@ -1,5 +1,7 @@
 import OpenAI from "openai";
 import { createClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/types";
 import type { TalkingPoints } from "./generate-talking-points";
 
 const openai = new OpenAI();
@@ -108,12 +110,13 @@ Return a JSON object with a "bullets" key containing an array of strings:
 export async function generateResume(
   userId: string,
   opportunityId: string,
-  talkingPoints: TalkingPoints
+  talkingPoints: TalkingPoints,
+  supabase?: SupabaseClient<Database>
 ): Promise<ResumeData> {
-  const supabase = await createClient();
+  const client = supabase || await createClient();
 
   // Get opportunity for context
-  const { data: opportunity } = await supabase
+  const { data: opportunity } = await client
     .from("opportunities")
     .select("title, company, requirements")
     .eq("id", opportunityId)
@@ -124,7 +127,7 @@ export async function generateResume(
 
   // Get work history (excluding ventures) with linked claims
   // Include null entry_type for backwards compatibility with old data
-  const { data: workHistory } = await supabase
+  const { data: workHistory } = await client
     .from("work_history")
     .select(`
       id,
@@ -141,7 +144,7 @@ export async function generateResume(
     .order("order_index", { ascending: true });
 
   // Get ventures separately
-  const { data: ventureData } = await supabase
+  const { data: ventureData } = await client
     .from("work_history")
     .select(`
       company,
@@ -155,7 +158,7 @@ export async function generateResume(
     .order("order_index", { ascending: true });
 
   // Get claims with their work_history links via evidence
-  const { data: claims } = await supabase
+  const { data: claims } = await client
     .from("identity_claims")
     .select(`
       id,
@@ -273,7 +276,7 @@ Keep it concise, professional, and tailored to the role. No first person ("I am.
   const summary = summaryResponse.choices[0]?.message?.content?.trim() || "";
 
   // Get all skills, ordered by confidence
-  const { data: skillClaims } = await supabase
+  const { data: skillClaims } = await client
     .from("identity_claims")
     .select("label")
     .eq("user_id", userId)
@@ -338,7 +341,7 @@ Rules:
   }
 
   // Get education
-  const { data: eduClaims } = await supabase
+  const { data: eduClaims } = await client
     .from("identity_claims")
     .select(`
       label,
