@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, ChevronDown } from "lucide-react";
+import { User, ChevronDown, Key } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface NavProps {
@@ -93,6 +93,12 @@ export function Nav({ user }: NavProps) {
                 <DropdownMenuItem asChild>
                   <Link href="/shared-links" className="cursor-pointer">
                     Shared Links
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings/api-keys" className="cursor-pointer">
+                    <Key className="mr-2 h-4 w-4" />
+                    API Keys
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
