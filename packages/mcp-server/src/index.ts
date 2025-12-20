@@ -5,9 +5,12 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  ListResourceTemplatesRequestSchema,
+  ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { IdynicClient } from "./client.js";
 import { tools, executeTool } from "./tools.js";
+import { resourceTemplates, readResource } from "./resources.js";
 
 // Get API key from environment
 const apiKey = process.env.IDYNIC_API_KEY;
@@ -42,6 +45,16 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
   return executeTool(client, name, args);
+});
+
+// List available resource templates
+server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => {
+  return { resourceTemplates };
+});
+
+// Read resource
+server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+  return readResource(client, request.params.uri);
 });
 
 async function main() {
