@@ -166,15 +166,31 @@ export async function POST(request: Request) {
         return;
       }
 
-      // Store evidence items
-      const evidenceToInsert = evidenceItems.map((item, i) => ({
-        user_id: user.id,
-        document_id: document.id,
-        evidence_type: item.type,
-        text: item.text,
-        context: item.context,
-        embedding: embeddings[i] as unknown as string,
-      }));
+      // Store evidence items - extract date from context.dates or context.year
+      const evidenceToInsert = evidenceItems.map((item, i) => {
+        let evidenceDate: string | null = null;
+        if (item.context?.dates) {
+          // Parse "2018-2020" format - use the end date for recency
+          const match = item.context.dates.match(/(\d{4})/g);
+          if (match && match.length > 0) {
+            const year = match[match.length - 1]; // Use last year (most recent)
+            evidenceDate = `${year}-06-01`; // Mid-year approximation
+          }
+        } else if (item.context?.year) {
+          evidenceDate = `${item.context.year}-06-01`;
+        }
+
+        return {
+          user_id: user.id,
+          document_id: document.id,
+          evidence_type: item.type,
+          text: item.text,
+          context: item.context,
+          embedding: embeddings[i] as unknown as string,
+          source_type: 'story' as const,
+          evidence_date: evidenceDate,
+        };
+      });
 
       const { data: storedEvidence, error: evidenceError } = await supabase
         .from("evidence")
@@ -202,6 +218,8 @@ export async function POST(request: Request) {
         text: e.text,
         type: e.evidence_type as "accomplishment" | "skill_listed" | "trait_indicator" | "education" | "certification",
         embedding: e.embedding as unknown as number[],
+        sourceType: 'story' as const,
+        evidenceDate: e.evidence_date ? new Date(e.evidence_date) : null,
       }));
 
       let synthesisResult = { claimsCreated: 0, claimsUpdated: 0 };
