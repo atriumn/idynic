@@ -1,17 +1,17 @@
-# @idynic/mcp-server
+# @atriumn/idynic-mcp
 
 MCP (Model Context Protocol) server for [Idynic](https://idynic.com) - your AI career companion.
 
 ## Installation
 
 ```bash
-npm install -g @idynic/mcp-server
+npm install -g @atriumn/idynic-mcp
 ```
 
 Or run directly with npx:
 
 ```bash
-npx @idynic/mcp-server
+npx @atriumn/idynic-mcp
 ```
 
 ## Configuration
@@ -30,7 +30,7 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
   "mcpServers": {
     "idynic": {
       "command": "npx",
-      "args": ["@idynic/mcp-server"],
+      "args": ["@atriumn/idynic-mcp"],
       "env": {
         "IDYNIC_API_KEY": "idn_your_api_key_here"
       }

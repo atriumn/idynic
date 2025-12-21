@@ -1,5 +1,5 @@
 {
-  "name": "@idynic/mcp-server",
+  "name": "@atriumn/idynic-mcp",
   "version": "0.1.0",
   "description": "MCP server for Idynic - AI career companion",
   "type": "module",
