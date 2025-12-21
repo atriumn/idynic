@@ -170,24 +170,29 @@ describe('api/auth', () => {
   })
 
   describe('isAuthError', () => {
-    it('returns true for NextResponse', async () => {
-      const { isAuthError } = await import('@/lib/api/auth')
-      const { NextResponse } = await import('next/server')
+    it('returns true for error responses from validateApiKey', async () => {
+      const { validateApiKey, isAuthError } = await import('@/lib/api/auth')
+      // Request without auth header returns an error response
+      const request = createRequest()
+      const result = await validateApiKey(request)
 
-      // Any NextResponse is considered an auth error by isAuthError
-      const response = NextResponse.json(
-        { error: { code: 'test', message: 'test', request_id: 'test' } },
-        { status: 401 }
-      )
-      // isAuthError checks if result is an instance of NextResponse
-      expect(response instanceof NextResponse).toBe(true)
+      expect(isAuthError(result)).toBe(true)
     })
 
-    it('returns false for auth result object', async () => {
-      const { isAuthError } = await import('@/lib/api/auth')
+    it('returns false for successful auth result', async () => {
+      const { validateApiKey, isAuthError } = await import('@/lib/api/auth')
+      mockSupabase.__setMockData({
+        id: 'key-123',
+        user_id: 'user-456',
+        revoked_at: null,
+        expires_at: null
+      })
 
-      const authResult = { userId: 'user-1', keyId: 'key-1' }
-      expect(isAuthError(authResult)).toBe(false)
+      const validKey = 'idn_' + 'a'.repeat(64)
+      const request = createRequest({ 'Authorization': `Bearer ${validKey}` })
+      const result = await validateApiKey(request)
+
+      expect(isAuthError(result)).toBe(false)
     })
   })
 
