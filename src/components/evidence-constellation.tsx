@@ -144,6 +144,8 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
 
     // Draw type arc backgrounds
     let arcStart = 0;
+    let smallSegmentCount = 0;
+
     for (const type of sortedTypes) {
       const claims = claimsByType.get(type)!;
       const typeAngleSpan = (claims.length / totalClaims) * Math.PI * 2;
@@ -163,18 +165,28 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
         .attr("stroke-opacity", 0.2)
         .attr("stroke-width", 1);
 
-      // Type label
+      // Type label - offset small segments to prevent overlap
       const labelAngle = arcStart + typeAngleSpan / 2 - Math.PI / 2;
-      const labelRadius = baseRadius * 1.4;
+      const isSmallSegment = typeAngleSpan < 0.2; // ~11 degrees
+
+      // Alternate radius for consecutive small segments
+      let labelRadius = baseRadius * 1.4;
+      if (isSmallSegment) {
+        labelRadius = baseRadius * (1.5 + (smallSegmentCount % 2) * 0.18);
+        smallSegmentCount++;
+      } else {
+        smallSegmentCount = 0;
+      }
+
       g.append("text")
         .attr("x", centerX + Math.cos(labelAngle) * labelRadius)
         .attr("y", centerY + Math.sin(labelAngle) * labelRadius)
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
         .attr("fill", TYPE_COLORS[type] || "#888")
-        .attr("font-size", "11px")
+        .attr("font-size", isSmallSegment ? "10px" : "11px")
         .attr("font-weight", "600")
-        .text(`${type.charAt(0).toUpperCase() + type.slice(1)}s (${claims.length})`);
+        .text(`${type.charAt(0).toUpperCase() + type.slice(1)}${isSmallSegment ? "" : "s"} (${claims.length})`);
 
       arcStart += typeAngleSpan;
     }
