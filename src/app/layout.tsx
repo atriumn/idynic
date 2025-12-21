@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Nav } from "@/components/nav";
 import { Providers } from "@/components/providers";
+import { QueryProvider } from "@/components/providers/query-provider";
 import { createClient } from "@/lib/supabase/server";
 
 const geistSans = localFont({
@@ -65,8 +66,10 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
-          <Nav user={user} />
-          <main>{children}</main>
+          <QueryProvider>
+            <Nav user={user} />
+            <main>{children}</main>
+          </QueryProvider>
         </Providers>
       </body>
     </html>
