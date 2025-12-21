@@ -1,0 +1,71 @@
+{
+  "name": "John Smith",
+  "email": "john.smith@email.com",
+  "phone": "(555) 123-4567",
+  "location": "San Francisco, CA",
+  "summary": "Experienced software engineer with 8+ years building scalable web applications. Expert in TypeScript, React, and Node.js. Led teams of 5-10 engineers delivering high-impact products.",
+  "skills": [
+    "TypeScript",
+    "JavaScript",
+    "Python",
+    "SQL",
+    "React",
+    "Next.js",
+    "Node.js",
+    "Express",
+    "PostgreSQL",
+    "Redis",
+    "MongoDB",
+    "Git",
+    "Docker",
+    "Kubernetes",
+    "AWS"
+  ],
+  "experience": [
+    {
+      "title": "Senior Software Engineer",
+      "company": "TechCorp Inc.",
+      "startDate": "2020",
+      "endDate": "Present",
+      "description": "Led development of customer-facing dashboard serving 100K+ daily users. Reduced API latency by 40% through caching and query optimization.",
+      "highlights": [
+        "Led development of customer-facing dashboard serving 100K+ daily users",
+        "Reduced API latency by 40% through caching and query optimization",
+        "Mentored 5 junior engineers through code reviews and pair programming",
+        "Implemented CI/CD pipeline reducing deployment time from 2 hours to 15 minutes"
+      ]
+    },
+    {
+      "title": "Software Engineer",
+      "company": "StartupXYZ",
+      "startDate": "2017",
+      "endDate": "2020",
+      "description": "Built real-time collaboration features using WebSockets. Designed and implemented RESTful APIs handling 1M+ requests/day.",
+      "highlights": [
+        "Built real-time collaboration features using WebSockets",
+        "Designed and implemented RESTful APIs handling 1M+ requests/day",
+        "Migrated legacy PHP codebase to modern TypeScript/React stack",
+        "Achieved 95% test coverage on critical business logic"
+      ]
+    },
+    {
+      "title": "Junior Developer",
+      "company": "WebAgency",
+      "startDate": "2015",
+      "endDate": "2017",
+      "description": "Developed responsive websites for 20+ clients. Integrated third-party APIs including Stripe and Twilio.",
+      "highlights": [
+        "Developed responsive websites for 20+ clients",
+        "Integrated third-party APIs including Stripe and Twilio",
+        "Maintained WordPress sites and custom CMS solutions"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "B.S. Computer Science",
+      "institution": "University of California, Berkeley",
+      "year": "2015"
+    }
+  ]
+}

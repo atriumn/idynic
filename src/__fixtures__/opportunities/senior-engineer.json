@@ -1,0 +1,27 @@
+{
+  "id": "opp-123",
+  "title": "Senior Software Engineer",
+  "company": "Acme Corp",
+  "description": "We're looking for a senior software engineer to join our platform team. You'll be building scalable microservices and leading technical initiatives.",
+  "requirements": [
+    "5+ years of experience in software development",
+    "Strong proficiency in TypeScript and Node.js",
+    "Experience with cloud platforms (AWS, GCP, or Azure)",
+    "Track record of mentoring junior engineers",
+    "Experience with CI/CD and DevOps practices"
+  ],
+  "responsibilities": [
+    "Design and implement scalable backend services",
+    "Lead technical design reviews",
+    "Mentor junior team members",
+    "Collaborate with product and design teams",
+    "Contribute to engineering best practices"
+  ],
+  "salary_range": {
+    "min": 150000,
+    "max": 200000,
+    "currency": "USD"
+  },
+  "location": "San Francisco, CA (Hybrid)",
+  "created_at": "2024-01-15T00:00:00Z"
+}

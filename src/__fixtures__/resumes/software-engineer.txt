@@ -1,0 +1,34 @@
+John Smith
+Senior Software Engineer
+john.smith@email.com | (555) 123-4567 | San Francisco, CA
+
+SUMMARY
+Experienced software engineer with 8+ years building scalable web applications. Expert in TypeScript, React, and Node.js. Led teams of 5-10 engineers delivering high-impact products.
+
+EXPERIENCE
+
+Senior Software Engineer | TechCorp Inc. | 2020 - Present
+- Led development of customer-facing dashboard serving 100K+ daily users
+- Reduced API latency by 40% through caching and query optimization
+- Mentored 5 junior engineers through code reviews and pair programming
+- Implemented CI/CD pipeline reducing deployment time from 2 hours to 15 minutes
+
+Software Engineer | StartupXYZ | 2017 - 2020
+- Built real-time collaboration features using WebSockets
+- Designed and implemented RESTful APIs handling 1M+ requests/day
+- Migrated legacy PHP codebase to modern TypeScript/React stack
+- Achieved 95% test coverage on critical business logic
+
+Junior Developer | WebAgency | 2015 - 2017
+- Developed responsive websites for 20+ clients
+- Integrated third-party APIs including Stripe and Twilio
+- Maintained WordPress sites and custom CMS solutions
+
+EDUCATION
+B.S. Computer Science | University of California, Berkeley | 2015
+
+SKILLS
+Languages: TypeScript, JavaScript, Python, SQL
+Frameworks: React, Next.js, Node.js, Express
+Databases: PostgreSQL, Redis, MongoDB
+Tools: Git, Docker, Kubernetes, AWS
