@@ -122,29 +122,13 @@ export async function synthesizeClaimsBatch(
   const batches = chunk(evidenceItems, BATCH_SIZE);
   const claimIdsToRecalc = new Set<string>();
 
-  // Fun filler messages to keep the UI feeling alive
-  const fillerMessages = [
-    "connecting the dots...",
-    "seeing patterns emerge...",
-    "this is getting interesting...",
-    "building your story...",
-    "finding your superpowers...",
-    "almost there...",
-    "deep in thought...",
-    "piecing it together...",
-  ];
-  let fillerIndex = 0;
+  // Collect claim updates for reveal-at-end UX
+  const claimUpdates: ClaimUpdate[] = [];
 
   for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
     const batch = batches[batchIndex];
 
     onProgress?.({ current: batchIndex + 1, total: batches.length });
-
-    // Send a filler message every other batch to keep UI active
-    if (batchIndex % 2 === 1) {
-      onClaimUpdate?.({ action: "matched", label: fillerMessages[fillerIndex % fillerMessages.length] });
-      fillerIndex++;
-    }
 
     try {
       // RAG retrieval: Find relevant claims for this batch using vector search
@@ -212,7 +196,7 @@ export async function synthesizeClaimsBatch(
                 { onConflict: "claim_id,evidence_id", ignoreDuplicates: true }
               );
             claimIdsToRecalc.add(matchedClaim.id);
-            onClaimUpdate?.({ action: "matched", label: matchedClaim.label });
+            claimUpdates.push({ action: "matched", label: matchedClaim.label });
             claimsUpdated++;
           }
         } else if (decision.new_claim) {
@@ -232,7 +216,7 @@ export async function synthesizeClaimsBatch(
                 { onConflict: "claim_id,evidence_id", ignoreDuplicates: true }
               );
             claimIdsToRecalc.add(existingClaim.id);
-            onClaimUpdate?.({ action: "matched", label: existingClaim.label });
+            claimUpdates.push({ action: "matched", label: existingClaim.label });
             claimsUpdated++;
           } else {
             // Collect for batch embedding generation
@@ -281,7 +265,7 @@ export async function synthesizeClaimsBatch(
               label: decision.new_claim!.label,
               description: decision.new_claim!.description,
             });
-            onClaimUpdate?.({ action: "created", label: decision.new_claim!.label });
+            claimUpdates.push({ action: "created", label: decision.new_claim!.label });
             claimsCreated++;
           }
         }
@@ -294,10 +278,14 @@ export async function synthesizeClaimsBatch(
 
   // Bulk recalculate confidence for all affected claims at the end
   if (claimIdsToRecalc.size > 0) {
-    onClaimUpdate?.({ action: "matched", label: "calculating confidence scores..." });
     for (const claimId of Array.from(claimIdsToRecalc)) {
       await recalculateConfidence(supabase, claimId);
     }
+  }
+
+  // Reveal all claims at once (reveal-at-end UX)
+  for (const update of claimUpdates) {
+    onClaimUpdate?.(update);
   }
 
   return { claimsCreated, claimsUpdated };
