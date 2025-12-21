@@ -63,6 +63,28 @@ export function Nav({ user }: NavProps) {
           )}
         </div>
         <div className="flex items-center gap-2">
+          {!user && (
+            <div className="hidden md:flex items-center gap-4 mr-2">
+              <Link
+                href="/pricing"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Pricing
+              </Link>
+              <Link
+                href="/recruiters"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                For Recruiters
+              </Link>
+              <Link
+                href="/docs"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Docs
+              </Link>
+            </div>
+          )}
           <ThemeToggle />
           {user ? (
             <DropdownMenu>
@@ -99,6 +121,11 @@ export function Nav({ user }: NavProps) {
                   <Link href="/settings/api-keys" className="cursor-pointer">
                     <Key className="mr-2 h-4 w-4" />
                     API Keys
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/docs" className="cursor-pointer">
+                    Docs
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

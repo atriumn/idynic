@@ -50,6 +50,10 @@ export const metadata: Metadata = {
   },
 };
 
+import { SiteFooter } from "@/components/site-footer";
+
+// ... existing imports
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -69,6 +73,7 @@ export default async function RootLayout({
           <QueryProvider>
             <Nav user={user} />
             <main>{children}</main>
+            <SiteFooter />
           </QueryProvider>
         </Providers>
       </body>
