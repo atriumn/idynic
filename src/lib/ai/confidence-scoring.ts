@@ -89,3 +89,106 @@ export function calculateRecencyDecay(
   // Exponential decay: 0.5 ^ (age / half_life)
   return Math.pow(0.5, ageInYears / halfLife);
 }
+
+/**
+ * Get weight multiplier for evidence source type
+ *
+ * @param sourceType - Where the evidence came from
+ * @returns Weight multiplier (higher = more trusted)
+ */
+export function getSourceWeight(sourceType: SourceType): number {
+  return SOURCE_WEIGHTS[sourceType] ?? 1.0;
+}
+
+/**
+ * Input for evidence weight calculation
+ */
+export interface EvidenceInput {
+  strength: StrengthLevel;
+  sourceType: SourceType;
+  evidenceDate: Date | null;
+  claimType: ClaimType;
+}
+
+/**
+ * Calculate combined weight for a single evidence item
+ *
+ * Formula: strength_multiplier × recency_decay × source_weight
+ *
+ * @param evidence - Evidence item with metadata
+ * @param referenceDate - Date to calculate recency from (defaults to now)
+ * @returns Combined weight multiplier
+ */
+export function calculateEvidenceWeight(
+  evidence: EvidenceInput,
+  referenceDate: Date = new Date()
+): number {
+  const strengthMultiplier = STRENGTH_MULTIPLIERS[evidence.strength];
+  const recencyDecay = calculateRecencyDecay(
+    evidence.evidenceDate,
+    evidence.claimType,
+    referenceDate
+  );
+  const sourceWeight = getSourceWeight(evidence.sourceType);
+
+  return strengthMultiplier * recencyDecay * sourceWeight;
+}
+
+/**
+ * Base confidence levels by evidence count
+ * (Preserved from existing system)
+ */
+const BASE_CONFIDENCE = {
+  SINGLE: 0.5,
+  DOUBLE: 0.7,
+  TRIPLE: 0.8,
+  MULTIPLE: 0.9,
+};
+
+const MAX_CONFIDENCE = 0.95;
+
+/**
+ * Calculate overall confidence score for a claim based on supporting evidence
+ *
+ * Formula: base_confidence(count) × avg(evidence_weights)
+ * Capped at 0.95 maximum
+ *
+ * @param evidenceItems - Array of evidence with metadata
+ * @param referenceDate - Date to calculate recency from (defaults to now)
+ * @returns Confidence score between 0 and 0.95
+ */
+export function calculateClaimConfidence(
+  evidenceItems: EvidenceInput[],
+  referenceDate: Date = new Date()
+): number {
+  if (evidenceItems.length === 0) {
+    return 0;
+  }
+
+  // Calculate base confidence from evidence count
+  let baseConfidence: number;
+  switch (evidenceItems.length) {
+    case 1:
+      baseConfidence = BASE_CONFIDENCE.SINGLE;
+      break;
+    case 2:
+      baseConfidence = BASE_CONFIDENCE.DOUBLE;
+      break;
+    case 3:
+      baseConfidence = BASE_CONFIDENCE.TRIPLE;
+      break;
+    default:
+      baseConfidence = BASE_CONFIDENCE.MULTIPLE;
+  }
+
+  // Calculate average weight across all evidence
+  const totalWeight = evidenceItems.reduce(
+    (sum, evidence) => sum + calculateEvidenceWeight(evidence, referenceDate),
+    0
+  );
+  const avgWeight = totalWeight / evidenceItems.length;
+
+  // Apply weight to base confidence, cap at max
+  const confidence = baseConfidence * avgWeight;
+  return Math.min(confidence, MAX_CONFIDENCE);
+}

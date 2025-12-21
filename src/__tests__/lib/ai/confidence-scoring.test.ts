@@ -3,6 +3,11 @@ import {
   SOURCE_WEIGHTS,
   CLAIM_HALF_LIVES,
   calculateRecencyDecay,
+  getSourceWeight,
+  calculateEvidenceWeight,
+  calculateClaimConfidence,
+  type SourceType,
+  type EvidenceInput,
 } from '@/lib/ai/confidence-scoring';
 
 describe('confidence-scoring constants', () => {
@@ -92,5 +97,178 @@ describe('calculateRecencyDecay', () => {
   it('should handle future dates by returning 1.0', () => {
     const futureDate = new Date('2026-01-01');
     expect(calculateRecencyDecay(futureDate, 'skill', now)).toBe(1.0);
+  });
+});
+
+describe('getSourceWeight', () => {
+  it('should return 1.5 for certification source', () => {
+    expect(getSourceWeight('certification')).toBe(1.5);
+  });
+
+  it('should return 1.0 for resume source', () => {
+    expect(getSourceWeight('resume')).toBe(1.0);
+  });
+
+  it('should return 0.8 for story source', () => {
+    expect(getSourceWeight('story')).toBe(0.8);
+  });
+
+  it('should return 0.6 for inferred source', () => {
+    expect(getSourceWeight('inferred')).toBe(0.6);
+  });
+
+  it('should default to 1.0 for unknown source type', () => {
+    expect(getSourceWeight('unknown' as SourceType)).toBe(1.0);
+  });
+});
+
+describe('calculateEvidenceWeight', () => {
+  const now = new Date('2025-01-01');
+
+  it('should combine strength, recency, and source for recent resume evidence', () => {
+    const evidence: EvidenceInput = {
+      strength: 'strong',
+      sourceType: 'resume',
+      evidenceDate: new Date('2024-01-01'),
+      claimType: 'skill',
+    };
+    const weight = calculateEvidenceWeight(evidence, now);
+    expect(weight).toBeCloseTo(1.01, 1);
+  });
+
+  it('should combine for old story evidence', () => {
+    const evidence: EvidenceInput = {
+      strength: 'medium',
+      sourceType: 'story',
+      evidenceDate: new Date('2022-01-01'),
+      claimType: 'skill',
+    };
+    const weight = calculateEvidenceWeight(evidence, now);
+    expect(weight).toBeCloseTo(0.47, 1);
+  });
+
+  it('should give high weight to certified credentials', () => {
+    const evidence: EvidenceInput = {
+      strength: 'strong',
+      sourceType: 'certification',
+      evidenceDate: new Date('2020-01-01'),
+      claimType: 'certification',
+    };
+    const weight = calculateEvidenceWeight(evidence, now);
+    expect(weight).toBeCloseTo(1.8, 2);
+  });
+
+  it('should penalize weak inferred evidence', () => {
+    const evidence: EvidenceInput = {
+      strength: 'weak',
+      sourceType: 'inferred',
+      evidenceDate: new Date('2023-01-01'),
+      claimType: 'skill',
+    };
+    const weight = calculateEvidenceWeight(evidence, now);
+    expect(weight).toBeCloseTo(0.30, 1);
+  });
+
+  it('should handle missing date gracefully', () => {
+    const evidence: EvidenceInput = {
+      strength: 'medium',
+      sourceType: 'resume',
+      evidenceDate: null,
+      claimType: 'skill',
+    };
+    const weight = calculateEvidenceWeight(evidence, now);
+    expect(weight).toBe(1.0);
+  });
+});
+
+describe('calculateClaimConfidence', () => {
+  const now = new Date('2025-01-01');
+
+  it('should return 0.5 base for single evidence', () => {
+    const evidenceItems: EvidenceInput[] = [
+      {
+        strength: 'medium',
+        sourceType: 'resume',
+        evidenceDate: new Date('2025-01-01'),
+        claimType: 'skill',
+      },
+    ];
+    expect(calculateClaimConfidence(evidenceItems, now)).toBeCloseTo(0.5, 2);
+  });
+
+  it('should return 0.7 base for two evidence items', () => {
+    const evidenceItems: EvidenceInput[] = [
+      {
+        strength: 'medium',
+        sourceType: 'resume',
+        evidenceDate: new Date('2025-01-01'),
+        claimType: 'skill',
+      },
+      {
+        strength: 'medium',
+        sourceType: 'resume',
+        evidenceDate: new Date('2025-01-01'),
+        claimType: 'skill',
+      },
+    ];
+    expect(calculateClaimConfidence(evidenceItems, now)).toBeCloseTo(0.7, 2);
+  });
+
+  it('should return 0.8 base for three evidence items', () => {
+    const evidenceItems: EvidenceInput[] = Array(3).fill({
+      strength: 'medium',
+      sourceType: 'resume',
+      evidenceDate: new Date('2025-01-01'),
+      claimType: 'skill',
+    });
+    expect(calculateClaimConfidence(evidenceItems, now)).toBeCloseTo(0.8, 2);
+  });
+
+  it('should return 0.9 base for four+ evidence items', () => {
+    const evidenceItems: EvidenceInput[] = Array(5).fill({
+      strength: 'medium',
+      sourceType: 'resume',
+      evidenceDate: new Date('2025-01-01'),
+      claimType: 'skill',
+    });
+    expect(calculateClaimConfidence(evidenceItems, now)).toBeCloseTo(0.9, 2);
+  });
+
+  it('should cap at 0.95 even with high weights', () => {
+    const evidenceItems: EvidenceInput[] = Array(10).fill({
+      strength: 'strong',
+      sourceType: 'certification',
+      evidenceDate: new Date('2025-01-01'),
+      claimType: 'skill',
+    });
+    expect(calculateClaimConfidence(evidenceItems, now)).toBe(0.95);
+  });
+
+  it('should reduce confidence for old evidence', () => {
+    const evidenceItems: EvidenceInput[] = [
+      {
+        strength: 'strong',
+        sourceType: 'resume',
+        evidenceDate: new Date('2024-01-01'),
+        claimType: 'skill',
+      },
+      {
+        strength: 'medium',
+        sourceType: 'story',
+        evidenceDate: new Date('2022-01-01'),
+        claimType: 'skill',
+      },
+      {
+        strength: 'strong',
+        sourceType: 'resume',
+        evidenceDate: new Date('2019-01-01'),
+        claimType: 'skill',
+      },
+    ];
+    expect(calculateClaimConfidence(evidenceItems, now)).toBeCloseTo(0.50, 1);
+  });
+
+  it('should return 0 for empty evidence array', () => {
+    expect(calculateClaimConfidence([], now)).toBe(0);
   });
 });
