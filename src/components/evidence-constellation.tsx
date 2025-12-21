@@ -12,6 +12,8 @@ const TYPE_COLORS: Record<string, string> = {
   certification: "#14b8a6",
 };
 
+const TYPE_ORDER = ["skill", "achievement", "attribute", "education", "certification"];
+
 const DOCUMENT_COLORS: Record<string, string> = {
   resume: "#f59e0b",
   story: "#ec4899",
@@ -19,17 +21,13 @@ const DOCUMENT_COLORS: Record<string, string> = {
   default: "#6b7280",
 };
 
-interface SimulationNode extends d3.SimulationNodeDatum {
+interface ClaimNode {
   id: string;
-  nodeType: "document" | "claim";
   label: string;
   type: string;
-  confidence?: number;
-}
-
-interface SimulationLink extends d3.SimulationLinkDatum<SimulationNode> {
-  source: string | SimulationNode;
-  target: string | SimulationNode;
+  confidence: number;
+  x?: number;
+  y?: number;
 }
 
 interface ConstellationProps {
@@ -42,7 +40,7 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
-  const [hoveredNode, setHoveredNode] = useState<SimulationNode | null>(null);
+  const [hoveredClaim, setHoveredClaim] = useState<ClaimNode | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -67,224 +65,179 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
   useEffect(() => {
     if (!data || !svgRef.current) return;
     if (!data.documents || data.documents.length === 0) return;
-    if (!data.documentClaimEdges || data.documentClaimEdges.length === 0) return;
+    if (data.nodes.length === 0) return;
 
     const { width, height } = dimensions;
     const svg = d3.select(svgRef.current);
+    const centerX = width / 2;
+    const centerY = height / 2;
 
     svg.selectAll("*").remove();
 
-    // Build nodes: documents + claims connected to documents
-    const connectedClaimIds = new Set(data.documentClaimEdges.map(e => e.claimId));
+    // Group claims by type
+    const claimsByType = new Map<string, ClaimNode[]>();
+    for (const node of data.nodes) {
+      const type = node.type;
+      if (!claimsByType.has(type)) {
+        claimsByType.set(type, []);
+      }
+      claimsByType.get(type)!.push({
+        id: node.id,
+        label: node.label,
+        type: node.type,
+        confidence: node.confidence,
+      });
+    }
 
-    const documentNodes: SimulationNode[] = data.documents.map(d => ({
-      id: `doc-${d.id}`,
-      nodeType: "document" as const,
-      label: d.name,
-      type: d.type,
-    }));
+    // Sort types by predefined order
+    const sortedTypes = Array.from(claimsByType.keys()).sort((a, b) => {
+      const aIdx = TYPE_ORDER.indexOf(a);
+      const bIdx = TYPE_ORDER.indexOf(b);
+      return (aIdx === -1 ? 999 : aIdx) - (bIdx === -1 ? 999 : bIdx);
+    });
 
-    const claimNodes: SimulationNode[] = data.nodes
-      .filter(n => connectedClaimIds.has(n.id))
-      .map(n => ({
-        id: `claim-${n.id}`,
-        nodeType: "claim" as const,
-        label: n.label,
-        type: n.type,
-        confidence: n.confidence,
-      }));
+    // Calculate positions - radial layout grouped by type
+    const baseRadius = Math.min(width, height) * 0.35;
+    const allClaims: ClaimNode[] = [];
 
-    const nodes: SimulationNode[] = [...documentNodes, ...claimNodes];
+    let currentAngle = 0;
+    const totalClaims = data.nodes.length;
 
-    const links: SimulationLink[] = data.documentClaimEdges.map(e => ({
-      source: `doc-${e.documentId}`,
-      target: `claim-${e.claimId}`,
-    }));
+    for (const type of sortedTypes) {
+      const claims = claimsByType.get(type)!;
+      const typeAngleSpan = (claims.length / totalClaims) * Math.PI * 2;
 
-    // Calculate confidence range for opacity scaling
-    const confidences = claimNodes.map(n => n.confidence || 0.5);
-    const minConf = Math.min(...confidences);
-    const maxConf = Math.max(...confidences);
-    const confRange = maxConf - minConf || 0.1;
-    const normalizeConf = (c: number) => (c - minConf) / confRange;
+      claims.forEach((claim, i) => {
+        const angle = currentAngle + (i + 0.5) * (typeAngleSpan / claims.length);
+        // Vary radius slightly based on confidence
+        const radiusVariation = 0.85 + claim.confidence * 0.3;
+        const radius = baseRadius * radiusVariation;
 
-    // Create force simulation
-    const simulation = d3.forceSimulation<SimulationNode>(nodes)
-      .force("link", d3.forceLink<SimulationNode, SimulationLink>(links)
-        .id(d => d.id)
-        .distance(80))
-      .force("charge", d3.forceManyBody().strength(-150))
-      .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collision", d3.forceCollide<SimulationNode>().radius(d => d.nodeType === "document" ? 30 : 15));
+        claim.x = centerX + Math.cos(angle - Math.PI / 2) * radius;
+        claim.y = centerY + Math.sin(angle - Math.PI / 2) * radius;
+        allClaims.push(claim);
+      });
+
+      currentAngle += typeAngleSpan;
+    }
 
     // Create container group for zoom
     const g = svg.append("g");
 
-    // Track claim labels for zoom visibility (assigned after creation)
-    let claimLabelsSelection: d3.Selection<SVGTextElement, SimulationNode, SVGGElement, unknown> | null = null;
-
-    // Add zoom behavior with label visibility
+    // Add zoom behavior
     const zoom = d3.zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.3, 5])
+      .scaleExtent([0.5, 4])
       .on("zoom", (event) => {
         g.attr("transform", event.transform);
-        // Show claim labels when zoomed in past 1.2x
-        if (claimLabelsSelection) {
-          const showLabels = event.transform.k > 1.2;
-          claimLabelsSelection.attr("opacity", showLabels ? 1 : 0);
-        }
       });
 
     svg.call(zoom);
 
-    // Draw links
-    const link = g.append("g")
-      .attr("class", "links")
-      .selectAll("line")
-      .data(links)
-      .join("line")
-      .attr("stroke", "#4b5563")
-      .attr("stroke-opacity", 0.4)
-      .attr("stroke-width", 1);
+    // Draw type arc backgrounds
+    let arcStart = 0;
+    for (const type of sortedTypes) {
+      const claims = claimsByType.get(type)!;
+      const typeAngleSpan = (claims.length / totalClaims) * Math.PI * 2;
 
-    // Draw nodes
-    const node = g.append("g")
-      .attr("class", "nodes")
-      .selectAll<SVGCircleElement, SimulationNode>("circle")
-      .data(nodes)
-      .join("circle")
-      .attr("r", d => d.nodeType === "document" ? 20 : 8)
-      .attr("fill", d => {
-        if (d.nodeType === "document") {
-          return DOCUMENT_COLORS[d.type] || DOCUMENT_COLORS.default;
-        }
-        return TYPE_COLORS[d.type] || "#888";
-      })
-      .attr("fill-opacity", d => {
-        if (d.nodeType === "document") return 1;
-        return 0.4 + normalizeConf(d.confidence || 0.5) * 0.6;
-      })
-      .attr("stroke", d => {
-        if (d.nodeType === "claim" && d.id === `claim-${selectedClaimId}`) {
-          return "white";
-        }
-        return d.nodeType === "document" ? "white" : "transparent";
-      })
-      .attr("stroke-width", d => d.nodeType === "document" ? 2 : 2)
+      const arc = d3.arc()
+        .innerRadius(baseRadius * 0.6)
+        .outerRadius(baseRadius * 1.3)
+        .startAngle(arcStart - Math.PI / 2)
+        .endAngle(arcStart + typeAngleSpan - Math.PI / 2);
+
+      g.append("path")
+        .attr("d", arc as unknown as string)
+        .attr("transform", `translate(${centerX}, ${centerY})`)
+        .attr("fill", TYPE_COLORS[type] || "#888")
+        .attr("fill-opacity", 0.08)
+        .attr("stroke", TYPE_COLORS[type] || "#888")
+        .attr("stroke-opacity", 0.2)
+        .attr("stroke-width", 1);
+
+      // Type label
+      const labelAngle = arcStart + typeAngleSpan / 2 - Math.PI / 2;
+      const labelRadius = baseRadius * 1.4;
+      g.append("text")
+        .attr("x", centerX + Math.cos(labelAngle) * labelRadius)
+        .attr("y", centerY + Math.sin(labelAngle) * labelRadius)
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .attr("fill", TYPE_COLORS[type] || "#888")
+        .attr("font-size", "11px")
+        .attr("font-weight", "600")
+        .text(`${type.charAt(0).toUpperCase() + type.slice(1)}s (${claims.length})`);
+
+      arcStart += typeAngleSpan;
+    }
+
+    // Draw document in center
+    const doc = data.documents[0];
+    g.append("circle")
+      .attr("cx", centerX)
+      .attr("cy", centerY)
+      .attr("r", 30)
+      .attr("fill", DOCUMENT_COLORS[doc.type] || DOCUMENT_COLORS.default)
+      .attr("stroke", "white")
+      .attr("stroke-width", 3);
+
+    g.append("text")
+      .attr("x", centerX)
+      .attr("y", centerY + 45)
+      .attr("text-anchor", "middle")
+      .attr("fill", "currentColor")
+      .attr("font-size", "11px")
+      .attr("font-weight", "500")
+      .text(doc.name.length > 25 ? doc.name.slice(0, 24) + "..." : doc.name);
+
+    // Draw claim nodes
+    const claimGroup = g.append("g").attr("class", "claims");
+
+    const claimNodes = claimGroup.selectAll("g.claim")
+      .data(allClaims)
+      .join("g")
+      .attr("class", "claim")
+      .attr("transform", d => `translate(${d.x}, ${d.y})`)
       .attr("cursor", "pointer")
       .on("mouseover", function(_, d) {
-        d3.select(this).attr("fill-opacity", 1);
-        setHoveredNode(d);
+        d3.select(this).select("circle").attr("r", 10);
+        setHoveredClaim(d);
+        // Show connection line
+        g.append("line")
+          .attr("class", "hover-line")
+          .attr("x1", centerX)
+          .attr("y1", centerY)
+          .attr("x2", d.x!)
+          .attr("y2", d.y!)
+          .attr("stroke", TYPE_COLORS[d.type] || "#888")
+          .attr("stroke-width", 2)
+          .attr("stroke-opacity", 0.5)
+          .attr("stroke-dasharray", "4,4");
       })
-      .on("mouseout", function(_, d) {
-        if (d.nodeType === "document") {
-          d3.select(this).attr("fill-opacity", 1);
-        } else {
-          d3.select(this).attr("fill-opacity", 0.4 + normalizeConf(d.confidence || 0.5) * 0.6);
-        }
-        setHoveredNode(null);
+      .on("mouseout", function() {
+        d3.select(this).select("circle").attr("r", 7);
+        setHoveredClaim(null);
+        g.selectAll(".hover-line").remove();
       })
       .on("click", (_, d) => {
-        if (d.nodeType === "claim") {
-          const claimId = d.id.replace("claim-", "");
-          onSelectClaim?.(claimId);
-        }
+        onSelectClaim?.(d.id);
       });
 
-    // Add drag behavior
-    const drag = d3.drag<SVGCircleElement, SimulationNode>()
-      .on("start", (event, d) => {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
-        d.fx = d.x;
-        d.fy = d.y;
-      })
-      .on("drag", (event, d) => {
-        d.fx = event.x;
-        d.fy = event.y;
-      })
-      .on("end", (event, d) => {
-        if (!event.active) simulation.alphaTarget(0);
-        d.fx = null;
-        d.fy = null;
-      });
+    claimNodes.append("circle")
+      .attr("r", 7)
+      .attr("fill", d => TYPE_COLORS[d.type] || "#888")
+      .attr("fill-opacity", d => 0.5 + d.confidence * 0.5)
+      .attr("stroke", d => d.id === selectedClaimId ? "white" : "transparent")
+      .attr("stroke-width", 2);
 
-    node.call(drag);
-
-    // Add document labels
-    const docLabels = g.append("g")
-      .attr("class", "doc-labels")
-      .selectAll("text")
-      .data(documentNodes)
-      .join("text")
-      .attr("font-size", "10px")
-      .attr("fill", "currentColor")
-      .attr("text-anchor", "middle")
-      .attr("dy", 30)
-      .attr("pointer-events", "none")
-      .text(d => {
-        const maxLen = 20;
-        return d.label.length > maxLen ? d.label.slice(0, maxLen - 1) + "..." : d.label;
-      });
-
-    // Add claim labels (hidden by default, shown on zoom)
-    claimLabelsSelection = g.append("g")
-      .attr("class", "claim-labels")
-      .selectAll<SVGTextElement, SimulationNode>("text")
-      .data(claimNodes)
-      .join("text")
-      .attr("font-size", "8px")
-      .attr("fill", "currentColor")
-      .attr("text-anchor", "middle")
+    claimNodes.append("text")
       .attr("dy", -12)
-      .attr("pointer-events", "none")
-      .attr("opacity", 0)
-      .text(d => {
-        const maxLen = 15;
-        return d.label.length > maxLen ? d.label.slice(0, maxLen - 1) + "…" : d.label;
-      });
+      .attr("text-anchor", "middle")
+      .attr("fill", "currentColor")
+      .attr("font-size", "9px")
+      .attr("opacity", 0.8)
+      .text(d => d.label.length > 18 ? d.label.slice(0, 17) + "…" : d.label);
 
-    // Update positions on tick
-    simulation.on("tick", () => {
-      link
-        .attr("x1", d => (d.source as SimulationNode).x!)
-        .attr("y1", d => (d.source as SimulationNode).y!)
-        .attr("x2", d => (d.target as SimulationNode).x!)
-        .attr("y2", d => (d.target as SimulationNode).y!);
-
-      node
-        .attr("cx", d => d.x!)
-        .attr("cy", d => d.y!);
-
-      docLabels
-        .attr("x", d => d.x!)
-        .attr("y", d => d.y!);
-
-      claimLabelsSelection
-        ?.attr("x", d => d.x!)
-        .attr("y", d => d.y!);
-    });
-
-    // Fit to view after simulation settles
-    simulation.on("end", () => {
-      const bounds = g.node()?.getBBox();
-      if (bounds) {
-        const fullWidth = bounds.width;
-        const fullHeight = bounds.height;
-        const midX = bounds.x + fullWidth / 2;
-        const midY = bounds.y + fullHeight / 2;
-        const scale = 0.9 / Math.max(fullWidth / width, fullHeight / height);
-        const translate = [width / 2 - scale * midX, height / 2 - scale * midY];
-
-        svg.transition().duration(500).call(
-          zoom.transform,
-          d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)
-        );
-      }
-    });
-
-    return () => {
-      simulation.stop();
-    };
+    return () => {};
   }, [data, dimensions, onSelectClaim, selectedClaimId]);
 
   if (isLoading) {
@@ -320,44 +273,12 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
         className="bg-background block mx-auto"
         style={{ maxWidth: '100%', maxHeight: '100%' }}
       />
-      {/* Legend */}
-      <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 text-xs border">
-        <div className="font-medium mb-2">Legend</div>
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-amber-500" />
-            <span>Resume</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-pink-500" />
-            <span>Story</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-blue-500" />
-            <span>Skill</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500" />
-            <span>Achievement</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-purple-500" />
-            <span>Attribute</span>
-          </div>
-        </div>
-      </div>
       {/* Hover tooltip */}
-      {hoveredNode && (
-        <div className="absolute top-8 left-8 bg-background/95 backdrop-blur-sm rounded-lg p-3 text-sm shadow-lg border max-w-xs z-10">
-          <div className="font-medium">{hoveredNode.label}</div>
+      {hoveredClaim && (
+        <div className="absolute top-8 right-8 bg-background/95 backdrop-blur-sm rounded-lg p-3 text-sm shadow-lg border max-w-xs z-10">
+          <div className="font-medium">{hoveredClaim.label}</div>
           <div className="text-muted-foreground text-xs mt-1">
-            {hoveredNode.nodeType === "document" ? (
-              <span className="capitalize">{hoveredNode.type}</span>
-            ) : (
-              <span>
-                {hoveredNode.type} · {Math.round((hoveredNode.confidence || 0.5) * 100)}% confidence
-              </span>
-            )}
+            <span className="capitalize">{hoveredClaim.type}</span> · {Math.round(hoveredClaim.confidence * 100)}% confidence
           </div>
         </div>
       )}
