@@ -1,5 +1,23 @@
 # Identity Synthesis v2 Design
 
+**Status:** In Progress (Phases 1-4 Complete)
+**Last Updated:** 2025-12-21
+
+## Progress (Last reviewed: 2025-12-21)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1: Schema & Scoring Foundation | ✅ Complete | source_type, evidence_date, scoring functions |
+| Phase 2: RAG-based Synthesis | ✅ Complete | Vector search, batched reveal UX |
+| Phase 3: Enhanced Confidence Scoring | ✅ Complete | Recency decay, source weighting integrated |
+| Phase 4: Constellation Visualization | ✅ Complete | D3 force graph, side panel, modals |
+| Phase 5: Sunburst + Clusters | ⏳ Not Started | Next up |
+
+### Drift Notes
+All phases followed design closely. Minor variations noted in individual phase plans.
+
+---
+
 ## Overview
 
 This design enhances the Identity Synthesis architecture with three improvements:
