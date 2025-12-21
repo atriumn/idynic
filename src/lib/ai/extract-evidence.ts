@@ -12,6 +12,7 @@ export interface ExtractedEvidence {
     institution?: string;
     year?: string;
   } | null;
+  sourceType?: 'resume' | 'story' | 'certification' | 'inferred';
 }
 
 const SYSTEM_PROMPT = `You are an evidence extractor. Extract discrete factual statements from resumes. Return ONLY valid JSON.`;
@@ -98,7 +99,10 @@ IMPORTANT:
 RESUME TEXT:
 `;
 
-export async function extractEvidence(text: string): Promise<ExtractedEvidence[]> {
+export async function extractEvidence(
+  text: string,
+  sourceType: 'resume' | 'story' = 'resume'
+): Promise<ExtractedEvidence[]> {
   const response = await openai.chat.completions.create({
     model: "gpt-5-mini",
     max_completion_tokens: 16000,
@@ -128,13 +132,19 @@ export async function extractEvidence(text: string): Promise<ExtractedEvidence[]
     }
 
     const MAX_TEXT_LENGTH = 5000;
-    return parsed.filter(item =>
+    const validItems = parsed.filter(item =>
       item.text &&
       typeof item.text === "string" &&
       item.text.length > 0 &&
       item.text.length <= MAX_TEXT_LENGTH &&
       ["accomplishment", "skill_listed", "trait_indicator", "education", "certification"].includes(item.type)
     );
+
+    // Add sourceType to each extracted item
+    return validItems.map(item => ({
+      ...item,
+      sourceType,
+    }));
   } catch {
     throw new Error(`Failed to parse evidence response: ${cleanedContent.slice(0, 200)}`);
   }
