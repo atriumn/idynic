@@ -15,7 +15,7 @@ describe('api/auth', () => {
     mockSupabase = createMockSupabaseClient()
 
     const { createServiceRoleClient } = await import('@/lib/supabase/service-role')
-    vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as any)
+    vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>)
   })
 
   const createRequest = (headers: Record<string, string> = {}) => {

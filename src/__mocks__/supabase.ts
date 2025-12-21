@@ -1,7 +1,5 @@
 import { vi } from 'vitest'
 
-type MockResponse<T> = { data: T | null; error: Error | null }
-
 export function createMockSupabaseClient() {
   let mockData: unknown = null
   let mockError: Error | null = null
