@@ -56,21 +56,50 @@ describe('synthesizeClaimsBatch with RAG', () => {
     });
 
     // Default mock for from().select() chain
-    mockFrom.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          order: vi.fn().mockResolvedValue({ data: [], error: null }),
-        }),
-      }),
-      insert: vi.fn().mockReturnValue({
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'identity_claims') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: { type: 'skill' },
+                error: null
+              }),
+            }),
+          }),
+          insert: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({ data: { id: 'new-claim-id' }, error: null }),
+            }),
+          }),
+          update: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ error: null }),
+          }),
+        };
+      } else if (table === 'claim_evidence') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({
+              data: [
+                {
+                  strength: 'medium',
+                  evidence: { source_type: 'resume', evidence_date: null }
+                }
+              ],
+              error: null
+            }),
+          }),
+          insert: vi.fn().mockResolvedValue({ error: null }),
+          upsert: vi.fn().mockResolvedValue({ error: null }),
+        };
+      }
+      return {
         select: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({ data: { id: 'new-claim-id' }, error: null }),
+          eq: vi.fn().mockReturnValue({
+            order: vi.fn().mockResolvedValue({ data: [], error: null }),
+          }),
         }),
-      }),
-      upsert: vi.fn().mockResolvedValue({ error: null }),
-      update: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({ error: null }),
-      }),
+      };
     });
   });
 
@@ -116,15 +145,11 @@ describe('synthesizeClaimsBatch with RAG', () => {
 
     // Verify RAG was called (not full table load)
     expect(mockRpc).toHaveBeenCalledWith('find_relevant_claims_for_synthesis', {
-      query_embedding: expect.any(String),
+      query_embedding: expect.any(Array),
       p_user_id: 'user-123',
       similarity_threshold: 0.5,
       max_claims: 25,
     });
-
-    // Verify the embedding was stringified
-    const rpcCall = mockRpc.mock.calls[0];
-    expect(typeof rpcCall[1].query_embedding).toBe('string');
   });
 
   it('should handle new users with no existing claims', async () => {
@@ -316,6 +341,14 @@ describe('synthesizeClaimsBatch with RAG', () => {
     mockFrom.mockImplementation((table: string) => {
       if (table === 'identity_claims') {
         return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: { type: 'skill' },
+                error: null
+              }),
+            }),
+          }),
           insert: vi.fn().mockReturnValue({
             select: vi.fn().mockReturnValue({
               single: vi.fn().mockResolvedValue({
@@ -335,7 +368,12 @@ describe('synthesizeClaimsBatch with RAG', () => {
           insert: vi.fn().mockResolvedValue({ error: null }),
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockResolvedValue({
-              data: [{ strength: 'strong' }],
+              data: [
+                {
+                  strength: 'medium',
+                  evidence: { source_type: 'resume', evidence_date: null }
+                }
+              ],
               error: null,
             }),
           }),

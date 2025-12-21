@@ -4,24 +4,17 @@ import { generateEmbeddings } from "./embeddings";
 import { findRelevantClaimsForBatch } from "./rag-claims";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
+import {
+  calculateClaimConfidence,
+  type EvidenceInput,
+  type ClaimType,
+  type SourceType,
+  type StrengthLevel,
+} from "./confidence-scoring";
 
 const openai = new OpenAI();
 
 const BATCH_SIZE = 10;
-const MAX_CONFIDENCE = 0.95;
-
-const CONFIDENCE_BASE = {
-  SINGLE_EVIDENCE: 0.5,
-  DOUBLE_EVIDENCE: 0.7,
-  TRIPLE_EVIDENCE: 0.8,
-  MULTIPLE_EVIDENCE: 0.9,
-} as const;
-
-const STRENGTH_MULTIPLIER = {
-  strong: 1.2,
-  medium: 1.0,
-  weak: 0.7,
-} as const;
 
 interface EvidenceItem {
   id: string;
@@ -235,6 +228,14 @@ export async function synthesizeClaimsBatch(
           const { decision, evidence } = newClaimsToCreate[i];
           const claimEmbedding = embeddings[i];
 
+          // Calculate initial confidence for new claim
+          const initialEvidence: EvidenceInput[] = [{
+            strength: decision.strength as StrengthLevel,
+            sourceType: 'resume' as SourceType,  // TODO: pass actual source type from evidence
+            evidenceDate: null,  // TODO: pass actual date from evidence
+            claimType: decision.new_claim!.type as ClaimType,
+          }];
+
           const { data: newClaim, error } = await supabase
             .from("identity_claims")
             .insert({
@@ -242,7 +243,7 @@ export async function synthesizeClaimsBatch(
               type: decision.new_claim!.type,
               label: decision.new_claim!.label,
               description: decision.new_claim!.description,
-              confidence: getBaseConfidence(1) * getStrengthMultiplier(decision.strength),
+              confidence: calculateClaimConfidence(initialEvidence),
               embedding: claimEmbedding as unknown as string,
             })
             .select()
@@ -295,34 +296,47 @@ async function recalculateConfidence(
   supabase: SupabaseClient<Database>,
   claimId: string
 ): Promise<void> {
+  // Get claim type
+  const { data: claim } = await supabase
+    .from("identity_claims")
+    .select("type")
+    .eq("id", claimId)
+    .single();
+
+  if (!claim) return;
+
+  // Get all evidence linked to this claim with metadata
   const { data: links } = await supabase
     .from("claim_evidence")
-    .select("strength")
+    .select(`
+      strength,
+      evidence:evidence_id (
+        source_type,
+        evidence_date
+      )
+    `)
     .eq("claim_id", claimId);
 
   if (!links || links.length === 0) return;
 
-  const count = links.length;
-  const avgMultiplier = links.reduce(
-    (sum, l) => sum + getStrengthMultiplier(l.strength),
-    0
-  ) / count;
+  // Build evidence inputs for scoring
+  const evidenceItems: EvidenceInput[] = links.map(link => {
+    const evidence = link.evidence as { source_type?: string; evidence_date?: string } | null;
+    return {
+      strength: (link.strength || 'medium') as StrengthLevel,
+      sourceType: (evidence?.source_type || 'resume') as SourceType,
+      evidenceDate: evidence?.evidence_date
+        ? new Date(evidence.evidence_date)
+        : null,
+      claimType: claim.type as ClaimType,
+    };
+  });
 
-  const confidence = Math.min(MAX_CONFIDENCE, getBaseConfidence(count) * avgMultiplier);
+  // Calculate new confidence using enhanced scoring
+  const confidence = calculateClaimConfidence(evidenceItems);
 
   await supabase
     .from("identity_claims")
     .update({ confidence, updated_at: new Date().toISOString() })
     .eq("id", claimId);
-}
-
-function getBaseConfidence(evidenceCount: number): number {
-  if (evidenceCount >= 4) return CONFIDENCE_BASE.MULTIPLE_EVIDENCE;
-  if (evidenceCount === 3) return CONFIDENCE_BASE.TRIPLE_EVIDENCE;
-  if (evidenceCount === 2) return CONFIDENCE_BASE.DOUBLE_EVIDENCE;
-  return CONFIDENCE_BASE.SINGLE_EVIDENCE;
-}
-
-function getStrengthMultiplier(strength: string): number {
-  return STRENGTH_MULTIPLIER[strength as keyof typeof STRENGTH_MULTIPLIER] ?? STRENGTH_MULTIPLIER.medium;
 }

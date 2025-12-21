@@ -73,16 +73,54 @@ describe('synthesize-claims', () => {
       error: null
     })
 
-    // Default Supabase from mock
-    const chainableMock = {
-      select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-      upsert: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: null, error: null })
-    }
-    mockSupabaseFrom.mockReturnValue(chainableMock)
+    // Default Supabase from mock - enhanced to handle new query patterns
+    mockSupabaseFrom.mockImplementation((table: string) => {
+      if (table === 'identity_claims') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: { type: 'skill' },
+                error: null
+              })
+            })
+          }),
+          insert: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({ data: { id: 'new-claim-id' }, error: null })
+            })
+          }),
+          update: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ error: null })
+          })
+        }
+      } else if (table === 'claim_evidence') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({
+              data: [
+                {
+                  strength: 'medium',
+                  evidence: { source_type: 'resume', evidence_date: null }
+                }
+              ],
+              error: null
+            })
+          }),
+          insert: vi.fn().mockResolvedValue({ error: null }),
+          upsert: vi.fn().mockResolvedValue({ error: null })
+        }
+      }
+      // Fallback for other tables
+      return {
+        select: vi.fn().mockReturnThis(),
+        insert: vi.fn().mockReturnThis(),
+        update: vi.fn().mockReturnThis(),
+        upsert: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: null, error: null })
+      }
+    })
   })
 
   describe('synthesizeClaims', () => {
