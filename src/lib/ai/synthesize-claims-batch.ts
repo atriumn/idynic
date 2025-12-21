@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { createClient } from "@/lib/supabase/server";
 import { generateEmbeddings } from "./embeddings";
+import { findRelevantClaimsForBatch } from "./rag-claims";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 
@@ -29,13 +30,6 @@ interface EvidenceItem {
   embedding: number[];
 }
 
-interface ExistingClaim {
-  id: string;
-  type: string;
-  label: string;
-  description: string | null;
-}
-
 interface BatchDecision {
   evidence_id: string;
   match: string | null;
@@ -59,7 +53,7 @@ const BATCH_SYSTEM_PROMPT = `You are an identity synthesizer. Given multiple evi
 
 function buildBatchPrompt(
   evidenceItems: EvidenceItem[],
-  existingClaims: ExistingClaim[]
+  existingClaims: Array<{ id?: string; type: string; label: string; description: string | null; confidence?: number; similarity?: number }>
 ): string {
   const claimsList = existingClaims.length > 0
     ? existingClaims.map((c, i) => `${i + 1}. "${c.label}" (${c.type}) - ${c.description || "No description"}`).join("\n")
@@ -123,14 +117,8 @@ export async function synthesizeClaimsBatch(
   let claimsCreated = 0;
   let claimsUpdated = 0;
 
-  // Fetch all existing claims upfront (instead of per-item vector search)
-  const { data: existingClaims } = await supabase
-    .from("identity_claims")
-    .select("id, type, label, description")
-    .eq("user_id", userId)
-    .order("label");
-
-  const claims = existingClaims || [];
+  // Track claims created locally during synthesis (for merging with RAG results)
+  const claims: Array<{ id: string; type: string; label: string; description: string | null }> = [];
   const batches = chunk(evidenceItems, BATCH_SIZE);
   const claimIdsToRecalc = new Set<string>();
 
@@ -159,13 +147,31 @@ export async function synthesizeClaimsBatch(
     }
 
     try {
+      // RAG retrieval: Find relevant claims for this batch using vector search
+      const relevantClaims = await findRelevantClaimsForBatch(
+        userId,
+        batch.map(e => ({ id: e.id, embedding: e.embedding }))
+      );
+
+      // Merge RAG results with locally tracked claims (created in previous batches)
+      const allClaims: Array<{ id?: string; type: string; label: string; description: string | null; confidence?: number; similarity?: number }> = [...relevantClaims];
+      for (const localClaim of claims) {
+        if (!allClaims.find(c => c.id === localClaim.id)) {
+          allClaims.push({
+            ...localClaim,
+            confidence: 0.5, // default for locally tracked
+            similarity: 0, // not from vector search
+          });
+        }
+      }
+
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         temperature: 0,
         max_tokens: 2000,
         messages: [
           { role: "system", content: BATCH_SYSTEM_PROMPT },
-          { role: "user", content: buildBatchPrompt(batch, claims) },
+          { role: "user", content: buildBatchPrompt(batch, allClaims) },
         ],
       });
 
@@ -193,8 +199,8 @@ export async function synthesizeClaimsBatch(
 
         if (decision.match) {
           // Find matched claim by label
-          const matchedClaim = claims.find(c => c.label === decision.match);
-          if (matchedClaim) {
+          const matchedClaim = allClaims.find(c => c.label === decision.match);
+          if (matchedClaim && matchedClaim.id) {
             await supabase
               .from("claim_evidence")
               .upsert(
@@ -210,10 +216,10 @@ export async function synthesizeClaimsBatch(
             claimsUpdated++;
           }
         } else if (decision.new_claim) {
-          // Check if claim with this label already exists
-          const existingClaim = claims.find(c => c.label === decision.new_claim!.label);
+          // Check if claim with this label already exists (in RAG results or local tracking)
+          const existingClaim = allClaims.find(c => c.label === decision.new_claim!.label);
 
-          if (existingClaim) {
+          if (existingClaim && existingClaim.id) {
             // Link to existing instead of creating duplicate
             await supabase
               .from("claim_evidence")
