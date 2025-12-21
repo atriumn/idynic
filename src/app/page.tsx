@@ -37,12 +37,11 @@ export default async function Home() {
 
         <div className="container mx-auto px-4 text-center space-y-8">
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl md:text-7xl max-w-4xl mx-auto">
-            Your professional identity, <br className="hidden md:block" />
-            always current.
+            Your career as infrastructure.
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Build once, use everywhere. Job applications, performance reviews, LinkedIn posts, speaker bios—your synthesized career, ready when you need it.
+            From scattered docs to coherent identity. Build once, use everywhere—job applications, performance reviews, LinkedIn posts, speaker bios.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
