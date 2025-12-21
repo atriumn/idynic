@@ -9,6 +9,8 @@ packages/*/node_modules
 
 # testing
 /coverage
+*.lcov
+.vitest/
 
 # next.js
 /.next/
