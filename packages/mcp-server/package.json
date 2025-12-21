@@ -1,6 +1,6 @@
 {
   "name": "@atriumn/idynic-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server for Idynic - AI career companion",
   "type": "module",
   "main": "dist/index.js",
@@ -17,7 +17,13 @@
     "start": "node dist/index.js",
     "prepublishOnly": "npm run build"
   },
-  "keywords": ["mcp", "idynic", "career", "ai", "claude"],
+  "keywords": [
+    "mcp",
+    "idynic",
+    "career",
+    "ai",
+    "claude"
+  ],
   "author": "Atriumn",
   "license": "MIT",
   "repository": {
