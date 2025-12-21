@@ -21,6 +21,8 @@ interface EvidenceItem {
   text: string;
   type: "accomplishment" | "skill_listed" | "trait_indicator" | "education" | "certification";
   embedding: number[];
+  sourceType?: 'resume' | 'story' | 'certification' | 'inferred';
+  evidenceDate?: Date | null;
 }
 
 interface BatchDecision {
@@ -231,8 +233,8 @@ export async function synthesizeClaimsBatch(
           // Calculate initial confidence for new claim
           const initialEvidence: EvidenceInput[] = [{
             strength: decision.strength as StrengthLevel,
-            sourceType: 'resume' as SourceType,  // TODO: pass actual source type from evidence
-            evidenceDate: null,  // TODO: pass actual date from evidence
+            sourceType: (evidence.sourceType || 'resume') as SourceType,
+            evidenceDate: evidence.evidenceDate || null,
             claimType: decision.new_claim!.type as ClaimType,
           }];
 
