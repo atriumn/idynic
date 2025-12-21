@@ -120,11 +120,19 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
     // Create container group for zoom
     const g = svg.append("g");
 
-    // Add zoom behavior
+    // Track claim labels for zoom visibility (assigned after creation)
+    let claimLabelsSelection: d3.Selection<SVGTextElement, SimulationNode, SVGGElement, unknown> | null = null;
+
+    // Add zoom behavior with label visibility
     const zoom = d3.zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.3, 3])
+      .scaleExtent([0.3, 5])
       .on("zoom", (event) => {
         g.attr("transform", event.transform);
+        // Show claim labels when zoomed in past 1.2x
+        if (claimLabelsSelection) {
+          const showLabels = event.transform.k > 1.2;
+          claimLabelsSelection.attr("opacity", showLabels ? 1 : 0);
+        }
       });
 
     svg.call(zoom);
@@ -203,8 +211,8 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
     node.call(drag);
 
     // Add document labels
-    const labels = g.append("g")
-      .attr("class", "labels")
+    const docLabels = g.append("g")
+      .attr("class", "doc-labels")
       .selectAll("text")
       .data(documentNodes)
       .join("text")
@@ -216,6 +224,23 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
       .text(d => {
         const maxLen = 20;
         return d.label.length > maxLen ? d.label.slice(0, maxLen - 1) + "..." : d.label;
+      });
+
+    // Add claim labels (hidden by default, shown on zoom)
+    claimLabelsSelection = g.append("g")
+      .attr("class", "claim-labels")
+      .selectAll<SVGTextElement, SimulationNode>("text")
+      .data(claimNodes)
+      .join("text")
+      .attr("font-size", "8px")
+      .attr("fill", "currentColor")
+      .attr("text-anchor", "middle")
+      .attr("dy", -12)
+      .attr("pointer-events", "none")
+      .attr("opacity", 0)
+      .text(d => {
+        const maxLen = 15;
+        return d.label.length > maxLen ? d.label.slice(0, maxLen - 1) + "…" : d.label;
       });
 
     // Update positions on tick
@@ -230,8 +255,12 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
         .attr("cx", d => d.x!)
         .attr("cy", d => d.y!);
 
-      labels
+      docLabels
         .attr("x", d => d.x!)
+        .attr("y", d => d.y!);
+
+      claimLabelsSelection
+        ?.attr("x", d => d.x!)
         .attr("y", d => d.y!);
     });
 
