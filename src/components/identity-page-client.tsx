@@ -5,6 +5,7 @@ import { FileText, LayoutGrid, Network, Sun, Sparkles } from "lucide-react";
 import { IdentityConstellation } from "@/components/identity-constellation";
 import { EvidenceConstellation } from "@/components/evidence-constellation";
 import { ConfidenceSunburst } from "@/components/confidence-sunburst";
+import { SkillClusters } from "@/components/skill-clusters";
 import { ClaimDetailPanel } from "@/components/claim-detail-panel";
 import { UploadResumeModal } from "@/components/upload-resume-modal";
 import { AddStoryModal } from "@/components/add-story-modal";
@@ -127,13 +128,10 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
             selectedClaimId={selectedClaimId}
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-muted-foreground">
-            <div className="text-center">
-              <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Skill Clusters coming soon</p>
-              <p className="text-sm mt-1">Uses AI embeddings to show related skills</p>
-            </div>
-          </div>
+          <SkillClusters
+            onSelectClaim={setSelectedClaimId}
+            selectedClaimId={selectedClaimId}
+          />
         )}
       </div>
 
