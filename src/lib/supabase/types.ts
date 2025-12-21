@@ -1,3 +1,4 @@
+Connecting to db 5432
 export type Json =
   | string
   | number
@@ -7,8 +8,30 @@ export type Json =
   | Json[]
 
 export type Database = {
-  __InternalSupabase: {
-    PostgrestVersion: "14.1"
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -199,8 +222,10 @@ export type Database = {
           created_at: string | null
           document_id: string | null
           embedding: string | null
+          evidence_date: string | null
           evidence_type: string
           id: string
+          source_type: string
           text: string
           user_id: string
           work_history_id: string | null
@@ -210,8 +235,10 @@ export type Database = {
           created_at?: string | null
           document_id?: string | null
           embedding?: string | null
+          evidence_date?: string | null
           evidence_type: string
           id?: string
+          source_type?: string
           text: string
           user_id: string
           work_history_id?: string | null
@@ -221,8 +248,10 @@ export type Database = {
           created_at?: string | null
           document_id?: string | null
           embedding?: string | null
+          evidence_date?: string | null
           evidence_type?: string
           id?: string
+          source_type?: string
           text?: string
           user_id?: string
           work_history_id?: string | null
@@ -648,6 +677,22 @@ export type Database = {
           type: string
         }[]
       }
+      find_relevant_claims_for_synthesis: {
+        Args: {
+          max_claims?: number
+          p_user_id: string
+          query_embedding: string
+          similarity_threshold?: number
+        }
+        Returns: {
+          confidence: number
+          description: string
+          id: string
+          label: string
+          similarity: number
+          type: string
+        }[]
+      }
       get_shared_profile: { Args: { p_token: string }; Returns: Json }
       match_claims: {
         Args: {
@@ -808,7 +853,11 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
 } as const
+
