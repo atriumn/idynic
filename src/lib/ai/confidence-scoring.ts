@@ -50,3 +50,42 @@ export const STRENGTH_MULTIPLIERS: Record<StrengthLevel, number> = {
   medium: 1.0,
   weak: 0.7,
 };
+
+/**
+ * Calculate recency decay factor for evidence
+ *
+ * Formula: 0.5 ^ (years_old / half_life)
+ *
+ * @param evidenceDate - When the evidence occurred
+ * @param claimType - Type of claim (determines half-life)
+ * @param referenceDate - Date to calculate age from (defaults to now)
+ * @returns Decay factor between 0 and 1
+ */
+export function calculateRecencyDecay(
+  evidenceDate: Date | null,
+  claimType: ClaimType,
+  referenceDate: Date = new Date()
+): number {
+  // No date = no penalty (be generous)
+  if (!evidenceDate) {
+    return 1.0;
+  }
+
+  const halfLife = CLAIM_HALF_LIVES[claimType];
+
+  // Infinite half-life = no decay
+  if (halfLife === Infinity) {
+    return 1.0;
+  }
+
+  const msPerYear = 365.25 * 24 * 60 * 60 * 1000;
+  const ageInYears = (referenceDate.getTime() - evidenceDate.getTime()) / msPerYear;
+
+  // Future dates or very recent = no decay
+  if (ageInYears <= 0) {
+    return 1.0;
+  }
+
+  // Exponential decay: 0.5 ^ (age / half_life)
+  return Math.pow(0.5, ageInYears / halfLife);
+}
