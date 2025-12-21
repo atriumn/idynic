@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FileText } from "lucide-react";
 import { IdentityConstellation } from "@/components/identity-constellation";
 import { ClaimDetailPanel } from "@/components/claim-detail-panel";
@@ -15,7 +15,16 @@ interface IdentityPageClientProps {
 
 export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const { data } = useIdentityGraph();
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const claimCount = data?.nodes.length ?? 0;
   const showEmptyState = !hasAnyClaims && claimCount === 0;
@@ -50,6 +59,14 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
               <UploadResumeModal />
               <AddStoryModal />
             </div>
+          </div>
+        ) : isMobile ? (
+          <div className="flex flex-col items-center justify-center h-full text-center px-4">
+            <p className="text-muted-foreground py-8">
+              Constellation view works best on larger screens.
+              <br />
+              <span className="text-sm">Try rotating your device or using a desktop.</span>
+            </p>
           </div>
         ) : (
           <IdentityConstellation
