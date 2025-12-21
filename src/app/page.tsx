@@ -5,16 +5,14 @@ import {
   Briefcase,
   Check,
   FileText,
-  MessageSquare,
-  Mic,
   Shield,
   Sparkles,
-  Star,
   Target,
   Users,
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RotatingScenarios } from "@/components/rotating-scenarios";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function Home() {
@@ -169,37 +167,10 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Use Cases */}
+      {/* Rotating Scenarios */}
       <section className="py-24 px-4 bg-muted/50">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl font-bold mb-4">One identity. Many uses.</h2>
-            <p className="text-muted-foreground text-lg">
-              Not just for job searching. Your professional identity works for you year-round.
-            </p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <UseCaseCard
-              icon={<Target className="w-5 h-5" />}
-              title="Job applications"
-              description="Tailored profiles that show exactly why you fit"
-            />
-            <UseCaseCard
-              icon={<Star className="w-5 h-5" />}
-              title="Performance reviews"
-              description="Your accomplishments, organized and ready"
-            />
-            <UseCaseCard
-              icon={<MessageSquare className="w-5 h-5" />}
-              title="Content creation"
-              description="LinkedIn posts, newsletters, and thought leadership"
-            />
-            <UseCaseCard
-              icon={<Mic className="w-5 h-5" />}
-              title="Speaking &amp; bios"
-              description="Conference bios and intros, always current"
-            />
-          </div>
+        <div className="container mx-auto max-w-3xl">
+          <RotatingScenarios />
         </div>
       </section>
 
@@ -274,20 +245,6 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode, titl
             </div>
             <h3 className="font-semibold text-lg mb-2">{title}</h3>
             <p className="text-muted-foreground">{description}</p>
-        </div>
-    )
-}
-
-function UseCaseCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
-    return (
-        <div className="p-5 rounded-xl border bg-card text-card-foreground hover:border-primary/50 transition-colors">
-            <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
-                    {icon}
-                </div>
-                <h3 className="font-semibold">{title}</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">{description}</p>
         </div>
     )
 }
