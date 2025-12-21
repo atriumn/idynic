@@ -210,9 +210,19 @@ export function IdentityConstellation({ onSelectClaim, selectedClaimId }: Conste
         className="bg-background block mx-auto"
         style={{ maxWidth: '100%', maxHeight: '100%' }}
       />
+      {/* Legend */}
+      <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 text-xs border max-w-[220px]">
+        <div className="font-medium mb-2">Claims by Category</div>
+        <div className="text-muted-foreground mb-2">
+          Each box is a claim extracted from your documents. Brighter = higher confidence.
+        </div>
+        <div className="text-muted-foreground/70">
+          Click any claim to see details and supporting evidence.
+        </div>
+      </div>
       {/* Hover tooltip */}
       {hoveredNode && (
-        <div className="absolute top-8 left-8 bg-background/95 backdrop-blur-sm rounded-lg p-3 text-sm shadow-lg border max-w-xs z-10">
+        <div className="absolute top-8 right-8 bg-background/95 backdrop-blur-sm rounded-lg p-3 text-sm shadow-lg border max-w-xs z-10">
           <div className="font-medium">{hoveredNode.label}</div>
           <div className="text-muted-foreground text-xs mt-1">
             {TYPE_LABELS[hoveredNode.type]} · {Math.round(hoveredNode.confidence * 100)}% confidence

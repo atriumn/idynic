@@ -316,6 +316,16 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
         className="bg-background block mx-auto"
         style={{ maxWidth: '100%', maxHeight: '100%' }}
       />
+      {/* Legend */}
+      <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 text-xs border max-w-[220px]">
+        <div className="font-medium mb-2">Document Sources</div>
+        <div className="text-muted-foreground mb-2">
+          Documents in center, claims radiate outward grouped by type. Hover to see which document sourced each claim.
+        </div>
+        <div className="text-muted-foreground/70">
+          Lines connect claims to their source documents.
+        </div>
+      </div>
       {/* Hover tooltip */}
       {hoveredClaim && (
         <div className="absolute top-8 right-8 bg-background/95 backdrop-blur-sm rounded-lg p-3 text-sm shadow-lg border max-w-xs z-10">

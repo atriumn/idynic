@@ -9,10 +9,25 @@ interface ClusterNode {
   confidence: number;
   x: number;
   y: number;
+  clusterId?: number;
+}
+
+interface ClusterRegion {
+  id: number;
+  label: string;
+  keywords: string[];
+  x: number;
+  y: number;
+  count: number;
 }
 
 interface ClusterData {
   nodes: ClusterNode[];
+  regions?: ClusterRegion[];
+  hasEmbeddings: boolean;
+  message?: string;
+  embeddingCount?: number;
+  totalCount?: number;
 }
 
 async function fetchClusters(): Promise<ClusterData> {

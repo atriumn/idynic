@@ -19,6 +19,16 @@ interface ClusterNode {
   confidence: number;
   x: number;
   y: number;
+  clusterId?: number;
+}
+
+interface ClusterRegion {
+  id: number;
+  label: string;
+  keywords: string[];
+  x: number;
+  y: number;
+  count: number;
 }
 
 interface ClustersProps {
@@ -128,7 +138,27 @@ export function SkillClusters({ onSelectClaim, selectedClaimId }: ClustersProps)
       .attr("font-size", "10px")
       .attr("opacity", 0)
       .attr("pointer-events", "none")
-      .text((d: ClusterNode) => (d.label.length > 25 ? d.label.slice(0, 24) + "…" : d.label));
+      .text((d: ClusterNode) => (d.label.length > 20 ? d.label.slice(0, 19) + "…" : d.label));
+
+    // Draw subtle cluster boundaries (no labels - let proximity speak for itself)
+    if (data.regions && data.regions.length > 0) {
+      const regionGroup = g.append("g").attr("class", "regions");
+
+      // Draw a subtle circle around each cluster centroid
+      regionGroup
+        .selectAll("circle.region-bg")
+        .data(data.regions)
+        .join("circle")
+        .attr("class", "region-bg")
+        .attr("cx", (d: ClusterRegion) => xScale(d.x))
+        .attr("cy", (d: ClusterRegion) => yScale(d.y))
+        .attr("r", (d: ClusterRegion) => Math.sqrt(d.count) * 12 + 30)
+        .attr("fill", "none")
+        .attr("stroke", "#e5e7eb")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4,4")
+        .attr("opacity", 0.5);
+    }
 
     return () => {};
   }, [data, dimensions, onSelectClaim, selectedClaimId]);
@@ -179,8 +209,11 @@ export function SkillClusters({ onSelectClaim, selectedClaimId }: ClustersProps)
         style={{ maxWidth: "100%", maxHeight: "100%" }}
       />
       {/* Legend */}
-      <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 text-xs border">
-        <div className="font-medium mb-2">Skill Clusters</div>
+      <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 text-xs border max-w-[200px]">
+        <div className="font-medium mb-2">Similarity Map</div>
+        <div className="text-muted-foreground mb-2">
+          Similar claims appear near each other. Hover to explore.
+        </div>
         <div className="space-y-1">
           {Array.from(typeCounts.entries())
             .sort((a, b) => b[1] - a[1])
@@ -195,9 +228,6 @@ export function SkillClusters({ onSelectClaim, selectedClaimId }: ClustersProps)
                 </span>
               </div>
             ))}
-        </div>
-        <div className="mt-2 pt-2 border-t text-muted-foreground/70">
-          Using UMAP dimensionality reduction
         </div>
       </div>
       {/* Hover tooltip */}

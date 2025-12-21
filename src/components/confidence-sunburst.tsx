@@ -254,8 +254,11 @@ export function ConfidenceSunburst({ onSelectClaim, selectedClaimId }: SunburstP
         className="block"
       />
       {/* Legend */}
-      <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 text-xs border">
-        <div className="font-medium mb-2">Evidence Heat</div>
+      <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 text-xs border max-w-[200px]">
+        <div className="font-medium mb-2">Evidence Strength</div>
+        <div className="text-muted-foreground mb-2">
+          Inner ring shows categories. Outer ring shows claims colored by how much evidence supports them.
+        </div>
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-sm bg-red-500" />
@@ -271,7 +274,7 @@ export function ConfidenceSunburst({ onSelectClaim, selectedClaimId }: SunburstP
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-sm bg-slate-400" />
-            <span>No evidence (cold)</span>
+            <span>No evidence</span>
           </div>
         </div>
       </div>
