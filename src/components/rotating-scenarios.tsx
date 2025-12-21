@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Clock, Briefcase, TrendingUp, Mic, PenLine } from "lucide-react";
+import { Clock, Briefcase, TrendUp, Microphone, PencilLine } from "@phosphor-icons/react";
 
 const scenarios = [
   {
@@ -17,19 +17,19 @@ const scenarios = [
     solution: "Generate a tailored profile in minutes.",
   },
   {
-    icon: TrendingUp,
+    icon: TrendUp,
     moment: "Raise conversation next week.",
     pain: "You know you deserve it. But can you prove it?",
     solution: "Evidence ready. Confidence earned.",
   },
   {
-    icon: Mic,
+    icon: Microphone,
     moment: "Conference bio needed by EOD.",
     pain: "Copy-paste from LinkedIn? It's stale. Write from scratch? No time.",
     solution: "Current bio, tailored to the event.",
   },
   {
-    icon: PenLine,
+    icon: PencilLine,
     moment: "LinkedIn post stuck in drafts.",
     pain: "You have thoughts. Articulating your expertise? Harder than it should be.",
     solution: "Your story, already synthesized.",

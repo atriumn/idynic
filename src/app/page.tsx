@@ -6,7 +6,7 @@ import {
   Check,
   FileText,
   Shield,
-  Sparkles,
+  Sparkle,
   Target,
   Users,
   Zap,
@@ -105,7 +105,7 @@ export default async function Home() {
             <div className="grid md:grid-cols-2 gap-12 items-center">
                 <div className="order-2 md:order-1 relative aspect-square md:aspect-video rounded-xl bg-slate-100 dark:bg-slate-800 border shadow-sm flex items-center justify-center overflow-hidden group">
                     <div className="absolute inset-0 bg-gradient-to-tr from-green-500/10 to-blue-500/10 group-hover:opacity-75 transition-opacity"></div>
-                    <Sparkles className="h-16 w-16 text-muted-foreground/30" />
+                    <Sparkle className="h-16 w-16 text-muted-foreground/30" />
                 </div>
                 <div className="order-1 md:order-2 space-y-6">
                     <div className="flex items-center gap-3">
@@ -183,7 +183,7 @@ export default async function Home() {
               </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
                   <FeatureCard
-                    icon={<Sparkles className="w-6 h-6" />}
+                    icon={<Sparkle className="w-6 h-6" />}
                     title="Evidence, not assertions"
                     description="Every claim links back to the document that proves it. Confidence scores show what's solid."
                   />
