@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FileText, LayoutGrid, Network } from "lucide-react";
+import { FileText, LayoutGrid, Network, Sun, Sparkles } from "lucide-react";
 import { IdentityConstellation } from "@/components/identity-constellation";
 import { EvidenceConstellation } from "@/components/evidence-constellation";
+import { ConfidenceSunburst } from "@/components/confidence-sunburst";
 import { ClaimDetailPanel } from "@/components/claim-detail-panel";
 import { UploadResumeModal } from "@/components/upload-resume-modal";
 import { AddStoryModal } from "@/components/add-story-modal";
@@ -11,7 +12,7 @@ import { useIdentityGraph } from "@/lib/hooks/use-identity-graph";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-type ViewType = "treemap" | "constellation";
+type ViewType = "treemap" | "radial" | "sunburst" | "clusters";
 
 interface IdentityPageClientProps {
   hasAnyClaims: boolean;
@@ -52,19 +53,33 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
                 variant={viewType === "treemap" ? "secondary" : "ghost"}
                 size="sm"
                 onClick={() => setViewType("treemap")}
-                className="gap-1.5"
+                title="Treemap - Claims grouped by type"
               >
                 <LayoutGrid className="h-4 w-4" />
-                <span className="hidden sm:inline">Treemap</span>
               </Button>
               <Button
-                variant={viewType === "constellation" ? "secondary" : "ghost"}
+                variant={viewType === "radial" ? "secondary" : "ghost"}
                 size="sm"
-                onClick={() => setViewType("constellation")}
-                className="gap-1.5"
+                onClick={() => setViewType("radial")}
+                title="Radial - Documents and claims"
               >
                 <Network className="h-4 w-4" />
-                <span className="hidden sm:inline">Graph</span>
+              </Button>
+              <Button
+                variant={viewType === "sunburst" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setViewType("sunburst")}
+                title="Sunburst - Confidence heat map"
+              >
+                <Sun className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewType === "clusters" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setViewType("clusters")}
+                title="Clusters - Skill similarity map"
+              >
+                <Sparkles className="h-4 w-4" />
               </Button>
             </div>
           )}
@@ -101,11 +116,24 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
             onSelectClaim={setSelectedClaimId}
             selectedClaimId={selectedClaimId}
           />
-        ) : (
+        ) : viewType === "radial" ? (
           <EvidenceConstellation
             onSelectClaim={setSelectedClaimId}
             selectedClaimId={selectedClaimId}
           />
+        ) : viewType === "sunburst" ? (
+          <ConfidenceSunburst
+            onSelectClaim={setSelectedClaimId}
+            selectedClaimId={selectedClaimId}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-muted-foreground">
+            <div className="text-center">
+              <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>Skill Clusters coming soon</p>
+              <p className="text-sm mt-1">Uses AI embeddings to show related skills</p>
+            </div>
+          </div>
         )}
       </div>
 
