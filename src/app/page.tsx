@@ -5,8 +5,11 @@ import {
   Briefcase,
   Check,
   FileText,
+  MessageSquare,
+  Mic,
   Shield,
   Sparkles,
+  Star,
   Target,
   Users,
   Zap,
@@ -36,12 +39,12 @@ export default async function Home() {
 
         <div className="container mx-auto px-4 text-center space-y-8">
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl md:text-7xl max-w-4xl mx-auto">
-            You&apos;ve done more than <br className="hidden md:block" />
-            your resume says.
+            Your professional identity, <br className="hidden md:block" />
+            always current.
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Build your complete professional identity once. Generate a unique, tailored profile for every opportunity.
+            Build once, use everywhere. Job applications, performance reviews, LinkedIn posts, speaker bios—your synthesized career, ready when you need it.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
@@ -139,22 +142,22 @@ export default async function Home() {
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">3</div>
                         <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Share</span>
                     </div>
-                    <h2 className="text-3xl font-bold">A unique profile for every opportunity.</h2>
+                    <h2 className="text-3xl font-bold">Use it everywhere.</h2>
                     <p className="text-lg text-muted-foreground">
-                        Paste a job description. We generate a tailored profile page showing exactly why you&apos;re a fit—with the evidence to back it up. One link. Their eyes only.
+                        Generate tailored outputs for any context. A job application? Shareable profile link. Performance review? Pull your accomplishments. Speaker bio? Conference-ready in seconds.
                     </p>
                     <ul className="space-y-3 pt-2">
                         <li className="flex items-center gap-3">
                             <CheckIcon />
-                            <span>Unique shareable URL per opportunity</span>
+                            <span>Tailored profiles for job opportunities</span>
                         </li>
                         <li className="flex items-center gap-3">
                             <CheckIcon />
-                            <span>See when recruiters view your profile</span>
+                            <span>Evidence ready for reviews and negotiations</span>
                         </li>
                         <li className="flex items-center gap-3">
                             <CheckIcon />
-                            <span>Revoke access anytime</span>
+                            <span>Bios, intros, and posts on demand</span>
                         </li>
                     </ul>
                 </div>
@@ -166,8 +169,42 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* What makes this different */}
+      {/* Use Cases */}
       <section className="py-24 px-4 bg-muted/50">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-3xl font-bold mb-4">One identity. Many uses.</h2>
+            <p className="text-muted-foreground text-lg">
+              Not just for job searching. Your professional identity works for you year-round.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <UseCaseCard
+              icon={<Target className="w-5 h-5" />}
+              title="Job applications"
+              description="Tailored profiles that show exactly why you fit"
+            />
+            <UseCaseCard
+              icon={<Star className="w-5 h-5" />}
+              title="Performance reviews"
+              description="Your accomplishments, organized and ready"
+            />
+            <UseCaseCard
+              icon={<MessageSquare className="w-5 h-5" />}
+              title="Content creation"
+              description="LinkedIn posts, newsletters, and thought leadership"
+            />
+            <UseCaseCard
+              icon={<Mic className="w-5 h-5" />}
+              title="Speaking &amp; bios"
+              description="Conference bios and intros, always current"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* What makes this different */}
+      <section className="py-24 px-4 bg-background">
           <div className="container mx-auto max-w-6xl">
               <div className="text-center max-w-2xl mx-auto mb-16">
                   <h2 className="text-3xl font-bold mb-4">Not another resume tool.</h2>
@@ -209,11 +246,11 @@ export default async function Home() {
       </section>
 
       {/* Final CTA */}
-      <section className="px-4 py-24 bg-background">
-        <div className="max-w-4xl mx-auto text-center space-y-8 bg-gradient-to-b from-muted/50 to-muted rounded-3xl p-8 md:p-16 border">
-          <h2 className="text-3xl md:text-4xl font-bold">Your career deserves more than a page.</h2>
+      <section className="px-4 py-24 bg-muted/50">
+        <div className="max-w-4xl mx-auto text-center space-y-8 bg-gradient-to-b from-background to-muted/50 rounded-3xl p-8 md:p-16 border">
+          <h2 className="text-3xl md:text-4xl font-bold">Your career is always evolving. Your identity should too.</h2>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Start building your complete professional identity.
+            Start with what you have. Add as you grow. Use it whenever you need it.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="text-lg h-12 px-8">
@@ -237,6 +274,20 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode, titl
             </div>
             <h3 className="font-semibold text-lg mb-2">{title}</h3>
             <p className="text-muted-foreground">{description}</p>
+        </div>
+    )
+}
+
+function UseCaseCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+    return (
+        <div className="p-5 rounded-xl border bg-card text-card-foreground hover:border-primary/50 transition-colors">
+            <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+                    {icon}
+                </div>
+                <h3 className="font-semibold">{title}</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">{description}</p>
         </div>
     )
 }
