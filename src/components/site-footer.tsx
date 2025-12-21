@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export function SiteFooter() {
   return (
@@ -7,7 +8,13 @@ export function SiteFooter() {
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div className="col-span-1 md:col-span-2 space-y-4">
             <div className="flex items-center gap-2 font-semibold text-xl">
-              <div className="w-8 h-8 bg-primary rounded-lg"></div>
+              <Image
+                src="/logo.svg"
+                alt="Idynic"
+                width={32}
+                height={32}
+                className="h-8 w-8"
+              />
               Idynic
             </div>
             <p className="text-muted-foreground max-w-xs">
