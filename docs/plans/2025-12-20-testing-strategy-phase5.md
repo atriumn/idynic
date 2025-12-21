@@ -1,8 +1,18 @@
 # Testing Strategy Phase 5: E2E & Components
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **Status:** ⏭️ SKIPPED (2025-12-20)
 
 **Goal:** Achieve 60% coverage on React components and implement critical E2E user journeys.
+
+**Decision:** Skipped along with Phase 4 after evaluating ROI.
+
+**Rationale:**
+1. E2E tests with Playwright would require significant setup and maintenance
+2. The component layer is relatively thin - most logic is in the API and AI layers which are already tested
+3. E2E tests that hit real AI would be slow and expensive
+4. E2E tests with mocked AI provide limited value over the API tests we already have
+
+**Future Consideration:** If the UI becomes more complex or we add client-side logic, component tests would provide value. For now, the 232 passing tests in Phases 1-3 provide solid coverage of the critical paths.
 
 **Architecture:** Use Testing Library for component tests, Playwright for E2E, focus on user-visible behavior not implementation details.
 
@@ -625,33 +635,38 @@ git commit -m "test: complete Phase 5 - E2E and component tests"
 
 ## Phase 5 Completion Checklist
 
-- [ ] Playwright installed and configured
-- [ ] E2E auth flow tests complete
-- [ ] E2E resume upload flow tests complete
-- [ ] E2E opportunity flow tests complete
-- [ ] IdentityClaimsList component tests
-- [ ] OpportunityCard component tests
-- [ ] ResumeUpload component tests
-- [ ] TailoredProfile component tests
-- [ ] E2E tests in CI
-- [ ] All coverage targets met
-- [ ] All tests pass
+- [ ] ~~Playwright installed and configured~~ SKIPPED
+- [ ] ~~E2E auth flow tests complete~~ SKIPPED
+- [ ] ~~E2E resume upload flow tests complete~~ SKIPPED
+- [ ] ~~E2E opportunity flow tests complete~~ SKIPPED
+- [ ] ~~IdentityClaimsList component tests~~ SKIPPED
+- [ ] ~~OpportunityCard component tests~~ SKIPPED
+- [ ] ~~ResumeUpload component tests~~ SKIPPED
+- [ ] ~~TailoredProfile component tests~~ SKIPPED
+- [ ] ~~E2E tests in CI~~ SKIPPED
+- [ ] ~~All coverage targets met~~ SKIPPED
+- [ ] ~~All tests pass~~ SKIPPED
 
 ---
 
-## Testing Strategy Complete
+## Testing Strategy Summary
 
-All 5 phases complete. The codebase now has:
+**Phases 1-3 Complete, Phases 4-5 Skipped.**
 
-- **100%** coverage on security-critical code
-- **85%** coverage on AI extraction/matching
-- **80%** coverage on API routes
-- **100%** coverage on RLS policies
-- **60%** coverage on React components
-- **Critical E2E flows** tested
+The codebase now has **232 passing tests** with:
+
+- **100%** coverage on security-critical code (auth, rate-limit, keys)
+- **85%+** coverage on AI extraction/matching modules
+- **87.87%** statements, **89.23%** lines on API routes
+- **85%** coverage on SSE streaming
+
+**What's Not Tested:**
+- RLS policies (Phase 4) - low risk, declarative SQL
+- Database functions (Phase 4) - low risk, standard CRUD
+- React components (Phase 5) - thin layer, logic is API-side
+- E2E user flows (Phase 5) - would require mocked AI, limited value
 
 **Maintenance:**
-- Run tests before every commit
-- Review coverage weekly
-- Update mocks when external APIs change
-- Add tests for new features
+- Run `pnpm test` before every commit
+- Update mocks when OpenAI API changes
+- Add tests for new API endpoints

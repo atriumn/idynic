@@ -1,8 +1,18 @@
 # Testing Strategy Phase 4: Integration Tests
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **Status:** ⏭️ SKIPPED (2025-12-20)
 
 **Goal:** Achieve 70% coverage on database operations and 100% on RLS policies.
+
+**Decision:** Skipped after evaluating ROI following Phase 3 completion.
+
+**Rationale:**
+1. RLS policies are declarative SQL - straightforward and unlikely to have subtle bugs
+2. The database layer (Supabase/PostgreSQL) is battle-tested infrastructure
+3. The real bugs in this application live in the AI layer, which is already well-tested
+4. These "E2E workflow tests" wouldn't actually call AI providers - they'd just verify data lifecycle with pre-made data, providing limited value
+
+**Infrastructure Ready:** The project has Supabase running locally with migrations and RLS policies defined. This phase could be implemented later if needed.
 
 **Architecture:** Use local Supabase instance, test real database operations, validate RLS policies prevent data leakage, test multi-step workflows.
 
@@ -700,18 +710,18 @@ git commit -m "test: complete Phase 4 - integration tests with 100% RLS coverage
 
 ## Phase 4 Completion Checklist
 
-- [ ] Integration test config created
-- [ ] Profiles RLS tests complete (100%)
-- [ ] Documents RLS tests complete (100%)
-- [ ] Claims RLS tests complete (100%)
-- [ ] Opportunities RLS tests complete (100%)
-- [ ] Tailored profiles RLS tests complete (100%)
-- [ ] API keys RLS tests complete (100%)
-- [ ] Shared links RLS tests complete (100%)
-- [ ] Database CRUD tests complete
-- [ ] Database function tests complete
-- [ ] E2E workflow tests complete
-- [ ] CI job configured
-- [ ] All tests pass with local Supabase
+- [ ] ~~Integration test config created~~ SKIPPED
+- [ ] ~~Profiles RLS tests complete (100%)~~ SKIPPED
+- [ ] ~~Documents RLS tests complete (100%)~~ SKIPPED
+- [ ] ~~Claims RLS tests complete (100%)~~ SKIPPED
+- [ ] ~~Opportunities RLS tests complete (100%)~~ SKIPPED
+- [ ] ~~Tailored profiles RLS tests complete (100%)~~ SKIPPED
+- [ ] ~~API keys RLS tests complete (100%)~~ SKIPPED
+- [ ] ~~Shared links RLS tests complete (100%)~~ SKIPPED
+- [ ] ~~Database CRUD tests complete~~ SKIPPED
+- [ ] ~~Database function tests complete~~ SKIPPED
+- [ ] ~~E2E workflow tests complete~~ SKIPPED
+- [ ] ~~CI job configured~~ SKIPPED
+- [ ] ~~All tests pass with local Supabase~~ SKIPPED
 
-**Next:** Phase 5 - E2E & Components
+**Next:** Phase 5 - E2E & Components ⏭️ ALSO SKIPPED
