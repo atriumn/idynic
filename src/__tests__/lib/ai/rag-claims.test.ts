@@ -40,7 +40,7 @@ describe('findRelevantClaimsForBatch', () => {
 
     expect(mockRpc).toHaveBeenCalledTimes(2);
     expect(mockRpc).toHaveBeenCalledWith('find_relevant_claims_for_synthesis', {
-      query_embedding: JSON.stringify([0.1, 0.2, 0.3]),
+      query_embedding: [0.1, 0.2, 0.3],
       p_user_id: 'user-123',
       similarity_threshold: 0.5,
       max_claims: 25,
@@ -98,7 +98,7 @@ describe('findRelevantClaimsForBatch', () => {
     });
 
     expect(mockRpc).toHaveBeenCalledWith('find_relevant_claims_for_synthesis', {
-      query_embedding: JSON.stringify([0.1, 0.2, 0.3]),
+      query_embedding: [0.1, 0.2, 0.3],
       p_user_id: 'user-123',
       similarity_threshold: 0.7,
       max_claims: 10,

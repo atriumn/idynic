@@ -60,7 +60,7 @@ export async function findRelevantClaimsForBatch(
   // Query for each evidence embedding
   for (const evidence of evidenceItems) {
     const { data, error } = await supabase.rpc('find_relevant_claims_for_synthesis', {
-      query_embedding: JSON.stringify(evidence.embedding),
+      query_embedding: evidence.embedding as unknown as string,
       p_user_id: userId,
       similarity_threshold: similarityThreshold,
       max_claims: maxClaimsPerQuery,
