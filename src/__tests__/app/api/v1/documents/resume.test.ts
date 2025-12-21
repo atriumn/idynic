@@ -201,7 +201,7 @@ describe('Resume Upload API Route', () => {
 
     it('validates file is provided', async () => {
       const { POST } = await import('@/app/api/v1/documents/resume/route')
-      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as {
+      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as unknown as {
         getSentEvents: () => unknown[]
         clearEvents: () => void
       }
@@ -227,7 +227,7 @@ describe('Resume Upload API Route', () => {
 
     it('validates file type is PDF', async () => {
       const { POST } = await import('@/app/api/v1/documents/resume/route')
-      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as {
+      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as unknown as {
         getSentEvents: () => unknown[]
         clearEvents: () => void
       }
@@ -257,7 +257,7 @@ describe('Resume Upload API Route', () => {
 
     it('validates file size is under 10MB', async () => {
       const { POST } = await import('@/app/api/v1/documents/resume/route')
-      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as {
+      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as unknown as {
         getSentEvents: () => unknown[]
         clearEvents: () => void
       }
@@ -308,7 +308,7 @@ describe('Resume Upload API Route', () => {
       })
 
       const { POST } = await import('@/app/api/v1/documents/resume/route')
-      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as {
+      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as unknown as {
         getSentEvents: () => unknown[]
         clearEvents: () => void
       }
@@ -344,7 +344,7 @@ describe('Resume Upload API Route', () => {
       mockExtractText.mockResolvedValue({ text: [''] })
 
       const { POST } = await import('@/app/api/v1/documents/resume/route')
-      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as {
+      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as unknown as {
         getSentEvents: () => unknown[]
         clearEvents: () => void
       }

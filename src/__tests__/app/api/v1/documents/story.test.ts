@@ -157,7 +157,7 @@ describe('Story Upload API Route', () => {
 
     it('validates story text is provided', async () => {
       const { POST } = await import('@/app/api/v1/documents/story/route')
-      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as {
+      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as unknown as {
         getSentEvents: () => unknown[]
         clearEvents: () => void
       }
@@ -179,7 +179,7 @@ describe('Story Upload API Route', () => {
 
     it('validates story minimum length (200 chars)', async () => {
       const { POST } = await import('@/app/api/v1/documents/story/route')
-      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as {
+      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as unknown as {
         getSentEvents: () => unknown[]
         clearEvents: () => void
       }
@@ -201,7 +201,7 @@ describe('Story Upload API Route', () => {
 
     it('validates story maximum length (10000 chars)', async () => {
       const { POST } = await import('@/app/api/v1/documents/story/route')
-      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as {
+      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as unknown as {
         getSentEvents: () => unknown[]
         clearEvents: () => void
       }
@@ -241,7 +241,7 @@ describe('Story Upload API Route', () => {
       })
 
       const { POST } = await import('@/app/api/v1/documents/story/route')
-      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as {
+      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as unknown as {
         getSentEvents: () => unknown[]
         clearEvents: () => void
       }
@@ -267,7 +267,7 @@ describe('Story Upload API Route', () => {
 
     it('sends validating phase event', async () => {
       const { POST } = await import('@/app/api/v1/documents/story/route')
-      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as {
+      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as unknown as {
         getSentEvents: () => unknown[]
         clearEvents: () => void
       }
@@ -306,7 +306,7 @@ describe('Story Upload API Route', () => {
       })
 
       const { POST } = await import('@/app/api/v1/documents/story/route')
-      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as {
+      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as unknown as {
         getSentEvents: () => unknown[]
         clearEvents: () => void
       }
@@ -328,7 +328,7 @@ describe('Story Upload API Route', () => {
 
     it('validates text is a string', async () => {
       const { POST } = await import('@/app/api/v1/documents/story/route')
-      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as {
+      const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as unknown as {
         getSentEvents: () => unknown[]
         clearEvents: () => void
       }

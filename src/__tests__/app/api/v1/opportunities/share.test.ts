@@ -45,16 +45,13 @@ function createMockRequest(
 ): NextRequest {
   const { method = 'POST', headers = {}, body } = options
 
-  const requestInit: RequestInit = {
+  const requestInit = {
     method,
     headers: {
       'Content-Type': 'application/json',
       ...headers
-    }
-  }
-
-  if (body) {
-    requestInit.body = JSON.stringify(body)
+    },
+    body: body ? JSON.stringify(body) : undefined
   }
 
   return new NextRequest(new URL(url, 'http://localhost:3000'), requestInit)

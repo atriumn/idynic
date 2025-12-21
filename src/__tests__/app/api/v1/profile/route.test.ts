@@ -56,16 +56,13 @@ function createMockRequest(
 ): NextRequest {
   const { method = 'GET', headers = {}, body } = options
 
-  const requestInit: RequestInit = {
+  const requestInit = {
     method,
     headers: {
       'Content-Type': 'application/json',
       ...headers
-    }
-  }
-
-  if (body && method !== 'GET') {
-    requestInit.body = JSON.stringify(body)
+    },
+    body: body && method !== 'GET' ? JSON.stringify(body) : undefined
   }
 
   return new NextRequest(new URL(url, 'http://localhost:3000'), requestInit)

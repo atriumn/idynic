@@ -107,7 +107,7 @@ export async function GET(): Promise<NextResponse<GraphResponse | { error: strin
     for (let j = i + 1; j < claimIds.length; j++) {
       const evidence1 = claimToEvidence.get(claimIds[i]) || new Set();
       const evidence2 = claimToEvidence.get(claimIds[j]) || new Set();
-      const shared = [...evidence1].filter(e => evidence2.has(e));
+      const shared = Array.from(evidence1).filter(e => evidence2.has(e));
 
       if (shared.length > 0) {
         edges.push({

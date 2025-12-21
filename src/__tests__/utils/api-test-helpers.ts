@@ -16,16 +16,13 @@ export function createMockRequest(
     urlWithParams.searchParams.set(key, value)
   })
 
-  const requestInit: RequestInit = {
+  const requestInit = {
     method,
     headers: {
       'Content-Type': 'application/json',
       ...headers
-    }
-  }
-
-  if (body && method !== 'GET') {
-    requestInit.body = JSON.stringify(body)
+    },
+    body: body && method !== 'GET' ? JSON.stringify(body) : undefined
   }
 
   return new NextRequest(urlWithParams, requestInit)

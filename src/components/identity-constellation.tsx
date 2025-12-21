@@ -112,27 +112,29 @@ export function IdentityConstellation({ onSelectClaim, selectedClaimId }: Conste
     const node = g
       .append("g")
       .attr("class", "nodes")
-      .selectAll("g")
+      .selectAll<SVGGElement, SimulationNode>("g")
       .data(nodes)
       .join("g")
-      .attr("cursor", "pointer")
-      .call(
-        d3.drag<SVGGElement, SimulationNode>()
-          .on("start", (event, d) => {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
-          })
-          .on("drag", (event, d) => {
-            d.fx = event.x;
-            d.fy = event.y;
-          })
-          .on("end", (event, d) => {
-            if (!event.active) simulation.alphaTarget(0);
-            d.fx = null;
-            d.fy = null;
-          })
-      );
+      .attr("cursor", "pointer");
+
+    // Apply drag behavior separately to avoid complex type issues
+    const dragBehavior = d3.drag<SVGGElement, SimulationNode>()
+      .on("start", (event, d) => {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      })
+      .on("drag", (event, d) => {
+        d.fx = event.x;
+        d.fy = event.y;
+      })
+      .on("end", (event, d) => {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      });
+
+    node.call(dragBehavior);
 
     node
       .append("circle")
@@ -171,11 +173,8 @@ export function IdentityConstellation({ onSelectClaim, selectedClaimId }: Conste
   useEffect(() => {
     if (!svgRef.current) return;
     const svg = d3.select(svgRef.current);
-    svg.selectAll("circle")
-      .attr("stroke", function () {
-        const nodeData = d3.select(this.parentNode).datum() as SimulationNode;
-        return nodeData.id === selectedClaimId ? "white" : "none";
-      })
+    svg.selectAll<SVGCircleElement, SimulationNode>("circle")
+      .attr("stroke", d => d?.id === selectedClaimId ? "white" : "none")
       .attr("stroke-width", 2);
   }, [selectedClaimId]);
 
