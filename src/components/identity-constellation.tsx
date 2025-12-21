@@ -12,17 +12,20 @@ const TYPE_COLORS: Record<string, string> = {
   certification: "#14b8a6",
 };
 
-interface SimulationNode extends d3.SimulationNodeDatum {
+const TYPE_LABELS: Record<string, string> = {
+  skill: "Skills",
+  achievement: "Achievements",
+  attribute: "Attributes",
+  education: "Education",
+  certification: "Certifications",
+};
+
+interface TreemapNode {
   id: string;
   type: string;
   label: string;
   confidence: number;
   description: string | null;
-  r: number;
-}
-
-interface SimulationLink extends d3.SimulationLinkDatum<SimulationNode> {
-  sharedEvidence: string[];
 }
 
 interface ConstellationProps {
@@ -35,23 +38,31 @@ export function IdentityConstellation({ onSelectClaim, selectedClaimId }: Conste
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const [hoveredNode, setHoveredNode] = useState<TreemapNode | null>(null);
 
-  // Handle resize
+  // Handle resize with ResizeObserver for accurate sizing
   useEffect(() => {
+    if (!containerRef.current) return;
+
     const updateDimensions = () => {
       if (containerRef.current) {
+        const padding = 32; // p-4 = 16px on each side
         setDimensions({
-          width: containerRef.current.clientWidth,
-          height: containerRef.current.clientHeight,
+          width: Math.max(100, containerRef.current.clientWidth - padding),
+          height: Math.max(100, containerRef.current.clientHeight - padding),
         });
       }
     };
+
+    // Use ResizeObserver for more accurate sizing
+    const observer = new ResizeObserver(updateDimensions);
+    observer.observe(containerRef.current);
     updateDimensions();
-    window.addEventListener("resize", updateDimensions);
-    return () => window.removeEventListener("resize", updateDimensions);
+
+    return () => observer.disconnect();
   }, []);
 
-  // D3 force simulation
+  // D3 treemap
   useEffect(() => {
     if (!data || data.nodes.length === 0 || !svgRef.current) return;
 
@@ -61,127 +72,119 @@ export function IdentityConstellation({ onSelectClaim, selectedClaimId }: Conste
     // Clear previous
     svg.selectAll("*").remove();
 
-    // Prepare data
-    const nodes: SimulationNode[] = data.nodes.map(n => ({
-      ...n,
-      r: 10 + n.confidence * 30,
-    }));
+    // Calculate confidence range for better opacity scaling
+    const confidences = data.nodes.map(n => n.confidence);
+    const minConf = Math.min(...confidences);
+    const maxConf = Math.max(...confidences);
+    const confRange = maxConf - minConf || 0.1; // Avoid division by zero
 
-    const nodeMap = new Map(nodes.map(n => [n.id, n]));
+    // Normalize confidence to 0-1 range based on actual data
+    const normalizeConf = (c: number) => (c - minConf) / confRange;
 
-    const links: SimulationLink[] = data.edges
-      .map(e => ({
-        source: nodeMap.get(e.source)!,
-        target: nodeMap.get(e.target)!,
-        sharedEvidence: e.sharedEvidence,
-      }))
-      .filter(l => l.source && l.target);
+    // Build hierarchical data grouped by type
+    const grouped = d3.group(data.nodes, d => d.type);
+    const hierarchyData = {
+      name: "root",
+      children: Array.from(grouped, ([type, nodes]) => ({
+        name: type,
+        children: nodes.map(n => ({
+          name: n.label,
+          value: 1, // Equal size for each claim
+          ...n,
+        })),
+      })),
+    };
 
-    // Create simulation
-    const simulation = d3
-      .forceSimulation(nodes)
-      .force("link", d3.forceLink<SimulationNode, SimulationLink>(links).id(d => d.id).distance(100))
-      .force("charge", d3.forceManyBody().strength(-200))
-      .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collision", d3.forceCollide<SimulationNode>().radius(d => d.r + 5));
+    // Create treemap layout
+    const root = d3.hierarchy(hierarchyData)
+      .sum(d => (d as { value?: number }).value || 0)
+      .sort((a, b) => (b.value || 0) - (a.value || 0));
 
-    // Create container groups
-    const g = svg.append("g");
+    const treemap = d3.treemap<typeof hierarchyData>()
+      .size([width, height])
+      .padding(2)
+      .paddingTop(20)
+      .round(true);
 
-    // Zoom behavior
-    const zoom = d3.zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.3, 3])
-      .on("zoom", (event) => {
-        g.attr("transform", event.transform);
-      });
+    treemap(root);
 
-    svg.call(zoom);
-
-    // Draw edges
-    const link = g
-      .append("g")
-      .attr("class", "links")
-      .selectAll("line")
-      .data(links)
-      .join("line")
-      .attr("stroke", "currentColor")
-      .attr("stroke-opacity", 0.2)
-      .attr("stroke-width", d => d.sharedEvidence.length);
-
-    // Draw nodes
-    const node = g
-      .append("g")
-      .attr("class", "nodes")
-      .selectAll<SVGGElement, SimulationNode>("g")
-      .data(nodes)
+    // Draw group backgrounds
+    const groups = svg.selectAll("g.group")
+      .data(root.children || [])
       .join("g")
-      .attr("cursor", "pointer");
+      .attr("class", "group");
 
-    // Apply drag behavior separately to avoid complex type issues
-    const dragBehavior = d3.drag<SVGGElement, SimulationNode>()
-      .on("start", (event, d) => {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
-        d.fx = d.x;
-        d.fy = d.y;
-      })
-      .on("drag", (event, d) => {
-        d.fx = event.x;
-        d.fy = event.y;
-      })
-      .on("end", (event, d) => {
-        if (!event.active) simulation.alphaTarget(0);
-        d.fx = null;
-        d.fy = null;
-      });
+    groups.append("rect")
+      .attr("x", d => (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x0)
+      .attr("y", d => (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y0)
+      .attr("width", d => (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x1 - (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x0)
+      .attr("height", d => (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y1 - (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y0)
+      .attr("fill", d => TYPE_COLORS[d.data.name] || "#888")
+      .attr("fill-opacity", 0.1)
+      .attr("stroke", d => TYPE_COLORS[d.data.name] || "#888")
+      .attr("stroke-opacity", 0.3);
 
-    node.call(dragBehavior);
+    // Group labels
+    groups.append("text")
+      .attr("x", d => (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x0 + 6)
+      .attr("y", d => (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y0 + 14)
+      .attr("fill", d => TYPE_COLORS[d.data.name] || "#888")
+      .attr("font-size", "12px")
+      .attr("font-weight", "600")
+      .text(d => `${TYPE_LABELS[d.data.name] || d.data.name} (${d.children?.length || 0})`);
 
-    node
-      .append("circle")
-      .attr("r", d => d.r)
-      .attr("fill", d => TYPE_COLORS[d.type] || "#888")
-      .attr("fill-opacity", 0.7)
-      .on("mouseover", function () {
+    // Draw leaf nodes (individual claims)
+    const leaves = root.leaves();
+
+    const leaf = svg.selectAll("g.leaf")
+      .data(leaves)
+      .join("g")
+      .attr("class", "leaf")
+      .attr("transform", d => `translate(${(d as d3.HierarchyRectangularNode<typeof hierarchyData>).x0},${(d as d3.HierarchyRectangularNode<typeof hierarchyData>).y0})`);
+
+    leaf.append("rect")
+      .attr("width", d => Math.max(0, (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x1 - (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x0 - 1))
+      .attr("height", d => Math.max(0, (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y1 - (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y0 - 1))
+      .attr("fill", d => TYPE_COLORS[d.parent?.data.name || ""] || "#888")
+      .attr("fill-opacity", d => 0.3 + normalizeConf((d.data as unknown as TreemapNode).confidence || 0.5) * 0.7)
+      .attr("rx", 2)
+      .attr("stroke", d => (d.data as unknown as TreemapNode).id === selectedClaimId ? "white" : "transparent")
+      .attr("stroke-width", 2)
+      .attr("cursor", "pointer")
+      .on("mouseover", function(_, d) {
         d3.select(this).attr("fill-opacity", 1);
+        setHoveredNode(d.data as unknown as TreemapNode);
       })
-      .on("mouseout", function () {
-        d3.select(this).attr("fill-opacity", 0.7);
+      .on("mouseout", function(_, d) {
+        d3.select(this).attr("fill-opacity", 0.3 + normalizeConf((d.data as unknown as TreemapNode).confidence || 0.5) * 0.7);
+        setHoveredNode(null);
       })
       .on("click", (_, d) => {
-        onSelectClaim?.(d.id);
+        onSelectClaim?.((d.data as unknown as TreemapNode).id);
       });
 
-    node.append("title").text(d => `${d.label} (${Math.round(d.confidence * 100)}%)`);
+    // Add labels to larger cells
+    leaf.append("text")
+      .attr("x", 4)
+      .attr("y", 12)
+      .attr("fill", "white")
+      .attr("font-size", "9px")
+      .attr("pointer-events", "none")
+      .text(d => {
+        const w = (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x1 - (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x0;
+        const h = (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y1 - (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y0;
+        if (w < 40 || h < 16) return "";
+        const label = (d.data as unknown as TreemapNode).label;
+        const maxChars = Math.floor(w / 5);
+        return label.length > maxChars ? label.slice(0, maxChars - 1) + "…" : label;
+      });
 
-    // Update positions on tick
-    simulation.on("tick", () => {
-      link
-        .attr("x1", d => (d.source as SimulationNode).x!)
-        .attr("y1", d => (d.source as SimulationNode).y!)
-        .attr("x2", d => (d.target as SimulationNode).x!)
-        .attr("y2", d => (d.target as SimulationNode).y!);
-
-      node.attr("transform", d => `translate(${d.x}, ${d.y})`);
-    });
-
-    return () => {
-      simulation.stop();
-    };
-  }, [data, dimensions, onSelectClaim]);
-
-  // Update selected node styling
-  useEffect(() => {
-    if (!svgRef.current) return;
-    const svg = d3.select(svgRef.current);
-    svg.selectAll<SVGCircleElement, SimulationNode>("circle")
-      .attr("stroke", d => d?.id === selectedClaimId ? "white" : "none")
-      .attr("stroke-width", 2);
-  }, [selectedClaimId]);
+  }, [data, dimensions, onSelectClaim, selectedClaimId]);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="animate-pulse text-muted-foreground">Loading constellation...</div>
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
     );
   }
@@ -189,7 +192,7 @@ export function IdentityConstellation({ onSelectClaim, selectedClaimId }: Conste
   if (error) {
     return (
       <div className="flex items-center justify-center h-full text-red-500">
-        Failed to load constellation
+        Failed to load data
       </div>
     );
   }
@@ -199,8 +202,28 @@ export function IdentityConstellation({ onSelectClaim, selectedClaimId }: Conste
   }
 
   return (
-    <div ref={containerRef} className="w-full h-full min-h-[400px]">
-      <svg ref={svgRef} width={dimensions.width} height={dimensions.height} className="bg-background" />
+    <div ref={containerRef} className="w-full h-full min-h-[400px] relative p-4">
+      <svg
+        ref={svgRef}
+        width={dimensions.width}
+        height={dimensions.height}
+        className="bg-background block mx-auto"
+        style={{ maxWidth: '100%', maxHeight: '100%' }}
+      />
+      {/* Hover tooltip */}
+      {hoveredNode && (
+        <div className="absolute top-8 left-8 bg-background/95 backdrop-blur-sm rounded-lg p-3 text-sm shadow-lg border max-w-xs z-10">
+          <div className="font-medium">{hoveredNode.label}</div>
+          <div className="text-muted-foreground text-xs mt-1">
+            {TYPE_LABELS[hoveredNode.type]} · {Math.round(hoveredNode.confidence * 100)}% confidence
+          </div>
+          {hoveredNode.description && (
+            <div className="text-muted-foreground text-xs mt-2 line-clamp-2">
+              {hoveredNode.description}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -23,10 +23,24 @@ interface EvidenceItem {
   date: string | null;
 }
 
+interface DocumentNode {
+  id: string;
+  type: string;
+  name: string;
+  createdAt: string;
+}
+
+interface DocumentClaimEdge {
+  documentId: string;
+  claimId: string;
+}
+
 interface GraphData {
   nodes: GraphNode[];
   edges: GraphEdge[];
   evidence: EvidenceItem[];
+  documents: DocumentNode[];
+  documentClaimEdges: DocumentClaimEdge[];
 }
 
 async function fetchGraph(): Promise<GraphData> {

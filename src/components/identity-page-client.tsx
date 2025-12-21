@@ -1,13 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FileText } from "lucide-react";
+import { FileText, LayoutGrid, Network } from "lucide-react";
 import { IdentityConstellation } from "@/components/identity-constellation";
+import { EvidenceConstellation } from "@/components/evidence-constellation";
 import { ClaimDetailPanel } from "@/components/claim-detail-panel";
 import { UploadResumeModal } from "@/components/upload-resume-modal";
 import { AddStoryModal } from "@/components/add-story-modal";
 import { useIdentityGraph } from "@/lib/hooks/use-identity-graph";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+
+type ViewType = "treemap" | "constellation";
 
 interface IdentityPageClientProps {
   hasAnyClaims: boolean;
@@ -16,6 +20,7 @@ interface IdentityPageClientProps {
 export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [viewType, setViewType] = useState<ViewType>("treemap");
   const { data } = useIdentityGraph();
 
   // Detect mobile viewport
@@ -39,7 +44,30 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
             <Badge variant="secondary">{claimCount} claims</Badge>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          {/* View toggle */}
+          {claimCount > 0 && !isMobile && (
+            <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+              <Button
+                variant={viewType === "treemap" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setViewType("treemap")}
+                className="gap-1.5"
+              >
+                <LayoutGrid className="h-4 w-4" />
+                <span className="hidden sm:inline">Treemap</span>
+              </Button>
+              <Button
+                variant={viewType === "constellation" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setViewType("constellation")}
+                className="gap-1.5"
+              >
+                <Network className="h-4 w-4" />
+                <span className="hidden sm:inline">Graph</span>
+              </Button>
+            </div>
+          )}
           <UploadResumeModal />
           <AddStoryModal />
         </div>
@@ -63,13 +91,18 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
         ) : isMobile ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
             <p className="text-muted-foreground py-8">
-              Constellation view works best on larger screens.
+              Visualization works best on larger screens.
               <br />
               <span className="text-sm">Try rotating your device or using a desktop.</span>
             </p>
           </div>
-        ) : (
+        ) : viewType === "treemap" ? (
           <IdentityConstellation
+            onSelectClaim={setSelectedClaimId}
+            selectedClaimId={selectedClaimId}
+          />
+        ) : (
+          <EvidenceConstellation
             onSelectClaim={setSelectedClaimId}
             selectedClaimId={selectedClaimId}
           />

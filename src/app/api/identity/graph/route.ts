@@ -22,10 +22,19 @@ interface EvidenceItem {
   date: string | null;
 }
 
+interface DocumentNode {
+  id: string;
+  type: string;
+  name: string;
+  createdAt: string;
+}
+
 interface GraphResponse {
   nodes: GraphNode[];
   edges: GraphEdge[];
   evidence: EvidenceItem[];
+  documents: DocumentNode[];
+  documentClaimEdges: { documentId: string; claimId: string }[];
 }
 
 export async function GET(): Promise<NextResponse<GraphResponse | { error: string }>> {
@@ -52,7 +61,8 @@ export async function GET(): Promise<NextResponse<GraphResponse | { error: strin
           id,
           text,
           source_type,
-          evidence_date
+          evidence_date,
+          document_id
         )
       )
     `)
@@ -64,8 +74,21 @@ export async function GET(): Promise<NextResponse<GraphResponse | { error: strin
   }
 
   if (!claims || claims.length === 0) {
-    return NextResponse.json({ nodes: [], edges: [], evidence: [] });
+    return NextResponse.json({ nodes: [], edges: [], evidence: [], documents: [], documentClaimEdges: [] });
   }
+
+  // Fetch documents for this user
+  const { data: documents } = await supabase
+    .from("documents")
+    .select("id, type, filename, created_at")
+    .eq("user_id", user.id);
+
+  const documentNodes: DocumentNode[] = (documents || []).map(d => ({
+    id: d.id,
+    type: d.type,
+    name: d.filename || `${d.type} - ${d.created_at ? new Date(d.created_at).toLocaleDateString() : 'Unknown'}`,
+    createdAt: d.created_at || new Date().toISOString(),
+  }));
 
   // Build nodes
   const nodes: GraphNode[] = claims.map(claim => ({
@@ -78,14 +101,16 @@ export async function GET(): Promise<NextResponse<GraphResponse | { error: strin
 
   // Build evidence map and collect unique evidence
   const evidenceMap = new Map<string, EvidenceItem>();
-  const claimToEvidence = new Map<string, Set<string>>();
+  const claimToDocuments = new Map<string, Set<string>>();
 
   for (const claim of claims) {
-    const evidenceIds = new Set<string>();
+    const documentIds = new Set<string>();
     for (const ce of claim.claim_evidence || []) {
-      const ev = ce.evidence as { id: string; text: string; source_type: string; evidence_date: string | null } | null;
+      const ev = ce.evidence as { id: string; text: string; source_type: string; evidence_date: string | null; document_id: string | null } | null;
       if (ev) {
-        evidenceIds.add(ev.id);
+        if (ev.document_id) {
+          documentIds.add(ev.document_id);
+        }
         if (!evidenceMap.has(ev.id)) {
           evidenceMap.set(ev.id, {
             id: ev.id,
@@ -96,32 +121,52 @@ export async function GET(): Promise<NextResponse<GraphResponse | { error: strin
         }
       }
     }
-    claimToEvidence.set(claim.id, evidenceIds);
+    claimToDocuments.set(claim.id, documentIds);
   }
 
-  // Build edges - connect claims that share evidence
+  // Build edges - connect claims from the same document
   const edges: GraphEdge[] = [];
   const claimIds = claims.map(c => c.id);
 
   for (let i = 0; i < claimIds.length; i++) {
     for (let j = i + 1; j < claimIds.length; j++) {
-      const evidence1 = claimToEvidence.get(claimIds[i]) || new Set();
-      const evidence2 = claimToEvidence.get(claimIds[j]) || new Set();
-      const shared = Array.from(evidence1).filter(e => evidence2.has(e));
+      const docs1 = claimToDocuments.get(claimIds[i]) || new Set();
+      const docs2 = claimToDocuments.get(claimIds[j]) || new Set();
+      const sharedDocs = Array.from(docs1).filter(d => docs2.has(d));
 
-      if (shared.length > 0) {
+      if (sharedDocs.length > 0) {
         edges.push({
           source: claimIds[i],
           target: claimIds[j],
-          sharedEvidence: shared,
+          sharedEvidence: sharedDocs, // reusing field for shared documents
         });
       }
     }
   }
 
+  // Build document-to-claim edges for the bipartite constellation view
+  const documentClaimEdges: { documentId: string; claimId: string }[] = [];
+  claimToDocuments.forEach((docIds, claimId) => {
+    docIds.forEach(docId => {
+      documentClaimEdges.push({ documentId: docId, claimId });
+    });
+  });
+
+  // Debug logging
+  console.log('Graph API:', {
+    claims: claims.length,
+    nodes: nodes.length,
+    edges: edges.length,
+    documents: documentNodes.length,
+    documentClaimEdges: documentClaimEdges.length,
+    evidenceItems: evidenceMap.size,
+  });
+
   return NextResponse.json({
     nodes,
     edges,
     evidence: Array.from(evidenceMap.values()),
+    documents: documentNodes,
+    documentClaimEdges,
   });
 }
