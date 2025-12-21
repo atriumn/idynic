@@ -5,6 +5,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  ListResourcesRequestSchema,
   ListResourceTemplatesRequestSchema,
   ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
@@ -47,7 +48,39 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   return executeTool(client, name, args);
 });
 
-// List available resource templates
+// List available resources
+server.setRequestHandler(ListResourcesRequestSchema, async () => {
+  return {
+    resources: [
+      {
+        uri: "idynic://profile",
+        name: "User Profile",
+        description: "Current user's profile with contact info and work history",
+        mimeType: "application/json",
+      },
+      {
+        uri: "idynic://claims",
+        name: "Identity Claims",
+        description: "User's skills, education, and certifications with confidence",
+        mimeType: "application/json",
+      },
+      {
+        uri: "idynic://opportunities",
+        name: "Opportunities",
+        description: "List of tracked job opportunities",
+        mimeType: "application/json",
+      },
+      {
+        uri: "idynic://work-history",
+        name: "Work History",
+        description: "User's work history entries",
+        mimeType: "application/json",
+      },
+    ],
+  };
+});
+
+// List available resource templates (for dynamic URIs)
 server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => {
   return { resourceTemplates };
 });
