@@ -1,6 +1,6 @@
 # External API Phase 1: Foundation
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **Status:** ✅ COMPLETE (2025-12-19)
 
 **Goal:** Set up API key infrastructure and core read endpoints for the external API.
 
@@ -9,6 +9,28 @@
 **Tech Stack:** Next.js 14 API routes, Supabase PostgreSQL, TypeScript, Tailwind CSS, Radix UI
 
 **Design Document:** `docs/plans/2025-12-19-external-api-mcp-design.md`
+
+## Progress (Last reviewed: 2025-12-21)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Create api_keys Table | ✅ Complete | a14ebabb (PR #6) |
+| Task 2: Generate TypeScript Types | ✅ Complete | a14ebabb |
+| Task 3: API Key Utilities | ✅ Complete | src/lib/api/keys.ts |
+| Task 4: API Auth Middleware | ✅ Complete | src/lib/api/auth.ts |
+| Task 5: Response Helpers | ✅ Complete | src/lib/api/response.ts |
+| Task 6: GET /api/v1/profile | ✅ Complete | a14ebabb |
+| Task 7: GET /api/v1/claims | ✅ Complete | a14ebabb |
+| Task 8: GET /api/v1/opportunities | ✅ Complete | a14ebabb |
+| Task 9: API Key Management Actions | ✅ Complete | a14ebabb |
+| Task 10: API Keys Management Page | ✅ Complete | a14ebabb |
+| Task 11: API Keys Client Component | ✅ Complete | a14ebabb |
+| Task 12: Navigation Link | ✅ Complete | a14ebabb |
+| Task 13: Final Integration Test | ✅ Complete | Verified |
+
+---
+
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 ---
 

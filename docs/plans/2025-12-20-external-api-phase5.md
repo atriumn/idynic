@@ -1,12 +1,25 @@
 # External API Phase 5: Recruiter & Polish
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **Status:** ✅ COMPLETE (2025-12-20)
 
 **Goal:** Add recruiter-facing AI summary endpoint, rate limiting, and API documentation.
 
 **Architecture:** New public endpoint for AI-generated candidate summaries (no auth required - uses share token). Rate limiting via middleware. OpenAPI spec for documentation.
 
 **Tech Stack:** Next.js API routes, OpenAI for summaries, Upstash Redis for rate limiting (optional), OpenAPI 3.0
+
+## Progress (Last reviewed: 2025-12-21)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: GET /api/v1/shared/:token/summary | ✅ Complete | 59d80cb2 - AI candidate summaries |
+| Task 2: Rate Limiting | ✅ Complete | e1377754 |
+| Task 3: GET /api/v1/usage | ✅ Complete | dcd61ae7 - API usage stats |
+| Task 4: OpenAPI Specification | ✅ Complete | 36646eeb |
+
+---
+
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 ---
 
