@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { hashApiKey, isValidApiKeyFormat } from './keys';
+import { checkRateLimit, API_RATE_LIMITS } from './rate-limit';
+import { apiError } from './response';
 
 export interface ApiAuthResult {
   userId: string;
@@ -13,6 +15,17 @@ export interface ApiAuthError {
     message: string;
     request_id: string;
   };
+}
+
+/**
+ * Create a rate limit error response.
+ */
+export function rateLimitResponse(resetAt: number): NextResponse<ApiAuthError> {
+  const retryAfter = Math.ceil((resetAt - Date.now()) / 1000);
+  return apiError('rate_limited', 'Too many requests', 429, {
+    'Retry-After': String(retryAfter),
+    'X-RateLimit-Reset': String(Math.ceil(resetAt / 1000)),
+  });
 }
 
 /**
@@ -112,6 +125,12 @@ export async function validateApiKey(
     .update({ last_used_at: new Date().toISOString() })
     .eq('id', apiKey.id)
     .then(() => {});
+
+  // Check rate limit
+  const rateLimit = checkRateLimit(`api:${apiKey.user_id}`, API_RATE_LIMITS.api);
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.resetAt);
+  }
 
   return {
     userId: apiKey.user_id,

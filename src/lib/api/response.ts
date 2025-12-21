@@ -44,11 +44,12 @@ export function apiSuccess<T>(
 export function apiError(
   code: string,
   message: string,
-  status: number = 400
+  status: number = 400,
+  headers?: Record<string, string>
 ): NextResponse<ApiErrorResponse> {
   const requestId = crypto.randomUUID().slice(0, 8);
 
-  return NextResponse.json(
+  const response = NextResponse.json(
     {
       error: {
         code,
@@ -58,6 +59,14 @@ export function apiError(
     },
     { status }
   );
+
+  if (headers) {
+    for (const [key, value] of Object.entries(headers)) {
+      response.headers.set(key, value);
+    }
+  }
+
+  return response;
 }
 
 /**
