@@ -97,7 +97,7 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
     });
 
     // Calculate positions - radial layout grouped by type
-    const baseRadius = Math.min(width, height) * 0.35;
+    const baseRadius = Math.min(width, height) * 0.32;
     const allClaims: ClaimNode[] = [];
 
     let currentAngle = 0;
@@ -110,7 +110,7 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
       claims.forEach((claim, i) => {
         const angle = currentAngle + (i + 0.5) * (typeAngleSpan / claims.length);
         // Vary radius slightly based on confidence
-        const radiusVariation = 0.85 + claim.confidence * 0.3;
+        const radiusVariation = 0.9 + claim.confidence * 0.2;
         const radius = baseRadius * radiusVariation;
 
         claim.x = centerX + Math.cos(angle - Math.PI / 2) * radius;
@@ -119,6 +119,15 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
       });
 
       currentAngle += typeAngleSpan;
+    }
+
+    // Build document-claim mapping for hover connections
+    const claimToDocuments = new Map<string, string[]>();
+    for (const edge of data.documentClaimEdges) {
+      if (!claimToDocuments.has(edge.claimId)) {
+        claimToDocuments.set(edge.claimId, []);
+      }
+      claimToDocuments.get(edge.claimId)!.push(edge.documentId);
     }
 
     // Create container group for zoom
@@ -170,24 +179,37 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
       arcStart += typeAngleSpan;
     }
 
-    // Draw document in center
-    const doc = data.documents[0];
-    g.append("circle")
-      .attr("cx", centerX)
-      .attr("cy", centerY)
-      .attr("r", 30)
-      .attr("fill", DOCUMENT_COLORS[doc.type] || DOCUMENT_COLORS.default)
-      .attr("stroke", "white")
-      .attr("stroke-width", 3);
+    // Draw documents in center - arrange in a small circle if multiple
+    const docPositions = new Map<string, { x: number; y: number }>();
+    const numDocs = data.documents.length;
+    const docRadius = numDocs > 1 ? 50 : 0;
 
-    g.append("text")
-      .attr("x", centerX)
-      .attr("y", centerY + 45)
-      .attr("text-anchor", "middle")
-      .attr("fill", "currentColor")
-      .attr("font-size", "11px")
-      .attr("font-weight", "500")
-      .text(doc.name.length > 25 ? doc.name.slice(0, 24) + "..." : doc.name);
+    data.documents.forEach((doc, i) => {
+      const angle = numDocs > 1 ? (i / numDocs) * Math.PI * 2 - Math.PI / 2 : 0;
+      const dx = centerX + Math.cos(angle) * docRadius;
+      const dy = centerY + Math.sin(angle) * docRadius;
+      docPositions.set(doc.id, { x: dx, y: dy });
+
+      g.append("circle")
+        .attr("cx", dx)
+        .attr("cy", dy)
+        .attr("r", numDocs > 2 ? 18 : 24)
+        .attr("fill", DOCUMENT_COLORS[doc.type] || DOCUMENT_COLORS.default)
+        .attr("stroke", "white")
+        .attr("stroke-width", 2);
+
+      g.append("text")
+        .attr("x", dx)
+        .attr("y", dy + (numDocs > 2 ? 28 : 35))
+        .attr("text-anchor", "middle")
+        .attr("fill", "currentColor")
+        .attr("font-size", numDocs > 2 ? "9px" : "10px")
+        .attr("font-weight", "500")
+        .text(() => {
+          const maxLen = numDocs > 2 ? 15 : 22;
+          return doc.name.length > maxLen ? doc.name.slice(0, maxLen - 1) + "…" : doc.name;
+        });
+    });
 
     // Draw claim nodes
     const claimGroup = g.append("g").attr("class", "claims");
@@ -200,21 +222,28 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
       .attr("cursor", "pointer")
       .on("mouseover", function(_, d) {
         d3.select(this).select("circle").attr("r", 10);
+        d3.select(this).select("text").attr("opacity", 1);
         setHoveredClaim(d);
-        // Show connection line
-        g.append("line")
-          .attr("class", "hover-line")
-          .attr("x1", centerX)
-          .attr("y1", centerY)
-          .attr("x2", d.x!)
-          .attr("y2", d.y!)
-          .attr("stroke", TYPE_COLORS[d.type] || "#888")
-          .attr("stroke-width", 2)
-          .attr("stroke-opacity", 0.5)
-          .attr("stroke-dasharray", "4,4");
+        // Show connection lines to source documents
+        const docIds = claimToDocuments.get(d.id) || [];
+        for (const docId of docIds) {
+          const docPos = docPositions.get(docId);
+          if (docPos) {
+            g.append("line")
+              .attr("class", "hover-line")
+              .attr("x1", docPos.x)
+              .attr("y1", docPos.y)
+              .attr("x2", d.x!)
+              .attr("y2", d.y!)
+              .attr("stroke", TYPE_COLORS[d.type] || "#888")
+              .attr("stroke-width", 2)
+              .attr("stroke-opacity", 0.6);
+          }
+        }
       })
       .on("mouseout", function() {
-        d3.select(this).select("circle").attr("r", 7);
+        d3.select(this).select("circle").attr("r", 6);
+        d3.select(this).select("text").attr("opacity", 0);
         setHoveredClaim(null);
         g.selectAll(".hover-line").remove();
       })
@@ -223,19 +252,21 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
       });
 
     claimNodes.append("circle")
-      .attr("r", 7)
+      .attr("r", 6)
       .attr("fill", d => TYPE_COLORS[d.type] || "#888")
-      .attr("fill-opacity", d => 0.5 + d.confidence * 0.5)
+      .attr("fill-opacity", d => 0.6 + d.confidence * 0.4)
       .attr("stroke", d => d.id === selectedClaimId ? "white" : "transparent")
       .attr("stroke-width", 2);
 
+    // Labels hidden by default, shown on hover
     claimNodes.append("text")
-      .attr("dy", -12)
+      .attr("dy", -10)
       .attr("text-anchor", "middle")
       .attr("fill", "currentColor")
       .attr("font-size", "9px")
-      .attr("opacity", 0.8)
-      .text(d => d.label.length > 18 ? d.label.slice(0, 17) + "…" : d.label);
+      .attr("opacity", 0)
+      .attr("pointer-events", "none")
+      .text(d => d.label.length > 20 ? d.label.slice(0, 19) + "…" : d.label);
 
     return () => {};
   }, [data, dimensions, onSelectClaim, selectedClaimId]);
