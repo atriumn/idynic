@@ -631,6 +631,7 @@ describe('Opportunity [id] API Route', () => {
       // Simulates user trying to access another user's opportunity
       mockSupabaseFrom.mockImplementation(() => ({
         select: vi.fn().mockReturnValue({
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           eq: vi.fn().mockImplementation((field, value) => {
             // Returns chainable eq that filters by both id AND user_id
             return {

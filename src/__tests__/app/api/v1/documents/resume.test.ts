@@ -63,6 +63,7 @@ vi.mock('@/lib/sse/stream', () => {
       private closed = false
       createStream() {
         return new ReadableStream({
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           start(controller) {
             // Stream will be closed by the route
           }
@@ -199,7 +200,7 @@ describe('Resume Upload API Route', () => {
     })
 
     it('validates file is provided', async () => {
-      const { POST, SSEStream } = await import('@/app/api/v1/documents/resume/route')
+      const { POST } = await import('@/app/api/v1/documents/resume/route')
       const { getSentEvents, clearEvents } = await import('@/lib/sse/stream') as {
         getSentEvents: () => unknown[]
         clearEvents: () => void
