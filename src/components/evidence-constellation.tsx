@@ -209,7 +209,7 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
       .data(documentNodes)
       .join("text")
       .attr("font-size", "10px")
-      .attr("fill", "white")
+      .attr("fill", "currentColor")
       .attr("text-anchor", "middle")
       .attr("dy", 30)
       .attr("pointer-events", "none")
