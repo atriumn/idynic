@@ -3,11 +3,24 @@ import { redirect, notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Building2, ExternalLink, ArrowLeft } from "lucide-react";
+import { Building2, ExternalLink, ArrowLeft, MapPin, DollarSign, Briefcase, Users, Clock, Linkedin } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { computeOpportunityMatches } from "@/lib/ai/match-opportunity";
 import { TailoredProfile } from "@/components/tailored-profile";
 import { ShareLinkModal } from "@/components/share-link-modal";
+
+function formatSalary(min: number | null, max: number | null, currency: string | null): string | null {
+  if (!min && !max) return null;
+  const curr = currency || "$";
+  const formatter = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+  if (min && max) {
+    return `${curr}${formatter.format(min)} - ${curr}${formatter.format(max)}`;
+  }
+  if (min) return `${curr}${formatter.format(min)}+`;
+  if (max) return `Up to ${curr}${formatter.format(max)}`;
+  return null;
+}
 
 const STATUS_COLORS: Record<string, string> = {
   tracking: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
@@ -113,14 +126,71 @@ export default async function OpportunityDetailPage({
       </Link>
 
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">{opportunity.title}</h1>
-          {opportunity.company && (
-            <div className="flex items-center gap-1 text-muted-foreground mt-1">
-              <Building2 className="h-4 w-4" />
-              {opportunity.company}
+        <div className="flex gap-4">
+          {opportunity.company_logo_url && (
+            <div className="flex-shrink-0">
+              <Image
+                src={opportunity.company_logo_url}
+                alt={`${opportunity.company} logo`}
+                width={64}
+                height={64}
+                className="rounded-lg"
+              />
             </div>
           )}
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl font-bold">{opportunity.title}</h1>
+              {opportunity.source === "linkedin" && (
+                <Linkedin className="h-5 w-5 text-[#0A66C2]" />
+              )}
+            </div>
+            {opportunity.company && (
+              <div className="flex items-center gap-1 text-muted-foreground mt-1">
+                <Building2 className="h-4 w-4" />
+                {opportunity.company}
+              </div>
+            )}
+            {/* Job metadata */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
+              {opportunity.location && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {opportunity.location}
+                </div>
+              )}
+              {opportunity.seniority_level && (
+                <div className="flex items-center gap-1">
+                  <Briefcase className="h-3.5 w-3.5" />
+                  {opportunity.seniority_level}
+                </div>
+              )}
+              {opportunity.employment_type && (
+                <span>{opportunity.employment_type}</span>
+              )}
+            </div>
+            {/* Salary and applicants */}
+            <div className="flex flex-wrap items-center gap-3 mt-2">
+              {formatSalary(opportunity.salary_min, opportunity.salary_max, opportunity.salary_currency) && (
+                <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                  <DollarSign className="h-3 w-3 mr-1" />
+                  {formatSalary(opportunity.salary_min, opportunity.salary_max, opportunity.salary_currency)}
+                </Badge>
+              )}
+              {opportunity.applicant_count && (
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  <Users className="h-3.5 w-3.5" />
+                  {opportunity.applicant_count} applicants
+                </span>
+              )}
+              {opportunity.posted_date && (
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5" />
+                  Posted {new Date(opportunity.posted_date).toLocaleDateString()}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Badge className={STATUS_COLORS[opportunity.status || "tracking"]} variant="secondary">
