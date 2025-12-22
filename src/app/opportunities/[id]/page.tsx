@@ -227,6 +227,27 @@ export default async function OpportunityDetailPage({
         </CardContent>
       </Card>
 
+      {/* Job Description */}
+      {(opportunity.description || opportunity.description_html) && (
+        <Card className="mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Job Description</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {opportunity.description_html ? (
+              <div
+                className="prose prose-sm dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: opportunity.description_html }}
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                {opportunity.description}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Tailored Profile - includes requirements on Talking Points tab */}
       <TailoredProfile
         opportunityId={id}
