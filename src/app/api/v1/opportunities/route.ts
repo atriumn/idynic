@@ -5,6 +5,8 @@ import { apiSuccess, apiError } from '@/lib/api/response';
 import OpenAI from 'openai';
 import { generateEmbedding } from '@/lib/ai/embeddings';
 import { fetchLinkedInJob, isLinkedInJobUrl } from '@/lib/integrations/brightdata';
+import { fetchJobPageContent, looksLikeJobUrl } from '@/lib/integrations/scraping';
+import { researchCompanyBackground } from '@/lib/ai/research-company-background';
 import type { Json } from '@/lib/supabase/types';
 
 const openai = new OpenAI();
@@ -132,6 +134,7 @@ export async function POST(request: NextRequest) {
     let enrichedCompany: string | null = null;
 
     if (url && isLinkedInJobUrl(url)) {
+      // LinkedIn URL - use dedicated scraper for rich structured data
       try {
         console.log('Enriching LinkedIn job URL:', url);
         const linkedInJob = await fetchLinkedInJob(url);
@@ -162,10 +165,23 @@ export async function POST(request: NextRequest) {
         // Log but don't fail - fall back to manual processing
         console.error('LinkedIn enrichment failed, falling back to manual:', enrichError);
       }
+    } else if (url && !description && looksLikeJobUrl(url)) {
+      // Non-LinkedIn job URL without description - try generic scraping
+      console.log('Attempting generic scraping for:', url);
+      const scrapedContent = await fetchJobPageContent(url);
+
+      if (scrapedContent) {
+        description = scrapedContent;
+        source = 'scraped';
+        console.log('Generic scraping successful for:', url);
+      } else {
+        // Scraping failed - tell user to paste description
+        return apiError('scraping_failed', "Couldn't fetch that URL. Please provide the job description.", 400);
+      }
     }
 
     if (!description) {
-      return apiError('validation_error', 'description is required', 400);
+      return apiError('validation_error', 'description is required (or provide a job URL)', 400);
     }
 
     // Extract using GPT
@@ -233,6 +249,16 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Failed to insert opportunity:', error);
       return apiError('server_error', 'Failed to save opportunity', 500);
+    }
+
+    // Trigger background company research if we have a company name
+    if (finalCompany) {
+      researchCompanyBackground(
+        opportunity.id,
+        finalCompany,
+        finalTitle,
+        description
+      );
     }
 
     return apiSuccess({

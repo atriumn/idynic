@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { generateEmbedding } from "@/lib/ai/embeddings";
 import { fetchLinkedInJob, isLinkedInJobUrl } from "@/lib/integrations/brightdata";
+import { fetchJobPageContent, looksLikeJobUrl } from "@/lib/integrations/scraping";
+import { researchCompanyBackground } from "@/lib/ai/research-company-background";
 import type { Json } from "@/lib/supabase/types";
 
 const openai = new OpenAI();
@@ -98,6 +100,7 @@ export async function POST(request: Request) {
     let enrichedCompany: string | null = null;
 
     if (url && isLinkedInJobUrl(url)) {
+      // LinkedIn URL - use dedicated scraper for rich structured data
       try {
         console.log("Enriching LinkedIn job URL:", url);
         const linkedInJob = await fetchLinkedInJob(url);
@@ -127,11 +130,27 @@ export async function POST(request: Request) {
       } catch (enrichError) {
         console.error("LinkedIn enrichment failed, falling back to manual:", enrichError);
       }
+    } else if (url && !description && looksLikeJobUrl(url)) {
+      // Non-LinkedIn job URL without description - try generic scraping
+      console.log("Attempting generic scraping for:", url);
+      const scrapedContent = await fetchJobPageContent(url);
+
+      if (scrapedContent) {
+        description = scrapedContent;
+        source = "scraped";
+        console.log("Generic scraping successful for:", url);
+      } else {
+        // Scraping failed - tell user to paste description
+        return NextResponse.json(
+          { error: "Couldn't fetch that URL. Please paste the job description." },
+          { status: 400 }
+        );
+      }
     }
 
     if (!description) {
       return NextResponse.json(
-        { error: "Job description is required (or provide a LinkedIn job URL)" },
+        { error: "Job description is required (or provide a job URL)" },
         { status: 400 }
       );
     }
@@ -210,6 +229,16 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "Failed to save opportunity" },
         { status: 500 }
+      );
+    }
+
+    // Trigger background company research if we have a company name
+    if (finalCompany) {
+      researchCompanyBackground(
+        opportunity.id,
+        finalCompany,
+        finalTitle,
+        description
       );
     }
 

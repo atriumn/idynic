@@ -3,7 +3,7 @@ import { redirect, notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Building2, ExternalLink, ArrowLeft, MapPin, DollarSign, Briefcase, Users, Clock, Linkedin } from "lucide-react";
+import { Building2, ExternalLink, ArrowLeft, MapPin, DollarSign, Briefcase, Users, Clock, Linkedin, Globe, TrendingUp, Newspaper, Lightbulb, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { computeOpportunityMatches } from "@/lib/ai/match-opportunity";
@@ -226,6 +226,113 @@ export default async function OpportunityDetailPage({
           </div>
         </CardContent>
       </Card>
+
+      {/* Company Insights */}
+      {opportunity.company && (
+        <Card className="mb-6">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                Company Insights
+              </CardTitle>
+              {opportunity.company_researched_at ? (
+                <span className="text-xs text-muted-foreground">
+                  Researched {new Date(opportunity.company_researched_at).toLocaleDateString()}
+                </span>
+              ) : (
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Researching...
+                </span>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Company metadata row */}
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              {opportunity.company_industry && (
+                <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  {opportunity.company_industry}
+                </Badge>
+              )}
+              {opportunity.company_is_public && opportunity.company_stock_ticker && (
+                <Badge variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                  <TrendingUp className="h-3 w-3 mr-1" />
+                  {opportunity.company_stock_ticker}
+                </Badge>
+              )}
+              {opportunity.company_url && (
+                <a
+                  href={opportunity.company_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-blue-600 hover:underline"
+                >
+                  <Globe className="h-3.5 w-3.5" />
+                  {new URL(opportunity.company_url).hostname.replace('www.', '')}
+                </a>
+              )}
+            </div>
+
+            {/* Why This Role */}
+            {opportunity.company_role_context && (
+              <div>
+                <h4 className="text-sm font-medium flex items-center gap-1.5 mb-1.5">
+                  <Lightbulb className="h-4 w-4 text-yellow-500" />
+                  Why This Role
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  {opportunity.company_role_context}
+                </p>
+              </div>
+            )}
+
+            {/* Recent News */}
+            {opportunity.company_recent_news && Array.isArray(opportunity.company_recent_news) && opportunity.company_recent_news.length > 0 && (
+              <div>
+                <h4 className="text-sm font-medium flex items-center gap-1.5 mb-1.5">
+                  <Newspaper className="h-4 w-4 text-blue-500" />
+                  Recent News
+                </h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  {(opportunity.company_recent_news as string[]).map((news, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="text-muted-foreground/50 mt-0.5">•</span>
+                      <span>{news}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Likely Challenges */}
+            {opportunity.company_challenges && Array.isArray(opportunity.company_challenges) && opportunity.company_challenges.length > 0 && (
+              <div>
+                <h4 className="text-sm font-medium flex items-center gap-1.5 mb-1.5">
+                  <TrendingUp className="h-4 w-4 text-green-500" />
+                  Likely Challenges
+                </h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  {(opportunity.company_challenges as string[]).map((challenge, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="text-muted-foreground/50 mt-0.5">•</span>
+                      <span>{challenge}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Empty state when research hasn't completed yet */}
+            {!opportunity.company_researched_at && (
+              <p className="text-sm text-muted-foreground italic">
+                We&apos;re researching {opportunity.company} in the background. Refresh in a few seconds to see insights.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Job Description */}
       {(opportunity.description || opportunity.description_html) && (
