@@ -3,12 +3,29 @@ import { redirect, notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Building2, ExternalLink, ArrowLeft, MapPin, DollarSign, Briefcase, Users, Clock, Linkedin, Globe, TrendingUp, Newspaper, Lightbulb, Loader2 } from "lucide-react";
+import {
+  Buildings,
+  ArrowSquareOut,
+  ArrowLeft,
+  MapPin,
+  CurrencyDollar,
+  Briefcase,
+  Users,
+  Clock,
+  LinkedinLogo,
+  Globe,
+  TrendUp,
+  Newspaper,
+  Lightbulb,
+  SpinnerGap,
+} from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import Image from "next/image";
 import { computeOpportunityMatches } from "@/lib/ai/match-opportunity";
 import { TailoredProfile } from "@/components/tailored-profile";
 import { ShareLinkModal } from "@/components/share-link-modal";
+import { ReresearchCompanyButton } from "@/components/reresearch-company-button";
+import { OpportunityNotes } from "@/components/opportunity-notes";
 
 function formatSalary(min: number | null, max: number | null, currency: string | null): string | null {
   if (!min && !max) return null;
@@ -142,13 +159,28 @@ export default async function OpportunityDetailPage({
             <div className="flex items-center gap-2">
               <h1 className="text-2xl sm:text-3xl font-bold">{opportunity.title}</h1>
               {opportunity.source === "linkedin" && (
-                <Linkedin className="h-5 w-5 text-[#0A66C2]" />
+                <LinkedinLogo className="h-5 w-5 text-[#0A66C2]" weight="fill" />
               )}
             </div>
             {opportunity.company && (
-              <div className="flex items-center gap-1 text-muted-foreground mt-1">
-                <Building2 className="h-4 w-4" />
-                {opportunity.company}
+              <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                <div className="flex items-center gap-1">
+                  <Buildings className="h-4 w-4" />
+                  {opportunity.company}
+                </div>
+                {opportunity.company_url && (
+                  <a
+                    href={opportunity.company_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-primary hover:underline"
+                  >
+                    <Globe className="h-3.5 w-3.5" />
+                    <span className="text-sm">
+                      {new URL(opportunity.company_url).hostname.replace('www.', '')}
+                    </span>
+                  </a>
+                )}
               </div>
             )}
             {/* Job metadata */}
@@ -173,7 +205,7 @@ export default async function OpportunityDetailPage({
             <div className="flex flex-wrap items-center gap-3 mt-2">
               {formatSalary(opportunity.salary_min, opportunity.salary_max, opportunity.salary_currency) && (
                 <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                  <DollarSign className="h-3 w-3 mr-1" />
+                  <CurrencyDollar className="h-3 w-3 mr-1" />
                   {formatSalary(opportunity.salary_min, opportunity.salary_max, opportunity.salary_currency)}
                 </Badge>
               )}
@@ -199,7 +231,7 @@ export default async function OpportunityDetailPage({
           {opportunity.url && (
             <Button variant="outline" size="sm" asChild>
               <a href={opportunity.url} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-4 w-4 mr-1" />
+                <ArrowSquareOut className="h-4 w-4 mr-1" />
                 View posting
               </a>
             </Button>
@@ -227,25 +259,44 @@ export default async function OpportunityDetailPage({
         </CardContent>
       </Card>
 
+      {/* Tailored Profile - Primary CTA */}
+      <TailoredProfile
+        opportunityId={id}
+        requirementMatches={matchResult.requirementMatches}
+        userName={userProfile?.name || user.email?.split("@")[0] || "Your Name"}
+        userEmail={user.email}
+        userPhone={userProfile?.phone ?? undefined}
+        userLocation={userProfile?.location ?? undefined}
+        userLinkedin={userProfile?.linkedin ?? undefined}
+        userGithub={userProfile?.github ?? undefined}
+        userWebsite={userProfile?.website ?? undefined}
+        opportunityCompany={opportunity.company ?? undefined}
+      />
+
       {/* Company Insights */}
       {opportunity.company && (
         <Card className="mb-6">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
+                <Buildings className="h-5 w-5" />
                 Company Insights
               </CardTitle>
-              {opportunity.company_researched_at ? (
-                <span className="text-xs text-muted-foreground">
-                  Researched {new Date(opportunity.company_researched_at).toLocaleDateString()}
-                </span>
-              ) : (
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Researching...
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                {opportunity.company_researched_at ? (
+                  <>
+                    <span className="text-xs text-muted-foreground">
+                      Researched {new Date(opportunity.company_researched_at).toLocaleDateString()}
+                    </span>
+                    <ReresearchCompanyButton opportunityId={id} />
+                  </>
+                ) : (
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <SpinnerGap className="h-3 w-3 animate-spin" />
+                    Researching...
+                  </span>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -258,20 +309,9 @@ export default async function OpportunityDetailPage({
               )}
               {opportunity.company_is_public && opportunity.company_stock_ticker && (
                 <Badge variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                  <TrendingUp className="h-3 w-3 mr-1" />
+                  <TrendUp className="h-3 w-3 mr-1" />
                   {opportunity.company_stock_ticker}
                 </Badge>
-              )}
-              {opportunity.company_url && (
-                <a
-                  href={opportunity.company_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-blue-600 hover:underline"
-                >
-                  <Globe className="h-3.5 w-3.5" />
-                  {new URL(opportunity.company_url).hostname.replace('www.', '')}
-                </a>
               )}
             </div>
 
@@ -310,7 +350,7 @@ export default async function OpportunityDetailPage({
             {opportunity.company_challenges && Array.isArray(opportunity.company_challenges) && opportunity.company_challenges.length > 0 && (
               <div>
                 <h4 className="text-sm font-medium flex items-center gap-1.5 mb-1.5">
-                  <TrendingUp className="h-4 w-4 text-green-500" />
+                  <TrendUp className="h-4 w-4 text-green-500" />
                   Likely Challenges
                 </h4>
                 <ul className="text-sm text-muted-foreground space-y-1">
@@ -334,6 +374,9 @@ export default async function OpportunityDetailPage({
         </Card>
       )}
 
+      {/* Your Notes */}
+      <OpportunityNotes opportunityId={id} />
+
       {/* Job Description */}
       {(opportunity.description || opportunity.description_html) && (
         <Card className="mb-6">
@@ -355,19 +398,6 @@ export default async function OpportunityDetailPage({
         </Card>
       )}
 
-      {/* Tailored Profile - includes requirements on Talking Points tab */}
-      <TailoredProfile
-        opportunityId={id}
-        requirementMatches={matchResult.requirementMatches}
-        userName={userProfile?.name || user.email?.split("@")[0] || "Your Name"}
-        userEmail={user.email}
-        userPhone={userProfile?.phone ?? undefined}
-        userLocation={userProfile?.location ?? undefined}
-        userLinkedin={userProfile?.linkedin ?? undefined}
-        userGithub={userProfile?.github ?? undefined}
-        userWebsite={userProfile?.website ?? undefined}
-        opportunityCompany={opportunity.company ?? undefined}
-      />
     </div>
   );
 }
