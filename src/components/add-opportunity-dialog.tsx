@@ -26,18 +26,45 @@ function isLinkedInJobUrl(url: string): boolean {
   }
 }
 
+function looksLikeJobUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.toLowerCase();
+    const pathname = parsed.pathname.toLowerCase();
+
+    // Known job boards
+    const jobBoards = [
+      "indeed.com", "glassdoor.com", "ziprecruiter.com", "monster.com",
+      "dice.com", "builtin.com", "lever.co", "greenhouse.io", "workday.com",
+      "myworkdayjobs.com", "smartrecruiters.com", "ashbyhq.com", "wellfound.com",
+    ];
+
+    if (jobBoards.some((board) => hostname.includes(board))) return true;
+    if (hostname.startsWith("jobs.") || hostname.startsWith("careers.")) return true;
+
+    const jobPatterns = ["/job/", "/jobs/", "/career/", "/careers/", "/position/", "/opening/", "/apply/"];
+    if (jobPatterns.some((pattern) => pathname.includes(pattern))) return true;
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 export function AddOpportunityDialog() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [url, setUrl] = useState("");
   const [isLinkedIn, setIsLinkedIn] = useState(false);
+  const [isJobUrl, setIsJobUrl] = useState(false);
   const router = useRouter();
 
   const handleUrlChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newUrl = e.target.value;
     setUrl(newUrl);
     setIsLinkedIn(isLinkedInJobUrl(newUrl));
+    setIsJobUrl(looksLikeJobUrl(newUrl) || isLinkedInJobUrl(newUrl));
   }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -78,6 +105,7 @@ export function AddOpportunityDialog() {
       if (!newOpen) {
         setUrl("");
         setIsLinkedIn(false);
+        setIsJobUrl(false);
         setError(null);
       }
     }}>
@@ -112,22 +140,25 @@ export function AddOpportunityDialog() {
                   <Linkedin className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#0A66C2]" />
                 )}
               </div>
-              {isLinkedIn && (
+              {isJobUrl && (
                 <p className="text-sm text-muted-foreground">
-                  LinkedIn job detected - we&apos;ll auto-fill the details
+                  {isLinkedIn
+                    ? "LinkedIn job detected - we'll auto-fill the details"
+                    : "Job URL detected - we'll try to fetch the details"
+                  }
                 </p>
               )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description">
-                Job Description {!isLinkedIn && "*"}
+                Job Description {!isJobUrl && "*"}
               </Label>
               <Textarea
                 id="description"
                 name="description"
-                placeholder={isLinkedIn ? "Optional - will be fetched from LinkedIn" : "Paste the full job description here..."}
+                placeholder={isJobUrl ? "Optional - will be fetched from the URL" : "Paste the full job description here..."}
                 className="min-h-[200px]"
-                required={!isLinkedIn}
+                required={!isJobUrl}
               />
             </div>
             {error && (
@@ -140,7 +171,10 @@ export function AddOpportunityDialog() {
             </Button>
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {loading ? (isLinkedIn ? "Fetching from LinkedIn..." : "Processing...") : "Add Opportunity"}
+              {loading
+                ? (isLinkedIn ? "Fetching from LinkedIn..." : isJobUrl ? "Fetching job details..." : "Processing...")
+                : "Add Opportunity"
+              }
             </Button>
           </DialogFooter>
         </form>

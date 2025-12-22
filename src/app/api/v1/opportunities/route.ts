@@ -21,6 +21,7 @@ const EXTRACTION_PROMPT = `Extract job details and requirements from this job po
 Extract:
 - title: The job title
 - company: The company name if mentioned, or null
+- description: A clean summary of the role (2-4 sentences) - remove any navigation, headers, or page chrome
 - mustHave: Required qualifications with classification
 - niceToHave: Preferred qualifications with classification
 - responsibilities: Key job duties
@@ -35,6 +36,7 @@ Return JSON:
 {
   "title": "Senior Software Engineer",
   "company": "Acme Corp",
+  "description": "We are looking for a Senior Software Engineer to join our platform team.",
   "mustHave": [{"text": "5+ years Python", "type": "experience"}],
   "niceToHave": [{"text": "AWS Certified", "type": "certification"}],
   "responsibilities": ["Lead technical design"]
@@ -199,6 +201,7 @@ export async function POST(request: NextRequest) {
     let extracted = {
       title: 'Unknown Position',
       company: null as string | null,
+      description: null as string | null,
       mustHave: [] as ClassifiedRequirement[],
       niceToHave: [] as ClassifiedRequirement[],
       responsibilities: [] as string[],
@@ -216,6 +219,10 @@ export async function POST(request: NextRequest) {
     // Prefer LinkedIn enriched data over GPT extracted data
     const finalTitle = enrichedTitle || extracted.title;
     const finalCompany = enrichedCompany || extracted.company;
+    // For scraped content, use GPT's clean description; otherwise keep original
+    const finalDescription = (source === 'scraped' && extracted.description)
+      ? extracted.description
+      : description;
 
     const requirements = {
       mustHave: extracted.mustHave,
@@ -236,7 +243,7 @@ export async function POST(request: NextRequest) {
         title: finalTitle,
         company: finalCompany,
         url: url || null,
-        description,
+        description: finalDescription,
         requirements: requirements as unknown as Json,
         embedding: embedding as unknown as string,
         status: 'tracking' as const,

@@ -17,6 +17,7 @@ interface ClassifiedRequirement {
 interface ExtractedOpportunity {
   title: string;
   company: string | null;
+  description: string | null;
   mustHave: ClassifiedRequirement[];
   niceToHave: ClassifiedRequirement[];
   responsibilities: string[];
@@ -27,6 +28,7 @@ const EXTRACTION_PROMPT = `Extract job details and requirements from this job po
 Extract:
 - title: The job title (e.g., "Senior Software Engineer", "Product Manager")
 - company: The company name if mentioned, or null if not found
+- description: A clean summary of the role (2-4 sentences) - remove any navigation, headers, or page chrome
 - mustHave: Required qualifications with classification
 - niceToHave: Preferred qualifications with classification
 - responsibilities: Key job duties
@@ -41,6 +43,7 @@ Return JSON:
 {
   "title": "Senior Software Engineer",
   "company": "Acme Corp",
+  "description": "We are looking for a Senior Software Engineer to join our platform team. You will lead technical design for our core product and mentor junior engineers.",
   "mustHave": [
     {"text": "5+ years Python experience", "type": "experience"},
     {"text": "Bachelor's in Computer Science", "type": "education"},
@@ -56,6 +59,7 @@ Return JSON:
 IMPORTANT:
 - Extract the exact job title from the posting
 - Extract company name if present, null if not
+- Write a clean, readable description summarizing the role
 - Keep each requirement concise (one per item)
 - Classify each requirement accurately
 - Return ONLY valid JSON, no markdown
@@ -173,6 +177,7 @@ export async function POST(request: Request) {
     let extracted: ExtractedOpportunity = {
       title: "Unknown Position",
       company: null,
+      description: null,
       mustHave: [],
       niceToHave: [],
       responsibilities: [],
@@ -200,6 +205,10 @@ export async function POST(request: Request) {
     // Prefer LinkedIn enriched data over GPT extracted data
     const finalTitle = enrichedTitle || extracted.title;
     const finalCompany = enrichedCompany || extracted.company;
+    // For scraped content, use GPT's clean description; otherwise keep original
+    const finalDescription = (source === "scraped" && extracted.description)
+      ? extracted.description
+      : description;
 
     // Generate embedding from title + requirement texts
     const reqTexts = extracted.mustHave.slice(0, 5).map(r => r.text).join(". ");
@@ -214,7 +223,7 @@ export async function POST(request: Request) {
         title: finalTitle,
         company: finalCompany,
         url: url || null,
-        description,
+        description: finalDescription,
         requirements: requirements as unknown as Json,
         embedding: embedding as unknown as string,
         status: "tracking" as const,

@@ -5,7 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, RefreshCw, Check, AlertCircle, Lightbulb, Copy, X, Eye } from "lucide-react";
+import {
+  SpinnerGap,
+  ArrowsClockwise,
+  Check,
+  WarningCircle,
+  Lightbulb,
+  Copy,
+  X,
+  Eye,
+  Sparkle,
+} from "@phosphor-icons/react";
 import { ResumePDFViewer, ResumePDFDownload } from "@/components/resume-pdf";
 import type { ResumeDocumentProps } from "@/components/resume-pdf";
 import { CompanyLogo } from "@/components/company-logo";
@@ -226,21 +236,34 @@ export function TailoredProfile({
 
   if (!profile && !loading) {
     return (
-      <Card>
-        <CardContent className="py-8 text-center">
-          <p className="text-muted-foreground mb-4">
-            Generate a tailored profile to see how your experience matches this role.
-          </p>
-          <Button onClick={() => generateProfile()} disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              "Generate Tailored Profile"
-            )}
-          </Button>
+      <Card className="mb-6 border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+        <CardContent className="py-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-center sm:text-left">
+              <h3 className="text-lg font-semibold mb-1">Ready to stand out?</h3>
+              <p className="text-muted-foreground">
+                Generate a tailored resume and talking points for this role.
+              </p>
+            </div>
+            <Button
+              onClick={() => generateProfile()}
+              disabled={loading}
+              size="lg"
+              className="shrink-0"
+            >
+              {loading ? (
+                <>
+                  <SpinnerGap className="mr-2 h-5 w-5 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkle className="mr-2 h-5 w-5" weight="fill" />
+                  Generate Tailored Profile
+                </>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );
@@ -248,9 +271,9 @@ export function TailoredProfile({
 
   if (loading) {
     return (
-      <Card>
+      <Card className="mb-6">
         <CardContent className="py-12 text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
+          <SpinnerGap className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
           <p className="text-muted-foreground">Analyzing your profile...</p>
           <p className="text-sm text-muted-foreground mt-1">This may take 10-20 seconds</p>
         </CardContent>
@@ -262,7 +285,7 @@ export function TailoredProfile({
     return (
       <Card className="border-destructive">
         <CardContent className="py-8 text-center">
-          <AlertCircle className="h-8 w-8 mx-auto mb-4 text-destructive" />
+          <WarningCircle className="h-8 w-8 mx-auto mb-4 text-destructive" />
           <p className="text-destructive mb-4">{error}</p>
           <Button onClick={() => generateProfile()} variant="outline">
             Try Again
@@ -294,7 +317,7 @@ export function TailoredProfile({
   } : null;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mb-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Tailored Profile</h3>
         <Button
@@ -304,10 +327,10 @@ export function TailoredProfile({
           disabled={regenerating}
         >
           {regenerating ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <SpinnerGap className="h-4 w-4 animate-spin" />
           ) : (
             <>
-              <RefreshCw className="h-4 w-4 mr-1" />
+              <ArrowsClockwise className="h-4 w-4 mr-1" />
               Regenerate
             </>
           )}
@@ -371,7 +394,7 @@ export function TailoredProfile({
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                  <WarningCircle className="h-4 w-4 text-amber-500" />
                   Gaps ({talking_points.gaps.length})
                 </CardTitle>
               </CardHeader>

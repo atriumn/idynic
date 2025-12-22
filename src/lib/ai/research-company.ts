@@ -59,21 +59,24 @@ export async function researchCompany(
   jobTitle: string,
   jobDescription: string
 ): Promise<CompanyInsights> {
+  // Use quoted company name for more precise matching
+  const quotedCompany = `"${companyName}"`;
+
   // Run searches in parallel
   const [newsResults, infoResults, financeResults] = await Promise.allSettled([
     searchTavily({
-      query: `${companyName} company news 2025`,
+      query: `${quotedCompany} company news 2025`,
       topic: 'news',
       time_range: 'month',
       max_results: 5,
     }),
     searchTavily({
-      query: `${companyName} company about website headquarters`,
+      query: `${quotedCompany} company about website headquarters`,
       topic: 'general',
       max_results: 3,
     }),
     searchTavily({
-      query: `${companyName} stock price funding valuation investor`,
+      query: `${quotedCompany} stock price funding valuation`,
       topic: 'finance',
       max_results: 3,
     }),
