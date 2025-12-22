@@ -2,6 +2,32 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Done
+**Merged:** PR #6 (2025-12-20)
+
+## Progress (Last reviewed: 2025-12-22)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Create api_keys Table | ✅ Complete | Migration applied |
+| Task 2: Generate TypeScript Types | ✅ Complete | Types regenerated |
+| Task 3: Create API Key Utilities | ✅ Complete | `src/lib/api/keys.ts` |
+| Task 4: Create API Auth Middleware | ✅ Complete | `src/lib/api/auth.ts` |
+| Task 5: Create API Response Helpers | ✅ Complete | `src/lib/api/response.ts` |
+| Task 6: GET /api/v1/profile | ✅ Complete | Endpoint working |
+| Task 7: GET /api/v1/claims | ✅ Complete | Endpoint working |
+| Task 8: GET /api/v1/opportunities | ✅ Complete | Endpoint working |
+| Task 9: API Key Management Server Actions | ✅ Complete | `actions.ts` |
+| Task 10: API Keys Management Page | ✅ Complete | `/settings/api-keys` |
+| Task 11: API Keys Client Component | ✅ Complete | `client.tsx` |
+| Task 12: Add Settings Link to Navigation | ✅ Complete | Nav dropdown |
+| Task 13: Final Integration Test | ✅ Complete | All endpoints verified |
+
+### Drift Notes
+None - implementation matches plan exactly.
+
+---
+
 **Goal:** Set up API key infrastructure and core read endpoints for the external API.
 
 **Architecture:** Add `api_keys` table with hashed keys mapped to users. Create auth middleware that validates keys and sets RLS context. Build UI for users to manage keys. Implement first three endpoints: `/api/v1/profile`, `/api/v1/claims`, `/api/v1/opportunities`.

@@ -2,6 +2,23 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Done
+
+## Progress (Last reviewed: 2025-12-22)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: GET /api/v1/shared/:token/summary | ✅ Complete | AI candidate summary |
+| Task 2: Rate Limiting Middleware | ✅ Complete | `src/lib/api/rate-limit.ts` |
+| Task 3: GET /api/v1/usage | ✅ Complete | Usage tracking endpoint |
+| Task 4: GET /api/v1/openapi.json | ✅ Complete | OpenAPI documentation |
+| Task 5: Final Polish | ✅ Complete | Error handling, logging |
+
+### Drift Notes
+None - implementation matches plan.
+
+---
+
 **Goal:** Add recruiter-facing AI summary endpoint, rate limiting, and API documentation.
 
 **Architecture:** New public endpoint for AI-generated candidate summaries (no auth required - uses share token). Rate limiting via middleware. OpenAPI spec for documentation.
