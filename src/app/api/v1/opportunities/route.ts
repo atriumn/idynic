@@ -4,6 +4,7 @@ import { validateApiKey, isAuthError } from '@/lib/api/auth';
 import { apiSuccess, apiError } from '@/lib/api/response';
 import OpenAI from 'openai';
 import { generateEmbedding } from '@/lib/ai/embeddings';
+import { fetchLinkedInJob, isLinkedInJobUrl } from '@/lib/integrations/brightdata';
 import type { Json } from '@/lib/supabase/types';
 
 const openai = new OpenAI();
@@ -107,7 +108,61 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { url, description } = body;
+    const { url } = body;
+    let { description } = body;
+
+    // LinkedIn job URL enrichment
+    let linkedInMetadata: {
+      location?: string | null;
+      seniority_level?: string | null;
+      employment_type?: string | null;
+      job_function?: string | null;
+      industries?: string | null;
+      salary_min?: number | null;
+      salary_max?: number | null;
+      salary_currency?: string | null;
+      applicant_count?: number | null;
+      posted_date?: string | null;
+      easy_apply?: boolean | null;
+      company_logo_url?: string | null;
+      description_html?: string | null;
+    } = {};
+    let source = 'manual';
+    let enrichedTitle: string | null = null;
+    let enrichedCompany: string | null = null;
+
+    if (url && isLinkedInJobUrl(url)) {
+      try {
+        console.log('Enriching LinkedIn job URL:', url);
+        const linkedInJob = await fetchLinkedInJob(url);
+
+        // Use LinkedIn data as the description if not provided
+        description = description || linkedInJob.job_summary;
+        enrichedTitle = linkedInJob.job_title;
+        enrichedCompany = linkedInJob.company_name;
+
+        linkedInMetadata = {
+          location: linkedInJob.job_location,
+          seniority_level: linkedInJob.job_seniority_level,
+          employment_type: linkedInJob.job_employment_type,
+          job_function: linkedInJob.job_function,
+          industries: linkedInJob.job_industries,
+          salary_min: linkedInJob.base_salary?.min_amount,
+          salary_max: linkedInJob.base_salary?.max_amount,
+          salary_currency: linkedInJob.base_salary?.currency,
+          applicant_count: linkedInJob.job_num_applicants,
+          posted_date: linkedInJob.job_posted_date,
+          easy_apply: linkedInJob.is_easy_apply,
+          company_logo_url: linkedInJob.company_logo,
+          description_html: linkedInJob.job_description_formatted,
+        };
+        source = 'linkedin';
+        console.log('LinkedIn enrichment successful:', enrichedTitle, 'at', enrichedCompany);
+      } catch (enrichError) {
+        // Log but don't fail - fall back to manual processing
+        console.error('LinkedIn enrichment failed, falling back to manual:', enrichError);
+      }
+    }
 
     if (!description) {
       return apiError('validation_error', 'description is required', 400);
@@ -142,6 +197,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Prefer LinkedIn enriched data over GPT extracted data
+    const finalTitle = enrichedTitle || extracted.title;
+    const finalCompany = enrichedCompany || extracted.company;
+
     const requirements = {
       mustHave: extracted.mustHave,
       niceToHave: extracted.niceToHave,
@@ -150,23 +209,25 @@ export async function POST(request: NextRequest) {
 
     // Generate embedding
     const reqTexts = extracted.mustHave.slice(0, 5).map(r => r.text).join('. ');
-    const embeddingText = `${extracted.title} at ${extracted.company || 'Unknown'}. ${reqTexts}`;
+    const embeddingText = `${finalTitle} at ${finalCompany || 'Unknown'}. ${reqTexts}`;
     const embedding = await generateEmbedding(embeddingText);
 
-    // Insert opportunity
+    // Insert opportunity with LinkedIn metadata
     const { data: opportunity, error } = await supabase
       .from('opportunities')
       .insert({
         user_id: userId,
-        title: extracted.title,
-        company: extracted.company,
+        title: finalTitle,
+        company: finalCompany,
         url: url || null,
         description,
         requirements: requirements as unknown as Json,
         embedding: embedding as unknown as string,
         status: 'tracking' as const,
+        source,
+        ...linkedInMetadata,
       })
-      .select('id, title, company, status, created_at')
+      .select('id, title, company, status, source, created_at')
       .single();
 
     if (error) {
@@ -179,6 +240,7 @@ export async function POST(request: NextRequest) {
       title: opportunity.title,
       company: opportunity.company,
       status: opportunity.status,
+      source: opportunity.source,
       requirements: {
         must_have_count: extracted.mustHave.length,
         nice_to_have_count: extracted.niceToHave.length,

@@ -377,36 +377,78 @@ export type Database = {
       }
       opportunities: {
         Row: {
+          applicant_count: number | null
           company: string | null
+          company_logo_url: string | null
           created_at: string | null
           description: string | null
+          description_html: string | null
+          easy_apply: boolean | null
           embedding: string | null
+          employment_type: string | null
           id: string
+          industries: string | null
+          job_function: string | null
+          location: string | null
+          posted_date: string | null
           requirements: Json | null
+          salary_currency: string | null
+          salary_max: number | null
+          salary_min: number | null
+          seniority_level: string | null
+          source: string | null
           status: string | null
           title: string
           url: string | null
           user_id: string
         }
         Insert: {
+          applicant_count?: number | null
           company?: string | null
+          company_logo_url?: string | null
           created_at?: string | null
           description?: string | null
+          description_html?: string | null
+          easy_apply?: boolean | null
           embedding?: string | null
+          employment_type?: string | null
           id?: string
+          industries?: string | null
+          job_function?: string | null
+          location?: string | null
+          posted_date?: string | null
           requirements?: Json | null
+          salary_currency?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          seniority_level?: string | null
+          source?: string | null
           status?: string | null
           title: string
           url?: string | null
           user_id: string
         }
         Update: {
+          applicant_count?: number | null
           company?: string | null
+          company_logo_url?: string | null
           created_at?: string | null
           description?: string | null
+          description_html?: string | null
+          easy_apply?: boolean | null
           embedding?: string | null
+          employment_type?: string | null
           id?: string
+          industries?: string | null
+          job_function?: string | null
+          location?: string | null
+          posted_date?: string | null
           requirements?: Json | null
+          salary_currency?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          seniority_level?: string | null
+          source?: string | null
           status?: string | null
           title?: string
           url?: string | null
