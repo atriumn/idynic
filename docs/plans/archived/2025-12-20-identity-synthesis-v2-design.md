@@ -300,81 +300,91 @@ Response: {
 
 ---
 
+## Progress (Last reviewed: 2025-12-22)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1: Schema & Scoring Foundation | ✅ Complete | Migrations and confidence-scoring.ts |
+| Phase 2: RAG-based Synthesis | ✅ Complete | rag-claims.ts, RPC function |
+| Phase 3: Enhanced Confidence Scoring | ✅ Complete | Integrated into synthesis |
+| Phase 4: Constellation Visualization | ✅ Complete | D3 force graph, side panel, modals |
+| Phase 5: Sunburst + Clusters | ✅ Complete | Added with enhancements |
+
 ## Implementation Roadmap
 
 **Sequencing principle:** Each phase delivers standalone value while enabling the next.
 
-### Phase 1: Schema & Scoring Foundation
+### Phase 1: Schema & Scoring Foundation ✅ COMPLETE
 
 **Goal:** Add new columns, no behavior change yet.
 
 ```
 Tasks:
-├── Migration: Add source_type, evidence_date to evidence table
-├── Backfill: Set source_type='resume' for existing evidence
-├── Backfill: Parse evidence_date from context.dates where available
-└── Unit tests for decay/weight calculations
+├── Migration: Add source_type, evidence_date to evidence table ✅
+├── Backfill: Set source_type='resume' for existing evidence ✅
+├── Backfill: Parse evidence_date from context.dates where available ✅
+└── Unit tests for decay/weight calculations ✅
 ```
 
 **Deliverable:** Schema ready. Existing behavior unchanged.
 
-### Phase 2: RAG-based Synthesis
+### Phase 2: RAG-based Synthesis ✅ COMPLETE
 
 **Goal:** Replace full-context synthesis with vector-search approach.
 
 ```
 Tasks:
-├── Migration: Create find_relevant_claims_for_synthesis RPC function
-├── Update synthesizeClaimsBatch() to use RAG retrieval
-├── Update progress UX: progress bar → reveal at end
-├── Load testing with synthetic 500-claim profiles
-└── A/B test: compare synthesis quality (duplicate rate, claim accuracy)
+├── Migration: Create find_relevant_claims_for_synthesis RPC function ✅
+├── Update synthesizeClaimsBatch() to use RAG retrieval ✅
+├── Update progress UX: progress bar → reveal at end ✅
+├── Load testing with synthetic 500-claim profiles ✅
+└── A/B test: compare synthesis quality (duplicate rate, claim accuracy) ✅
 ```
 
 **Deliverable:** Synthesis scales to 500+ claims. Same quality, better performance.
 
-### Phase 3: Enhanced Confidence Scoring
+### Phase 3: Enhanced Confidence Scoring ✅ COMPLETE
 
 **Goal:** Confidence reflects recency and source quality.
 
 ```
 Tasks:
-├── Implement decay calculation with type-based half-lives
-├── Implement source weighting
-├── Update confidence recalculation in synthesis pipeline
-├── Recalculate all existing claim confidences (one-time migration)
-└── UI: Add "evidence age" indicator to claim details
+├── Implement decay calculation with type-based half-lives ✅
+├── Implement source weighting ✅
+├── Update confidence recalculation in synthesis pipeline ✅
+├── Recalculate all existing claim confidences (one-time migration) ✅
+└── UI: Add "evidence age" indicator to claim details ✅
 ```
 
 **Deliverable:** Confidence scores are more meaningful. Old/weak claims surface for refresh.
 
-### Phase 4: Constellation Visualization
+### Phase 4: Constellation Visualization ✅ COMPLETE
 
 **Goal:** The "aha moment" - show source → claim connections.
 
 ```
 Tasks:
-├── API: GET /api/identity/graph endpoint
-├── Component: D3 force-directed graph
-├── Interactions: hover highlight, click to expand
-├── Integration: Add to /app/identity page
-└── Mobile: Fallback to simplified list view
+├── API: GET /api/identity/graph endpoint ✅
+├── Component: D3 force-directed graph ✅
+├── Interactions: hover highlight, click to expand ✅
+├── Integration: Add to /app/identity page ✅
+└── Mobile: Fallback to simplified list view ✅
 ```
 
 **Deliverable:** Users see how one story validates multiple skills.
 
-### Phase 5: Sunburst + Clusters
+### Phase 5: Sunburst + Clusters ✅ COMPLETE
 
 **Goal:** Complete the visualization suite.
 
 ```
 Tasks:
-├── API: GET /api/identity/sunburst endpoint
-├── API: GET /api/identity/clusters endpoint
-├── Server-side UMAP/t-SNE for cluster projection (cached)
-├── Components: Visx sunburst and scatter
-├── Navigation: Tab switcher between visualizations
-└── Gamification: "Cold claim" prompts to add stories
+├── API: GET /api/identity/sunburst endpoint ✅
+├── API: GET /api/identity/clusters endpoint ✅
+├── Server-side UMAP/t-SNE for cluster projection (cached) ✅
+├── Components: Visx sunburst and scatter ✅
+├── Navigation: Tab switcher between visualizations ✅
+└── Gamification: "Cold claim" prompts to add stories ✅
 ```
 
 **Deliverable:** Full identity graph visualization suite.
