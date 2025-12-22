@@ -488,6 +488,56 @@ export type Database = {
           },
         ]
       }
+      opportunity_notes: {
+        Row: {
+          created_at: string
+          id: string
+          links: Json
+          notes: string | null
+          opportunity_id: string
+          rating_company: number | null
+          rating_industry: number | null
+          rating_role_fit: number | null
+          rating_tech_stack: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          links?: Json
+          notes?: string | null
+          opportunity_id: string
+          rating_company?: number | null
+          rating_industry?: number | null
+          rating_role_fit?: number | null
+          rating_tech_stack?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          links?: Json
+          notes?: string | null
+          opportunity_id?: string
+          rating_company?: number | null
+          rating_industry?: number | null
+          rating_role_fit?: number | null
+          rating_tech_stack?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_notes_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
