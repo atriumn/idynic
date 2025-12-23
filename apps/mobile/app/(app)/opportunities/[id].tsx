@@ -151,7 +151,7 @@ export default function OpportunityDetailScreen() {
   if (error || !opportunity) {
     return (
       <SafeAreaView className="flex-1 bg-slate-900 p-4" edges={['top', 'bottom']}>
-        <Pressable onPress={() => router.back()} className="flex-row items-center mb-4">
+        <Pressable onPress={() => router.push('/opportunities')} className="flex-row items-center mb-4">
           <ArrowLeft color="#94a3b8" size={20} />
           <Text className="text-slate-400 ml-2">Back</Text>
         </Pressable>
@@ -184,7 +184,7 @@ export default function OpportunityDetailScreen() {
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 32 }}>
         {/* Header */}
         <View className="px-4 pt-2">
-          <Pressable onPress={() => router.back()} className="flex-row items-center mb-4 py-2">
+          <Pressable onPress={() => router.push('/opportunities')} className="flex-row items-center mb-4 py-2">
             <ArrowLeft color="#94a3b8" size={20} />
             <Text className="text-slate-400 ml-2">Back to Opportunities</Text>
           </Pressable>
@@ -366,6 +366,7 @@ export default function OpportunityDetailScreen() {
                       contentWidth={width - 64}
                       source={{ html: opportunity.description_html }}
                       tagsStyles={htmlStyles}
+                      ignoredDomTags={['button', 'script', 'style', 'iframe']}
                     />
                   ) : (
                     <Text className="text-sm text-slate-300 leading-relaxed">{opportunity.description}</Text>
