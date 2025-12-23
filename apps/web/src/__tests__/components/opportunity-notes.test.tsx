@@ -46,7 +46,7 @@ describe('OpportunityNotes', () => {
     render(<OpportunityNotes opportunityId="opp-123" />)
 
     await waitFor(() => {
-      expect(screen.getByText('Links')).toBeInTheDocument()
+      expect(screen.getByText('Relevant Links')).toBeInTheDocument()
     })
   })
 
@@ -54,7 +54,7 @@ describe('OpportunityNotes', () => {
     render(<OpportunityNotes opportunityId="opp-123" />)
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/add your thoughts/i)).toBeInTheDocument()
+      expect(screen.getByPlaceholderText(/jot down quick thoughts/i)).toBeInTheDocument()
     })
   })
 
@@ -64,9 +64,9 @@ describe('OpportunityNotes', () => {
 
     await waitFor(() => screen.getByText('Tech Stack'))
 
-    // Click rating button
-    const techStackButtons = screen.getAllByRole('button').filter(b => b.textContent === '4')
-    await user.click(techStackButtons[0])
+    // Rating buttons are empty, click the 4th button in the first rating group
+    const buttons = screen.getAllByRole('button')
+    await user.click(buttons[3]) // 4th button = rating 4
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/opportunity-notes', expect.objectContaining({
@@ -85,9 +85,9 @@ describe('OpportunityNotes', () => {
 
     await waitFor(() => screen.getByText('Tech Stack'))
 
-    const buttons = screen.getAllByRole('button').filter(b => b.textContent === '4')
-    await user.click(buttons[0])
+    const buttons = screen.getAllByRole('button')
+    await user.click(buttons[3]) // 4th button = rating 4
 
-    expect(screen.getByText(/saving/i)).toBeInTheDocument()
+    expect(screen.getByText('SAVING...')).toBeInTheDocument()
   })
 })

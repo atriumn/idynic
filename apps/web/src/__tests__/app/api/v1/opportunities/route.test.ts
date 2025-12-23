@@ -275,6 +275,15 @@ describe('Opportunities API Route', () => {
       })
 
       mockSupabaseFrom.mockImplementation(() => ({
+        // For duplicate URL check
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({ data: null, error: null })
+            })
+          })
+        }),
+        // For insert
         insert: vi.fn().mockReturnValue({
           select: vi.fn().mockReturnValue({
             single: vi.fn().mockResolvedValue({

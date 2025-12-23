@@ -39,7 +39,7 @@ export function OpportunityNotes({ opportunityId }: OpportunityNotesProps) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
-  const debounceRef = useRef<NodeJS.Timeout>()
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>()
 
   // Fetch notes on mount
   useEffect(() => {

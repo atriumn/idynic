@@ -14,14 +14,16 @@ describe('RatingInput', () => {
     render(<RatingInput label="Tech Stack" value={3} onChange={() => {}} />)
 
     const buttons = screen.getAllByRole('button')
-    expect(buttons[2]).toHaveAttribute('data-selected', 'true')
+    // The selected button (index 2 for value 3) should have primary styling
+    expect(buttons[2]).toHaveClass('bg-primary')
   })
 
   it('calls onChange when rating is clicked', () => {
     const onChange = vi.fn()
     render(<RatingInput label="Tech Stack" value={null} onChange={onChange} />)
 
-    fireEvent.click(screen.getByText('4'))
+    const buttons = screen.getAllByRole('button')
+    fireEvent.click(buttons[3]) // 4th button = rating 4
     expect(onChange).toHaveBeenCalledWith(4)
   })
 
@@ -29,7 +31,8 @@ describe('RatingInput', () => {
     const onChange = vi.fn()
     render(<RatingInput label="Tech Stack" value={3} onChange={onChange} />)
 
-    fireEvent.click(screen.getByText('3'))
+    const buttons = screen.getAllByRole('button')
+    fireEvent.click(buttons[2]) // 3rd button = rating 3
     expect(onChange).toHaveBeenCalledWith(null)
   })
 

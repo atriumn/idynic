@@ -7,6 +7,15 @@ vi.mock('@/lib/supabase/service-role', () => ({
   createServiceRoleClient: vi.fn()
 }))
 
+// Mock Supabase client for JWT validation
+vi.mock('@supabase/supabase-js', () => ({
+  createClient: vi.fn(() => ({
+    auth: {
+      getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: { message: 'Invalid token' } })
+    }
+  }))
+}))
+
 describe('api/auth', () => {
   let mockSupabase: ReturnType<typeof createMockSupabaseClient>
 
@@ -35,7 +44,7 @@ describe('api/auth', () => {
       if (isAuthError(result)) {
         expect(result.status).toBe(401)
         const body = await result.json()
-        expect(body.error.code).toBe('invalid_api_key')
+        expect(body.error.code).toBe('unauthorized')
         expect(body.error.message).toContain('Missing')
       }
     })
@@ -52,17 +61,18 @@ describe('api/auth', () => {
       }
     })
 
-    it('returns error for invalid key format', async () => {
+    it('returns error for invalid token (non-API-key tokens go through JWT validation)', async () => {
       const { validateApiKey, isAuthError } = await import('@/lib/api/auth')
       const request = createRequest({ 'Authorization': 'Bearer not_valid_format' })
 
       const result = await validateApiKey(request)
 
+      // Non-API-key tokens are treated as JWTs and validated accordingly
       expect(isAuthError(result)).toBe(true)
       if (isAuthError(result)) {
         expect(result.status).toBe(401)
         const body = await result.json()
-        expect(body.error.message).toContain('format')
+        expect(body.error.code).toBe('invalid_token')
       }
     })
 
