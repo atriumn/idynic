@@ -2,7 +2,31 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** In Progress
 **Goal:** Build a React Native + Expo mobile app with full feature parity to the idynic web app, starting with iOS.
+
+## Progress (Last reviewed: 2025-12-23)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Initialize pnpm workspaces | ✅ Complete | Commit 8fc815b6 |
+| Task 2: Move web app to apps/web | ✅ Complete | Commit 494eaa67 |
+| Task 3: Create shared package | ✅ Complete | Commit dee9e0e5 |
+| Task 4: Create shared API client | ✅ Complete | Commit c458c4d0 |
+| Task 5: Create Expo app | ✅ Complete | Commit da5d60bc |
+| Task 6: Set up NativeWind | ✅ Complete | Commit bd554209 |
+| Task 7: Set up Supabase client | ✅ Complete | Commits f38dcfd9, f6781666 |
+| Task 8: Set up navigation structure | ✅ Complete | Commit 477e8136 |
+| Task 9: Build Profile screen | ✅ Complete | Commit 5acf9e65 |
+| Task 10: Build Opportunities list | ✅ Complete | Commit 8608b3c7 |
+| Task 11: Build Opportunity detail | ✅ Complete | Commits e03da949, d289d9dd, 32c63974 |
+| Task 12: Settings with API keys | 🔄 In Progress | Basic settings exist |
+| Task 13: Implement OAuth login | ⏳ Not Started | |
+| Task 14: Implement push notifications | ⏳ Not Started | |
+
+### Drift Notes
+- Additional features added beyond plan: Identity graph visualization (c4a91f2d), profile editing, logo integration
+- Various UX fixes not in original plan (back navigation, HTML render warnings)
 
 **Architecture:** Monorepo with shared TypeScript packages for types, schemas, and API client. Expo Router for file-based navigation. NativeWind for Tailwind-style styling. Supabase for auth and data.
 

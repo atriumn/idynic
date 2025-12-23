@@ -2,7 +2,31 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Done
 **Goal:** Set up API key infrastructure and core read endpoints for the external API.
+
+## Progress (Last reviewed: 2025-12-23)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Create api_keys Table | ✅ Complete | PR #6 merged |
+| Task 2: Generate TypeScript Types | ✅ Complete | PR #6 |
+| Task 3: Create API Key Utilities | ✅ Complete | PR #6 |
+| Task 4: Create API Auth Middleware | ✅ Complete | PR #6 |
+| Task 5: Create API Response Helpers | ✅ Complete | PR #6 |
+| Task 6: GET /api/v1/profile | ✅ Complete | PR #6 |
+| Task 7: GET /api/v1/claims | ✅ Complete | PR #6 |
+| Task 8: GET /api/v1/opportunities | ✅ Complete | PR #6 |
+| Task 9: API Key Management Actions | ✅ Complete | PR #6 |
+| Task 10: API Keys Management Page | ✅ Complete | PR #6 |
+| Task 11: API Keys Client Component | ✅ Complete | PR #6 |
+| Task 12: Add Settings Link | ✅ Complete | PR #6 |
+| Task 13: Final Integration Test | ✅ Complete | PR #6 |
+
+### Drift Notes
+- JWT token support added post-merge (commit f7eb2e7f) - enhancement not in original plan
+- Chrome extension built on top of this API (not part of original plan)
+- All planned features implemented as specified
 
 **Architecture:** Add `api_keys` table with hashed keys mapped to users. Create auth middleware that validates keys and sets RLS context. Build UI for users to manage keys. Implement first three endpoints: `/api/v1/profile`, `/api/v1/claims`, `/api/v1/opportunities`.
 

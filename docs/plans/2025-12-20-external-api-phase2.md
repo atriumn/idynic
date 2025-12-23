@@ -2,7 +2,27 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Not Started
 **Goal:** Add opportunity management endpoints to the external API - create, match, tailor, and share.
+
+## Progress (Last reviewed: 2025-12-23)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: POST /api/v1/opportunities | ⏳ Not Started | |
+| Task 2: GET /api/v1/opportunities/:id | ⏳ Not Started | |
+| Task 3: GET /api/v1/opportunities/:id/match | ⏳ Not Started | |
+| Task 4: POST /api/v1/opportunities/:id/tailor | ⏳ Not Started | |
+| Task 5: GET /api/v1/opportunities/:id/tailored-profile | ⏳ Not Started | |
+| Task 6: POST /api/v1/opportunities/:id/share | ⏳ Not Started | |
+| Task 7: POST /api/v1/opportunities/add-and-tailor | ⏳ Not Started | |
+| Task 8: POST /api/v1/opportunities/add-tailor-share | ⏳ Not Started | |
+| Task 9: Fix Lib Function Dependencies | ⏳ Not Started | |
+| Task 10: Integration Testing | ⏳ Not Started | |
+
+### Drift Notes
+- Blocked by: Phase 1 is complete, ready to start
+- Priority: Medium (Chrome extension uses Phase 1 API successfully)
 
 **Architecture:** New v1 API routes with API key auth that call existing lib functions. Each endpoint is thin: validate request, call lib function, format response. Long operations (tailor) stream progress via SSE.
 

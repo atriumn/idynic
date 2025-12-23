@@ -2,7 +2,27 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Not Started
 **Goal:** Add source metadata columns to evidence table and implement decay/weight calculation utilities.
+
+## Progress (Last reviewed: 2025-12-23)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Create Migration for Source Metadata | ⏳ Not Started | |
+| Task 2: Backfill Existing Evidence | ⏳ Not Started | |
+| Task 3: Backfill Evidence Dates | ⏳ Not Started | |
+| Task 4: Create Confidence Scoring Types | ⏳ Not Started | |
+| Task 5: Implement Recency Decay Function | ⏳ Not Started | |
+| Task 6: Implement Source Weight Function | ⏳ Not Started | |
+| Task 7: Implement Combined Evidence Weight | ⏳ Not Started | |
+| Task 8: Implement Claim Confidence Calculator | ⏳ Not Started | |
+| Task 9: Update Evidence Extraction | ⏳ Not Started | |
+| Task 10: Run Full Test Suite | ⏳ Not Started | |
+
+### Drift Notes
+- No drift - work has not started
+- Priority: Medium (enhancement to existing synthesis system)
 
 **Architecture:** Extend evidence table with `source_type` and `evidence_date` columns. Create pure functions for confidence scoring that incorporate recency decay and source weighting. Backfill existing data.
 
