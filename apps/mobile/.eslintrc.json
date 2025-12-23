@@ -1,0 +1,14 @@
+{
+  "extends": "expo",
+  "ignorePatterns": [
+    "node_modules/",
+    ".expo/",
+    ".vscode/"
+  ],
+  "env": {
+    "jest": true
+  },
+  "rules": {
+    "import/no-unresolved": "off"
+  }
+}
