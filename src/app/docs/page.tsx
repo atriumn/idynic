@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Code, Cpu } from "lucide-react";
+import { Code, Cpu, Chrome } from "lucide-react";
 
 export default function DocsPage() {
   return (
@@ -8,7 +8,7 @@ export default function DocsPage() {
         <div className="space-y-4">
           <h1 className="text-4xl font-bold tracking-tight">Documentation</h1>
           <p className="text-xl text-muted-foreground">
-            Build integrations with Idynic using our REST API or MCP server.
+            Build integrations with Idynic using our REST API, MCP server, or Chrome extension.
           </p>
         </div>
 
@@ -42,6 +42,22 @@ export default function DocsPage() {
             <p className="text-muted-foreground">
               Use Idynic directly from Claude, Cursor, or any MCP-compatible client.
               Manage your career with natural language.
+            </p>
+          </Link>
+
+          <Link
+            href="/docs/extension"
+            className="group p-6 rounded-xl border bg-card hover:border-primary transition-colors"
+          >
+            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+              <Chrome className="w-6 h-6 text-primary" />
+            </div>
+            <h2 className="font-semibold text-xl mb-2 group-hover:text-primary transition-colors">
+              Chrome Extension
+            </h2>
+            <p className="text-muted-foreground">
+              Save job opportunities with one click while browsing LinkedIn,
+              Greenhouse, and other job boards.
             </p>
           </Link>
         </div>
