@@ -1,17 +1,17 @@
 {
-  "name": "idynic",
+  "name": "idynic-monorepo",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
+    "dev": "pnpm --filter web dev",
+    "dev:mobile": "pnpm --filter mobile start",
+    "build": "pnpm --filter web build",
+    "lint": "pnpm --filter web lint",
     "prepare": "husky",
-    "test": "vitest",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui",
+    "test": "pnpm --filter web test",
+    "test:run": "pnpm --filter web test:run",
+    "test:coverage": "pnpm --filter web test:coverage",
+    "test:ui": "pnpm --filter web test:ui",
     "test:integration": "echo 'No integration tests yet'"
   },
   "dependencies": {
