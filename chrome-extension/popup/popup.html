@@ -1,0 +1,78 @@
+<!-- chrome-extension/popup/popup.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Idynic</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- State: Not Configured -->
+    <div id="state-unconfigured" class="state hidden">
+      <div class="icon">🔑</div>
+      <h2>Connect to Idynic</h2>
+      <p>Paste your API key to start saving jobs.</p>
+      <button id="open-settings" class="primary">Open Settings</button>
+    </div>
+
+    <!-- State: Ready -->
+    <div id="state-ready" class="state hidden">
+      <h2>Save to Idynic</h2>
+      <div class="url-preview">
+        <span class="url-icon">📍</span>
+        <span id="current-url" class="url-text"></span>
+      </div>
+      <button id="save-btn" class="primary">Save Job</button>
+    </div>
+
+    <!-- State: Saving -->
+    <div id="state-saving" class="state hidden">
+      <div class="spinner"></div>
+      <h2>Saving...</h2>
+      <p>Extracting job info</p>
+    </div>
+
+    <!-- State: Success -->
+    <div id="state-success" class="state hidden">
+      <div class="icon success">✓</div>
+      <h2>Saved!</h2>
+      <div id="job-info" class="job-info">
+        <div id="job-title" class="job-title"></div>
+        <div id="job-company" class="job-company"></div>
+      </div>
+      <a id="view-link" href="#" target="_blank" class="primary link-btn">View in Idynic →</a>
+    </div>
+
+    <!-- State: Duplicate -->
+    <div id="state-duplicate" class="state hidden">
+      <div class="icon info">ℹ</div>
+      <h2>Already Saved</h2>
+      <div id="dup-job-info" class="job-info">
+        <div id="dup-job-title" class="job-title"></div>
+        <div id="dup-job-company" class="job-company"></div>
+      </div>
+      <a id="dup-view-link" href="#" target="_blank" class="primary link-btn">View in Idynic →</a>
+    </div>
+
+    <!-- State: Error -->
+    <div id="state-error" class="state hidden">
+      <div class="icon error">⚠</div>
+      <h2 id="error-title">Couldn't extract job</h2>
+      <p id="error-message">This page didn't look like a job posting.</p>
+
+      <div id="fallback-section" class="fallback hidden">
+        <textarea id="fallback-description" placeholder="Paste the job description here..."></textarea>
+        <button id="save-with-text" class="secondary">Save with text</button>
+      </div>
+
+      <button id="show-fallback" class="secondary">Paste description instead</button>
+      <button id="retry-btn" class="text-btn hidden">Try again</button>
+    </div>
+  </div>
+
+  <script src="../lib/api.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
