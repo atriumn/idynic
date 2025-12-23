@@ -14,13 +14,30 @@ export interface Opportunity {
   created_at: string | null;
 }
 
-// Helper to safely extract requirements
+interface RequirementItem {
+  text: string;
+  type?: string;
+}
+
+// Helper to safely extract requirements - items may be strings or {text, type} objects
 export function getRequirements(requirements: unknown): { mustHave?: string[]; niceToHave?: string[] } | null {
   if (!requirements || typeof requirements !== 'object') return null;
   const req = requirements as Record<string, unknown>;
+
+  const extractTexts = (items: unknown): string[] | undefined => {
+    if (!Array.isArray(items)) return undefined;
+    return items.map((item) => {
+      if (typeof item === 'string') return item;
+      if (item && typeof item === 'object' && 'text' in item) {
+        return String((item as RequirementItem).text);
+      }
+      return String(item);
+    });
+  };
+
   return {
-    mustHave: Array.isArray(req.mustHave) ? req.mustHave : undefined,
-    niceToHave: Array.isArray(req.niceToHave) ? req.niceToHave : undefined,
+    mustHave: extractTexts(req.mustHave),
+    niceToHave: extractTexts(req.niceToHave),
   };
 }
 

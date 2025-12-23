@@ -45,6 +45,13 @@ export default function AppLayout() {
           tabBarIcon: ({ color, size }) => <Settings color={color} size={size} />,
         }}
       />
+      <Tabs.Screen
+        name="opportunities/[id]"
+        options={{
+          href: null,
+          headerShown: false,
+        }}
+      />
     </Tabs>
   );
 }
