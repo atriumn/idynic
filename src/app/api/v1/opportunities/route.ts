@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { validateApiKey, isAuthError } from '@/lib/api/auth';
 import { apiSuccess, apiError } from '@/lib/api/response';
@@ -7,6 +7,7 @@ import { generateEmbedding } from '@/lib/ai/embeddings';
 import { fetchLinkedInJob, isLinkedInJobUrl } from '@/lib/integrations/brightdata';
 import { fetchJobPageContent, looksLikeJobUrl } from '@/lib/integrations/scraping';
 import { researchCompanyBackground } from '@/lib/ai/research-company-background';
+import { normalizeJobUrl } from '@/lib/utils/normalize-url';
 import type { Json } from '@/lib/supabase/types';
 
 const openai = new OpenAI();
@@ -114,6 +115,34 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { url } = body;
     let { description } = body;
+
+    // Check for duplicate URL BEFORE expensive operations
+    if (url) {
+      const normalizedUrl = normalizeJobUrl(url);
+      if (normalizedUrl) {
+        const { data: existing } = await supabase
+          .from('opportunities')
+          .select('id, title, company')
+          .eq('user_id', userId)
+          .eq('normalized_url', normalizedUrl)
+          .single();
+
+        if (existing) {
+          const requestId = crypto.randomUUID().slice(0, 8);
+          return NextResponse.json(
+            {
+              error: {
+                code: 'duplicate',
+                message: 'You have already saved this job',
+                request_id: requestId,
+              },
+              data: { existing },
+            },
+            { status: 409 }
+          );
+        }
+      }
+    }
 
     // LinkedIn job URL enrichment
     let linkedInMetadata: {
@@ -243,6 +272,7 @@ export async function POST(request: NextRequest) {
         title: finalTitle,
         company: finalCompany,
         url: url || null,
+        normalized_url: url ? normalizeJobUrl(url) : null,
         description: finalDescription,
         requirements: requirements as unknown as Json,
         embedding: embedding as unknown as string,
