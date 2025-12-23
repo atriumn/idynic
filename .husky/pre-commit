@@ -3,5 +3,5 @@
 # Run lint-staged for linting
 pnpm exec lint-staged
 
-# Run TypeScript type checking
-pnpm exec tsc --noEmit
+# Run TypeScript type checking in web app
+cd apps/web && pnpm exec tsc --noEmit

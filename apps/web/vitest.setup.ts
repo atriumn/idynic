@@ -24,7 +24,6 @@ vi.mock('next/headers', () => ({
 }))
 
 // Mock crypto.randomUUID for consistent request IDs in tests
-const originalRandomUUID = crypto.randomUUID
 beforeEach(() => {
   let callCount = 0
   vi.spyOn(crypto, 'randomUUID').mockImplementation(() => {
