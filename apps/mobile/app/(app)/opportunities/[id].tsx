@@ -35,6 +35,19 @@ import {
 import { getRequirements } from '../../../hooks/use-opportunities';
 import { useCreateSharedLink } from '../../../hooks/use-shared-links';
 
+/**
+ * Render markdown bold (**text**) as styled Text elements
+ */
+function renderMarkdownBold(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <Text key={i} className="font-semibold text-white">{part.slice(2, -2)}</Text>;
+    }
+    return part;
+  });
+}
+
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   tracking: { bg: 'bg-slate-700', text: 'text-slate-300' },
   applied: { bg: 'bg-blue-900', text: 'text-blue-300' },
@@ -118,7 +131,7 @@ function TailoredWorkHistory({ experience }: { experience: ResumeExperience[] })
                 <View key={i} className="flex-row items-start gap-2 mb-1">
                   <View className="h-1 w-1 rounded-full bg-slate-500 mt-2" />
                   <Text className="text-sm text-slate-300 flex-1">
-                    {bullet.replace(/\*\*(.*?)\*\*/g, '$1')}
+                    {renderMarkdownBold(bullet)}
                   </Text>
                 </View>
               ))}

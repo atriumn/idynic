@@ -27,6 +27,19 @@ import {
 
 export type ContentType = "bullet" | "summary" | "narrative";
 
+/**
+ * Render markdown bold (**text**) as <strong> elements
+ */
+function renderMarkdownBold(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+}
+
 interface QuickAction {
   label: string;
   instruction: string;
@@ -208,7 +221,7 @@ export function EditableText({
           className="cursor-pointer hover:bg-muted/50 rounded px-1 -mx-1 transition-colors"
           onClick={() => setIsEditing(true)}
         >
-          {value}
+          {renderMarkdownBold(value)}
         </span>
         {isEdited && (
           <Badge variant="outline" className="ml-2 text-xs py-0 px-1 text-muted-foreground">

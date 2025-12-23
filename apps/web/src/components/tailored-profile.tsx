@@ -618,7 +618,7 @@ export function TailoredProfile({
                       {job.bullets.map((bullet, j) => (
                         <li key={j} className="text-sm">
                           <EditableText
-                            value={bullet.replace(/\*\*(.*?)\*\*/g, "$1")}
+                            value={bullet}
                             fieldPath={`experience.${i}.bullets.${j}`}
                             contentType="bullet"
                             isEdited={editedFields.includes(`experience.${i}.bullets.${j}`)}
@@ -667,7 +667,7 @@ export function TailoredProfile({
                         {job.bullets.map((bullet, j) => (
                           <li key={j} className="text-sm">
                             <EditableText
-                              value={bullet.replace(/\*\*(.*?)\*\*/g, "$1")}
+                              value={bullet}
                               fieldPath={`additionalExperience.${i}.bullets.${j}`}
                               contentType="bullet"
                               isEdited={editedFields.includes(`additionalExperience.${i}.bullets.${j}`)}
