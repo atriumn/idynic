@@ -68,8 +68,8 @@ export default function ExtensionDocsPage() {
             </Left>
             <Right>
               <div className="rounded-lg overflow-hidden">
-                <div className="bg-violet-900 px-4 py-2 text-xs text-violet-300 font-medium">Features</div>
-                <div className="bg-violet-950/80 p-4 text-sm space-y-2">
+                <div className="bg-slate-800 px-4 py-2 text-xs text-teal-300 font-medium">Features</div>
+                <div className="bg-slate-900/80 p-4 text-sm space-y-2">
                   <div>• One-click job saving</div>
                   <div>• LinkedIn job enrichment</div>
                   <div>• Duplicate detection</div>
@@ -162,8 +162,8 @@ Vivaldi`}
                 code="idn_xxxxxxxxxxxxxxxxxxxx"
               />
               <div className="rounded-lg overflow-hidden">
-                <div className="bg-violet-900 px-4 py-2 text-xs text-violet-300 font-medium">Security</div>
-                <div className="bg-violet-950/80 p-4 text-sm">
+                <div className="bg-slate-800 px-4 py-2 text-xs text-teal-300 font-medium">Security</div>
+                <div className="bg-slate-900/80 p-4 text-sm">
                   Your API key is stored locally in your browser and never sent to third parties.
                   You can revoke it anytime from Settings → API Keys.
                 </div>
@@ -227,8 +227,8 @@ BambooHR
 + any job page URL`}
               />
               <div className="rounded-lg overflow-hidden">
-                <div className="bg-violet-900 px-4 py-2 text-xs text-violet-300 font-medium">Pro tip</div>
-                <div className="bg-violet-950/80 p-4 text-sm">
+                <div className="bg-slate-800 px-4 py-2 text-xs text-teal-300 font-medium">Pro tip</div>
+                <div className="bg-slate-900/80 p-4 text-sm">
                   Pin the Idynic extension to your toolbar for quick access.
                   Click the puzzle piece icon → Pin Idynic.
                 </div>
@@ -284,15 +284,15 @@ BambooHR
             </Left>
             <Right>
               <div className="rounded-lg overflow-hidden">
-                <div className="bg-violet-900 px-4 py-2 text-xs text-violet-300 font-medium">Need help?</div>
-                <div className="bg-violet-950/80 p-4 text-sm space-y-2">
+                <div className="bg-slate-800 px-4 py-2 text-xs text-teal-300 font-medium">Need help?</div>
+                <div className="bg-slate-900/80 p-4 text-sm space-y-2">
                   <div>
-                    <a href="mailto:support@idynic.com" className="text-violet-300 hover:text-white">
+                    <a href="mailto:support@idynic.com" className="text-teal-300 hover:text-white">
                       support@idynic.com
                     </a>
                   </div>
                   <div>
-                    <a href="https://github.com/atriumn/idynic/issues" target="_blank" rel="noopener noreferrer" className="text-violet-300 hover:text-white">
+                    <a href="https://github.com/atriumn/idynic/issues" target="_blank" rel="noopener noreferrer" className="text-teal-300 hover:text-white">
                       GitHub Issues →
                     </a>
                   </div>
@@ -321,7 +321,7 @@ function Left({ children }: { children: React.ReactNode }) {
 
 function Right({ children }: { children: React.ReactNode }) {
   return (
-    <div className="lg:w-[420px] shrink-0 bg-violet-950 text-violet-100 p-6 lg:p-8 space-y-4 lg:sticky lg:top-14 lg:self-start lg:max-h-[calc(100vh-3.5rem)] lg:overflow-y-auto">
+    <div className="lg:w-[420px] shrink-0 bg-slate-900 text-slate-100 p-6 lg:p-8 space-y-4 lg:sticky lg:top-14 lg:self-start lg:max-h-[calc(100vh-3.5rem)] lg:overflow-y-auto">
       {children}
     </div>
   );
@@ -330,8 +330,8 @@ function Right({ children }: { children: React.ReactNode }) {
 function CodeBlock({ title, code }: { title: string; code: string }) {
   return (
     <div className="rounded-lg overflow-hidden">
-      <div className="bg-violet-900 px-4 py-2 text-xs text-violet-300 font-medium">{title}</div>
-      <pre className="bg-violet-950/80 p-4 text-sm overflow-x-auto">
+      <div className="bg-slate-800 px-4 py-2 text-xs text-teal-300 font-medium">{title}</div>
+      <pre className="bg-slate-900/80 p-4 text-sm overflow-x-auto">
         <code>{code}</code>
       </pre>
     </div>
