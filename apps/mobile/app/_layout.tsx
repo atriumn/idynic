@@ -1,10 +1,12 @@
 import '../global.css';
 import { useEffect } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, DarkTheme } from '@react-navigation/native';
 import { AuthProvider, useAuth } from '../lib/auth-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MeshBackground } from '../components/ui/mesh-background';
 
 const queryClient = new QueryClient();
 
@@ -14,7 +16,7 @@ const CustomDarkTheme = {
   colors: {
     ...DarkTheme.colors,
     primary: '#14b8a6',
-    background: '#0f172a',
+    background: 'transparent', // Make transparent so MeshBackground shows
     card: '#0f172a',
     text: '#ffffff',
     border: '#1e293b',
@@ -46,8 +48,11 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider value={CustomDarkTheme}>
         <AuthProvider>
-          <StatusBar style="light" />
-          <RootLayoutNav />
+          <View style={{ flex: 1, backgroundColor: '#0f172a' }}>
+             <MeshBackground />
+             <StatusBar style="light" />
+             <RootLayoutNav />
+          </View>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

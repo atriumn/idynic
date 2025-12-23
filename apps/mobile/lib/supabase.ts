@@ -6,24 +6,96 @@ import { Database } from '@idynic/shared/types';
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 
-// TODO: SecureStore has a 2048 byte limit. Supabase tokens may exceed this.
-// For production, implement LargeSecureStore or use expo-sqlite/localStorage.
-// See: https://supabase.com/docs/guides/getting-started/tutorials/with-expo-react-native
-const ExpoSecureStoreAdapter = {
-  getItem: (key: string) => {
-    return SecureStore.getItemAsync(key);
+// Debug: Log the Supabase URL at startup
+console.log('[Supabase] URL:', supabaseUrl);
+console.log('[Supabase] URL defined:', !!supabaseUrl);
+
+// SecureStore has a 2048 byte limit. Supabase tokens exceed this.
+// This adapter chunks large values across multiple keys.
+const CHUNK_SIZE = 1800; // Leave margin for key overhead
+
+const LargeSecureStoreAdapter = {
+  getItem: async (key: string): Promise<string | null> => {
+    try {
+      // First try to get as single value (for small items or legacy)
+      const value = await SecureStore.getItemAsync(key);
+      if (value !== null) {
+        return value;
+      }
+
+      // Check if chunked
+      const chunkCountStr = await SecureStore.getItemAsync(`${key}_chunks`);
+      if (!chunkCountStr) {
+        return null;
+      }
+
+      const chunkCount = parseInt(chunkCountStr, 10);
+      const chunks: string[] = [];
+      for (let i = 0; i < chunkCount; i++) {
+        const chunk = await SecureStore.getItemAsync(`${key}_${i}`);
+        if (chunk === null) {
+          // Corrupted chunked data
+          return null;
+        }
+        chunks.push(chunk);
+      }
+      return chunks.join('');
+    } catch {
+      return null;
+    }
   },
-  setItem: (key: string, value: string) => {
-    return SecureStore.setItemAsync(key, value);
+
+  setItem: async (key: string, value: string): Promise<void> => {
+    try {
+      // Clear any existing chunks first
+      await LargeSecureStoreAdapter.removeItem(key);
+
+      if (value.length <= CHUNK_SIZE) {
+        // Small enough for single store
+        await SecureStore.setItemAsync(key, value);
+      } else {
+        // Split into chunks
+        const chunks: string[] = [];
+        for (let i = 0; i < value.length; i += CHUNK_SIZE) {
+          chunks.push(value.slice(i, i + CHUNK_SIZE));
+        }
+
+        // Store chunk count
+        await SecureStore.setItemAsync(`${key}_chunks`, chunks.length.toString());
+
+        // Store each chunk
+        for (let i = 0; i < chunks.length; i++) {
+          await SecureStore.setItemAsync(`${key}_${i}`, chunks[i]);
+        }
+      }
+    } catch (error) {
+      console.error('SecureStore setItem error:', error);
+    }
   },
-  removeItem: (key: string) => {
-    return SecureStore.deleteItemAsync(key);
+
+  removeItem: async (key: string): Promise<void> => {
+    try {
+      // Remove single value if exists
+      await SecureStore.deleteItemAsync(key);
+
+      // Remove chunks if exist
+      const chunkCountStr = await SecureStore.getItemAsync(`${key}_chunks`);
+      if (chunkCountStr) {
+        const chunkCount = parseInt(chunkCountStr, 10);
+        for (let i = 0; i < chunkCount; i++) {
+          await SecureStore.deleteItemAsync(`${key}_${i}`);
+        }
+        await SecureStore.deleteItemAsync(`${key}_chunks`);
+      }
+    } catch {
+      // Ignore errors during cleanup
+    }
   },
 };
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: ExpoSecureStoreAdapter,
+    storage: LargeSecureStoreAdapter,
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,

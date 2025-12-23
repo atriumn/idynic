@@ -19,14 +19,27 @@ export default function LoginScreen() {
     setLoading(true);
     setError(null);
 
-    const { error: authError } = isSignUp
-      ? await supabase.auth.signUp({ email, password })
-      : await supabase.auth.signInWithPassword({ email, password });
+    console.log('[Login] Starting auth, isSignUp:', isSignUp);
+    console.log('[Login] Email:', email);
 
-    setLoading(false);
+    try {
+      const { error: authError, data } = isSignUp
+        ? await supabase.auth.signUp({ email, password })
+        : await supabase.auth.signInWithPassword({ email, password });
 
-    if (authError) {
-      setError(authError.message);
+      console.log('[Login] Auth response received');
+      console.log('[Login] Error:', authError?.message);
+      console.log('[Login] User:', data?.user?.id);
+
+      setLoading(false);
+
+      if (authError) {
+        setError(authError.message);
+      }
+    } catch (e) {
+      console.log('[Login] Exception:', e);
+      setLoading(false);
+      setError('Network error: ' + (e as Error).message);
     }
     // Navigation happens automatically via auth state change in _layout.tsx
   };
