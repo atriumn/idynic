@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Code, Cpu, Chrome } from "lucide-react";
+import { Code, Cpu, GoogleChromeLogo } from "@phosphor-icons/react/dist/ssr";
 
 export default function DocsPage() {
   return (
@@ -50,7 +50,7 @@ export default function DocsPage() {
             className="group p-6 rounded-xl border bg-card hover:border-primary transition-colors"
           >
             <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <Chrome className="w-6 h-6 text-primary" />
+              <GoogleChromeLogo className="w-6 h-6 text-primary" />
             </div>
             <h2 className="font-semibold text-xl mb-2 group-hover:text-primary transition-colors">
               Chrome Extension
