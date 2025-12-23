@@ -1,4 +1,4 @@
-import { View, Text, FlatList, ActivityIndicator, Pressable, Image } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, Pressable, Image, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Briefcase, MapPin, Clock, Building2 } from 'lucide-react-native';
 import { useOpportunities, Opportunity, getRequirements } from '../../hooks/use-opportunities';
@@ -104,7 +104,7 @@ function OpportunityCard({ opportunity }: { opportunity: Opportunity }) {
 }
 
 export default function OpportunitiesScreen() {
-  const { data: opportunities, isLoading, error, refetch } = useOpportunities();
+  const { data: opportunities, isLoading, error, refetch, isRefetching } = useOpportunities();
 
   if (isLoading) {
     return (
@@ -140,14 +140,19 @@ export default function OpportunitiesScreen() {
   }
 
   return (
-    <View className="flex-1 bg-slate-900">
+    <View className="flex-1" style={{ backgroundColor: '#0f172a' }}>
       <FlatList
         data={opportunities}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <OpportunityCard opportunity={item} />}
         contentContainerStyle={{ padding: 16 }}
-        onRefresh={refetch}
-        refreshing={isLoading}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            tintColor="#ffffff"
+          />
+        }
       />
     </View>
   );

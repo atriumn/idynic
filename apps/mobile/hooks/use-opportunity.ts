@@ -1,6 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth-context';
+import { api } from '../lib/api';
 
 export interface OpportunityDetail {
   id: string;
@@ -24,11 +25,46 @@ export interface OpportunityDetail {
   created_at: string | null;
 }
 
+export interface ResumeExperience {
+  company: string;
+  companyDomain?: string | null;
+  title: string;
+  dates: string;
+  location: string | null;
+  bullets: string[];
+}
+
+export interface ResumeVenture {
+  name: string;
+  role: string;
+  status: string | null;
+  description: string | null;
+}
+
+export interface ResumeEducation {
+  institution: string;
+  degree: string;
+  year: string | null;
+}
+
+export interface SkillCategory {
+  category: string;
+  skills: string[];
+}
+
+export interface ResumeData {
+  summary: string;
+  skills: SkillCategory[] | string[];
+  experience: ResumeExperience[];
+  additionalExperience?: ResumeExperience[];
+  ventures?: ResumeVenture[];
+  education: ResumeEducation[];
+}
+
 export interface TailoredProfile {
   id: string;
-  summary: string | null;
-  work_history: unknown;
-  skills: unknown;
+  narrative: string | null;
+  resume_data: ResumeData | null;
   created_at: string | null;
 }
 
@@ -62,7 +98,7 @@ export function useOpportunity(opportunityId: string) {
 async function fetchTailoredProfile(userId: string, opportunityId: string): Promise<TailoredProfile | null> {
   const { data, error } = await supabase
     .from('tailored_profiles')
-    .select('id, summary, work_history, skills, created_at')
+    .select('id, narrative, resume_data, created_at')
     .eq('opportunity_id', opportunityId)
     .eq('user_id', userId)
     .single();
@@ -86,5 +122,38 @@ export function useTailoredProfile(opportunityId: string) {
       return fetchTailoredProfile(session.user.id, opportunityId);
     },
     enabled: !!session?.user?.id && !!opportunityId,
+  });
+}
+
+export interface GeneratedProfile {
+  id: string;
+  opportunity: {
+    id: string;
+    title: string | null;
+    company: string | null;
+  };
+  narrative: string | null;
+  resume_data: unknown;
+  cached: boolean;
+  created_at: string;
+}
+
+export function useGenerateTailoredProfile(opportunityId: string) {
+  const { session } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (options?: { regenerate?: boolean }): Promise<GeneratedProfile> => {
+      if (!session?.user?.id) throw new Error('Not authenticated');
+
+      const response = await api.opportunities.tailor(opportunityId);
+      return response.data;
+    },
+    onSuccess: () => {
+      // Invalidate the tailored profile query to refetch
+      queryClient.invalidateQueries({
+        queryKey: ['tailored-profile', opportunityId, session?.user?.id]
+      });
+    },
   });
 }

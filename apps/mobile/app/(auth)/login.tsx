@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { supabase } from '../../lib/supabase';
+import { Logo } from '../../components/logo';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -36,6 +37,9 @@ export default function LoginScreen() {
       className="flex-1 bg-slate-900"
     >
       <View className="flex-1 justify-center px-6">
+        <View className="items-center mb-4">
+          <Logo size={80} />
+        </View>
         <Text className="text-3xl font-bold text-white mb-2 text-center">idynic</Text>
         <Text className="text-slate-400 mb-8 text-center">Your smart career companion</Text>
 

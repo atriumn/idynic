@@ -3,6 +3,7 @@ import { View, Text, ScrollView, ActivityIndicator, Pressable, Image, Linking, u
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import RenderHtml from 'react-native-render-html';
+import * as Clipboard from 'expo-clipboard';
 import {
   ArrowLeft,
   Building2,
@@ -18,9 +19,21 @@ import {
   CheckCircle2,
   User,
   Sparkles,
+  Share2,
+  Check,
+  GraduationCap,
+  Rocket,
 } from 'lucide-react-native';
-import { useOpportunity, useTailoredProfile } from '../../../hooks/use-opportunity';
+import {
+  useOpportunity,
+  useTailoredProfile,
+  useGenerateTailoredProfile,
+  ResumeData,
+  ResumeExperience,
+  SkillCategory,
+} from '../../../hooks/use-opportunity';
 import { getRequirements } from '../../../hooks/use-opportunities';
+import { useCreateSharedLink } from '../../../hooks/use-shared-links';
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   tracking: { bg: 'bg-slate-700', text: 'text-slate-300' },
@@ -86,47 +99,126 @@ function BulletList({ items, color }: { items: unknown; color: string }) {
   );
 }
 
-function TailoredWorkHistory({ workHistory }: { workHistory: unknown }) {
-  if (!Array.isArray(workHistory) || workHistory.length === 0) return null;
+function TailoredWorkHistory({ experience }: { experience: ResumeExperience[] }) {
+  if (!experience || experience.length === 0) return null;
 
   return (
     <View>
-      {workHistory.map((job, index) => {
-        const j = job as { company?: string; title?: string; bullets?: string[] };
-        return (
-          <View key={index} className="mb-4 last:mb-0">
-            <Text className="text-white font-semibold">{j.title}</Text>
-            <Text className="text-teal-400 text-sm">{j.company}</Text>
-            {Array.isArray(j.bullets) && j.bullets.length > 0 && (
-              <View className="mt-2">
-                {j.bullets.map((bullet, i) => (
-                  <View key={i} className="flex-row items-start gap-2 mb-1">
-                    <View className="h-1 w-1 rounded-full bg-slate-500 mt-2" />
-                    <Text className="text-sm text-slate-300 flex-1">{bullet}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
+      {experience.map((job, index) => (
+        <View key={index} className="mb-4 last:mb-0">
+          <Text className="text-white font-semibold">{job.title}</Text>
+          <Text className="text-teal-400 text-sm">{job.company}</Text>
+          <View className="flex-row items-center gap-2 mt-0.5">
+            <Text className="text-xs text-slate-500">{job.dates}</Text>
+            {job.location && <Text className="text-xs text-slate-500">• {job.location}</Text>}
           </View>
-        );
-      })}
+          {job.bullets && job.bullets.length > 0 && (
+            <View className="mt-2">
+              {job.bullets.map((bullet, i) => (
+                <View key={i} className="flex-row items-start gap-2 mb-1">
+                  <View className="h-1 w-1 rounded-full bg-slate-500 mt-2" />
+                  <Text className="text-sm text-slate-300 flex-1">
+                    {bullet.replace(/\*\*(.*?)\*\*/g, '$1')}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      ))}
     </View>
   );
 }
 
-function TailoredSkills({ skills }: { skills: unknown }) {
-  if (!Array.isArray(skills) || skills.length === 0) return null;
+function TailoredVentures({ ventures }: { ventures: ResumeData['ventures'] }) {
+  if (!ventures || ventures.length === 0) return null;
 
   return (
-    <View className="flex-row flex-wrap gap-2">
-      {skills.map((skill, index) => {
-        const s = typeof skill === 'string' ? skill : (skill as { label?: string })?.label || String(skill);
-        return (
-          <View key={index} className="bg-teal-900/50 px-3 py-1 rounded-full">
-            <Text className="text-teal-300 text-sm">{s}</Text>
+    <View>
+      {ventures.map((venture, index) => (
+        <View key={index} className="mb-3 last:mb-0">
+          <View className="flex-row items-center gap-2">
+            <Text className="text-white font-semibold">{venture.name}</Text>
+            {venture.status && (
+              <View className="bg-amber-900/50 px-2 py-0.5 rounded">
+                <Text className="text-amber-300 text-xs">{venture.status}</Text>
+              </View>
+            )}
           </View>
-        );
-      })}
+          <Text className="text-teal-400 text-sm">{venture.role}</Text>
+          {venture.description && (
+            <Text className="text-slate-300 text-sm mt-1">{venture.description}</Text>
+          )}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function TailoredEducation({ education }: { education: ResumeData['education'] }) {
+  if (!education || education.length === 0) return null;
+
+  return (
+    <View>
+      {education.map((edu, index) => (
+        <View key={index} className="mb-3 last:mb-0 flex-row justify-between">
+          <View className="flex-1">
+            <Text className="text-white font-semibold">{edu.degree}</Text>
+            <Text className="text-teal-400 text-sm">{edu.institution}</Text>
+          </View>
+          {edu.year && (
+            <Text className="text-slate-500 text-sm">{edu.year}</Text>
+          )}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function TailoredSkills({ skills }: { skills: SkillCategory[] | string[] }) {
+  if (!skills || skills.length === 0) return null;
+
+  // Handle old format (string[])
+  if (typeof skills[0] === 'string') {
+    return (
+      <View className="flex-row flex-wrap gap-2">
+        {(skills as string[]).map((skill, index) => (
+          <View key={index} className="bg-teal-900/50 px-3 py-1 rounded-full">
+            <Text className="text-teal-300 text-sm">{skill}</Text>
+          </View>
+        ))}
+      </View>
+    );
+  }
+
+  // Handle new format (SkillCategory[])
+  return (
+    <View className="gap-4">
+      {(skills as SkillCategory[]).map((category, catIndex) => (
+        <View key={catIndex}>
+          <Text className="text-xs font-bold text-slate-500 uppercase mb-2">
+            {category.category}
+          </Text>
+          <View className="flex-row flex-wrap gap-2">
+            {category.skills.map((skill, index) => (
+              <View
+                key={index}
+                className={`px-3 py-1 rounded-full ${
+                  catIndex === 0 && index < 3 ? 'bg-teal-600' : 'bg-slate-700'
+                }`}
+              >
+                <Text
+                  className={`text-sm ${
+                    catIndex === 0 && index < 3 ? 'text-white font-medium' : 'text-slate-300'
+                  }`}
+                >
+                  {skill}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      ))}
     </View>
   );
 }
@@ -136,9 +228,31 @@ export default function OpportunityDetailScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const [activeTab, setActiveTab] = useState<'tailored' | 'research'>('tailored');
+  const [shareCopied, setShareCopied] = useState(false);
 
   const { data: opportunity, isLoading, error } = useOpportunity(id || '');
   const { data: tailoredProfile, isLoading: tailoredLoading } = useTailoredProfile(id || '');
+  const generateProfile = useGenerateTailoredProfile(id || '');
+  const createSharedLink = useCreateSharedLink();
+
+  const handleGenerateProfile = () => {
+    generateProfile.mutate();
+  };
+
+  const handleShare = async () => {
+    if (!tailoredProfile?.id) return;
+
+    try {
+      const result = await createSharedLink.mutateAsync({
+        tailoredProfileId: tailoredProfile.id,
+      });
+      await Clipboard.setStringAsync(result.url);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to create/copy share link:', err);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -240,16 +354,50 @@ export default function OpportunityDetailScreen() {
             )}
           </View>
 
-          {/* View Posting Button */}
-          {opportunity.url && (
-            <Pressable
-              onPress={() => Linking.openURL(opportunity.url!)}
-              className="bg-teal-600 py-3 px-4 rounded-xl flex-row items-center justify-center mb-6 active:bg-teal-700"
-            >
-              <ExternalLink color="white" size={18} />
-              <Text className="text-white font-bold ml-2">View Job Posting</Text>
-            </Pressable>
-          )}
+          {/* Action Buttons */}
+          <View className="flex-row gap-3 mb-6">
+            {/* View Posting Button */}
+            {opportunity.url && (
+              <Pressable
+                onPress={() => Linking.openURL(opportunity.url!)}
+                className={`py-3 px-4 rounded-xl flex-row items-center justify-center active:bg-teal-700 ${
+                  tailoredProfile?.id ? 'flex-1 bg-teal-600' : 'flex-1 bg-teal-600'
+                }`}
+              >
+                <ExternalLink color="white" size={18} />
+                <Text className="text-white font-bold ml-2">View Posting</Text>
+              </Pressable>
+            )}
+
+            {/* Share Button - only show when tailored profile exists */}
+            {tailoredProfile?.id && (
+              <Pressable
+                onPress={handleShare}
+                disabled={createSharedLink.isPending}
+                className={`py-3 px-4 rounded-xl flex-row items-center justify-center ${
+                  shareCopied
+                    ? 'bg-green-600'
+                    : createSharedLink.isPending
+                    ? 'bg-slate-700'
+                    : 'bg-slate-700 active:bg-slate-600'
+                }`}
+              >
+                {createSharedLink.isPending ? (
+                  <ActivityIndicator color="white" size="small" />
+                ) : shareCopied ? (
+                  <>
+                    <Check color="white" size={18} />
+                    <Text className="text-white font-bold ml-2">Copied!</Text>
+                  </>
+                ) : (
+                  <>
+                    <Share2 color="white" size={18} />
+                    <Text className="text-white font-bold ml-2">Share</Text>
+                  </>
+                )}
+              </Pressable>
+            )}
+          </View>
 
           {/* Tab Switcher */}
           <View className="flex-row bg-slate-800/50 rounded-xl p-1 mb-6">
@@ -279,30 +427,70 @@ export default function OpportunityDetailScreen() {
               <View className="py-8 items-center">
                 <ActivityIndicator color="#14b8a6" size="small" />
               </View>
-            ) : tailoredProfile ? (
+            ) : tailoredProfile && tailoredProfile.resume_data ? (
               <>
                 {/* Summary */}
-                {tailoredProfile.summary && (
+                {tailoredProfile.resume_data.summary && (
                   <Section title="Summary" icon={<User color="#14b8a6" size={18} />}>
                     <View className="bg-slate-800 rounded-xl p-4">
-                      <Text className="text-sm text-slate-300 leading-relaxed">{tailoredProfile.summary}</Text>
+                      <Text className="text-sm text-slate-300 leading-relaxed">
+                        {tailoredProfile.resume_data.summary}
+                      </Text>
                     </View>
                   </Section>
                 )}
 
-                {/* Tailored Work History */}
-                {tailoredProfile.work_history && (
+                {/* Tailored Experience */}
+                {tailoredProfile.resume_data.experience && tailoredProfile.resume_data.experience.length > 0 && (
                   <Section title="Relevant Experience" icon={<Briefcase color="#14b8a6" size={18} />}>
                     <View className="bg-slate-800 rounded-xl p-4">
-                      <TailoredWorkHistory workHistory={tailoredProfile.work_history} />
+                      <TailoredWorkHistory experience={tailoredProfile.resume_data.experience} />
+                    </View>
+                  </Section>
+                )}
+
+                {/* Additional Experience */}
+                {tailoredProfile.resume_data.additionalExperience && tailoredProfile.resume_data.additionalExperience.length > 0 && (
+                  <Section title="Additional Experience" icon={<Briefcase color="#94a3b8" size={18} />}>
+                    <View className="bg-slate-800 rounded-xl p-4">
+                      <TailoredWorkHistory experience={tailoredProfile.resume_data.additionalExperience} />
+                    </View>
+                  </Section>
+                )}
+
+                {/* Ventures */}
+                {tailoredProfile.resume_data.ventures && tailoredProfile.resume_data.ventures.length > 0 && (
+                  <Section title="Ventures & Projects" icon={<Rocket color="#f59e0b" size={18} />}>
+                    <View className="bg-slate-800 rounded-xl p-4">
+                      <TailoredVentures ventures={tailoredProfile.resume_data.ventures} />
                     </View>
                   </Section>
                 )}
 
                 {/* Tailored Skills */}
-                {tailoredProfile.skills && (
-                  <Section title="Highlighted Skills" icon={<Sparkles color="#14b8a6" size={18} />}>
-                    <TailoredSkills skills={tailoredProfile.skills} />
+                {tailoredProfile.resume_data.skills && tailoredProfile.resume_data.skills.length > 0 && (
+                  <Section title="Skills" icon={<Sparkles color="#14b8a6" size={18} />}>
+                    <TailoredSkills skills={tailoredProfile.resume_data.skills} />
+                  </Section>
+                )}
+
+                {/* Education */}
+                {tailoredProfile.resume_data.education && tailoredProfile.resume_data.education.length > 0 && (
+                  <Section title="Education" icon={<GraduationCap color="#14b8a6" size={18} />}>
+                    <View className="bg-slate-800 rounded-xl p-4">
+                      <TailoredEducation education={tailoredProfile.resume_data.education} />
+                    </View>
+                  </Section>
+                )}
+
+                {/* Narrative / Cover Letter */}
+                {tailoredProfile.narrative && (
+                  <Section title="Cover Letter Narrative" icon={<FileText color="#14b8a6" size={18} />}>
+                    <View className="bg-slate-800 rounded-xl p-4">
+                      <Text className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
+                        {tailoredProfile.narrative}
+                      </Text>
+                    </View>
                   </Section>
                 )}
               </>
@@ -312,9 +500,33 @@ export default function OpportunityDetailScreen() {
                   <Sparkles color="#64748b" size={28} />
                 </View>
                 <Text className="text-lg font-bold text-white mb-2 text-center">No Tailored Profile Yet</Text>
-                <Text className="text-slate-400 text-center text-sm">
-                  Create a tailored profile from the web app to see your customized resume for this opportunity.
+                <Text className="text-slate-400 text-center text-sm mb-4">
+                  Generate an AI-tailored resume optimized for this opportunity.
                 </Text>
+                <Pressable
+                  onPress={handleGenerateProfile}
+                  disabled={generateProfile.isPending}
+                  className={`py-3 px-6 rounded-xl flex-row items-center justify-center ${
+                    generateProfile.isPending ? 'bg-teal-800' : 'bg-teal-600 active:bg-teal-700'
+                  }`}
+                >
+                  {generateProfile.isPending ? (
+                    <>
+                      <ActivityIndicator color="white" size="small" />
+                      <Text className="text-white font-bold ml-2">Generating...</Text>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles color="white" size={18} />
+                      <Text className="text-white font-bold ml-2">Generate Tailored Profile</Text>
+                    </>
+                  )}
+                </Pressable>
+                {generateProfile.isError && (
+                  <Text className="text-red-400 text-sm mt-3 text-center">
+                    {generateProfile.error?.message || 'Failed to generate profile'}
+                  </Text>
+                )}
               </View>
             )}
           </View>

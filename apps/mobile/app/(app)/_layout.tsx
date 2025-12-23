@@ -1,9 +1,11 @@
 import { Tabs } from 'expo-router';
-import { Home, User, Briefcase, Settings } from 'lucide-react-native';
+import { User, Briefcase, Settings } from 'lucide-react-native';
+import { Logo } from '../../components/logo';
 
 export default function AppLayout() {
   return (
     <Tabs
+      sceneContainerStyle={{ backgroundColor: '#0f172a' }}
       screenOptions={{
         tabBarStyle: {
           backgroundColor: '#0f172a',
@@ -20,8 +22,8 @@ export default function AppLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
+          title: 'Identity',
+          tabBarIcon: ({ color, size }) => <Logo size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -50,6 +52,14 @@ export default function AppLayout() {
         options={{
           href: null,
           headerShown: false,
+        }}
+      />
+      <Tabs.Screen
+        name="shared-links"
+        options={{
+          href: null,
+          title: 'Shared Links',
+          headerShown: true,
         }}
       />
     </Tabs>
