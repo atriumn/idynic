@@ -42,14 +42,13 @@ export function createApiClient(config: ApiClientConfig) {
     opportunities: {
       list: () => fetchWithAuth('/api/v1/opportunities'),
       get: (id: string) => fetchWithAuth(`/api/v1/opportunities/${id}`),
-      match: (id: string) => fetchWithAuth(`/api/v1/opportunities/${id}/match`, {
-        method: 'POST',
-      }),
+      match: (id: string) => fetchWithAuth(`/api/v1/opportunities/${id}/match`),
       tailor: (id: string) => fetchWithAuth(`/api/v1/opportunities/${id}/tailor`, {
         method: 'POST',
       }),
     },
 
+    // Note: sharedLinks endpoints may not work with API key auth (uses cookie-based auth in web app)
     sharedLinks: {
       list: () => fetchWithAuth('/api/shared-links'),
       create: (data: unknown) => fetchWithAuth('/api/shared-links', {
