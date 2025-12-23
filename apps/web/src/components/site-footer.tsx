@@ -21,6 +21,34 @@ export function SiteFooter() {
               The AI-powered career companion that helps you tell your professional
               story.
             </p>
+            <div className="flex gap-3 pt-2">
+              <Link
+                href="#"
+                className="opacity-80 hover:opacity-100 transition-opacity"
+                aria-label="Download on the App Store"
+              >
+                <Image
+                  src="/app-store-badge.svg"
+                  alt="Download on the App Store"
+                  width={120}
+                  height={40}
+                  className="h-10 w-auto"
+                />
+              </Link>
+              <Link
+                href="#"
+                className="opacity-80 hover:opacity-100 transition-opacity"
+                aria-label="Get it on Google Play"
+              >
+                <Image
+                  src="/google-play-badge.svg"
+                  alt="Get it on Google Play"
+                  width={135}
+                  height={40}
+                  className="h-10 w-auto"
+                />
+              </Link>
+            </div>
           </div>
           <div>
             <h4 className="font-semibold mb-4">Product</h4>

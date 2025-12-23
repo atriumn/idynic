@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import {
   ArrowRight,
@@ -6,6 +7,7 @@ import {
   Check,
   FileText,
   Shield,
+  Smartphone,
   Sparkle,
   Target,
   Users,
@@ -215,8 +217,61 @@ export default async function Home() {
           </div>
       </section>
 
+      {/* Get the App */}
+      <section className="py-24 px-4 bg-muted/50">
+        <div className="container mx-auto max-w-4xl">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                <Smartphone className="w-6 h-6" />
+              </div>
+              <h2 className="text-3xl font-bold">Take Idynic on the go.</h2>
+              <p className="text-lg text-muted-foreground">
+                Track opportunities, view your identity graph, and share tailored profiles—all from your phone.
+              </p>
+              <div className="flex flex-wrap gap-3 pt-2">
+                <Link
+                  href="#"
+                  className="hover:opacity-80 transition-opacity"
+                  aria-label="Download on the App Store"
+                >
+                  <Image
+                    src="/app-store-badge.svg"
+                    alt="Download on the App Store"
+                    width={120}
+                    height={40}
+                    className="h-10 w-auto"
+                  />
+                </Link>
+                <Link
+                  href="#"
+                  className="hover:opacity-80 transition-opacity"
+                  aria-label="Get it on Google Play"
+                >
+                  <Image
+                    src="/google-play-badge.svg"
+                    alt="Get it on Google Play"
+                    width={135}
+                    height={40}
+                    className="h-10 w-auto"
+                  />
+                </Link>
+              </div>
+            </div>
+            <div className="relative aspect-square md:aspect-[3/4] rounded-2xl bg-gradient-to-br from-primary/20 via-primary/5 to-transparent border shadow-lg flex items-center justify-center overflow-hidden">
+              <div className="absolute inset-4 rounded-xl bg-slate-900 border border-slate-700 shadow-2xl flex items-center justify-center">
+                <div className="text-center space-y-2">
+                  <Smartphone className="w-12 h-12 text-slate-600 mx-auto" />
+                  <p className="text-sm text-slate-500">App Preview</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA */}
-      <section className="px-4 py-24 bg-muted/50">
+      <section className="px-4 py-24 bg-background">
         <div className="max-w-4xl mx-auto text-center space-y-8 bg-gradient-to-b from-background to-muted/50 rounded-3xl p-8 md:p-16 border">
           <h2 className="text-3xl md:text-4xl font-bold">Your career is always evolving. Your identity should too.</h2>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">

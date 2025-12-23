@@ -21,11 +21,24 @@ if [ ! -d "node_modules" ]; then
     cd ../.. && pnpm install && cd apps/mobile
 fi
 
-# Generate native project if needed
-if [ ! -d "ios" ]; then
-    echo "📱 Generating iOS project..."
-    npx expo prebuild --platform ios
+# Set up environment based on build type
+if [ "$BUILD_TYPE" = "dev" ]; then
+    echo "🔧 Using development environment"
+    # .env.local is already set up for dev
+elif [ "$BUILD_TYPE" = "testflight" ] || [ "$BUILD_TYPE" = "prod" ]; then
+    echo "🔧 Using production environment"
+    if [ -f ".env.production" ]; then
+        cp .env.production .env.local
+    else
+        echo "❌ .env.production not found!"
+        exit 1
+    fi
 fi
+
+# Always regenerate native project to pick up env changes
+echo "📱 Generating iOS project..."
+rm -rf ios
+npx expo prebuild --platform ios
 
 # Install CocoaPods if needed
 if [ ! -d "ios/Pods" ]; then
