@@ -9,66 +9,106 @@
 </head>
 <body>
   <div class="container">
+    <!-- Header with logo -->
+    <header class="header">
+      <svg class="logo" width="28" height="28" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#2ee3d4"/>
+            <stop offset="100%" stop-color="#a07bff"/>
+          </linearGradient>
+        </defs>
+        <circle cx="256" cy="256" r="240" stroke="url(#logo-gradient)" stroke-width="32" fill="none"/>
+        <circle cx="256" cy="200" r="60" fill="url(#logo-gradient)"/>
+        <path d="M160 380 Q256 300 352 380" stroke="url(#logo-gradient)" stroke-width="32" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span class="logo-text">Idynic</span>
+    </header>
+
     <!-- State: Not Configured -->
     <div id="state-unconfigured" class="state hidden">
-      <div class="icon">🔑</div>
+      <div class="icon-container">
+        <svg class="icon-svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+        </svg>
+      </div>
       <h2>Connect to Idynic</h2>
-      <p>Paste your API key to start saving jobs.</p>
-      <button id="open-settings" class="primary">Open Settings</button>
+      <p>Add your API key to start saving jobs.</p>
+      <button id="open-settings" class="btn-primary">Open Settings</button>
     </div>
 
     <!-- State: Ready -->
     <div id="state-ready" class="state hidden">
-      <h2>Save to Idynic</h2>
+      <h2>Save this job?</h2>
       <div class="url-preview">
-        <span class="url-icon">📍</span>
+        <svg class="url-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+        </svg>
         <span id="current-url" class="url-text"></span>
       </div>
-      <button id="save-btn" class="primary">Save Job</button>
+      <button id="save-btn" class="btn-primary">Save Job</button>
     </div>
 
     <!-- State: Saving -->
     <div id="state-saving" class="state hidden">
       <div class="spinner"></div>
       <h2>Saving...</h2>
-      <p>Extracting job info</p>
+      <p class="muted">Extracting job details</p>
     </div>
 
     <!-- State: Success -->
     <div id="state-success" class="state hidden">
-      <div class="icon success">✓</div>
+      <div class="icon-container success">
+        <svg class="icon-svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M20 6L9 17l-5-5"/>
+        </svg>
+      </div>
       <h2>Saved!</h2>
       <div id="job-info" class="job-info">
         <div id="job-title" class="job-title"></div>
         <div id="job-company" class="job-company"></div>
       </div>
-      <a id="view-link" href="#" target="_blank" class="primary link-btn">View in Idynic →</a>
+      <a id="view-link" href="#" target="_blank" class="btn-primary link-btn">View in Idynic</a>
     </div>
 
     <!-- State: Duplicate -->
     <div id="state-duplicate" class="state hidden">
-      <div class="icon info">ℹ</div>
+      <div class="icon-container info">
+        <svg class="icon-svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 16v-4"/>
+          <path d="M12 8h.01"/>
+        </svg>
+      </div>
       <h2>Already Saved</h2>
       <div id="dup-job-info" class="job-info">
         <div id="dup-job-title" class="job-title"></div>
         <div id="dup-job-company" class="job-company"></div>
       </div>
-      <a id="dup-view-link" href="#" target="_blank" class="primary link-btn">View in Idynic →</a>
+      <a id="dup-view-link" href="#" target="_blank" class="btn-secondary link-btn">View in Idynic</a>
     </div>
 
     <!-- State: Error -->
     <div id="state-error" class="state hidden">
-      <div class="icon error">⚠</div>
+      <div class="icon-container error">
+        <svg class="icon-svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 8v4"/>
+          <path d="M12 16h.01"/>
+        </svg>
+      </div>
       <h2 id="error-title">Couldn't extract job</h2>
-      <p id="error-message">This page didn't look like a job posting.</p>
+      <p id="error-message" class="error-message">This page didn't look like a job posting.</p>
 
       <div id="fallback-section" class="fallback hidden">
-        <textarea id="fallback-description" placeholder="Paste the job description here..."></textarea>
-        <button id="save-with-text" class="secondary">Save with text</button>
+        <label class="fallback-label">Paste the job description:</label>
+        <textarea id="fallback-description" placeholder="Copy the job description from the page and paste it here..."></textarea>
+        <button id="save-with-text" class="btn-primary">Save with Description</button>
       </div>
 
-      <button id="show-fallback" class="secondary">Paste description instead</button>
-      <button id="retry-btn" class="text-btn hidden">Try again</button>
+      <button id="show-fallback" class="btn-secondary">Paste description manually</button>
+      <button id="retry-btn" class="btn-text hidden">Try again</button>
     </div>
   </div>
 

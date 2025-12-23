@@ -193,8 +193,9 @@ export async function POST(request: NextRequest) {
         source = 'linkedin';
         console.log('LinkedIn enrichment successful:', enrichedTitle, 'at', enrichedCompany);
       } catch (enrichError) {
-        // Log but don't fail - fall back to manual processing
-        console.error('LinkedIn enrichment failed, falling back to manual:', enrichError);
+        // Log but don't fail - user can paste description manually
+        console.error('LinkedIn enrichment failed:', enrichError);
+        return apiError('scraping_failed', "Couldn't fetch LinkedIn job data. Please paste the job description.", 400);
       }
     } else if (url && !description && looksLikeJobUrl(url)) {
       // Non-LinkedIn job URL without description - try generic scraping

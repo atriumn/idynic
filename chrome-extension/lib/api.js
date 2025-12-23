@@ -1,14 +1,15 @@
 // chrome-extension/lib/api.js
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const API_BASE_PROD = 'https://idynic.com';
-// const API_BASE_DEV = 'http://localhost:3000';
+const API_BASE_DEV = 'http://localhost:3000';
 
 /**
  * Get the API base URL (dev or prod)
+ * Toggle this for local development vs production
  */
 function getApiBase() {
-  // Use dev URL if in development mode (can be toggled in options)
-  return API_BASE_PROD;
+  return API_BASE_DEV; // Switch to API_BASE_PROD for production
 }
 
 /**
