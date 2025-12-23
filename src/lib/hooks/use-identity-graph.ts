@@ -2,12 +2,27 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+interface EvidenceDetail {
+  id: string;
+  text: string;
+  source_type: string;
+  evidence_date: string | null;
+  document_id: string | null;
+}
+
+interface ClaimEvidenceNode {
+  evidence_id: string;
+  strength: string;
+  evidence: EvidenceDetail | null;
+}
+
 interface GraphNode {
   id: string;
   type: string;
   label: string;
   confidence: number;
   description: string | null;
+  claim_evidence?: ClaimEvidenceNode[];
 }
 
 interface GraphEdge {

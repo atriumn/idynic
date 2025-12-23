@@ -1,12 +1,11 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { RatingInput } from "@/components/rating-input"
 import { SmartLinkInput } from "@/components/smart-link-input"
 import { SmartLinksList } from "@/components/smart-links-list"
-import { SpinnerGap, Check } from "@phosphor-icons/react"
+import { SpinnerGap, Check, Link as LinkIcon, NotePencil } from "@phosphor-icons/react"
 import type { UrlType } from "@/lib/utils/url-detection"
 
 interface LinkData {
@@ -112,83 +111,79 @@ export function OpportunityNotes({ opportunityId }: OpportunityNotesProps) {
 
   if (loading) {
     return (
-      <Card>
-        <CardContent className="py-8 flex justify-center">
-          <SpinnerGap className="h-6 w-6 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
+      <div className="py-8 flex justify-center text-muted-foreground">
+        <SpinnerGap className="h-6 w-6 animate-spin" />
+      </div>
     )
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
+    <div className="space-y-6">
+      {/* Ratings Grid */}
+      <div className="grid grid-cols-2 gap-2">
+        <RatingInput
+          label="Tech Stack"
+          value={data.rating_tech_stack}
+          onChange={(v) => updateAndSave({ rating_tech_stack: v })}
+        />
+        <RatingInput
+          label="Company"
+          value={data.rating_company}
+          onChange={(v) => updateAndSave({ rating_company: v })}
+        />
+        <RatingInput
+          label="Industry"
+          value={data.rating_industry}
+          onChange={(v) => updateAndSave({ rating_industry: v })}
+        />
+        <RatingInput
+          label="Role Fit"
+          value={data.rating_role_fit}
+          onChange={(v) => updateAndSave({ rating_role_fit: v })}
+        />
+      </div>
+
+      {/* Quick Links */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+          <LinkIcon className="h-3.5 w-3.5" />
+          <span>Relevant Links</span>
+        </div>
+        <div className="bg-muted/30 rounded-lg p-3 space-y-3 border border-muted/50">
+          <SmartLinksList links={data.links || []} onRemove={handleRemoveLink} />
+          <SmartLinkInput onAdd={handleAddLink} />
+        </div>
+      </div>
+
+      {/* Freeform Notes */}
+      <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Your Notes</CardTitle>
-          <div className="text-xs text-muted-foreground flex items-center gap-1">
+          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            <NotePencil className="h-3.5 w-3.5" />
+            <span>Scratchpad</span>
+          </div>
+          <div className="text-[10px] text-muted-foreground flex items-center gap-1.5 h-4">
             {saving && (
               <>
                 <SpinnerGap className="h-3 w-3 animate-spin" />
-                Saving...
+                SAVING...
               </>
             )}
             {saved && !saving && (
               <>
                 <Check className="h-3 w-3 text-green-500" />
-                Saved
+                SAVED
               </>
             )}
           </div>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Ratings */}
-        <div>
-          <h4 className="text-sm font-medium mb-3">Ratings</h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <RatingInput
-              label="Tech Stack"
-              value={data.rating_tech_stack}
-              onChange={(v) => updateAndSave({ rating_tech_stack: v })}
-            />
-            <RatingInput
-              label="Company"
-              value={data.rating_company}
-              onChange={(v) => updateAndSave({ rating_company: v })}
-            />
-            <RatingInput
-              label="Industry"
-              value={data.rating_industry}
-              onChange={(v) => updateAndSave({ rating_industry: v })}
-            />
-            <RatingInput
-              label="Role Fit"
-              value={data.rating_role_fit}
-              onChange={(v) => updateAndSave({ rating_role_fit: v })}
-            />
-          </div>
-        </div>
-
-        {/* Links */}
-        <div>
-          <h4 className="text-sm font-medium mb-3">Links</h4>
-          <div className="space-y-3">
-            <SmartLinksList links={data.links || []} onRemove={handleRemoveLink} />
-            <SmartLinkInput onAdd={handleAddLink} />
-          </div>
-        </div>
-
-        {/* Notes */}
-        <div>
-          <h4 className="text-sm font-medium mb-2">Notes</h4>
-          <Textarea
-            value={data.notes || ""}
-            onChange={(e) => updateWithDebounce({ notes: e.target.value || null })}
-            placeholder="Add your thoughts about this opportunity..."
-            className="min-h-[120px] resize-y"
-          />
-        </div>
-      </CardContent>
-    </Card>
+        <Textarea
+          value={data.notes || ""}
+          onChange={(e) => updateWithDebounce({ notes: e.target.value || null })}
+          placeholder="Jot down quick thoughts, recruiter names, or interview details..."
+          className="min-h-[150px] resize-y bg-muted/30 border-muted/50 focus:bg-background focus:border-primary/50 transition-all text-sm leading-relaxed p-4 rounded-xl"
+        />
+      </div>
+    </div>
   )
 }

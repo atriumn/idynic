@@ -1,12 +1,27 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
+interface EvidenceDetail {
+  id: string;
+  text: string;
+  source_type: string;
+  evidence_date: string | null;
+  document_id: string | null;
+}
+
+interface ClaimEvidenceNode {
+  evidence_id: string;
+  strength: string;
+  evidence: EvidenceDetail | null;
+}
+
 interface GraphNode {
   id: string;
   type: string;
   label: string;
   confidence: number;
   description: string | null;
+  claim_evidence?: ClaimEvidenceNode[];
 }
 
 interface GraphEdge {
@@ -97,6 +112,7 @@ export async function GET(): Promise<NextResponse<GraphResponse | { error: strin
     label: claim.label,
     confidence: claim.confidence ?? 0.5,
     description: claim.description,
+    claim_evidence: claim.claim_evidence as unknown as ClaimEvidenceNode[],
   }));
 
   // Build evidence map and collect unique evidence

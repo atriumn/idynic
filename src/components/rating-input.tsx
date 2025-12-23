@@ -17,26 +17,27 @@ export function RatingInput({ label, value, onChange }: RatingInputProps) {
   }
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-sm font-medium text-muted-foreground">{label}</span>
-      <div className="flex gap-1">
+    <div className="flex flex-col gap-2 p-3 bg-muted/20 rounded-lg border border-transparent hover:border-muted/50 transition-colors">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
+        {value && <span className="text-xs font-bold text-primary">{value}/5</span>}
+      </div>
+      <div className="flex gap-1 h-6">
         {[1, 2, 3, 4, 5].map((rating) => (
           <button
             key={rating}
             type="button"
             onClick={() => handleClick(rating)}
-            data-selected={value === rating}
             className={`
-              w-8 h-8 rounded-md text-sm font-medium transition-colors
+              flex-1 rounded text-[10px] font-bold transition-all h-full
               ${value === rating
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-primary text-primary-foreground shadow-sm'
                 : value !== null && rating <= value
                   ? 'bg-primary/20 text-primary'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
               }
             `}
           >
-            {rating}
           </button>
         ))}
       </div>
