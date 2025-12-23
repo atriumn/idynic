@@ -5,7 +5,9 @@
     "paths": {
       "@/*": [
         "./*"
-      ]
+      ],
+      "@idynic/shared": ["../../packages/shared/src"],
+      "@idynic/shared/*": ["../../packages/shared/src/*"]
     }
   },
   "include": [
