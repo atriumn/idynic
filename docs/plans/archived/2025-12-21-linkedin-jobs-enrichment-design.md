@@ -1,5 +1,7 @@
 # LinkedIn Jobs Enrichment via Bright Data
 
+**Status:** Implemented
+
 ## Overview
 
 Automatically enrich job opportunities when users paste LinkedIn job URLs. Instead of relying on manually pasted job descriptions, fetch structured data directly from LinkedIn via Bright Data's Web Scraper API.

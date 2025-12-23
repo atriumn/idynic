@@ -1,5 +1,7 @@
 # Opportunity Notes Design
 
+**Status:** Implemented
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Allow users to capture personal notes, ratings, and related links for each opportunity.

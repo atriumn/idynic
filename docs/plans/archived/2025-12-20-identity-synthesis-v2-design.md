@@ -1,5 +1,7 @@
 # Identity Synthesis v2 Design
 
+**Status:** Implemented
+
 ## Overview
 
 This design enhances the Identity Synthesis architecture with three improvements:

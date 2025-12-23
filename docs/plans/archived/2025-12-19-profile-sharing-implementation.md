@@ -1,5 +1,7 @@
 # Profile Sharing Implementation Plan
 
+**Status:** Implemented
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Enable candidates to share private, tailored profile links with recruiters and hiring managers.

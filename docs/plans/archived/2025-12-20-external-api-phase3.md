@@ -1,5 +1,7 @@
 # External API Phase 3: Content Input
 
+**Status:** Implemented
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Add content input endpoints to the external API - resume upload, story submission, and profile updates.

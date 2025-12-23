@@ -1,5 +1,7 @@
 # External API Phase 2: Opportunity Operations
 
+**Status:** Implemented
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Add opportunity management endpoints to the external API - create, match, tailor, and share.

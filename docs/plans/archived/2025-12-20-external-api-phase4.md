@@ -1,5 +1,7 @@
 # External API Phase 4: MCP Server
 
+**Status:** Implemented
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Create an MCP server package that exposes Idynic functionality to AI assistants like Claude Desktop.

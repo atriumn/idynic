@@ -1,5 +1,7 @@
 # External API Phase 1: Foundation
 
+**Status:** Implemented
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Set up API key infrastructure and core read endpoints for the external API.

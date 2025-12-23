@@ -1,5 +1,7 @@
 # Story Extraction Implementation Plan
 
+**Status:** Implemented
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Add story input as a second source for identity claims, mirroring the resume flow.

@@ -1,5 +1,7 @@
 # External API Phase 5: Recruiter & Polish
 
+**Status:** Implemented
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Add recruiter-facing AI summary endpoint, rate limiting, and API documentation.
