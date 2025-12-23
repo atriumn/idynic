@@ -1,6 +1,6 @@
 # Chrome Extension Implementation Plan: Idynic Job Saver
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+**Status:** Implemented
 
 **Goal:** Build a Chrome extension that saves job postings to Idynic with one click.
 
