@@ -6,15 +6,18 @@ import { Database } from '@idynic/shared/types';
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 
+// TODO: SecureStore has a 2048 byte limit. Supabase tokens may exceed this.
+// For production, implement LargeSecureStore or use expo-sqlite/localStorage.
+// See: https://supabase.com/docs/guides/getting-started/tutorials/with-expo-react-native
 const ExpoSecureStoreAdapter = {
   getItem: (key: string) => {
     return SecureStore.getItemAsync(key);
   },
   setItem: (key: string, value: string) => {
-    SecureStore.setItemAsync(key, value);
+    return SecureStore.setItemAsync(key, value);
   },
   removeItem: (key: string) => {
-    SecureStore.deleteItemAsync(key);
+    return SecureStore.deleteItemAsync(key);
   },
 };
 
