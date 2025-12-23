@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { UMAP } from "umap-js";
 import crypto from "crypto";
 
+export const dynamic = 'force-dynamic';
+
 // Server-side cache for UMAP results (expensive computation)
 interface CachedResult {
   nodes: ClusterNode[];
