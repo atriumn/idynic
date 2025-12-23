@@ -27,7 +27,7 @@ jobs:
         run: pnpm lint
 
       - name: Run type check
-        run: pnpm tsc --noEmit
+        run: pnpm --filter web tsc --noEmit
 
       - name: Run unit tests
         run: pnpm test:coverage
