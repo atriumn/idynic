@@ -4,9 +4,13 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "build:ios:dev": "./scripts/build-ios.sh dev",
+    "build:ios:testflight": "./scripts/build-ios.sh testflight",
+    "build:ios:prod": "./scripts/build-ios.sh prod",
+    "prebuild": "expo prebuild"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -24,6 +28,7 @@
     "expo-secure-store": "^15.0.8",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
+    "expo-updates": "~29.0.15",
     "expo-web-browser": "~15.0.10",
     "lucide-react-native": "^0.562.0",
     "nativewind": "^4.2.1",

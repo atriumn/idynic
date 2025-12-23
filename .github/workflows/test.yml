@@ -26,8 +26,12 @@ jobs:
       - name: Run linter
         run: pnpm lint
 
-      - name: Run type check
+      - name: Run type check (web)
         working-directory: apps/web
+        run: pnpm exec tsc --noEmit
+
+      - name: Run type check (mobile)
+        working-directory: apps/mobile
         run: pnpm exec tsc --noEmit
 
       - name: Run unit tests

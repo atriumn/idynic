@@ -249,7 +249,7 @@ export default function OpportunityDetailScreen() {
   const createSharedLink = useCreateSharedLink();
 
   const handleGenerateProfile = () => {
-    generateProfile.mutate();
+    generateProfile.mutate({});
   };
 
   const handleShare = async () => {

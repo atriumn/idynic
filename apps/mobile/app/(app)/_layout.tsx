@@ -5,8 +5,8 @@ import { Logo } from '../../components/logo';
 export default function AppLayout() {
   return (
     <Tabs
-      sceneContainerStyle={{ backgroundColor: '#0f172a' }}
       screenOptions={{
+        sceneStyle: { backgroundColor: '#0f172a' },
         tabBarStyle: {
           backgroundColor: '#0f172a',
           borderTopColor: '#1e293b',

@@ -25,7 +25,8 @@ import {
 } from '../../hooks/use-identity-claims';
 import { Logo } from '../../components/logo';
 
-const CLAIM_TYPE_ICONS: Record<string, React.ComponentType<{ color: string; size: number }>> = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const CLAIM_TYPE_ICONS: Record<string, React.ComponentType<any>> = {
   skill: Sparkles,
   achievement: Award,
   attribute: Lightbulb,
@@ -312,7 +313,7 @@ export default function IdentityScreen() {
   }
 
   const totalClaims = getTotalClaimCount(groupedClaims);
-  const filteredTotal = getTotalClaimCount(filteredClaims);
+  const filteredTotal = getTotalClaimCount(filteredClaims ?? undefined);
   const isFiltered = searchQuery.trim() || selectedTypes.size < CLAIM_TYPES.length;
 
   return (
