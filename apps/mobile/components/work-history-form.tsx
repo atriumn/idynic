@@ -56,6 +56,11 @@ export function WorkHistoryForm({
       return;
     }
 
+    if (!startDate.trim()) {
+      setError('Start date is required');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -63,7 +68,7 @@ export function WorkHistoryForm({
       await onSubmit({
         company: company.trim(),
         title: jobTitle.trim(),
-        start_date: startDate.trim() || null,
+        start_date: startDate.trim(),
         end_date: endDate.trim() || null,
         location: location.trim() || null,
         summary: summary.trim() || null,

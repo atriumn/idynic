@@ -221,7 +221,7 @@ export default function ProfileScreen() {
   const [editingContact, setEditingContact] = useState(false);
   const [workHistoryModal, setWorkHistoryModal] = useState<{
     visible: boolean;
-    data?: WorkHistoryData & { id?: string };
+    data?: Partial<WorkHistoryData> & { id?: string };
     isVenture?: boolean;
   }>({ visible: false });
   const [educationModal, setEducationModal] = useState<{
@@ -388,7 +388,15 @@ export default function ProfileScreen() {
                       onPress={() =>
                         setWorkHistoryModal({
                           visible: true,
-                          data: { ...job, id: job.id },
+                          data: {
+                            id: job.id,
+                            company: job.company,
+                            title: job.title,
+                            start_date: job.start_date ?? undefined,
+                            end_date: job.end_date ?? undefined,
+                            location: job.location ?? undefined,
+                            summary: job.summary ?? undefined,
+                          },
                         })
                       }
                       className="p-2"
@@ -438,7 +446,15 @@ export default function ProfileScreen() {
                       onPress={() =>
                         setWorkHistoryModal({
                           visible: true,
-                          data: { ...venture, id: venture.id },
+                          data: {
+                            id: venture.id,
+                            company: venture.company,
+                            title: venture.title,
+                            start_date: venture.start_date ?? undefined,
+                            end_date: venture.end_date ?? undefined,
+                            location: venture.location ?? undefined,
+                            summary: venture.summary ?? undefined,
+                          },
                           isVenture: true,
                         })
                       }

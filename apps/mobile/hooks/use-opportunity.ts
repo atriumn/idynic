@@ -1,4 +1,3 @@
-// @ts-nocheck - TODO: Regenerate Supabase types to fix these mismatches
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth-context';
@@ -108,7 +107,12 @@ async function fetchTailoredProfile(userId: string, opportunityId: string): Prom
     if (error.code === 'PGRST116') return null; // Not found
     throw error;
   }
-  return data;
+
+  // Cast resume_data from Json to ResumeData
+  return {
+    ...data,
+    resume_data: data.resume_data as ResumeData | null,
+  };
 }
 
 export function useTailoredProfile(opportunityId: string) {
