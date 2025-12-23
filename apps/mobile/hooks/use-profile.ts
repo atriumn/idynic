@@ -2,6 +2,29 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth-context';
 
+interface WorkHistoryItem {
+  id: string;
+  company: string;
+  title: string;
+  start_date: string | null;
+  end_date: string | null;
+  location: string | null;
+  summary: string | null;
+}
+
+interface Skill {
+  id: string;
+  label: string;
+  description: string | null;
+  confidence: number | null;
+}
+
+interface Education {
+  id: string;
+  text: string;
+  context: unknown;
+}
+
 export interface Profile {
   contact: {
     name: string | null;
@@ -13,29 +36,20 @@ export interface Profile {
     website: string | null;
     logo_url: string | null;
   };
-  workHistory: Array<{
-    id: string;
-    company: string;
-    title: string;
-    start_date: string | null;
-    end_date: string | null;
-    location: string | null;
-    summary: string | null;
-  }>;
-  skills: Array<{
-    id: string;
-    label: string;
-    description: string | null;
-    confidence: number | null;
-  }>;
+  workHistory: WorkHistoryItem[];
+  ventures: WorkHistoryItem[];
+  skills: Skill[];
+  education: Education[];
 }
 
 async function fetchProfile(userId: string): Promise<Profile> {
   // Fetch profile data in parallel (matching web app's /api/profile)
   const [
     { data: profile, error: profileError },
-    { data: workHistory, error: workError },
-    { data: skills, error: skillsError },
+    { data: workHistory },
+    { data: ventures },
+    { data: skills },
+    { data: education },
   ] = await Promise.all([
     supabase
       .from('profiles')
@@ -43,18 +57,37 @@ async function fetchProfile(userId: string): Promise<Profile> {
       .eq('id', userId)
       .single(),
 
+    // Work history (excluding ventures)
     supabase
       .from('work_history')
       .select('id, company, title, start_date, end_date, location, summary')
       .eq('user_id', userId)
+      .or('entry_type.is.null,entry_type.in.(work,additional)')
       .order('order_index', { ascending: true }),
 
+    // Ventures only
+    supabase
+      .from('work_history')
+      .select('id, company, title, start_date, end_date, location, summary')
+      .eq('user_id', userId)
+      .eq('entry_type', 'venture')
+      .order('order_index', { ascending: true }),
+
+    // Skills from identity_claims
     supabase
       .from('identity_claims')
       .select('id, label, description, confidence')
       .eq('user_id', userId)
       .eq('type', 'skill')
       .order('confidence', { ascending: false }),
+
+    // Education from evidence
+    supabase
+      .from('evidence')
+      .select('id, text, context')
+      .eq('user_id', userId)
+      .eq('evidence_type', 'education')
+      .order('created_at', { ascending: false }),
   ]);
 
   if (profileError) throw profileError;
@@ -71,7 +104,9 @@ async function fetchProfile(userId: string): Promise<Profile> {
       logo_url: null,
     },
     workHistory: workHistory || [],
+    ventures: ventures || [],
     skills: skills || [],
+    education: education || [],
   };
 }
 
