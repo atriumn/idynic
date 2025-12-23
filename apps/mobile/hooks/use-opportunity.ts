@@ -13,6 +13,7 @@ export interface OpportunityDetail {
   employment_type: string | null;
   status: string | null;
   description: string | null;
+  description_html: string | null;
   requirements: unknown;
   salary_min: number | null;
   salary_max: number | null;
@@ -20,6 +21,14 @@ export interface OpportunityDetail {
   company_role_context: string | null;
   company_recent_news: unknown;
   company_challenges: unknown;
+  created_at: string | null;
+}
+
+export interface TailoredProfile {
+  id: string;
+  summary: string | null;
+  work_history: unknown;
+  skills: unknown;
   created_at: string | null;
 }
 
@@ -45,6 +54,36 @@ export function useOpportunity(opportunityId: string) {
         throw new Error('Not authenticated');
       }
       return fetchOpportunity(session.user.id, opportunityId);
+    },
+    enabled: !!session?.user?.id && !!opportunityId,
+  });
+}
+
+async function fetchTailoredProfile(userId: string, opportunityId: string): Promise<TailoredProfile | null> {
+  const { data, error } = await supabase
+    .from('tailored_profiles')
+    .select('id, summary, work_history, skills, created_at')
+    .eq('opportunity_id', opportunityId)
+    .eq('user_id', userId)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') return null; // Not found
+    throw error;
+  }
+  return data;
+}
+
+export function useTailoredProfile(opportunityId: string) {
+  const { session } = useAuth();
+
+  return useQuery({
+    queryKey: ['tailored-profile', opportunityId, session?.user?.id],
+    queryFn: () => {
+      if (!session?.user?.id) {
+        throw new Error('Not authenticated');
+      }
+      return fetchTailoredProfile(session.user.id, opportunityId);
     },
     enabled: !!session?.user?.id && !!opportunityId,
   });
