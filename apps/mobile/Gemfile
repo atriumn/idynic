@@ -1,0 +1,5 @@
+source "https://rubygems.org"
+
+# Install gems locally to avoid sudo
+gem "fastlane", "~> 2.225"
+gem "cocoapods", "~> 1.15"

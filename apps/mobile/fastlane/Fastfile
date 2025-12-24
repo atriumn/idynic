@@ -1,0 +1,50 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Sync certificates and profiles"
+  lane :certificates do
+    match(type: "appstore", readonly: is_ci)
+  end
+
+  desc "Build iOS app"
+  lane :build do
+    # Ensure we have certs
+    certificates
+
+    # Generate native project
+    Dir.chdir("..") do
+      sh("npx expo prebuild --platform ios --clean")
+    end
+
+    # Install pods
+    cocoapods(podfile: "./ios/Podfile")
+
+    # Build the app
+    build_app(
+      workspace: "./ios/Idynic.xcworkspace",
+      scheme: "Idynic",
+      export_method: "app-store",
+      output_directory: "./ios/build",
+      output_name: "Idynic.ipa",
+      clean: true
+    )
+  end
+
+  desc "Build and upload to TestFlight"
+  lane :beta do
+    build
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  desc "Build and upload to App Store"
+  lane :release do
+    build
+    upload_to_app_store(
+      skip_screenshots: true,
+      skip_metadata: true,
+      precheck_include_in_app_purchases: false
+    )
+  end
+end
