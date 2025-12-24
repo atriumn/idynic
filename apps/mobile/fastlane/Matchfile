@@ -1,0 +1,5 @@
+git_url(ENV["MATCH_GIT_URL"] || "https://github.com/atriumn/ios-certificates.git")
+storage_mode("git")
+type("appstore")
+app_identifier("com.atriumn.idynic")
+team_id("MVYX66G3WU")
