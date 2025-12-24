@@ -47,6 +47,14 @@ platform :ios do
       code_sign_identity: "iPhone Distribution"
     )
 
+    # Auto-increment build number for CI
+    if is_ci
+      increment_build_number(
+        xcodeproj: "./ios/Idynic.xcodeproj",
+        build_number: Time.now.strftime("%Y%m%d%H%M")
+      )
+    end
+
     # Build the app
     build_app(
       workspace: "./ios/Idynic.xcworkspace",
