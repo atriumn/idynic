@@ -1,9 +1,12 @@
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link, ChevronRight, LogOut } from 'lucide-react-native';
+import { Link, ChevronRight, LogOut, FileText, Shield, Cookie } from 'lucide-react-native';
+import * as WebBrowser from 'expo-web-browser';
 import { useAuth } from '../../lib/auth-context';
 import { useSharedLinks } from '../../hooks/use-shared-links';
+
+const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || 'https://idynic.com';
 
 function MenuSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -85,6 +88,25 @@ export default function SettingsScreen() {
             label="Sign Out"
             onPress={signOut}
             destructive
+          />
+        </MenuSection>
+
+        {/* Legal Section */}
+        <MenuSection title="Legal">
+          <MenuItem
+            icon={<FileText color="#94a3b8" size={20} />}
+            label="Terms of Service"
+            onPress={() => WebBrowser.openBrowserAsync(`${WEB_URL}/legal/terms`)}
+          />
+          <MenuItem
+            icon={<Shield color="#94a3b8" size={20} />}
+            label="Privacy Policy"
+            onPress={() => WebBrowser.openBrowserAsync(`${WEB_URL}/legal/privacy`)}
+          />
+          <MenuItem
+            icon={<Cookie color="#94a3b8" size={20} />}
+            label="Cookie Policy"
+            onPress={() => WebBrowser.openBrowserAsync(`${WEB_URL}/legal/cookies`)}
           />
         </MenuSection>
       </ScrollView>

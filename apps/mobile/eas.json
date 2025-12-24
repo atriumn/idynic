@@ -1,8 +1,7 @@
 {
   "cli": {
     "version": ">= 5.0.0",
-    "appVersionSource": "local",
-    "pnpm": true
+    "appVersionSource": "local"
   },
   "build": {
     "base": {

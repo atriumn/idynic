@@ -88,6 +88,11 @@ export function SiteFooter() {
                   Privacy
                 </Link>
               </li>
+              <li>
+                <Link href="/legal/cookies" className="hover:text-foreground">
+                  Cookies
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
