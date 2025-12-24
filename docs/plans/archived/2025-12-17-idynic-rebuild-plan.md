@@ -1,8 +1,18 @@
 # Idynic Rebuild Plan
 
-**Status:** Ready for execution
+**Status:** Done
 **Created:** 2025-12-17
 **Decision:** Full rebuild on Supabase + Vercel, nuke existing AWS infrastructure
+
+## Progress (Last reviewed: 2025-12-24)
+
+All phases complete. The rebuild is live at idynic.com with the full feature set:
+- Resume/story upload with AI extraction
+- Identity claims with embeddings
+- Opportunity tracking and matching
+- Tailored profiles and PDF generation
+- Mobile app (iOS, Android in progress)
+- External API with MCP server support
 
 ## Overview
 

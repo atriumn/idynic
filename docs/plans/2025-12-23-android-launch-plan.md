@@ -1,8 +1,25 @@
 # Android Launch Plan
 
 **Date:** 2025-12-23
-**Status:** Approved
+**Status:** In Progress
 **Goal:** Get the existing Expo/React Native app running on Android and distributed via Google Play Store
+
+## Progress (Last reviewed: 2025-12-24)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1: Local Build & Smoke Test | ⏳ Not Started | Need to run `expo prebuild --platform android` |
+| Phase 2: Fix & Polish | ⏳ Not Started | Depends on Phase 1 testing |
+| Phase 3: Internal Distribution (APK) | ⏳ Not Started | Local builds for testers |
+| Phase 4: Google Play Internal Testing | ⏳ Not Started | Requires Play Console setup |
+| Phase 5: CI/CD Automation | ⏳ Not Started | Add to mobile-deploy.yml |
+| Phase 6: Production Release | ⏳ Not Started | Full Play Store listing |
+
+### Prerequisites Completed
+- ✅ Cross-platform codebase ready (commit a17eadab)
+- ✅ Android config in app.json
+- ✅ EAS project configured
+- ✅ iOS build pipeline working (can use as reference)
 
 ## Context
 

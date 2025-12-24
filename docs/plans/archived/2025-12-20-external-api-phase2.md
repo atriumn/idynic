@@ -4,9 +4,26 @@
 
 **Goal:** Add opportunity management endpoints to the external API - create, match, tailor, and share.
 
+**Status:** Done
+
 **Architecture:** New v1 API routes with API key auth that call existing lib functions. Each endpoint is thin: validate request, call lib function, format response. Long operations (tailor) stream progress via SSE.
 
 **Tech Stack:** Next.js 14 API routes, Supabase PostgreSQL, OpenAI, SSE streaming
+
+## Progress (Last reviewed: 2025-12-24)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Task 1: POST /api/v1/opportunities | ✅ Complete | Add opportunity from description |
+| Task 2: GET /api/v1/opportunities/:id | ✅ Complete | Single opportunity details |
+| Task 3: GET /api/v1/opportunities/:id/match | ✅ Complete | Match analysis with scores |
+| Task 4: POST /api/v1/opportunities/:id/tailor | ✅ Complete | Generate tailored profile |
+| Task 5: GET /api/v1/opportunities/:id/tailored-profile | ✅ Complete | Get generated profile |
+| Task 6: POST /api/v1/opportunities/:id/share | ✅ Complete | Create share link |
+| Task 7: POST /api/v1/opportunities/add-and-tailor | ✅ Complete | Compound operation |
+| Task 8: POST /api/v1/opportunities/add-tailor-share | ✅ Complete | Full compound operation |
+
+**Implementation:** All endpoints verified in `apps/web/src/app/api/v1/opportunities/`
 
 ---
 
