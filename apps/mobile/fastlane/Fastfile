@@ -19,6 +19,15 @@ platform :ios do
     # Install pods
     cocoapods(podfile: "./ios/Podfile")
 
+    # Configure code signing
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "./ios/Idynic.xcodeproj",
+      team_id: "MVYX66G3WU",
+      profile_name: "match AppStore com.atriumn.idynic",
+      code_sign_identity: "iPhone Distribution"
+    )
+
     # Build the app
     build_app(
       workspace: "./ios/Idynic.xcworkspace",
