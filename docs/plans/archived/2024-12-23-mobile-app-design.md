@@ -1,5 +1,11 @@
 # Idynic Mobile App Design
 
+**Status:** Done
+
+## Progress (Last reviewed: 2025-12-24)
+
+Design document fully implemented via `2024-12-23-mobile-app-implementation.md`. All architectural decisions were followed. iOS mobile app is live.
+
 ## Overview
 
 React Native + Expo mobile app for idynic, providing full feature parity with the web application. iOS-first launch with Android support following.

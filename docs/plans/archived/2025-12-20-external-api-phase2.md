@@ -2,7 +2,26 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Done
 **Goal:** Add opportunity management endpoints to the external API - create, match, tailor, and share.
+
+## Progress (Last reviewed: 2025-12-24)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: POST /api/v1/opportunities | ✅ Complete | Verified in route.ts |
+| Task 2: GET /api/v1/opportunities/:id | ✅ Complete | Verified [id]/route.ts |
+| Task 3: GET /api/v1/opportunities/:id/match | ✅ Complete | Verified match/ directory |
+| Task 4: POST /api/v1/opportunities/:id/tailor | ✅ Complete | Verified tailor/ directory |
+| Task 5: GET /api/v1/opportunities/:id/tailored-profile | ✅ Complete | Verified tailored-profile/ |
+| Task 6: POST /api/v1/opportunities/:id/share | ✅ Complete | Verified share/ directory |
+| Task 7: POST /api/v1/opportunities/add-and-tailor | ✅ Complete | Verified add-and-tailor/ |
+| Task 8: POST /api/v1/opportunities/add-tailor-share | ✅ Complete | Verified add-tailor-share/ |
+| Task 9: Fix Lib Function Dependencies | ✅ Complete | |
+| Task 10: Integration Testing | ✅ Complete | |
+
+### Drift Notes
+None - implementation matches plan
 
 **Architecture:** New v1 API routes with API key auth that call existing lib functions. Each endpoint is thin: validate request, call lib function, format response. Long operations (tailor) stream progress via SSE.
 

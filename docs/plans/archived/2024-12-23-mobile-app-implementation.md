@@ -2,7 +2,28 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Done
 **Goal:** Build a React Native + Expo mobile app with full feature parity to the idynic web app, starting with iOS.
+
+## Progress (Last reviewed: 2025-12-24)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1: Monorepo Setup | ✅ Complete | pnpm workspaces, apps/web, packages/shared |
+| Phase 2: Expo App Setup | ✅ Complete | apps/mobile created, NativeWind, Supabase |
+| Phase 3: Core Screens | ✅ Complete | Profile, Opportunities, Settings screens |
+| Task 9: Profile screen with data fetching | ✅ Complete | Commit 5acf9e65 |
+| Task 10: Opportunities list screen | ✅ Complete | Commit 8608b3c7 |
+| Task 11: Opportunity detail screen | ✅ Complete | Commit d289d9dd |
+| Task 12: Settings screen | ✅ Complete | |
+| Task 13: OAuth login | ✅ Complete | Commit 3182fd25 |
+| Identity graph visualization | ✅ Complete | Commit c4a91f2d |
+| iOS CI/CD (EAS/fastlane) | ✅ Complete | Commit a34a75fe |
+
+### Drift Notes
+- iOS build pipeline fully operational with fastlane and EAS
+- Identity graph visualization added
+- Profile editing with logo integration added
 
 **Architecture:** Monorepo with shared TypeScript packages for types, schemas, and API client. Expo Router for file-based navigation. NativeWind for Tailwind-style styling. Supabase for auth and data.
 

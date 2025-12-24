@@ -1,7 +1,15 @@
 # External API & MCP Server Design
 
 **Date:** 2025-12-19
-**Status:** Approved
+**Status:** Done
+
+## Progress (Last reviewed: 2025-12-24)
+
+Design document fully implemented across 5 phases:
+- Phase 1-5 implementation plans all complete
+- REST API at /api/v1/ fully operational
+- MCP server package at packages/mcp-server/
+- OpenAPI documentation at /api/v1/openapi.json
 
 ## Overview
 
