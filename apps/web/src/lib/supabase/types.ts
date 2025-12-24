@@ -7,30 +7,10 @@ export type Json =
   | Json[]
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
@@ -398,6 +378,7 @@ export type Database = {
           industries: string | null
           job_function: string | null
           location: string | null
+          normalized_url: string | null
           posted_date: string | null
           requirements: Json | null
           salary_currency: string | null
@@ -432,6 +413,7 @@ export type Database = {
           industries?: string | null
           job_function?: string | null
           location?: string | null
+          normalized_url?: string | null
           posted_date?: string | null
           requirements?: Json | null
           salary_currency?: string | null
@@ -466,6 +448,7 @@ export type Database = {
           industries?: string | null
           job_function?: string | null
           location?: string | null
+          normalized_url?: string | null
           posted_date?: string | null
           requirements?: Json | null
           salary_currency?: string | null
@@ -544,6 +527,12 @@ export type Database = {
           email: string | null
           github: string | null
           id: string
+          identity_archetype: string | null
+          identity_bio: string | null
+          identity_generated_at: string | null
+          identity_headline: string | null
+          identity_keywords: Json | null
+          identity_matches: Json | null
           linkedin: string | null
           location: string | null
           logo_url: string | null
@@ -557,6 +546,12 @@ export type Database = {
           email?: string | null
           github?: string | null
           id: string
+          identity_archetype?: string | null
+          identity_bio?: string | null
+          identity_generated_at?: string | null
+          identity_headline?: string | null
+          identity_keywords?: Json | null
+          identity_matches?: Json | null
           linkedin?: string | null
           location?: string | null
           logo_url?: string | null
@@ -570,6 +565,12 @@ export type Database = {
           email?: string | null
           github?: string | null
           id?: string
+          identity_archetype?: string | null
+          identity_bio?: string | null
+          identity_generated_at?: string | null
+          identity_headline?: string | null
+          identity_keywords?: Json | null
+          identity_matches?: Json | null
           linkedin?: string | null
           location?: string | null
           logo_url?: string | null
@@ -968,11 +969,7 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },
 } as const
-

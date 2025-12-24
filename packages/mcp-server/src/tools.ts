@@ -8,7 +8,7 @@ export const tools = [
   {
     name: "get_profile",
     description:
-      "Get the user's full profile including contact info, work history, skills, and education",
+      "Get the user's full profile including contact info, identity snapshot (archetype, headline, bio, keywords, job matches), work history, skills, and education",
     inputSchema: {
       type: "object" as const,
       properties: {},
@@ -318,6 +318,7 @@ async function consumeSSEStream(response: Response): Promise<string> {
   const events: string[] = [];
   let finalResult: unknown = null;
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;

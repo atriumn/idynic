@@ -23,7 +23,9 @@ import {
   CLAIM_TYPE_LABELS,
   GroupedClaims,
 } from '../../hooks/use-identity-claims';
+import { useProfile } from '../../hooks/use-profile';
 import { Logo } from '../../components/logo';
+import { IdentityReflection } from '../../components/identity-reflection';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CLAIM_TYPE_ICONS: Record<string, React.ComponentType<any>> = {
@@ -227,6 +229,7 @@ function FilterChip({
 
 export default function IdentityScreen() {
   const { data: groupedClaims, isLoading, error, refetch, isRefetching } = useIdentityClaims();
+  const { data: profile, isLoading: profileLoading } = useProfile();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTypes, setSelectedTypes] = useState<Set<keyof GroupedClaims>>(new Set(CLAIM_TYPES));
 
@@ -342,6 +345,9 @@ export default function IdentityScreen() {
               : `${totalClaims} claim${totalClaims !== 1 ? 's' : ''} extracted from your experience`}
           </Text>
         </View>
+
+        {/* Identity Reflection */}
+        <IdentityReflection data={profile?.identity ?? null} isLoading={profileLoading} />
 
         {/* Search */}
         <View className="flex-row items-center bg-slate-800 rounded-xl px-3 mb-4">

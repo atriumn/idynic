@@ -4,6 +4,7 @@ import { extractWorkHistory } from "@/lib/ai/extract-work-history";
 import { extractResume } from "@/lib/ai/extract-resume";
 import { generateEmbeddings } from "@/lib/ai/embeddings";
 import { synthesizeClaimsBatch } from "@/lib/ai/synthesize-claims-batch";
+import { reflectIdentity } from "@/lib/ai/reflect-identity";
 import { extractHighlights } from "@/lib/resume/extract-highlights";
 import { SSEStream, createSSEResponse } from "@/lib/sse/stream";
 import { extractText } from "unpdf";
@@ -356,6 +357,10 @@ export async function POST(request: Request) {
         console.error("Synthesis error:", err);
         sse.send({ warning: "Claim synthesis partially failed, some claims may be missing" });
       }
+
+      // === PHASE: Reflection ===
+      sse.send({ phase: "reflection" });
+      await reflectIdentity(supabase, user.id, sse);
 
       // Update document status
       await supabase

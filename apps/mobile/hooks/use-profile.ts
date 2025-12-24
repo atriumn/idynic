@@ -25,6 +25,15 @@ interface Education {
   context: unknown;
 }
 
+export interface IdentityReflection {
+  archetype: string | null;
+  headline: string | null;
+  bio: string | null;
+  keywords: string[];
+  matches: string[];
+  generated_at: string | null;
+}
+
 export interface Profile {
   contact: {
     name: string | null;
@@ -36,6 +45,7 @@ export interface Profile {
     website: string | null;
     logo_url: string | null;
   };
+  identity: IdentityReflection | null;
   workHistory: WorkHistoryItem[];
   ventures: WorkHistoryItem[];
   skills: Skill[];
@@ -53,7 +63,7 @@ async function fetchProfile(userId: string): Promise<Profile> {
   ] = await Promise.all([
     supabase
       .from('profiles')
-      .select('name, email, phone, location, linkedin, github, website, logo_url')
+      .select('name, email, phone, location, linkedin, github, website, logo_url, identity_headline, identity_bio, identity_archetype, identity_keywords, identity_matches, identity_generated_at')
       .eq('id', userId)
       .single(),
 
@@ -92,6 +102,16 @@ async function fetchProfile(userId: string): Promise<Profile> {
 
   if (profileError) throw profileError;
 
+  // Build identity reflection object (only if generated)
+  const identity: IdentityReflection | null = profile?.identity_generated_at ? {
+    archetype: profile.identity_archetype ?? null,
+    headline: profile.identity_headline ?? null,
+    bio: profile.identity_bio ?? null,
+    keywords: (profile.identity_keywords as string[]) ?? [],
+    matches: (profile.identity_matches as string[]) ?? [],
+    generated_at: profile.identity_generated_at,
+  } : null;
+
   return {
     contact: profile || {
       name: null,
@@ -103,6 +123,7 @@ async function fetchProfile(userId: string): Promise<Profile> {
       website: null,
       logo_url: null,
     },
+    identity,
     workHistory: workHistory || [],
     ventures: ventures || [],
     skills: skills || [],

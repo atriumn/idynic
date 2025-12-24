@@ -59,12 +59,51 @@ const openApiSpec = {
               linkedin_url: { type: "string", nullable: true },
               github_url: { type: "string", nullable: true },
               website_url: { type: "string", nullable: true },
+              logo_url: { type: "string", nullable: true },
             },
           },
+          identity: { $ref: "#/components/schemas/Identity" },
           experience: { type: "array", items: { $ref: "#/components/schemas/WorkHistory" } },
           skills: { type: "array", items: { $ref: "#/components/schemas/Claim" } },
           education: { type: "array", items: { $ref: "#/components/schemas/Claim" } },
           certifications: { type: "array", items: { $ref: "#/components/schemas/Claim" } },
+        },
+      },
+      Identity: {
+        type: "object",
+        nullable: true,
+        description: "AI-generated professional identity snapshot synthesized from claims",
+        properties: {
+          archetype: {
+            type: "string",
+            nullable: true,
+            description: "One of: Builder, Optimizer, Connector, Guide, Stabilizer, Specialist, Strategist, Advocate, Investigator, Performer",
+          },
+          headline: {
+            type: "string",
+            nullable: true,
+            description: "6-10 word professional tagline",
+          },
+          bio: {
+            type: "string",
+            nullable: true,
+            description: "2-3 sentence narrative in second person",
+          },
+          keywords: {
+            type: "array",
+            items: { type: "string" },
+            description: "3-5 defining professional attributes",
+          },
+          matches: {
+            type: "array",
+            items: { type: "string" },
+            description: "3 specific job titles the user would excel at",
+          },
+          generated_at: {
+            type: "string",
+            format: "date-time",
+            description: "When the identity was last generated",
+          },
         },
       },
       Claim: {

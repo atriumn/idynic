@@ -10,7 +10,9 @@ import { IdentityClaimsList } from "@/components/identity-claims-list";
 import { ClaimDetailPanel } from "@/components/claim-detail-panel";
 import { UploadResumeModal } from "@/components/upload-resume-modal";
 import { AddStoryModal } from "@/components/add-story-modal";
+import { IdentityReflection } from "@/components/identity/identity-reflection";
 import { useIdentityGraph } from "@/lib/hooks/use-identity-graph";
+import { useIdentityReflection } from "@/lib/hooks/use-identity-reflection";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -25,6 +27,7 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [viewType, setViewType] = useState<ViewType>("list");
   const { data } = useIdentityGraph();
+  const { data: reflectionData, isLoading: reflectionLoading } = useIdentityReflection();
 
   // Detect mobile viewport
   useEffect(() => {
@@ -102,6 +105,11 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
 
       {/* Main content */}
       <div className="container mx-auto px-4 py-8 max-w-5xl flex-1">
+        {/* Identity Reflection Hero */}
+        {!showEmptyState && (
+          <IdentityReflection data={reflectionData ?? null} isLoading={reflectionLoading} />
+        )}
+
         {showEmptyState ? (
           <div className="flex flex-col items-center justify-center h-[400px] text-center px-4 border rounded-lg border-dashed bg-muted/10 mt-8">
             <FileText className="h-16 w-16 text-muted-foreground/50 mb-6" />

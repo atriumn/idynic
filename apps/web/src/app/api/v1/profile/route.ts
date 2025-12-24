@@ -47,6 +47,16 @@ export async function GET(request: NextRequest) {
   // For now, return all work history in experience array
   const experience = workHistory || [];
 
+  // Build identity reflection object (only if generated)
+  const identity = profile.identity_generated_at ? {
+    archetype: profile.identity_archetype,
+    headline: profile.identity_headline,
+    bio: profile.identity_bio,
+    keywords: profile.identity_keywords || [],
+    matches: profile.identity_matches || [],
+    generated_at: profile.identity_generated_at,
+  } : null;
+
   return apiSuccess({
     contact: {
       name: profile.name,
@@ -58,6 +68,7 @@ export async function GET(request: NextRequest) {
       website_url: profile.website,
       logo_url: profile.logo_url,
     },
+    identity,
     experience,
     ventures: [],
     additional_experience: [],

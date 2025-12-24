@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { extractStoryEvidence } from "@/lib/ai/extract-story-evidence";
 import { generateEmbeddings } from "@/lib/ai/embeddings";
 import { synthesizeClaimsBatch } from "@/lib/ai/synthesize-claims-batch";
+import { reflectIdentity } from "@/lib/ai/reflect-identity";
 import { SSEStream, createSSEResponse } from "@/lib/sse/stream";
 import { createHash } from "crypto";
 
@@ -254,6 +255,10 @@ export async function POST(request: Request) {
         console.log(`[story] Synthesis failed after ${Date.now() - synthesisStart}ms`);
         sse.send({ warning: "Claim synthesis partially failed" });
       }
+
+      // === PHASE: Reflection ===
+      sse.send({ phase: "reflection" });
+      await reflectIdentity(supabase, user.id, sse);
 
       await supabase
         .from("documents")

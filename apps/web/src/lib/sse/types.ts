@@ -3,7 +3,8 @@ export type ProcessingPhase =
   | "parsing"
   | "extracting"
   | "embeddings"
-  | "synthesis";
+  | "synthesis"
+  | "reflection";
 
 export interface PhaseEvent {
   phase: ProcessingPhase;
