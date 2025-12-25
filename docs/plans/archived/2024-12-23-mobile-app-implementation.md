@@ -2,6 +2,27 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Done
+
+## Progress (Last reviewed: 2025-12-25)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1: Monorepo Setup | ✅ Complete | pnpm workspaces configured |
+| Phase 2: Expo App Setup | ✅ Complete | Expo app with NativeWind, Supabase, navigation |
+| Phase 3: Core Screens | ✅ Complete | Profile, opportunities, settings screens |
+| iOS Build Pipeline | ✅ Complete | EAS and local xcodebuild (commit `efe58027`) |
+| iOS CI/CD | ✅ Complete | `mobile-deploy.yml` with TestFlight upload |
+| Identity Reflection | ✅ Complete | Mobile component added |
+| Profile Editing | ✅ Complete | Work history and education forms |
+
+### Implementation Notes
+- Mobile app fully functional with iOS build pipeline
+- Extensive screen set: login, profile, opportunities (list + detail), settings
+- Identity graph, shared links, profile editing implemented
+- CI/CD for TestFlight deployments operational
+- See Android launch plan for Android-specific work
+
 **Goal:** Build a React Native + Expo mobile app with full feature parity to the idynic web app, starting with iOS.
 
 **Architecture:** Monorepo with shared TypeScript packages for types, schemas, and API client. Expo Router for file-based navigation. NativeWind for Tailwind-style styling. Supabase for auth and data.
