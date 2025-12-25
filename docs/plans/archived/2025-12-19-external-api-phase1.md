@@ -1,6 +1,6 @@
 # External API Phase 1: Foundation
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **Status:** ✅ COMPLETE (2025-12-20)
 
 **Goal:** Set up API key infrastructure and core read endpoints for the external API.
 
@@ -9,6 +9,25 @@
 **Tech Stack:** Next.js 14 API routes, Supabase PostgreSQL, TypeScript, Tailwind CSS, Radix UI
 
 **Design Document:** `docs/plans/2025-12-19-external-api-mcp-design.md`
+
+## Progress (Last reviewed: 2025-12-25)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Create api_keys Table | ✅ Complete | `supabase/migrations/20251219194017_create_api_keys.sql` |
+| Task 2: Generate TypeScript Types | ✅ Complete | Types in `apps/web/src/lib/supabase/types.ts` |
+| Task 3: API Key Utilities | ✅ Complete | `apps/web/src/lib/api/keys.ts` |
+| Task 4: API Auth Middleware | ✅ Complete | `apps/web/src/lib/api/auth.ts` |
+| Task 5: Response Helpers | ✅ Complete | `apps/web/src/lib/api/response.ts` |
+| Task 6: GET /api/v1/profile | ✅ Complete | Tested via PR #6 |
+| Task 7: GET /api/v1/claims | ✅ Complete | `apps/web/src/app/api/v1/claims/route.ts` |
+| Task 8: GET /api/v1/opportunities | ✅ Complete | `apps/web/src/app/api/v1/opportunities/route.ts` |
+| Task 9: API Key Server Actions | ✅ Complete | `apps/web/src/app/settings/api-keys/actions.ts` |
+| Task 10: API Keys Page | ✅ Complete | `apps/web/src/app/settings/api-keys/page.tsx` |
+| Task 11: API Keys Client Component | ✅ Complete | `apps/web/src/app/settings/api-keys/client.tsx` |
+
+### Drift Notes
+None - PR #6 merged with full implementation.
 
 ---
 

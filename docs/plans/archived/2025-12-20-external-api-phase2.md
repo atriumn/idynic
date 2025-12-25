@@ -1,12 +1,27 @@
 # External API Phase 2: Opportunity Operations
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **Status:** ✅ COMPLETE
 
 **Goal:** Add opportunity management endpoints to the external API - create, match, tailor, and share.
 
 **Architecture:** New v1 API routes with API key auth that call existing lib functions. Each endpoint is thin: validate request, call lib function, format response. Long operations (tailor) stream progress via SSE.
 
 **Tech Stack:** Next.js 14 API routes, Supabase PostgreSQL, OpenAI, SSE streaming
+
+## Progress (Last reviewed: 2025-12-25)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| POST /api/v1/opportunities | ✅ Complete | `apps/web/src/app/api/v1/opportunities/route.ts` |
+| GET /api/v1/opportunities/[id] | ✅ Complete | `apps/web/src/app/api/v1/opportunities/[id]/route.ts` |
+| POST /api/v1/opportunities/[id]/match | ✅ Complete | `apps/web/src/app/api/v1/opportunities/[id]/match/route.ts` |
+| POST /api/v1/opportunities/[id]/tailor | ✅ Complete | SSE streaming implementation |
+| POST /api/v1/opportunities/[id]/share | ✅ Complete | `apps/web/src/app/api/v1/opportunities/[id]/share/route.ts` |
+| Convenience endpoints | ✅ Complete | add-and-tailor, add-tailor-share |
+
+### Drift Notes
+- Added convenience combo endpoints not in original plan
+- GET tailored-profile endpoint added for fetching stored profiles
 
 ---
 
