@@ -62,6 +62,22 @@ export default function AppLayout() {
           headerShown: true,
         }}
       />
+      <Tabs.Screen
+        name="upload-resume"
+        options={{
+          href: null,
+          title: 'Upload Resume',
+          headerShown: true,
+        }}
+      />
+      <Tabs.Screen
+        name="add-story"
+        options={{
+          href: null,
+          title: 'Add Story',
+          headerShown: true,
+        }}
+      />
     </Tabs>
   );
 }

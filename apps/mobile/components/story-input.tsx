@@ -82,8 +82,8 @@ export function StoryInput({ onComplete }: StoryInputProps) {
     }
   }, [text, isValidLength, session?.access_token]);
 
-  // Calculate phase states
-  const isProcessing = isSubmitting || job?.status === "processing";
+  // Calculate phase states - include jobId check to handle loading/pending states
+  const isProcessing = isSubmitting || (jobId !== null && job?.status !== "completed" && job?.status !== "failed");
   const isComplete = job?.status === "completed";
   const currentPhase = job?.phase as DocumentJobPhase | null;
 
