@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { SupabaseClient } from "@supabase/supabase-js";
 import type { SSEStream } from "@/lib/sse/stream";
+import type { JobUpdater } from "@/lib/jobs/job-updater";
 
 const openai = new OpenAI();
 
@@ -117,14 +118,16 @@ function validateArchetype(archetype: string | null): Archetype | null {
  *
  * @param supabase - Authenticated Supabase client
  * @param userId - User ID to generate reflection for
- * @param sse - Optional SSE stream for progress updates
+ * @param sse - Optional SSE stream for progress updates (deprecated, use job instead)
+ * @param job - Optional JobUpdater for progress updates via database
  * @returns Promise that resolves when reflection is complete
- * @remarks Never throws - all errors are logged and sent via SSE warnings
+ * @remarks Never throws - all errors are logged and sent via SSE/job warnings
  */
 export async function reflectIdentity(
   supabase: SupabaseClient,
   userId: string,
-  sse?: SSEStream
+  sse?: SSEStream,
+  job?: JobUpdater
 ): Promise<void> {
   try {
     // Fetch top 50 claims by confidence
@@ -138,6 +141,7 @@ export async function reflectIdentity(
     if (claimsError) {
       console.error("Failed to fetch claims:", claimsError);
       sse?.send({ warning: "Couldn't generate identity snapshot" });
+      job?.setWarning("Couldn't generate identity snapshot");
       return;
     }
 
@@ -177,6 +181,7 @@ export async function reflectIdentity(
     if (!content) {
       console.error("No response from OpenAI for identity reflection");
       sse?.send({ warning: "Couldn't generate identity snapshot" });
+      job?.setWarning("Couldn't generate identity snapshot");
       return;
     }
 
@@ -191,6 +196,7 @@ export async function reflectIdentity(
     } catch {
       console.error("Failed to parse reflection response:", content);
       sse?.send({ warning: "Couldn't generate identity snapshot" });
+      job?.setWarning("Couldn't generate identity snapshot");
       return;
     }
 
@@ -213,6 +219,7 @@ export async function reflectIdentity(
     if (updateError) {
       console.error("Failed to update profile with reflection:", updateError);
       sse?.send({ warning: "Couldn't save identity snapshot" });
+      job?.setWarning("Couldn't save identity snapshot");
       return;
     }
 
@@ -220,9 +227,11 @@ export async function reflectIdentity(
     sse?.send({ phase: "reflection", progress: "complete" });
     if (validatedArchetype) {
       sse?.send({ highlight: `Identity: ${validatedArchetype}` });
+      job?.addHighlight(validatedArchetype, "found");
     }
   } catch (error) {
     console.error("Identity reflection failed:", error);
     sse?.send({ warning: "Couldn't generate identity snapshot" });
+    job?.setWarning("Couldn't generate identity snapshot");
   }
 }

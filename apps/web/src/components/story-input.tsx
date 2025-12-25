@@ -1,28 +1,17 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { useDocumentJob } from "@/lib/hooks/use-document-job";
+import { STORY_PHASES, PHASE_LABELS, type DocumentJobPhase, type JobSummary } from "@idynic/shared/types";
 
 interface StoryInputProps {
   onSubmitComplete?: () => void;
-}
-
-type Phase = "validating" | "extracting" | "embeddings" | "synthesis" | null;
-
-const PHASE_LABELS: Record<NonNullable<Phase>, string> = {
-  validating: "Checking story",
-  extracting: "Extracting evidence",
-  embeddings: "Generating embeddings",
-  synthesis: "Synthesizing claims",
-};
-
-interface Highlight {
-  id: number;
-  text: string;
 }
 
 const MIN_LENGTH = 200;
@@ -30,33 +19,39 @@ const MAX_LENGTH = 10000;
 
 export function StoryInput({ onSubmitComplete }: StoryInputProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [text, setText] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [warning, setWarning] = useState<string | null>(null);
-  const [currentPhase, setCurrentPhase] = useState<Phase>(null);
-  const [progress, setProgress] = useState<string | null>(null);
-  const [completedPhases, setCompletedPhases] = useState<Set<Phase>>(new Set());
-  const [highlights, setHighlights] = useState<Highlight[]>([]);
-  const [isComplete, setIsComplete] = useState(false);
-  const [summary, setSummary] = useState<{ created: number; updated: number } | null>(null);
-  const highlightIdRef = useRef(0);
+  const [jobId, setJobId] = useState<string | null>(null);
+
+  const { job, displayMessages } = useDocumentJob(jobId);
 
   const charCount = text.length;
   const isValidLength = charCount >= MIN_LENGTH && charCount <= MAX_LENGTH;
+
+  // Handle job completion or failure
+  useEffect(() => {
+    if (job?.status === "completed") {
+      // Invalidate identity queries so the UI updates without manual refresh
+      queryClient.invalidateQueries({ queryKey: ["identity-reflection"] });
+      queryClient.invalidateQueries({ queryKey: ["identity-graph"] });
+      setText("");
+      onSubmitComplete?.();
+      router.refresh();
+    }
+    if (job?.status === "failed") {
+      setError(job.error || "Processing failed");
+      setJobId(null);
+    }
+  }, [job?.status, job?.error, onSubmitComplete, router, queryClient]);
 
   const handleSubmit = useCallback(async () => {
     if (!isValidLength) return;
 
     setError(null);
-    setWarning(null);
-    setIsProcessing(true);
-    setCurrentPhase(null);
-    setProgress(null);
-    setCompletedPhases(new Set());
-    setHighlights([]);
-    setIsComplete(false);
-    setSummary(null);
+    setIsSubmitting(true);
+    setJobId(null);
 
     try {
       const response = await fetch("/api/process-story", {
@@ -65,81 +60,38 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
         body: JSON.stringify({ text }),
       });
 
-      if (!response.ok || !response.body) {
-        throw new Error("Submission failed");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Submission failed");
       }
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let lastPhase: Phase = null;
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-
-          try {
-            const data = JSON.parse(line.slice(6));
-
-            if (data.phase) {
-              if (lastPhase && lastPhase !== data.phase) {
-                setCompletedPhases(prev => new Set([...Array.from(prev), lastPhase]));
-              }
-              lastPhase = data.phase;
-              setCurrentPhase(data.phase);
-              setProgress(data.progress || null);
-            }
-
-            if (data.highlight) {
-              const id = ++highlightIdRef.current;
-              setHighlights(prev => [{ id, text: data.highlight }, ...prev].slice(0, 5));
-            }
-
-            if (data.warning) {
-              setWarning(data.warning);
-            }
-
-            if (data.error) {
-              throw new Error(data.error);
-            }
-
-            if (data.done) {
-              if (lastPhase) {
-                setCompletedPhases(prev => new Set([...Array.from(prev), lastPhase]));
-              }
-              setIsComplete(true);
-              setSummary({
-                created: data.summary?.claimsCreated || 0,
-                updated: data.summary?.claimsUpdated || 0,
-              });
-              setText("");
-              onSubmitComplete?.();
-              router.refresh();
-            }
-          } catch (parseErr) {
-            if (parseErr instanceof Error && parseErr.message !== "Submission failed") {
-              console.warn("Failed to parse SSE event:", line);
-            } else {
-              throw parseErr;
-            }
-          }
-        }
-      }
+      // Start listening to job updates
+      setJobId(data.jobId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Submission failed");
     } finally {
-      setIsProcessing(false);
+      setIsSubmitting(false);
     }
-  }, [text, isValidLength, router, onSubmitComplete]);
+  }, [text, isValidLength]);
 
-  const allPhases: NonNullable<Phase>[] = ["validating", "extracting", "embeddings", "synthesis"];
+  // Calculate phase states
+  const isProcessing = isSubmitting || job?.status === "processing";
+  const isComplete = job?.status === "completed";
+  const currentPhase = job?.phase as DocumentJobPhase | null;
+
+  const completedPhases = new Set<DocumentJobPhase>();
+  if (currentPhase) {
+    const currentIndex = STORY_PHASES.indexOf(currentPhase);
+    for (let i = 0; i < currentIndex; i++) {
+      completedPhases.add(STORY_PHASES[i]);
+    }
+  }
+  if (isComplete) {
+    STORY_PHASES.forEach((p) => completedPhases.add(p));
+  }
+
+  const summary = job?.summary as JobSummary | null;
 
   return (
     <Card className="border-2 border-muted-foreground/25">
@@ -148,7 +100,7 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
           <div className="w-full space-y-4">
             {/* Phase progress */}
             <div className="space-y-2 text-left">
-              {allPhases.map((phase) => {
+              {STORY_PHASES.map((phase) => {
                 const isCompleted = completedPhases.has(phase);
                 const isCurrent = currentPhase === phase;
                 const isPending = !isCompleted && !isCurrent;
@@ -165,15 +117,26 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
                       <span className="text-green-600">✓</span>
                     ) : isCurrent ? (
                       <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
                       </svg>
                     ) : (
                       <span className="text-muted-foreground">○</span>
                     )}
                     <span>
                       {PHASE_LABELS[phase]}
-                      {isCurrent && progress && ` (${progress})`}
+                      {isCurrent && job?.progress && ` (${job.progress})`}
                     </span>
                   </div>
                 );
@@ -181,12 +144,12 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
             </div>
 
             {/* Highlights feed */}
-            {highlights.length > 0 && (
+            {displayMessages.length > 0 && (
               <div className="relative mt-4 h-32 overflow-hidden rounded-md bg-muted/50 p-3">
                 <div className="space-y-1">
-                  {highlights.map((highlight, index) => (
+                  {displayMessages.map((message, index) => (
                     <div
-                      key={highlight.id}
+                      key={message.id}
                       className={cn(
                         "text-sm transition-all duration-500",
                         index === 0 && "font-medium",
@@ -195,7 +158,7 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
                         index > 2 && "opacity-20 blur-[1px]"
                       )}
                     >
-                      {highlight.text}
+                      {message.text}
                     </div>
                   ))}
                 </div>
@@ -207,13 +170,18 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
               <div className="rounded-md bg-green-50 border border-green-200 p-3 text-sm">
                 <p className="font-medium text-green-800">Processing complete!</p>
                 <p className="text-green-700 mt-1">
-                  {summary.created > 0 && `+${summary.created} new claim${summary.created > 1 ? 's' : ''}`}
-                  {summary.created > 0 && summary.updated > 0 && ', '}
-                  {summary.updated > 0 && `${summary.updated} updated`}
-                  {summary.created === 0 && summary.updated === 0 && 'No new claims (may match existing)'}
+                  {summary.claimsCreated > 0 &&
+                    `+${summary.claimsCreated} new claim${summary.claimsCreated > 1 ? "s" : ""}`}
+                  {summary.claimsCreated > 0 && summary.claimsUpdated > 0 && ", "}
+                  {summary.claimsUpdated > 0 && `${summary.claimsUpdated} updated`}
+                  {summary.claimsCreated === 0 &&
+                    summary.claimsUpdated === 0 &&
+                    "No new claims (may match existing)"}
                 </p>
               </div>
             )}
+
+            {job?.warning && <p className="text-sm text-yellow-600">{job.warning}</p>}
           </div>
         ) : (
           <div className="space-y-4">
@@ -226,17 +194,15 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
               maxLength={MAX_LENGTH}
             />
             <div className="flex items-center justify-between">
-              <span className={cn(
-                "text-xs",
-                charCount < MIN_LENGTH ? "text-muted-foreground" : "text-green-600"
-              )}>
+              <span
+                className={cn(
+                  "text-xs",
+                  charCount < MIN_LENGTH ? "text-muted-foreground" : "text-green-600"
+                )}
+              >
                 {charCount}/{MIN_LENGTH} min characters
               </span>
-              <Button
-                onClick={handleSubmit}
-                disabled={!isValidLength}
-                size="sm"
-              >
+              <Button onClick={handleSubmit} disabled={!isValidLength} size="sm">
                 Submit Story
               </Button>
             </div>
@@ -244,7 +210,6 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
         )}
 
         {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
-        {warning && <p className="mt-4 text-sm text-yellow-600">{warning}</p>}
       </CardContent>
     </Card>
   );

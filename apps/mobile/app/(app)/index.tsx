@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Pressable, TextInput, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import {
   ChevronDown,
   ChevronUp,
@@ -12,6 +13,8 @@ import {
   FileText,
   Search,
   X,
+  Upload,
+  MessageSquarePlus,
 } from 'lucide-react-native';
 import {
   useIdentityClaims,
@@ -228,6 +231,7 @@ function FilterChip({
 }
 
 export default function IdentityScreen() {
+  const router = useRouter();
   const { data: groupedClaims, isLoading, error, refetch, isRefetching } = useIdentityClaims();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const [searchQuery, setSearchQuery] = useState('');
@@ -308,9 +312,27 @@ export default function IdentityScreen() {
         <Text className="text-xl font-bold text-white mb-2 text-center">
           No identity claims yet
         </Text>
-        <Text className="text-slate-400 text-center">
-          Upload your resume or add work history from the web app to build your identity graph.
+        <Text className="text-slate-400 text-center mb-6">
+          Build your identity graph by uploading your resume or sharing a story.
         </Text>
+
+        <View className="w-full">
+          <Pressable
+            onPress={() => router.push('/upload-resume')}
+            className="flex-row items-center justify-center gap-2 bg-slate-700 border border-slate-600 py-4 px-6 rounded-xl mb-3"
+          >
+            <Upload color="#14b8a6" size={20} />
+            <Text className="text-white font-semibold text-base">Upload Resume</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => router.push('/add-story')}
+            className="flex-row items-center justify-center gap-2 bg-slate-700 border border-slate-600 py-4 px-6 rounded-xl"
+          >
+            <MessageSquarePlus color="#14b8a6" size={20} />
+            <Text className="text-white font-semibold text-base">Add a Story</Text>
+          </Pressable>
+        </View>
       </SafeAreaView>
     );
   }

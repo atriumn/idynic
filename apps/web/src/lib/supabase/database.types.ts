@@ -171,6 +171,81 @@ export type Database = {
           },
         ]
       }
+      document_jobs: {
+        Row: {
+          completed_at: string | null
+          content_hash: string | null
+          created_at: string | null
+          document_id: string | null
+          error: string | null
+          filename: string | null
+          highlights: Json | null
+          id: string
+          job_type: string
+          phase: string | null
+          progress: string | null
+          started_at: string | null
+          status: string
+          summary: Json | null
+          updated_at: string | null
+          user_id: string
+          warning: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          content_hash?: string | null
+          created_at?: string | null
+          document_id?: string | null
+          error?: string | null
+          filename?: string | null
+          highlights?: Json | null
+          id?: string
+          job_type: string
+          phase?: string | null
+          progress?: string | null
+          started_at?: string | null
+          status?: string
+          summary?: Json | null
+          updated_at?: string | null
+          user_id: string
+          warning?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          content_hash?: string | null
+          created_at?: string | null
+          document_id?: string | null
+          error?: string | null
+          filename?: string | null
+          highlights?: Json | null
+          id?: string
+          job_type?: string
+          phase?: string | null
+          progress?: string | null
+          started_at?: string | null
+          status?: string
+          summary?: Json | null
+          updated_at?: string | null
+          user_id?: string
+          warning?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_jobs_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_jobs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           content_hash: string | null

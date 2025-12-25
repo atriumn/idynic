@@ -1,10 +1,12 @@
-import { createClient } from "@/lib/supabase/server";
+import { getApiUser } from "@/lib/supabase/api-auth";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { extractStoryEvidence } from "@/lib/ai/extract-story-evidence";
 import { generateEmbeddings } from "@/lib/ai/embeddings";
 import { synthesizeClaimsBatch } from "@/lib/ai/synthesize-claims-batch";
 import { reflectIdentity } from "@/lib/ai/reflect-identity";
-import { SSEStream, createSSEResponse } from "@/lib/sse/stream";
+import { JobUpdater } from "@/lib/jobs/job-updater";
 import { createHash } from "crypto";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const maxDuration = 300;
 
@@ -13,275 +15,264 @@ function computeContentHash(text: string): string {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const sse = new SSEStream();
-  const stream = sse.createStream();
+  const serviceSupabase = createServiceRoleClient();
 
-  (async () => {
-    try {
-      // Check auth
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+  // Check auth (supports both cookies for web and Bearer token for mobile)
+  const user = await getApiUser(request);
 
-      if (!user) {
-        sse.send({ error: "Unauthorized" });
-        sse.close();
-        return;
-      }
+  if (!user) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-      // Get text from JSON body
-      const body = await request.json();
-      const text = body.text as string | undefined;
+  // Get text from JSON body
+  const body = await request.json();
+  const text = body.text as string | undefined;
 
-      if (!text || typeof text !== "string") {
-        sse.send({ error: "No story text provided" });
-        sse.close();
-        return;
-      }
+  if (!text || typeof text !== "string") {
+    return Response.json({ error: "No story text provided" }, { status: 400 });
+  }
 
-      if (text.length < 200) {
-        sse.send({ error: "Story must be at least 200 characters" });
-        sse.close();
-        return;
-      }
+  if (text.length < 200) {
+    return Response.json({ error: "Story must be at least 200 characters" }, { status: 400 });
+  }
 
-      if (text.length > 10000) {
-        sse.send({ error: "Story must be less than 10,000 characters" });
-        sse.close();
-        return;
-      }
+  if (text.length > 10000) {
+    return Response.json({ error: "Story must be less than 10,000 characters" }, { status: 400 });
+  }
 
-      // === PHASE: Validating ===
-      sse.send({ phase: "validating" });
+  // Create job record
+  const contentHash = computeContentHash(text);
+  const { data: job, error: jobError } = await serviceSupabase
+    .from("document_jobs")
+    .insert({
+      user_id: user.id,
+      job_type: "story",
+      content_hash: contentHash,
+      status: "pending",
+    })
+    .select()
+    .single();
 
-      const contentHash = computeContentHash(text);
-      const { data: existingDoc } = await supabase
-        .from("documents")
-        .select("id, created_at")
-        .eq("user_id", user.id)
-        .eq("content_hash", contentHash)
-        .single();
+  if (jobError || !job) {
+    console.error("Failed to create job:", jobError);
+    return Response.json({ error: "Failed to create job" }, { status: 500 });
+  }
 
-      if (existingDoc) {
-        sse.send({
-          error: `Duplicate story - already submitted on ${new Date(existingDoc.created_at || Date.now()).toLocaleDateString()}`,
-        });
-        sse.close();
-        return;
-      }
+  // Start processing in background (non-blocking)
+  processStoryJob(serviceSupabase, job.id, user.id, text, contentHash).catch((err) => {
+    console.error("Background story job failed:", err);
+  });
 
-      // === PHASE: Extracting ===
-      sse.send({ phase: "extracting" });
+  // Return immediately with job ID
+  return Response.json({ jobId: job.id });
+}
 
-      const extractionMessages = [
-        "reading your story...", "finding achievements...", "identifying skills...",
-        "recognizing traits...", "understanding context...", "extracting insights...",
-      ];
-      let extractionIndex = 0;
-      const extractionTicker = setInterval(() => {
-        sse.send({ highlight: extractionMessages[extractionIndex % extractionMessages.length] });
-        extractionIndex++;
-      }, 2000);
+async function processStoryJob(
+  supabase: SupabaseClient,
+  jobId: string,
+  userId: string,
+  text: string,
+  contentHash: string
+) {
+  const job = new JobUpdater(supabase, jobId);
 
-      let evidenceItems;
-      try {
-        console.log("[story] Starting evidence extraction...");
-        const extractStart = Date.now();
-        evidenceItems = await extractStoryEvidence(text);
-        console.log(`[story] Evidence extraction done in ${Date.now() - extractStart}ms, found ${evidenceItems.length} items`);
-      } catch (err) {
-        clearInterval(extractionTicker);
-        console.error("Evidence extraction error:", err);
-        sse.send({ error: "Failed to extract evidence from story" });
-        sse.close();
-        return;
-      }
+  try {
+    // === PHASE: Validating ===
+    await job.setPhase("validating");
 
-      clearInterval(extractionTicker);
+    const { data: existingDoc } = await supabase
+      .from("documents")
+      .select("id, created_at")
+      .eq("user_id", userId)
+      .eq("content_hash", contentHash)
+      .single();
 
-      // Send highlights from extracted evidence
-      for (const item of evidenceItems.slice(0, 5)) {
-        sse.send({ highlight: `Found: ${item.text.slice(0, 60)}${item.text.length > 60 ? "..." : ""}` });
-      }
-
-      // Create document record
-      const { data: document, error: docError } = await supabase
-        .from("documents")
-        .insert({
-          user_id: user.id,
-          type: "story" as const,
-          filename: null,
-          storage_path: null,
-          raw_text: text,
-          content_hash: contentHash,
-          status: "processing" as const,
-        })
-        .select()
-        .single();
-
-      if (docError || !document) {
-        console.error("Document insert error:", docError);
-        sse.send({ error: "Failed to create document record" });
-        sse.close();
-        return;
-      }
-
-      if (evidenceItems.length === 0) {
-        await supabase
-          .from("documents")
-          .update({ status: "completed" })
-          .eq("id", document.id);
-        sse.send({
-          done: true,
-          summary: {
-            documentId: document.id,
-            evidenceCount: 0,
-            workHistoryCount: 0,
-            claimsCreated: 0,
-            claimsUpdated: 0,
-          },
-        });
-        sse.close();
-        return;
-      }
-
-      // === PHASE: Embeddings ===
-      sse.send({ phase: "embeddings" });
-      console.log(`[story] Starting embeddings for ${evidenceItems.length} items...`);
-      const embeddingsStart = Date.now();
-
-      const evidenceTexts = evidenceItems.map((e) => e.text);
-      let embeddings: number[][];
-      try {
-        embeddings = await generateEmbeddings(evidenceTexts);
-        console.log(`[story] Embeddings done in ${Date.now() - embeddingsStart}ms`);
-      } catch (err) {
-        console.error("Embeddings error:", err);
-        await supabase
-          .from("documents")
-          .update({ status: "failed" })
-          .eq("id", document.id);
-        sse.send({ error: "Failed to generate embeddings" });
-        sse.close();
-        return;
-      }
-
-      // Store evidence items - extract date from context.dates or context.year
-      const evidenceToInsert = evidenceItems.map((item, i) => {
-        let evidenceDate: string | null = null;
-        if (item.context?.dates) {
-          // Parse "2018-2020" format - use the end date for recency
-          const match = item.context.dates.match(/(\d{4})/g);
-          if (match && match.length > 0) {
-            const year = match[match.length - 1]; // Use last year (most recent)
-            evidenceDate = `${year}-06-01`; // Mid-year approximation
-          }
-        } else if (item.context?.year) {
-          evidenceDate = `${item.context.year}-06-01`;
-        }
-
-        return {
-          user_id: user.id,
-          document_id: document.id,
-          evidence_type: item.type,
-          text: item.text,
-          context: item.context,
-          embedding: embeddings[i] as unknown as string,
-          source_type: 'story' as const,
-          evidence_date: evidenceDate,
-        };
-      });
-
-      const { data: storedEvidence, error: evidenceError } = await supabase
-        .from("evidence")
-        .insert(evidenceToInsert)
-        .select();
-
-      if (evidenceError || !storedEvidence) {
-        console.error("Evidence insert error:", evidenceError);
-        await supabase
-          .from("documents")
-          .update({ status: "failed" })
-          .eq("id", document.id);
-        sse.send({ error: "Failed to store evidence" });
-        sse.close();
-        return;
-      }
-
-      // === PHASE: Synthesis ===
-      sse.send({ phase: "synthesis", progress: "0/?" });
-      console.log(`[story] Starting synthesis for ${storedEvidence.length} evidence items...`);
-      const synthesisStart = Date.now();
-
-      const evidenceWithIds = storedEvidence.map((e) => ({
-        id: e.id,
-        text: e.text,
-        type: e.evidence_type as "accomplishment" | "skill_listed" | "trait_indicator" | "education" | "certification",
-        embedding: e.embedding as unknown as number[],
-        sourceType: 'story' as const,
-        evidenceDate: e.evidence_date ? new Date(e.evidence_date) : null,
-      }));
-
-      let synthesisResult = { claimsCreated: 0, claimsUpdated: 0 };
-
-      const tickerMessages = [
-        "analyzing patterns...", "connecting experiences...", "synthesizing identity...",
-      ];
-      let tickerIndex = 0;
-      const ticker = setInterval(() => {
-        sse.send({ highlight: tickerMessages[tickerIndex % tickerMessages.length] });
-        tickerIndex++;
-      }, 2000);
-
-      try {
-        synthesisResult = await synthesizeClaimsBatch(
-          user.id,
-          evidenceWithIds,
-          (progress) => {
-            console.log(`[story] Synthesis progress: ${progress.current}/${progress.total}`);
-            sse.send({ phase: "synthesis", progress: `${progress.current}/${progress.total}` });
-          },
-          (claimUpdate) => {
-            const prefix = claimUpdate.action === "created" ? "+" : "~";
-            sse.send({ highlight: `${prefix} ${claimUpdate.label}` });
-          }
-        );
-        clearInterval(ticker);
-        console.log(`[story] Synthesis done in ${Date.now() - synthesisStart}ms - created: ${synthesisResult.claimsCreated}, updated: ${synthesisResult.claimsUpdated}`);
-      } catch (err) {
-        clearInterval(ticker);
-        console.error("Synthesis error:", err);
-        console.log(`[story] Synthesis failed after ${Date.now() - synthesisStart}ms`);
-        sse.send({ warning: "Claim synthesis partially failed" });
-      }
-
-      // === PHASE: Reflection ===
-      sse.send({ phase: "reflection" });
-      await reflectIdentity(supabase, user.id, sse);
-
-      await supabase
-        .from("documents")
-        .update({ status: "completed" })
-        .eq("id", document.id);
-
-      sse.send({
-        done: true,
-        summary: {
-          documentId: document.id,
-          evidenceCount: storedEvidence.length,
-          workHistoryCount: 0,
-          claimsCreated: synthesisResult.claimsCreated,
-          claimsUpdated: synthesisResult.claimsUpdated,
-        },
-      });
-    } catch (err) {
-      console.error("Unexpected error:", err);
-      sse.send({ error: "An unexpected error occurred" });
-    } finally {
-      sse.close();
+    if (existingDoc) {
+      await job.setError(
+        `Duplicate story - already submitted on ${new Date(existingDoc.created_at || Date.now()).toLocaleDateString()}`
+      );
+      return;
     }
-  })();
 
-  return createSSEResponse(stream);
+    // === PHASE: Extracting ===
+    await job.setPhase("extracting");
+
+    let evidenceItems;
+    try {
+      console.log("[story] Starting evidence extraction...");
+      const extractStart = Date.now();
+      evidenceItems = await extractStoryEvidence(text);
+      console.log(
+        `[story] Evidence extraction done in ${Date.now() - extractStart}ms, found ${evidenceItems.length} items`
+      );
+    } catch (err) {
+      console.error("Evidence extraction error:", err);
+      await job.setError("Failed to extract evidence from story");
+      return;
+    }
+
+    // Add highlights from extracted evidence
+    if (evidenceItems.length > 0) {
+      await job.addHighlights(
+        evidenceItems.slice(0, 5).map((item) => ({
+          text: item.text.slice(0, 60) + (item.text.length > 60 ? "..." : ""),
+          type: "found" as const,
+        }))
+      );
+    }
+
+    // Create document record
+    const { data: document, error: docError } = await supabase
+      .from("documents")
+      .insert({
+        user_id: userId,
+        type: "story" as const,
+        filename: null,
+        storage_path: null,
+        raw_text: text,
+        content_hash: contentHash,
+        status: "processing" as const,
+      })
+      .select()
+      .single();
+
+    if (docError || !document) {
+      console.error("Document insert error:", docError);
+      await job.setError("Failed to create document record");
+      return;
+    }
+
+    if (evidenceItems.length === 0) {
+      await supabase.from("documents").update({ status: "completed" }).eq("id", document.id);
+      await job.complete(
+        {
+          documentId: document.id,
+          evidenceCount: 0,
+          workHistoryCount: 0,
+          claimsCreated: 0,
+          claimsUpdated: 0,
+        },
+        document.id
+      );
+      return;
+    }
+
+    // === PHASE: Embeddings ===
+    await job.setPhase("embeddings");
+    console.log(`[story] Starting embeddings for ${evidenceItems.length} items...`);
+    const embeddingsStart = Date.now();
+
+    const evidenceTexts = evidenceItems.map((e) => e.text);
+    let embeddings: number[][];
+    try {
+      embeddings = await generateEmbeddings(evidenceTexts);
+      console.log(`[story] Embeddings done in ${Date.now() - embeddingsStart}ms`);
+    } catch (err) {
+      console.error("Embeddings error:", err);
+      await supabase.from("documents").update({ status: "failed" }).eq("id", document.id);
+      await job.setError("Failed to generate embeddings");
+      return;
+    }
+
+    // Store evidence items - extract date from context.dates or context.year
+    const evidenceToInsert = evidenceItems.map((item, i) => {
+      let evidenceDate: string | null = null;
+      if (item.context?.dates) {
+        // Parse "2018-2020" format - use the end date for recency
+        const match = item.context.dates.match(/(\d{4})/g);
+        if (match && match.length > 0) {
+          const year = match[match.length - 1]; // Use last year (most recent)
+          evidenceDate = `${year}-06-01`; // Mid-year approximation
+        }
+      } else if (item.context?.year) {
+        evidenceDate = `${item.context.year}-06-01`;
+      }
+
+      return {
+        user_id: userId,
+        document_id: document.id,
+        evidence_type: item.type,
+        text: item.text,
+        context: item.context,
+        embedding: embeddings[i] as unknown as string,
+        source_type: "story" as const,
+        evidence_date: evidenceDate,
+      };
+    });
+
+    const { data: storedEvidence, error: evidenceError } = await supabase
+      .from("evidence")
+      .insert(evidenceToInsert)
+      .select();
+
+    if (evidenceError || !storedEvidence) {
+      console.error("Evidence insert error:", evidenceError);
+      await supabase.from("documents").update({ status: "failed" }).eq("id", document.id);
+      await job.setError("Failed to store evidence");
+      return;
+    }
+
+    // === PHASE: Synthesis ===
+    await job.setPhase("synthesis", "0/?");
+    console.log(`[story] Starting synthesis for ${storedEvidence.length} evidence items...`);
+    const synthesisStart = Date.now();
+
+    const evidenceWithIds = storedEvidence.map((e) => ({
+      id: e.id,
+      text: e.text,
+      type: e.evidence_type as
+        | "accomplishment"
+        | "skill_listed"
+        | "trait_indicator"
+        | "education"
+        | "certification",
+      embedding: e.embedding as unknown as number[],
+      sourceType: "story" as const,
+      evidenceDate: e.evidence_date ? new Date(e.evidence_date) : null,
+    }));
+
+    let synthesisResult = { claimsCreated: 0, claimsUpdated: 0 };
+
+    try {
+      synthesisResult = await synthesizeClaimsBatch(
+        userId,
+        evidenceWithIds,
+        (progress) => {
+          console.log(`[story] Synthesis progress: ${progress.current}/${progress.total}`);
+          job.updateProgress(`${progress.current}/${progress.total}`);
+        },
+        (claimUpdate) => {
+          const type = claimUpdate.action === "created" ? "created" : "updated";
+          job.addHighlight(claimUpdate.label, type);
+        }
+      );
+      console.log(
+        `[story] Synthesis done in ${Date.now() - synthesisStart}ms - created: ${synthesisResult.claimsCreated}, updated: ${synthesisResult.claimsUpdated}`
+      );
+    } catch (err) {
+      console.error("Synthesis error:", err);
+      console.log(`[story] Synthesis failed after ${Date.now() - synthesisStart}ms`);
+      await job.setWarning("Claim synthesis partially failed");
+    }
+
+    // === PHASE: Reflection ===
+    await job.setPhase("reflection");
+    await reflectIdentity(supabase, userId, undefined, job);
+
+    await supabase.from("documents").update({ status: "completed" }).eq("id", document.id);
+
+    await job.complete(
+      {
+        documentId: document.id,
+        evidenceCount: storedEvidence.length,
+        workHistoryCount: 0,
+        claimsCreated: synthesisResult.claimsCreated,
+        claimsUpdated: synthesisResult.claimsUpdated,
+      },
+      document.id
+    );
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    await job.setError("An unexpected error occurred");
+  }
 }

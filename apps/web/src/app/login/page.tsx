@@ -52,6 +52,16 @@ export default function LoginPage() {
                     brandAccent: "#27272a",
                   },
                 },
+                dark: {
+                  colors: {
+                    brand: "#14b8a6",
+                    brandAccent: "#0d9488",
+                    inputText: "#ffffff",
+                    inputBackground: "#1e293b",
+                    inputBorder: "#334155",
+                    inputPlaceholder: "#64748b",
+                  },
+                },
               },
             }}
             providers={[]}

@@ -1,146 +1,81 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useDocumentJob } from "@/lib/hooks/use-document-job";
+import { RESUME_PHASES, PHASE_LABELS, type DocumentJobPhase } from "@idynic/shared/types";
 
 interface ResumeUploadProps {
   onUploadComplete?: () => void;
 }
 
-type Phase = "parsing" | "extracting" | "embeddings" | "synthesis" | null;
-
-const PHASE_LABELS: Record<NonNullable<Phase>, string> = {
-  parsing: "Parsing resume",
-  extracting: "Extracting experience",
-  embeddings: "Generating embeddings",
-  synthesis: "Synthesizing claims",
-};
-
-interface Highlight {
-  id: number;
-  text: string;
-}
-
 export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isDragging, setIsDragging] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [warning, setWarning] = useState<string | null>(null);
-  const [currentPhase, setCurrentPhase] = useState<Phase>(null);
-  const [progress, setProgress] = useState<string | null>(null);
-  const [completedPhases, setCompletedPhases] = useState<Set<Phase>>(new Set());
-  const [highlights, setHighlights] = useState<Highlight[]>([]);
-  const [isComplete, setIsComplete] = useState(false);
-  const highlightIdRef = useRef(0);
+  const [jobId, setJobId] = useState<string | null>(null);
 
-  const handleFile = useCallback(
-    async (file: File) => {
-      if (file.type !== "application/pdf") {
-        setError("Please upload a PDF file");
-        return;
+  const { job, displayMessages } = useDocumentJob(jobId);
+
+  // Handle job completion or failure
+  useEffect(() => {
+    if (job?.status === "completed") {
+      // Invalidate identity queries so the UI updates without manual refresh
+      queryClient.invalidateQueries({ queryKey: ["identity-reflection"] });
+      queryClient.invalidateQueries({ queryKey: ["identity-graph"] });
+      onUploadComplete?.();
+      router.refresh();
+    }
+    if (job?.status === "failed") {
+      setError(job.error || "Processing failed");
+      setJobId(null);
+    }
+  }, [job?.status, job?.error, onUploadComplete, router, queryClient]);
+
+  const handleFile = useCallback(async (file: File) => {
+    if (file.type !== "application/pdf") {
+      setError("Please upload a PDF file");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setError("File size must be less than 10MB");
+      return;
+    }
+
+    setError(null);
+    setIsUploading(true);
+    setJobId(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/process-resume", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Upload failed");
       }
 
-      if (file.size > 10 * 1024 * 1024) {
-        setError("File size must be less than 10MB");
-        return;
-      }
-
-      setError(null);
-      setWarning(null);
-      setIsProcessing(true);
-      setCurrentPhase(null);
-      setProgress(null);
-      setCompletedPhases(new Set());
-      setHighlights([]);
-      setIsComplete(false);
-
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const response = await fetch("/api/process-resume", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok || !response.body) {
-          throw new Error("Upload failed");
-        }
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n\n");
-          buffer = lines.pop() || "";
-
-          for (const line of lines) {
-            if (!line.startsWith("data: ")) continue;
-
-            try {
-              const data = JSON.parse(line.slice(6));
-
-              if (data.phase) {
-                // Mark previous phase as complete
-                if (currentPhase && currentPhase !== data.phase) {
-                  setCompletedPhases(prev => new Set([...Array.from(prev), currentPhase]));
-                }
-                setCurrentPhase(data.phase);
-                if (data.progress) {
-                  setProgress(data.progress);
-                } else {
-                  setProgress(null);
-                }
-              }
-
-              if (data.highlight) {
-                const id = ++highlightIdRef.current;
-                setHighlights(prev => [{ id, text: data.highlight }, ...prev].slice(0, 5));
-              }
-
-              if (data.warning) {
-                setWarning(data.warning);
-              }
-
-              if (data.error) {
-                throw new Error(data.error);
-              }
-
-              if (data.done) {
-                // Mark all phases as complete
-                setCompletedPhases(new Set(["parsing", "extracting", "embeddings", "synthesis"] as Phase[]));
-                setCurrentPhase(null);
-                setIsComplete(true);
-                onUploadComplete?.();
-                router.refresh();
-              }
-            } catch (parseErr) {
-              // Skip malformed events
-              if (parseErr instanceof Error && parseErr.message !== "Upload failed") {
-                console.warn("Failed to parse SSE event:", line);
-              } else {
-                throw parseErr;
-              }
-            }
-          }
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Upload failed");
-      } finally {
-        setIsProcessing(false);
-      }
-    },
-    [router, onUploadComplete, currentPhase]
-  );
+      // Start listening to job updates
+      setJobId(data.jobId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setIsUploading(false);
+    }
+  }, []);
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -170,7 +105,21 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
     [handleFile]
   );
 
-  const allPhases: NonNullable<Phase>[] = ["parsing", "extracting", "embeddings", "synthesis"];
+  // Calculate phase states
+  const isProcessing = isUploading || job?.status === "processing";
+  const isComplete = job?.status === "completed";
+  const currentPhase = job?.phase as DocumentJobPhase | null;
+
+  const completedPhases = new Set<DocumentJobPhase>();
+  if (currentPhase) {
+    const currentIndex = RESUME_PHASES.indexOf(currentPhase);
+    for (let i = 0; i < currentIndex; i++) {
+      completedPhases.add(RESUME_PHASES[i]);
+    }
+  }
+  if (isComplete) {
+    RESUME_PHASES.forEach((p) => completedPhases.add(p));
+  }
 
   return (
     <Card
@@ -187,7 +136,7 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
           <div className="w-full max-w-sm space-y-4">
             {/* Phase progress */}
             <div className="space-y-2 text-left">
-              {allPhases.map((phase) => {
+              {RESUME_PHASES.map((phase) => {
                 const isCompleted = completedPhases.has(phase);
                 const isCurrent = currentPhase === phase;
                 const isPending = !isCompleted && !isCurrent;
@@ -204,17 +153,30 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
                       <span className="text-green-600">✓</span>
                     ) : isCurrent ? (
                       <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
                       </svg>
                     ) : (
                       <span className="text-muted-foreground">○</span>
                     )}
                     <span>
                       {PHASE_LABELS[phase]}
-                      {isCurrent && progress && ` (batch ${progress})`}
-                      {isCurrent && !progress && phase === "extracting" && (
-                        <span className="ml-2 animate-pulse text-muted-foreground">analyzing...</span>
+                      {isCurrent && job?.progress && ` (batch ${job.progress})`}
+                      {isCurrent && !job?.progress && phase === "extracting" && (
+                        <span className="ml-2 animate-pulse text-muted-foreground">
+                          analyzing...
+                        </span>
                       )}
                     </span>
                   </div>
@@ -223,12 +185,12 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
             </div>
 
             {/* Highlights feed */}
-            {highlights.length > 0 && (
+            {displayMessages.length > 0 && (
               <div className="relative mt-4 h-32 overflow-hidden rounded-md bg-muted/50 p-3">
                 <div className="space-y-1">
-                  {highlights.map((highlight, index) => (
+                  {displayMessages.map((message, index) => (
                     <div
-                      key={highlight.id}
+                      key={message.id}
                       className={cn(
                         "text-sm transition-all duration-500",
                         index === 0 && "font-medium",
@@ -237,7 +199,7 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
                         index > 2 && "opacity-20 blur-[1px]"
                       )}
                     >
-                      {highlight.text}
+                      {message.text}
                     </div>
                   ))}
                 </div>
@@ -246,9 +208,8 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
               </div>
             )}
 
-            {isComplete && (
-              <p className="text-sm font-medium text-green-600">Processing complete!</p>
-            )}
+            {isComplete && <p className="text-sm font-medium text-green-600">Processing complete!</p>}
+            {job?.warning && <p className="text-sm text-yellow-600">{job.warning}</p>}
           </div>
         ) : (
           <>
@@ -288,7 +249,6 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
         )}
 
         {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
-        {warning && <p className="mt-4 text-sm text-yellow-600">{warning}</p>}
       </CardContent>
     </Card>
   );
