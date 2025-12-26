@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth-context';
@@ -82,6 +83,36 @@ async function fetchOpportunity(userId: string, opportunityId: string): Promise<
 
 export function useOpportunity(opportunityId: string) {
   const { session } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Subscribe to Realtime updates for this opportunity
+  useEffect(() => {
+    if (!session?.user?.id || !opportunityId) return;
+
+    const channel = supabase
+      .channel(`opportunity-${opportunityId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'opportunities',
+          filter: `id=eq.${opportunityId}`,
+        },
+        (payload) => {
+          // Update the cache with new data (e.g., from company research)
+          queryClient.setQueryData(
+            ['opportunity', opportunityId, session.user.id],
+            payload.new
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [opportunityId, session?.user?.id, queryClient]);
 
   return useQuery({
     queryKey: ['opportunity', opportunityId, session?.user?.id],
