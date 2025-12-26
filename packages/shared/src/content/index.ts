@@ -49,7 +49,7 @@ export const EMPTY_STATE = {
     },
     privacy: {
       title: "Is my data private?",
-      content: "**Your data belongs to you.** We never share your information with employers or third parties without your explicit consent.",
+      content: "**Your data belongs to you.** We never share your information with employers or third parties without your explicit consent. See our **Privacy Policy** in Settings.",
     },
   },
 } as const;
@@ -196,7 +196,7 @@ export const HELP_DOCS = {
         {
           id: "data-ownership",
           title: "Your data, your control",
-          content: "**You own your data.** We never sell or share your information with third parties without your explicit consent. You can **export or delete** your data at any time.",
+          content: "**You own your data.** We never sell or share your information with third parties without your explicit consent. You can **export or delete** your data at any time. See our **Privacy Policy** for full details.",
         },
         {
           id: "sharing-control",
@@ -206,7 +206,7 @@ export const HELP_DOCS = {
         {
           id: "data-security",
           title: "How we protect your data",
-          content: "Your data is **encrypted in transit and at rest**. We use industry-standard security practices and regularly audit our systems to keep your information safe.",
+          content: "Your data is **encrypted in transit and at rest**. We use industry-standard security practices and regularly audit our systems to keep your information safe. Review our **Terms of Service** and **Privacy Policy** in Settings for complete information.",
         },
       ],
     },
@@ -228,11 +228,11 @@ export const HELP_DOCS = {
     },
     {
       question: "What happens to my resume after I upload it?",
-      answer: "We extract **claims and evidence** from your resume, then store the document securely. You can **delete it anytime**, and the extracted claims will remain unless you remove them.",
+      answer: "We extract **claims and evidence** from your resume, then store the document securely. You can **delete it anytime**, and the extracted claims will remain unless you remove them. See our **Privacy Policy** for details on data handling.",
     },
     {
       question: "How do I add opportunities from my phone?",
-      answer: "On **iOS**, use the **Share Sheet** from Safari or any app to send job posting URLs directly to Idynic. On **Android**, copy the URL and paste it in the Add Opportunity screen.",
+      answer: "Use the **Share Sheet** from your browser or any app to send job posting URLs directly to Idynic. Works on both **iOS and Android**.",
     },
     {
       question: "Is there a mobile app?",

@@ -18,7 +18,6 @@ import {
   Eye,
   Wand2,
   TrendingUp,
-  HelpCircle,
 } from 'lucide-react-native';
 import { EMPTY_STATE } from '@idynic/shared';
 import {
@@ -361,19 +360,6 @@ export default function IdentityScreen() {
             })}
           </View>
 
-          {/* Help section */}
-          <View className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
-            <View className="flex-row items-center gap-2 mb-4">
-              <HelpCircle color="#64748b" size={20} />
-              <Text className="text-slate-300 font-semibold">Common questions</Text>
-            </View>
-            {Object.values(EMPTY_STATE.help).map((item, i) => (
-              <View key={item.title} className={i < Object.values(EMPTY_STATE.help).length - 1 ? 'mb-4' : ''}>
-                <Text className="text-slate-300 font-medium text-sm mb-1">{item.title}</Text>
-                <Text className="text-slate-500 text-sm">{item.content}</Text>
-              </View>
-            ))}
-          </View>
         </SafeAreaView>
       </ScrollView>
     );

@@ -103,6 +103,14 @@ export default function AppLayout() {
           headerShown: true,
         }}
       />
+      <Tabs.Screen
+        name="help"
+        options={{
+          href: null,
+          title: 'Help Center',
+          headerShown: false,
+        }}
+      />
     </Tabs>
   );
 }

@@ -18,6 +18,8 @@ The Idynic mobile app is built with Expo SDK 54 / React Native 0.81.5. The codeb
 - NativeWind/Tailwind styling (cross-platform)
 - EAS project configured (project ID exists)
 - Environment files (`.env.local`, `.env.production`)
+- Share intent configured for Android (`androidIntentFilters: ["text/*"]`)
+- Document picker (`expo-document-picker`) is cross-platform
 
 **Needs work:**
 - `app.json` Android background color is wrong (`#ffffff` should be `#0f172a`)
@@ -39,6 +41,28 @@ Core flow works on Android emulator:
 ## Phase 1: Local Build & Smoke Test
 
 **Goal:** App launches on emulator, core flow works
+
+### Step 1.0 - Dev environment setup
+
+Ensure Android SDK environment is configured:
+
+```bash
+# Add to ~/.zshrc or ~/.bashrc
+export ANDROID_HOME=$HOME/Library/Android/sdk
+export PATH=$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools
+
+# Source the updated profile
+source ~/.zshrc
+
+# Create an emulator (one-time setup) - DONE
+avdmanager create avd -n Pixel_8_API34 -k "system-images;android-34;google_apis_playstore;arm64-v8a" -d pixel_8
+```
+
+Prerequisites verified (2025-12-26):
+- Java: OpenJDK 23 installed via Homebrew ✓
+- Android SDK: ~/Library/Android/sdk with platforms 33-36 ✓
+- ADB: Available ✓
+- Emulator: Pixel_8_API34 (Android 14) created ✓
 
 ### Step 1.1 - Fix app.json
 
@@ -80,6 +104,10 @@ Manual testing checklist:
 - [ ] Opportunities tab loads and displays list
 - [ ] Can tap into opportunity detail view
 - [ ] Navigation (tabs, back button) works
+- [ ] Resume upload: PDF picker opens and file can be selected
+- [ ] Resume upload: Upload completes and processing works
+- [ ] Share intent: Share a URL from Chrome, Idynic appears in share sheet
+- [ ] Share intent: Shared URL opens add-opportunity flow
 
 ### Expected Issues
 
