@@ -103,7 +103,15 @@ async function processResumeJob(
     // === PHASE: Parsing ===
     await job.setPhase("parsing");
 
-    const pdfData = await parsePdf(buffer);
+    let pdfData: { text: string };
+    try {
+      pdfData = await parsePdf(buffer);
+    } catch (parseErr) {
+      console.error("PDF parsing failed:", parseErr);
+      await job.setError("Failed to parse PDF file");
+      return;
+    }
+
     const rawText = pdfData.text;
 
     if (!rawText || rawText.trim().length === 0) {
