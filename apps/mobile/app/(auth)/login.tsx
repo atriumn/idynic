@@ -407,22 +407,26 @@ export default function LoginScreen() {
           </View>
         )}
 
-        {/* Google Sign In Button */}
-        <Pressable
-          onPress={handleGoogleSignIn}
-          disabled={loading}
-          className="bg-white w-full py-4 rounded-lg mb-4 flex-row justify-center items-center"
-        >
-          <Text className="text-slate-900 text-center font-semibold">
-            Continue with Google
-          </Text>
-        </Pressable>
+        {/* Google Sign In Button - only show when code is validated */}
+        {codeValidated && (
+          <>
+            <Pressable
+              onPress={handleGoogleSignIn}
+              disabled={loading}
+              className="bg-white w-full py-4 rounded-lg mb-4 flex-row justify-center items-center"
+            >
+              <Text className="text-slate-900 text-center font-semibold">
+                Continue with Google
+              </Text>
+            </Pressable>
 
-        <View className="flex-row items-center mb-4">
-          <View className="flex-1 h-px bg-slate-700" />
-          <Text className="text-slate-500 px-4">or</Text>
-          <View className="flex-1 h-px bg-slate-700" />
-        </View>
+            <View className="flex-row items-center mb-4">
+              <View className="flex-1 h-px bg-slate-700" />
+              <Text className="text-slate-500 px-4">or</Text>
+              <View className="flex-1 h-px bg-slate-700" />
+            </View>
+          </>
+        )}
 
         <TextInput
           className="bg-slate-800 text-white px-4 py-3 rounded-lg mb-4"

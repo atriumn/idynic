@@ -277,7 +277,7 @@ export default function LoginPage() {
                 },
               },
             }}
-            providers={["google"]}
+            providers={codeValidated ? ["google"] : []}
             view={codeValidated ? "sign_up" : "sign_in"}
             redirectTo={`${typeof window !== "undefined" ? window.location.origin : ""}/auth/callback`}
           />
