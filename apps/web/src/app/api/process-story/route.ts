@@ -1,3 +1,4 @@
+import { waitUntil } from "@vercel/functions";
 import { getApiUser } from "@/lib/supabase/api-auth";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { extractStoryEvidence } from "@/lib/ai/extract-story-evidence";
@@ -58,10 +59,12 @@ export async function POST(request: Request) {
     return Response.json({ error: "Failed to create job" }, { status: 500 });
   }
 
-  // Start processing in background (non-blocking)
-  processStoryJob(serviceSupabase, job.id, user.id, text, contentHash).catch((err) => {
-    console.error("Background story job failed:", err);
-  });
+  // Start processing in background - waitUntil keeps function alive after response
+  waitUntil(
+    processStoryJob(serviceSupabase, job.id, user.id, text, contentHash).catch((err) => {
+      console.error("Background story job failed:", err);
+    })
+  );
 
   // Return immediately with job ID
   return Response.json({ jobId: job.id });
