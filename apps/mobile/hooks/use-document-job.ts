@@ -90,7 +90,7 @@ export function useDocumentJob(jobId: string | null): UseDocumentJobResult {
         if (err) {
           setError(new Error(err.message));
         } else if (data) {
-          const jobData = data as DocumentJob;
+          const jobData = data as unknown as DocumentJob;
           setJob(jobData);
           if (jobData.status === "processing" && jobData.phase) {
             startTicker(jobData.phase);
@@ -114,7 +114,7 @@ export function useDocumentJob(jobId: string | null): UseDocumentJobResult {
           filter: `id=eq.${jobId}`,
         },
         (payload) => {
-          const newJob = payload.new as DocumentJob;
+          const newJob = payload.new as unknown as DocumentJob;
           setJob((prevJob) => {
             // Restart ticker if phase changed
             if (newJob.phase !== prevJob?.phase && newJob.status === "processing") {
