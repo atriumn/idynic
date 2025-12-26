@@ -4,9 +4,22 @@
 
 **Goal:** Add content input endpoints to the external API - resume upload, story submission, and profile updates.
 
+**Status:** Done
+
 **Architecture:** New v1 API routes with API key auth that mirror existing internal routes. Resume and story endpoints use SSE streaming for long AI operations. Profile updates are synchronous. All routes use service role client.
 
 **Tech Stack:** Next.js 14 API routes, Supabase PostgreSQL, OpenAI, SSE streaming, unpdf for PDF parsing
+
+## Progress (Last reviewed: 2025-12-24)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Task 1: POST /api/v1/documents/resume | ✅ Complete | Resume upload with SSE streaming |
+| Task 2: POST /api/v1/documents/story | ✅ Complete | Story submission with SSE streaming |
+| Task 3: PATCH /api/v1/profile | ✅ Complete | Profile contact updates |
+| Task 4: Work history endpoints | ✅ Complete | CRUD for work-history entries |
+
+**Implementation:** All endpoints verified in `apps/web/src/app/api/v1/documents/`
 
 ---
 

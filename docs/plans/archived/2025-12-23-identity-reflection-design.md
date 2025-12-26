@@ -1,8 +1,21 @@
 # Identity Reflection Feature Design
 
 **Date:** 2025-12-23
-**Status:** Approved
+**Status:** Done
 **Author:** Brainstorming session
+
+## Progress (Last reviewed: 2025-12-24)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Data model migration | ✅ Complete | identity_* fields added to profiles table |
+| `reflect-identity.ts` | ✅ Complete | Core generation logic implemented |
+| `identity-reflection.tsx` | ✅ Complete | UI component with archetype badges |
+| Integration with process-resume | ✅ Complete | REFLECTION phase added |
+| Integration with process-story | ✅ Complete | REFLECTION phase added |
+| SSE streaming | ✅ Complete | Progress updates during generation |
+
+**Implementation:** Commit 2727e9dc - "feat: add identity reflection feature"
 
 ## Overview
 

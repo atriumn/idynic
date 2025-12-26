@@ -4,9 +4,21 @@
 
 **Goal:** Enable candidates to share private, tailored profile links with recruiters and hiring managers.
 
+**Status:** Done
+
 **Architecture:** Public share links use unguessable tokens. Shared profile pages are server-rendered without auth. View tracking logs timestamps. Recruiter waitlist is a simple email capture.
 
 **Tech Stack:** Next.js 14, Supabase (Postgres + RLS), React Server Components, TailwindCSS
+
+## Progress (Last reviewed: 2025-12-24)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| shared_links table | ✅ Complete | Migration applied with RLS |
+| Share link API | ✅ Complete | `/api/shared-links`, `/api/v1/.../share` |
+| Public share page | ✅ Complete | `/shared/[token]` route |
+| Shared links management | ✅ Complete | `/shared-links` page |
+| Mobile integration | ✅ Complete | `shared-links.tsx` in mobile app |
 
 ---
 
