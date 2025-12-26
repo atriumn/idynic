@@ -83,6 +83,12 @@ export function Nav({ user }: NavProps) {
               >
                 Docs
               </Link>
+              <Link
+                href="/help"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Help
+              </Link>
             </div>
           )}
           <ThemeToggle />

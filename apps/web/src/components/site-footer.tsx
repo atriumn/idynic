@@ -68,6 +68,11 @@ export function SiteFooter() {
                   Login
                 </Link>
               </li>
+              <li>
+                <Link href="/help" className="hover:text-foreground">
+                  Help Center
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
