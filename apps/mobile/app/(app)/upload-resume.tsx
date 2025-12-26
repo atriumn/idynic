@@ -12,9 +12,9 @@ export default function UploadResumeScreen() {
     queryClient.invalidateQueries({ queryKey: ["identity-claims"] });
     queryClient.invalidateQueries({ queryKey: ["profile"] });
 
-    // Go back after a short delay to show the completion state
+    // Navigate to identity tab after a short delay to show the completion state
     setTimeout(() => {
-      router.back();
+      router.replace("/(app)");
     }, 1500);
   };
 
