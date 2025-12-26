@@ -1,8 +1,24 @@
 # Identity Reflection Feature Design
 
 **Date:** 2025-12-23
-**Status:** Approved
+**Status:** Done
 **Author:** Brainstorming session
+
+## Progress (Last reviewed: 2025-12-26)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Database migration | ✅ Complete | `supabase/migrations/20251223100000_add_identity_reflection.sql` |
+| Core generation logic | ✅ Complete | `apps/web/src/lib/ai/reflect-identity.ts` |
+| UI component | ✅ Complete | `apps/web/src/components/identity/identity-reflection.tsx` |
+| Process resume integration | ✅ Complete | Added to Inngest function |
+| Process story integration | ✅ Complete | Added to Inngest function |
+| Mobile hook | ✅ Complete | `apps/mobile/hooks/use-profile.ts` |
+
+### Implementation Notes
+- Implemented via commit `2727e9dc feat: add identity reflection feature`
+- Uses Inngest for background processing
+- Identity reflection runs automatically after claim synthesis
 
 ## Overview
 

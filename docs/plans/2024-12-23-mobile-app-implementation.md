@@ -4,9 +4,42 @@
 
 **Goal:** Build a React Native + Expo mobile app with full feature parity to the idynic web app, starting with iOS.
 
+**Status:** In Progress
+
 **Architecture:** Monorepo with shared TypeScript packages for types, schemas, and API client. Expo Router for file-based navigation. NativeWind for Tailwind-style styling. Supabase for auth and data.
 
 **Tech Stack:** Expo SDK 52, Expo Router, NativeWind v4, React Query, Supabase JS, expo-secure-store
+
+## Progress (Last reviewed: 2025-12-26)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Task 1: Initialize pnpm workspaces | ✅ Complete | Monorepo structure in place |
+| Task 2: Move web app to apps/web | ✅ Complete | Web app at `apps/web/` |
+| Task 3: Create shared package | ✅ Complete | `packages/shared/` with types |
+| Task 4: Create shared API client | ✅ Complete | `packages/shared/src/api/` |
+| Task 5: Create Expo app | ✅ Complete | `apps/mobile/` created |
+| Task 6: Set up NativeWind | ✅ Complete | Tailwind styling working |
+| Task 7: Set up Supabase client | ✅ Complete | `apps/mobile/lib/supabase.ts` |
+| Task 8: Set up navigation structure | ✅ Complete | Expo Router with auth flow |
+| Task 9: Build Profile screen | ✅ Complete | Profile with identity reflection |
+| Task 10: Build Opportunities list | ✅ Complete | List + detail screens |
+| Task 11: Build Opportunity detail | ✅ Complete | Requirements rendering |
+| Task 12: Build Settings screen | ✅ Complete | Sign out + legal links |
+| Task 13: Implement OAuth login | ✅ Complete | Email/password + Google OAuth |
+| Task 14: iOS CI/CD pipeline | ✅ Complete | Fastlane + TestFlight working |
+
+### Additional Features Implemented (not in original plan)
+- Identity graph visualization (mobile version)
+- Profile logo integration
+- Resume/story upload screens
+- Background job processing via Inngest
+- Email confirmation flow
+
+### Remaining Work
+- Android build and distribution (see `2025-12-23-android-launch-plan.md`)
+- Push notifications
+- Additional profile editing features
 
 ---
 

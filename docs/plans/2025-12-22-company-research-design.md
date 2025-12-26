@@ -1,5 +1,21 @@
 # Company Research via Tavily
 
+**Status:** Not Started
+
+## Progress (Last reviewed: 2025-12-26)
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Tavily integration | ⏳ Not Started | API client for web search |
+| Company research service | ⏳ Not Started | GPT synthesis of search results |
+| Database columns | ⏳ Not Started | `company_insights` field needed |
+| Integration with opportunity flow | ⏳ Not Started | Trigger on opportunity creation |
+
+### Notes
+- Requires `TAVILY_API_KEY` environment variable
+- Would enhance tailoring with company context
+- Future feature, not currently prioritized
+
 ## Overview
 
 Automatically research companies when users add job opportunities. Fetches recent news, company info, and synthesizes insights about likely challenges and how the role fits the company's needs.
