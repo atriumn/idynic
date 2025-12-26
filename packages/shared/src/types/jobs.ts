@@ -10,9 +10,11 @@ export type DocumentJobPhase =
   | 'extracting'
   | 'embeddings'
   | 'synthesis'
-  | 'reflection';
+  | 'reflection'
+  | 'enriching'
+  | 'researching';
 
-export type DocumentJobType = 'resume' | 'story';
+export type DocumentJobType = 'resume' | 'story' | 'opportunity';
 
 export interface JobHighlight {
   text: string;
@@ -31,6 +33,7 @@ export interface DocumentJob {
   id: string;
   user_id: string;
   document_id: string | null;
+  opportunity_id: string | null;
   job_type: DocumentJobType;
   filename: string | null;
   content_hash: string | null;
@@ -55,6 +58,8 @@ export const PHASE_LABELS: Record<DocumentJobPhase, string> = {
   embeddings: 'Generating embeddings',
   synthesis: 'Synthesizing claims',
   reflection: 'Reflecting identity',
+  enriching: 'Enriching job data',
+  researching: 'Researching company',
 };
 
 /** Ordered phases for resume processing */
@@ -73,6 +78,14 @@ export const STORY_PHASES: DocumentJobPhase[] = [
   'embeddings',
   'synthesis',
   'reflection',
+];
+
+/** Ordered phases for opportunity processing */
+export const OPPORTUNITY_PHASES: DocumentJobPhase[] = [
+  'enriching',
+  'extracting',
+  'embeddings',
+  'researching',
 ];
 
 /**
@@ -117,6 +130,16 @@ export const TICKER_MESSAGES: Record<DocumentJobPhase, string[]> = {
     'synthesizing identity...',
     'building profile...',
     'crafting narrative...',
+  ],
+  enriching: [
+    'fetching job details...',
+    'extracting metadata...',
+    'parsing requirements...',
+  ],
+  researching: [
+    'researching company...',
+    'gathering insights...',
+    'analyzing market position...',
   ],
 };
 
