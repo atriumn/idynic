@@ -23,14 +23,18 @@ import { Check, X, Loader2, Link as LinkIcon } from "lucide-react-native";
 export default function AddOpportunityScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const params = useLocalSearchParams<{ url?: string }>();
+  const params = useLocalSearchParams<{ url?: string; jobId?: string; error?: string }>();
 
   const [url, setUrl] = useState(params.url || "");
   const [description, setDescription] = useState("");
-  const [jobId, setJobId] = useState<string | null>(null);
+  // Use jobId from params if passed (from share intent), otherwise null
+  const [jobId, setJobId] = useState<string | null>(params.jobId || null);
 
   const { addOpportunity, isSubmitting, error: submitError, reset } = useAddOpportunity();
   const { job, displayMessages } = useDocumentJob(jobId);
+
+  // Show error from share intent if present
+  const [shareError, setShareError] = useState<string | null>(params.error || null);
 
   // Handle job completion
   useEffect(() => {
@@ -48,12 +52,12 @@ export default function AddOpportunityScreen() {
     }
   }, [job?.status, job?.summary, queryClient, router]);
 
-  // Auto-submit if URL is provided via share intent
+  // Clear share error when user starts typing
   useEffect(() => {
-    if (params.url && !jobId && !isSubmitting) {
-      handleSubmit();
+    if (shareError && (url !== params.url || description)) {
+      setShareError(null);
     }
-  }, [params.url]);
+  }, [url, description, shareError, params.url]);
 
   const handleSubmit = async () => {
     if (!url && !description) return;
@@ -67,11 +71,12 @@ export default function AddOpportunityScreen() {
   };
 
   const handleCancel = () => {
-    if (jobId) {
-      // Can't cancel processing job, just go back
+    if (jobId && !params.jobId) {
+      // Can't cancel processing job we started, just go back
       router.back();
     } else {
       reset();
+      setShareError(null);
       router.back();
     }
   };
@@ -165,6 +170,7 @@ export default function AddOpportunityScreen() {
           <TouchableOpacity
             onPress={() => {
               setJobId(null);
+              setShareError(null);
               reset();
             }}
             className="mt-8 bg-slate-800 py-3 px-6 rounded-lg self-center"
@@ -228,9 +234,9 @@ export default function AddOpportunityScreen() {
         </View>
 
         {/* Error message */}
-        {submitError && (
+        {(submitError || shareError) && (
           <View className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-4">
-            <Text className="text-red-400 text-sm">{submitError}</Text>
+            <Text className="text-red-400 text-sm">{submitError || shareError}</Text>
           </View>
         )}
 
