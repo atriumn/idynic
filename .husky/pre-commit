@@ -6,3 +6,6 @@ pnpm exec lint-staged
 # Run TypeScript type checking for both apps
 pnpm --filter web exec tsc --noEmit
 pnpm --filter mobile exec tsc --noEmit
+
+# Run tests
+pnpm --filter web test:run
