@@ -15,7 +15,12 @@ import {
   X,
   Upload,
   MessageSquarePlus,
+  Eye,
+  Wand2,
+  TrendingUp,
+  HelpCircle,
 } from 'lucide-react-native';
+import { EMPTY_STATE } from '@idynic/shared';
 import {
   useIdentityClaims,
   hasAnyClaims,
@@ -304,36 +309,73 @@ export default function IdentityScreen() {
   }
 
   if (!hasAnyClaims(groupedClaims)) {
+    const featureIcons = [Eye, Wand2, TrendingUp];
+
     return (
-      <SafeAreaView className="flex-1 bg-slate-900 justify-center items-center p-8" edges={['bottom']}>
-        <View className="mb-6">
-          <Logo size={80} />
-        </View>
-        <Text className="text-xl font-bold text-white mb-2 text-center">
-          No identity claims yet
-        </Text>
-        <Text className="text-slate-400 text-center mb-6">
-          Build your identity graph by uploading your resume or sharing a story.
-        </Text>
+      <ScrollView className="flex-1 bg-slate-900" contentContainerStyle={{ padding: 24 }}>
+        <SafeAreaView edges={['bottom']}>
+          {/* Main CTA */}
+          <View className="items-center mb-8">
+            <View className="mb-6">
+              <Logo size={80} />
+            </View>
+            <Text className="text-xl font-bold text-white mb-2 text-center">
+              {EMPTY_STATE.title}
+            </Text>
+            <Text className="text-slate-400 text-center mb-6">
+              {EMPTY_STATE.subtitle}
+            </Text>
 
-        <View className="w-full">
-          <Pressable
-            onPress={() => router.push('/upload-resume')}
-            className="flex-row items-center justify-center gap-2 bg-slate-700 border border-slate-600 py-4 px-6 rounded-xl mb-3"
-          >
-            <Upload color="#14b8a6" size={20} />
-            <Text className="text-white font-semibold text-base">Upload Resume</Text>
-          </Pressable>
+            <View className="w-full">
+              <Pressable
+                onPress={() => router.push('/upload-resume')}
+                className="flex-row items-center justify-center gap-2 bg-slate-700 border border-slate-600 py-4 px-6 rounded-xl mb-3"
+              >
+                <Upload color="#14b8a6" size={20} />
+                <Text className="text-white font-semibold text-base">{EMPTY_STATE.actions.resume.title}</Text>
+              </Pressable>
 
-          <Pressable
-            onPress={() => router.push('/add-story')}
-            className="flex-row items-center justify-center gap-2 bg-slate-700 border border-slate-600 py-4 px-6 rounded-xl"
-          >
-            <MessageSquarePlus color="#14b8a6" size={20} />
-            <Text className="text-white font-semibold text-base">Add a Story</Text>
-          </Pressable>
-        </View>
-      </SafeAreaView>
+              <Pressable
+                onPress={() => router.push('/add-story')}
+                className="flex-row items-center justify-center gap-2 bg-slate-700 border border-slate-600 py-4 px-6 rounded-xl"
+              >
+                <MessageSquarePlus color="#14b8a6" size={20} />
+                <Text className="text-white font-semibold text-base">{EMPTY_STATE.actions.story.title}</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          {/* What claims unlock */}
+          <View className="mb-8">
+            {EMPTY_STATE.features.map((feature, i) => {
+              const Icon = featureIcons[i];
+              return (
+                <View key={feature.title} className="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-3">
+                  <View className="flex-row items-center gap-2 mb-2">
+                    <Icon color="#14b8a6" size={20} />
+                    <Text className="text-white font-semibold">{feature.title}</Text>
+                  </View>
+                  <Text className="text-slate-400 text-sm">{feature.description}</Text>
+                </View>
+              );
+            })}
+          </View>
+
+          {/* Help section */}
+          <View className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+            <View className="flex-row items-center gap-2 mb-4">
+              <HelpCircle color="#64748b" size={20} />
+              <Text className="text-slate-300 font-semibold">Common questions</Text>
+            </View>
+            {Object.values(EMPTY_STATE.help).map((item, i) => (
+              <View key={item.title} className={i < Object.values(EMPTY_STATE.help).length - 1 ? 'mb-4' : ''}>
+                <Text className="text-slate-300 font-medium text-sm mb-1">{item.title}</Text>
+                <Text className="text-slate-500 text-sm">{item.content}</Text>
+              </View>
+            ))}
+          </View>
+        </SafeAreaView>
+      </ScrollView>
     );
   }
 

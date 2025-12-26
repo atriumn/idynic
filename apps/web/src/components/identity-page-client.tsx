@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { FileText, LayoutGrid, Network, Sun, Sparkles, List as ListIcon, Loader2 } from "lucide-react";
+import { FileText, LayoutGrid, Network, Sun, Sparkles, List as ListIcon, Loader2, Eye, Wand2, TrendingUp, HelpCircle } from "lucide-react";
 import { IdentityConstellation } from "@/components/identity-constellation";
 import { EvidenceConstellation } from "@/components/evidence-constellation";
 import { ConfidenceSunburst } from "@/components/confidence-sunburst";
@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { BetaGate } from "@/components/beta-gate";
+import { EMPTY_STATE } from "@idynic/shared";
 
 const BETA_CODE_KEY = "idynic_beta_code";
 
@@ -181,16 +182,51 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
         )}
 
         {showEmptyState ? (
-          <div className="flex flex-col items-center justify-center h-[400px] text-center px-4 border rounded-lg border-dashed bg-muted/10 mt-8">
-            <FileText className="h-16 w-16 text-muted-foreground/50 mb-6" />
-            <h2 className="text-xl font-semibold mb-2">No claims yet</h2>
-            <p className="text-muted-foreground mb-6 max-w-md">
-              Upload a resume or share a story to start building your identity
-              constellation.
-            </p>
-            <div className="flex gap-3">
-              <UploadResumeModal />
-              <AddStoryModal />
+          <div className="mt-8 space-y-8">
+            {/* Main CTA */}
+            <div className="flex flex-col items-center justify-center text-center px-4 py-12 border rounded-lg border-dashed bg-muted/10">
+              <FileText className="h-16 w-16 text-muted-foreground/50 mb-6" />
+              <h2 className="text-xl font-semibold mb-2">{EMPTY_STATE.title}</h2>
+              <p className="text-muted-foreground mb-6 max-w-md">
+                {EMPTY_STATE.subtitle}
+              </p>
+              <div className="flex gap-3">
+                <UploadResumeModal />
+                <AddStoryModal />
+              </div>
+            </div>
+
+            {/* What claims unlock */}
+            <div className="grid md:grid-cols-3 gap-4">
+              {EMPTY_STATE.features.map((feature, i) => {
+                const icons = [Eye, Wand2, TrendingUp];
+                const Icon = icons[i];
+                return (
+                  <div key={feature.title} className="p-4 rounded-lg border bg-card">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon className="h-5 w-5 text-primary" />
+                      <h3 className="font-medium">{feature.title}</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{feature.description}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Help section */}
+            <div className="rounded-lg border bg-muted/30 p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <HelpCircle className="h-5 w-5 text-muted-foreground" />
+                <h3 className="font-medium">Common questions</h3>
+              </div>
+              <div className="grid md:grid-cols-3 gap-6">
+                {Object.values(EMPTY_STATE.help).map((item) => (
+                  <div key={item.title}>
+                    <h4 className="text-sm font-medium mb-1">{item.title}</h4>
+                    <p className="text-sm text-muted-foreground">{item.content}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         ) : isMobile ? (

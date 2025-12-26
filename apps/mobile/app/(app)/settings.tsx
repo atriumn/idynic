@@ -1,7 +1,7 @@
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link, ChevronRight, LogOut, FileText, Shield, Cookie } from 'lucide-react-native';
+import { Link, ChevronRight, LogOut, FileText, Shield, Cookie, HelpCircle } from 'lucide-react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { useAuth } from '../../lib/auth-context';
 import { useSharedLinks } from '../../hooks/use-shared-links';
@@ -78,6 +78,15 @@ export default function SettingsScreen() {
             label="Shared Links"
             badge={activeLinksCount > 0 ? activeLinksCount : undefined}
             onPress={() => router.push('/shared-links')}
+          />
+        </MenuSection>
+
+        {/* Help Section */}
+        <MenuSection title="Support">
+          <MenuItem
+            icon={<HelpCircle color="#14b8a6" size={20} />}
+            label="Help Center"
+            onPress={() => router.push('/help')}
           />
         </MenuSection>
 
