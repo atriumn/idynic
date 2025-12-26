@@ -2,9 +2,25 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
+  // Generate or reuse request ID for correlation
+  const requestId = request.headers.get("x-request-id") || crypto.randomUUID();
+
+  // Clone request with the request ID header (for downstream API routes)
+  const requestWithId = new Request(request.url, {
+    method: request.method,
+    headers: new Headers(request.headers),
+    body: request.body,
+    // @ts-expect-error - duplex is required for streaming but not in types
+    duplex: "half",
   });
+  requestWithId.headers.set("x-request-id", requestId);
+
+  let supabaseResponse = NextResponse.next({
+    request: requestWithId,
+  });
+
+  // Add request ID to response headers for client-side correlation
+  supabaseResponse.headers.set("x-request-id", requestId);
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -43,14 +59,18 @@ export async function updateSession(request: NextRequest) {
   if (isProtectedPath && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    return NextResponse.redirect(url);
+    const response = NextResponse.redirect(url);
+    response.headers.set("x-request-id", requestId);
+    return response;
   }
 
   // Redirect logged-in users away from login page
   if (request.nextUrl.pathname === "/login" && user) {
     const url = request.nextUrl.clone();
     url.pathname = "/identity";
-    return NextResponse.redirect(url);
+    const response = NextResponse.redirect(url);
+    response.headers.set("x-request-id", requestId);
+    return response;
   }
 
   return supabaseResponse;
