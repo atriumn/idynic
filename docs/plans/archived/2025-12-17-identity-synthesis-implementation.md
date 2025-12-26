@@ -1,5 +1,7 @@
 # Identity Synthesis Implementation Plan
 
+**Status:** Implemented
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Replace bullet-copying with true identity synthesis using a two-layer model (evidence + synthesized claims).

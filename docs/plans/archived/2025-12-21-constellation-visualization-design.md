@@ -1,5 +1,7 @@
 # Constellation Visualization Design
 
+**Status:** Implemented
+
 ## Overview
 
 Transform the `/identity` page from a list-based view to an interactive constellation visualization that shows how evidence connects to claims.

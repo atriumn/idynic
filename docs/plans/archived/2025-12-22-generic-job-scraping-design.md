@@ -1,5 +1,7 @@
 # Generic Job URL Scraping
 
+**Status:** Implemented
+
 ## Overview
 
 Scrape job postings from any URL (Indeed, Glassdoor, company career pages, etc.) using a cascading fallback approach. LinkedIn URLs continue to use Bright Data's dedicated scraper for rich structured data.

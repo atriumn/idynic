@@ -1,5 +1,7 @@
 # Identity Synthesis v2 - Phase 3: Enhanced Confidence Scoring
 
+**Status:** Implemented
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Wire up the confidence scoring module so recency decay and source weighting affect claim confidence.

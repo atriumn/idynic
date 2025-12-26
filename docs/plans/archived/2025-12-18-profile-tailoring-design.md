@@ -1,5 +1,7 @@
 # Profile Tailoring Design
 
+**Status:** Implemented
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Generate tailored "solution profiles" that show how a user's experience solves an employer's problems - for job applications, interview prep, and resume generation.

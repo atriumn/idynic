@@ -1,5 +1,7 @@
 # Profile Management Design
 
+**Status:** Implemented
+
 **Goal:** Enable users to view and edit their persistent career data (contact info, work history, ventures, skills, certifications, education) through a dedicated Profile page. Changes apply to all future tailored resumes.
 
 **Key Distinction:**

@@ -1,5 +1,7 @@
 # Editable Tailored Content Design
 
+**Status:** Implemented
+
 ## Overview
 
 Enable users to edit and refine AI-generated resumes, cover letters, and talking points for specific opportunities. Combines direct text editing with AI-assisted refinement through quick actions and natural language instructions.

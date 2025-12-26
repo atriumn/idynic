@@ -1,5 +1,7 @@
 # Company Research via Tavily
 
+**Status:** Implemented
+
 ## Overview
 
 Automatically research companies when users add job opportunities. Fetches recent news, company info, and synthesizes insights about likely challenges and how the role fits the company's needs.

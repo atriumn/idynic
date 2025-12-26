@@ -1,5 +1,7 @@
 # Phase 1: Schema & Scoring Foundation
 
+**Status:** Implemented
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Add source metadata columns to evidence table and implement decay/weight calculation utilities.
