@@ -20,6 +20,23 @@ export const processResume = inngest.createFunction(
   {
     id: "process-resume",
     retries: 3,
+    onFailure: async ({ event, error }) => {
+      // Mark job as failed when all retries are exhausted
+      const supabase = createServiceRoleClient();
+      const { jobId } = event.data.event.data;
+      const errorMessage = error?.message || "Unknown error occurred";
+
+      await supabase
+        .from("document_jobs")
+        .update({
+          status: "failed",
+          error: errorMessage,
+          completed_at: new Date().toISOString(),
+        })
+        .eq("id", jobId);
+
+      console.error("[process-resume] Job failed after retries:", { jobId, error: errorMessage });
+    },
   },
   { event: "resume/process" },
   async ({ event, step }) => {
