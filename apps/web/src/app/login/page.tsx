@@ -197,54 +197,7 @@ export default function LoginPage() {
     );
   }
 
-  // Code entry screen (before validation)
-  if (!codeValidated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Idynic</CardTitle>
-            <p className="text-muted-foreground text-sm">
-              Enter your invite code to get started
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {codeError && (
-              <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
-                {codeError}
-              </div>
-            )}
-            <Input
-              type="text"
-              placeholder="Enter invite code"
-              value={betaCode}
-              onChange={(e) => setBetaCode(e.target.value.toUpperCase())}
-              onKeyDown={(e) => e.key === "Enter" && validateCode()}
-              className="text-center uppercase tracking-wider"
-            />
-            <Button
-              className="w-full"
-              onClick={validateCode}
-              disabled={validating}
-            >
-              {validating ? "Validating..." : "Continue"}
-            </Button>
-            <div className="text-center">
-              <button
-                type="button"
-                className="text-sm text-muted-foreground hover:text-foreground underline"
-                onClick={() => setShowWaitlist(true)}
-              >
-                Don&apos;t have a code? Join the waitlist
-              </button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // Main auth screen (after code validated)
+  // Main auth screen - sign in always available, sign up requires code
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
@@ -255,6 +208,52 @@ export default function LoginPage() {
           </p>
         </CardHeader>
         <CardContent>
+          {/* Show code input for signup if not validated */}
+          {!codeValidated && (
+            <div className="mb-6 p-4 border rounded-lg bg-muted/50">
+              <p className="text-sm text-muted-foreground mb-3 text-center">
+                Have an invite code? Enter it to sign up.
+              </p>
+              {codeError && (
+                <div className="bg-destructive/10 text-destructive text-sm p-2 rounded-md mb-3">
+                  {codeError}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  placeholder="Invite code"
+                  value={betaCode}
+                  onChange={(e) => setBetaCode(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => e.key === "Enter" && validateCode()}
+                  className="text-center uppercase tracking-wider"
+                />
+                <Button
+                  onClick={validateCode}
+                  disabled={validating}
+                  variant="secondary"
+                >
+                  {validating ? "..." : "Verify"}
+                </Button>
+              </div>
+              <div className="text-center mt-2">
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground hover:text-foreground underline"
+                  onClick={() => setShowWaitlist(true)}
+                >
+                  No code? Join waitlist
+                </button>
+              </div>
+            </div>
+          )}
+
+          {codeValidated && (
+            <div className="mb-4 p-2 bg-green-500/10 text-green-600 text-sm rounded-md text-center">
+              Invite code verified - you can now sign up!
+            </div>
+          )}
+
           <Auth
             supabaseClient={supabase}
             appearance={{
@@ -279,17 +278,21 @@ export default function LoginPage() {
               },
             }}
             providers={["google"]}
+            view={codeValidated ? "sign_up" : "sign_in"}
             redirectTo={`${typeof window !== "undefined" ? window.location.origin : ""}/auth/callback`}
           />
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              className="text-xs text-muted-foreground hover:text-foreground"
-              onClick={resetToCodeEntry}
-            >
-              Use a different invite code
-            </button>
-          </div>
+
+          {codeValidated && (
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                className="text-xs text-muted-foreground hover:text-foreground"
+                onClick={resetToCodeEntry}
+              >
+                Use a different invite code
+              </button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -7,11 +7,11 @@ import { Logo } from '../../components/logo';
 
 const BETA_CODE_KEY = 'idynic_beta_code';
 
-type Screen = 'code' | 'waitlist' | 'waitlist-success' | 'auth' | 'confirmation';
+type Screen = 'auth' | 'waitlist' | 'waitlist-success' | 'confirmation';
 
 export default function LoginScreen() {
   // Screen state
-  const [screen, setScreen] = useState<Screen>('code');
+  const [screen, setScreen] = useState<Screen>('auth');
 
   // Beta code state
   const [betaCode, setBetaCode] = useState('');
@@ -31,12 +31,14 @@ export default function LoginScreen() {
   const [isSignUp, setIsSignUp] = useState(false);
 
   // Check for existing validated code on mount
+  const [codeValidated, setCodeValidated] = useState(false);
+
   useEffect(() => {
     const checkStoredCode = async () => {
       const storedCode = await SecureStore.getItemAsync(BETA_CODE_KEY);
       if (storedCode) {
         setBetaCode(storedCode);
-        setScreen('auth');
+        setCodeValidated(true);
       }
     };
     checkStoredCode();
@@ -66,7 +68,8 @@ export default function LoginScreen() {
     if (data) {
       await SecureStore.setItemAsync(BETA_CODE_KEY, code);
       setBetaCode(code);
-      setScreen('auth');
+      setCodeValidated(true);
+      setIsSignUp(true);
     } else {
       setCodeError('Invalid or expired invite code');
     }
@@ -200,65 +203,12 @@ export default function LoginScreen() {
     }
   };
 
-  const resetToCodeEntry = async () => {
+  const resetCode = async () => {
     await SecureStore.deleteItemAsync(BETA_CODE_KEY);
     setBetaCode('');
-    setScreen('code');
+    setCodeValidated(false);
     setCodeError(null);
-    setWaitlistError(null);
   };
-
-  // Code entry screen
-  if (screen === 'code') {
-    return (
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1 bg-slate-900"
-      >
-        <View className="flex-1 justify-center px-6">
-          <View className="items-center mb-4">
-            <Logo size={80} />
-          </View>
-          <Text className="text-3xl font-bold text-white mb-2 text-center">idynic</Text>
-          <Text className="text-slate-400 mb-8 text-center">Enter your invite code to get started</Text>
-
-          {codeError && (
-            <View className="bg-red-900/50 p-3 rounded-lg mb-4">
-              <Text className="text-red-300 text-center">{codeError}</Text>
-            </View>
-          )}
-
-          <TextInput
-            className="bg-slate-800 text-white px-4 py-3 rounded-lg mb-4 text-center uppercase tracking-widest"
-            placeholder="Enter invite code"
-            placeholderTextColor="#64748b"
-            value={betaCode}
-            onChangeText={(text) => setBetaCode(text.toUpperCase())}
-            autoCapitalize="characters"
-            autoCorrect={false}
-          />
-
-          <Pressable
-            onPress={validateCode}
-            disabled={validatingCode}
-            className="bg-teal-600 w-full py-4 rounded-lg mb-6"
-          >
-            {validatingCode ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text className="text-white text-center font-semibold">Continue</Text>
-            )}
-          </Pressable>
-
-          <Pressable onPress={() => setScreen('waitlist')}>
-            <Text className="text-slate-400 text-center underline">
-              Don't have a code? Join the waitlist
-            </Text>
-          </Pressable>
-        </View>
-      </KeyboardAvoidingView>
-    );
-  }
 
   // Waitlist form
   if (screen === 'waitlist') {
@@ -303,8 +253,8 @@ export default function LoginScreen() {
             )}
           </Pressable>
 
-          <Pressable onPress={() => setScreen('code')}>
-            <Text className="text-slate-400 text-center">I have an invite code</Text>
+          <Pressable onPress={() => setScreen('auth')}>
+            <Text className="text-slate-400 text-center">Back to login</Text>
           </Pressable>
         </View>
       </KeyboardAvoidingView>
@@ -335,7 +285,7 @@ export default function LoginScreen() {
           </Text>
 
           <Pressable
-            onPress={resetToCodeEntry}
+            onPress={() => setScreen('auth')}
             className="bg-slate-700 w-full py-4 rounded-lg"
           >
             <Text className="text-white text-center font-semibold">
@@ -402,11 +352,58 @@ export default function LoginScreen() {
           <Logo size={80} />
         </View>
         <Text className="text-3xl font-bold text-white mb-2 text-center">idynic</Text>
-        <Text className="text-slate-400 mb-8 text-center">Your smart career companion</Text>
+        <Text className="text-slate-400 mb-6 text-center">Your smart career companion</Text>
 
         {error && (
           <View className="bg-red-900/50 p-3 rounded-lg mb-4">
             <Text className="text-red-300 text-center">{error}</Text>
+          </View>
+        )}
+
+        {/* Invite code section for signups */}
+        {!codeValidated && (
+          <View className="bg-slate-800/50 p-4 rounded-lg mb-6 border border-slate-700">
+            <Text className="text-slate-400 text-sm text-center mb-3">
+              Have an invite code? Enter it to sign up.
+            </Text>
+            {codeError && (
+              <View className="bg-red-900/50 p-2 rounded-lg mb-3">
+                <Text className="text-red-300 text-center text-sm">{codeError}</Text>
+              </View>
+            )}
+            <View className="flex-row gap-2">
+              <TextInput
+                className="flex-1 bg-slate-800 text-white px-3 py-2 rounded-lg text-center uppercase"
+                placeholder="Code"
+                placeholderTextColor="#64748b"
+                value={betaCode}
+                onChangeText={(text) => setBetaCode(text.toUpperCase())}
+                autoCapitalize="characters"
+                autoCorrect={false}
+              />
+              <Pressable
+                onPress={validateCode}
+                disabled={validatingCode}
+                className="bg-slate-600 px-4 py-2 rounded-lg justify-center"
+              >
+                <Text className="text-white font-semibold">
+                  {validatingCode ? '...' : 'Verify'}
+                </Text>
+              </Pressable>
+            </View>
+            <Pressable onPress={() => setScreen('waitlist')} className="mt-2">
+              <Text className="text-slate-500 text-center text-xs underline">
+                No code? Join waitlist
+              </Text>
+            </Pressable>
+          </View>
+        )}
+
+        {codeValidated && (
+          <View className="bg-teal-900/30 p-3 rounded-lg mb-4 border border-teal-700">
+            <Text className="text-teal-400 text-center text-sm">
+              Invite code verified - you can now sign up!
+            </Text>
           </View>
         )}
 
@@ -468,11 +465,13 @@ export default function LoginScreen() {
           </Text>
         </Pressable>
 
-        <Pressable onPress={resetToCodeEntry} className="mt-6">
-          <Text className="text-slate-500 text-center text-xs">
-            Use a different invite code
-          </Text>
-        </Pressable>
+        {codeValidated && (
+          <Pressable onPress={resetCode} className="mt-4">
+            <Text className="text-slate-500 text-center text-xs">
+              Use a different invite code
+            </Text>
+          </Pressable>
+        )}
       </View>
     </KeyboardAvoidingView>
   );
