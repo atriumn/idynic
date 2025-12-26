@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as WebBrowser from 'expo-web-browser';
+import Svg, { Path } from 'react-native-svg';
 import { supabase } from '../../lib/supabase';
 import { Logo } from '../../components/logo';
 
@@ -163,6 +164,59 @@ export default function LoginScreen() {
     }
   };
 
+  const handleAppleAuth = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'apple',
+        options: {
+          redirectTo: 'idynic://auth/callback',
+          skipBrowserRedirect: true,
+        },
+      });
+
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+        return;
+      }
+
+      if (data?.url) {
+        const result = await WebBrowser.openAuthSessionAsync(data.url, 'idynic://auth/callback');
+
+        if (result.type === 'success' && result.url) {
+          const hashIndex = result.url.indexOf('#');
+          if (hashIndex === -1) {
+            setError('No auth tokens in response');
+            return;
+          }
+          const hashParams = new URLSearchParams(result.url.substring(hashIndex + 1));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+
+          if (accessToken && refreshToken) {
+            const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+
+            if (sessionError) {
+              setError(sessionError.message);
+            } else if (sessionData?.user && mode === 'signup') {
+              await consumeStoredCode(sessionData.user.id);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      setError('Apple auth failed: ' + (e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const switchMode = (newMode: AuthMode) => {
     setMode(newMode);
     setError(null);
@@ -305,11 +359,27 @@ export default function LoginScreen() {
             <Pressable
               onPress={handleGoogleAuth}
               disabled={loading}
-              className="bg-white w-full py-4 rounded-lg mb-4"
+              className="bg-white py-3 px-4 rounded-lg border border-gray-300 flex-row items-center justify-center mb-3"
+              style={{ opacity: loading ? 0.5 : 1 }}
             >
-              <Text className="text-slate-900 text-center font-semibold">
-                Sign up with Google
-              </Text>
+              <Image
+                source={require('../../assets/icons/google.png')}
+                style={{ width: 18, height: 18, marginRight: 10 }}
+                resizeMode="contain"
+              />
+              <Text className="text-gray-700 font-medium text-sm">Sign up with Google</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={handleAppleAuth}
+              disabled={loading}
+              className="bg-black py-3 px-4 rounded-lg flex-row items-center justify-center mb-4"
+              style={{ opacity: loading ? 0.5 : 1 }}
+            >
+              <Svg width={18} height={18} viewBox="0 0 18 18" fill="#ffffff" style={{ marginRight: 10 }}>
+                <Path d="M13.04 15.21c-.73.71-1.54.6-2.31.26-.82-.35-1.57-.36-2.43 0-1.08.46-1.65.33-2.3-.26-3.62-3.78-3.08-9.53 1.08-9.74 1.01.05 1.72.56 2.31.6.89-.18 1.73-.7 2.68-.63 1.13.09 1.99.54 2.55 1.35-2.34 1.4-1.78 4.49.36 5.35-.43 1.12-.98 2.24-1.9 3.07h-.04ZM9.27 5.44c-.11-1.67 1.24-3.05 2.8-3.19.22 1.94-1.75 3.38-2.8 3.19Z" />
+              </Svg>
+              <Text className="text-white font-medium text-sm">Sign up with Apple</Text>
             </Pressable>
 
             <View className="flex-row items-center mb-4">
@@ -370,11 +440,27 @@ export default function LoginScreen() {
             <Pressable
               onPress={handleGoogleAuth}
               disabled={loading}
-              className="bg-white w-full py-4 rounded-lg mb-4"
+              className="bg-white py-3 px-4 rounded-lg border border-gray-300 flex-row items-center justify-center mb-3"
+              style={{ opacity: loading ? 0.5 : 1 }}
             >
-              <Text className="text-slate-900 text-center font-semibold">
-                Sign in with Google
-              </Text>
+              <Image
+                source={require('../../assets/icons/google.png')}
+                style={{ width: 18, height: 18, marginRight: 10 }}
+                resizeMode="contain"
+              />
+              <Text className="text-gray-700 font-medium text-sm">Sign in with Google</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={handleAppleAuth}
+              disabled={loading}
+              className="bg-black py-3 px-4 rounded-lg flex-row items-center justify-center mb-4"
+              style={{ opacity: loading ? 0.5 : 1 }}
+            >
+              <Svg width={18} height={18} viewBox="0 0 18 18" fill="#ffffff" style={{ marginRight: 10 }}>
+                <Path d="M13.04 15.21c-.73.71-1.54.6-2.31.26-.82-.35-1.57-.36-2.43 0-1.08.46-1.65.33-2.3-.26-3.62-3.78-3.08-9.53 1.08-9.74 1.01.05 1.72.56 2.31.6.89-.18 1.73-.7 2.68-.63 1.13.09 1.99.54 2.55 1.35-2.34 1.4-1.78 4.49.36 5.35-.43 1.12-.98 2.24-1.9 3.07h-.04ZM9.27 5.44c-.11-1.67 1.24-3.05 2.8-3.19.22 1.94-1.75 3.38-2.8 3.19Z" />
+              </Svg>
+              <Text className="text-white font-medium text-sm">Sign in with Apple</Text>
             </Pressable>
 
             <View className="flex-row items-center mb-4">
