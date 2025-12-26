@@ -1,8 +1,33 @@
 # Idynic Rebuild Plan
 
-**Status:** Ready for execution
+**Status:** ✅ COMPLETE (2025-12-18)
 **Created:** 2025-12-17
 **Decision:** Full rebuild on Supabase + Vercel, nuke existing AWS infrastructure
+
+## Progress (Last reviewed: 2025-12-19)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Database Setup | ✅ Complete | 5 core tables + extensions |
+| Auth (Supabase) | ✅ Complete | Google OAuth integrated |
+| Resume Upload & Processing | ✅ Complete | With SSE streaming |
+| Opportunity Tracking | ✅ Complete | URL paste + manual entry |
+| Identity Claim Synthesis | ✅ Complete | Evidence → Claims pipeline |
+| Matching/Scoring | ✅ Complete | Vector similarity |
+| Profile Tailoring | ✅ Complete | Talking points, narrative, resume |
+| PDF Generation | ✅ Complete | @react-pdf/renderer |
+| Story Input | ✅ Complete | Second identity source |
+| Editable Content | ✅ Complete | AI-assisted editing |
+
+### Beyond MVP (Completed)
+- Story capture ✅
+- PDF resume export ✅
+- Editable AI outputs ✅
+
+### Drift Notes
+Implementation exceeded original MVP scope with additional features (story input, PDF export, editable content).
+
+---
 
 ## Overview
 
