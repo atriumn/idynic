@@ -14,8 +14,17 @@ console.log('[Supabase] URL defined:', !!supabaseUrl);
 // This adapter chunks large values across multiple keys.
 const CHUNK_SIZE = 1800; // Leave margin for key overhead
 
+// Track if we've had a session error that requires clearing
+let sessionInvalid = false;
+
 const LargeSecureStoreAdapter = {
   getItem: async (key: string): Promise<string | null> => {
+    // If session was marked invalid, return null to force re-login
+    if (sessionInvalid && key.includes('auth-token')) {
+      console.log('[Supabase] Session marked invalid, returning null for', key);
+      return null;
+    }
+
     try {
       // First try to get as single value (for small items or legacy)
       const value = await SecureStore.getItemAsync(key);
@@ -100,4 +109,23 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     detectSessionInUrl: false,
   },
+});
+
+// Function to mark session as invalid (called when refresh token errors occur)
+export const markSessionInvalid = () => {
+  console.log('[Supabase] Marking session as invalid');
+  sessionInvalid = true;
+};
+
+// Function to reset the invalid flag (called after successful login)
+export const resetSessionInvalid = () => {
+  sessionInvalid = false;
+};
+
+// Listen for auth state changes and handle errors
+supabase.auth.onAuthStateChange((event, session) => {
+  // Reset invalid flag on successful sign in
+  if (event === 'SIGNED_IN' && session) {
+    sessionInvalid = false;
+  }
 });

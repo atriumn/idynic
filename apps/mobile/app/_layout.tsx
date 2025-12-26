@@ -1,6 +1,6 @@
 import '../global.css';
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { View, LogBox } from 'react-native';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, DarkTheme } from '@react-navigation/native';
@@ -8,6 +8,56 @@ import { AuthProvider, useAuth } from '../lib/auth-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MeshBackground } from '../components/ui/mesh-background';
 import { ShareIntentProvider, useShareIntent } from 'expo-share-intent';
+import { supabase, markSessionInvalid } from '../lib/supabase';
+
+// Suppress the refresh token error from showing in logs since we handle it
+LogBox.ignoreLogs(['Invalid Refresh Token']);
+
+// Global handler for auth errors that happen during auto-refresh
+// This catches errors before our React components mount
+const setupGlobalAuthErrorHandler = () => {
+  const originalConsoleError = console.error;
+  console.error = (...args) => {
+    const message = args[0]?.toString() || '';
+    if (
+      message.includes('Refresh Token') ||
+      message.includes('refresh_token') ||
+      (message.includes('AuthApiError') && message.includes('Invalid'))
+    ) {
+      console.log('[Auth] Caught refresh token error globally, clearing session');
+      markSessionInvalid();
+      supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+      return; // Don't log the error
+    }
+    originalConsoleError.apply(console, args);
+  };
+};
+
+setupGlobalAuthErrorHandler();
+
+// Also handle unhandled promise rejections for auth errors
+// ErrorUtils is a React Native global for error handling
+declare const ErrorUtils: {
+  getGlobalHandler: () => ((error: Error, isFatal?: boolean) => void) | undefined;
+  setGlobalHandler: (handler: (error: Error, isFatal?: boolean) => void) => void;
+} | undefined;
+
+if (typeof ErrorUtils !== 'undefined') {
+  const originalHandler = ErrorUtils?.getGlobalHandler?.();
+  ErrorUtils?.setGlobalHandler?.((error: Error, isFatal?: boolean) => {
+    const message = error?.message || '';
+    if (
+      message.includes('Refresh Token') ||
+      message.includes('refresh_token')
+    ) {
+      console.log('[Auth] Caught refresh token error in global handler');
+      markSessionInvalid();
+      supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+      return; // Don't propagate
+    }
+    originalHandler?.(error, isFatal);
+  });
+}
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL!;
 

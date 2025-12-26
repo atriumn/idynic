@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as WebBrowser from 'expo-web-browser';
@@ -7,103 +7,59 @@ import { Logo } from '../../components/logo';
 
 const BETA_CODE_KEY = 'idynic_beta_code';
 
-type Screen = 'auth' | 'waitlist' | 'waitlist-success' | 'confirmation';
+type Screen = 'auth' | 'confirmation';
+type AuthMode = 'signin' | 'signup';
 
 export default function LoginScreen() {
-  // Screen state
   const [screen, setScreen] = useState<Screen>('auth');
-
-  // Beta code state
-  const [betaCode, setBetaCode] = useState('');
-  const [codeError, setCodeError] = useState<string | null>(null);
-  const [validatingCode, setValidatingCode] = useState(false);
-
-  // Waitlist state
-  const [waitlistEmail, setWaitlistEmail] = useState('');
-  const [waitlistError, setWaitlistError] = useState<string | null>(null);
-  const [submittingWaitlist, setSubmittingWaitlist] = useState(false);
+  const [mode, setMode] = useState<AuthMode>('signin');
 
   // Auth state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isSignUp, setIsSignUp] = useState(false);
 
-  // Check for existing validated code on mount
+  // Invite code state (for signup only)
+  const [inviteCode, setInviteCode] = useState('');
   const [codeValidated, setCodeValidated] = useState(false);
-
-  useEffect(() => {
-    const checkStoredCode = async () => {
-      const storedCode = await SecureStore.getItemAsync(BETA_CODE_KEY);
-      if (storedCode) {
-        setBetaCode(storedCode);
-        setCodeValidated(true);
-      }
-    };
-    checkStoredCode();
-  }, []);
+  const [validatingCode, setValidatingCode] = useState(false);
 
   const validateCode = async () => {
-    const code = betaCode.trim().toUpperCase();
+    const code = inviteCode.trim().toUpperCase();
     if (!code) {
-      setCodeError('Please enter an invite code');
+      setError('Please enter an invite code');
       return;
     }
 
     setValidatingCode(true);
-    setCodeError(null);
+    setError(null);
 
-    const { data, error } = await supabase.rpc('check_beta_code', {
-      input_code: code,
-    });
+    try {
+      const { data, error: rpcError } = await supabase.rpc('check_beta_code', {
+        input_code: code,
+      });
 
-    setValidatingCode(false);
-
-    if (error) {
-      setCodeError('Unable to validate code. Please try again.');
-      return;
-    }
-
-    if (data) {
-      await SecureStore.setItemAsync(BETA_CODE_KEY, code);
-      setBetaCode(code);
-      setCodeValidated(true);
-      setIsSignUp(true);
-    } else {
-      setCodeError('Invalid or expired invite code');
-    }
-  };
-
-  const joinWaitlist = async () => {
-    const emailValue = waitlistEmail.trim().toLowerCase();
-    if (!emailValue) {
-      setWaitlistError('Please enter your email');
-      return;
-    }
-
-    setSubmittingWaitlist(true);
-    setWaitlistError(null);
-
-    const { error } = await supabase
-      .from('beta_waitlist')
-      .insert({ email: emailValue });
-
-    setSubmittingWaitlist(false);
-
-    if (error) {
-      if (error.code === '23505') {
-        setWaitlistError('This email is already on the waitlist');
-      } else {
-        setWaitlistError('Unable to join waitlist. Please try again.');
+      if (rpcError) {
+        setError('Unable to validate code. Please try again.');
+        return;
       }
-      return;
-    }
 
-    setScreen('waitlist-success');
+      if (data) {
+        // Store code for consumption after signup
+        await SecureStore.setItemAsync(BETA_CODE_KEY, code);
+        setCodeValidated(true);
+      } else {
+        setError('Invalid or expired invite code');
+      }
+    } catch {
+      setError('Unable to validate code. Please try again.');
+    } finally {
+      setValidatingCode(false);
+    }
   };
 
-  const consumeBetaCode = async (userId: string) => {
+  const consumeStoredCode = async (userId: string) => {
     const code = await SecureStore.getItemAsync(BETA_CODE_KEY);
     if (code) {
       await supabase.rpc('consume_beta_code', {
@@ -114,7 +70,7 @@ export default function LoginScreen() {
     }
   };
 
-  const handleAuth = async () => {
+  const handleEmailAuth = async () => {
     if (!email || !password) {
       setError('Please enter email and password');
       return;
@@ -124,10 +80,8 @@ export default function LoginScreen() {
     setError(null);
 
     try {
-      if (isSignUp) {
+      if (mode === 'signup') {
         const { error: authError, data } = await supabase.auth.signUp({ email, password });
-
-        setLoading(false);
 
         if (authError) {
           setError(authError.message);
@@ -135,26 +89,24 @@ export default function LoginScreen() {
           // User created but needs email confirmation
           setScreen('confirmation');
         } else if (data?.user && data.session) {
-          // User created and signed in (email confirmation disabled)
-          await consumeBetaCode(data.user.id);
+          // User created and signed in - consume the code
+          await consumeStoredCode(data.user.id);
         }
       } else {
-        const { error: authError, data } = await supabase.auth.signInWithPassword({ email, password });
-
-        setLoading(false);
-
+        const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
         if (authError) {
           setError(authError.message);
         }
-        // Navigation happens automatically via auth state change in _layout.tsx
+        // Navigation happens via auth state change
       }
     } catch (e) {
-      setLoading(false);
       setError('Network error: ' + (e as Error).message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleAuth = async () => {
     setLoading(true);
     setError(null);
 
@@ -177,10 +129,15 @@ export default function LoginScreen() {
         const result = await WebBrowser.openAuthSessionAsync(data.url, 'idynic://auth/callback');
 
         if (result.type === 'success' && result.url) {
-          // Extract tokens from URL and set session
-          const url = new URL(result.url);
-          const accessToken = url.searchParams.get('access_token');
-          const refreshToken = url.searchParams.get('refresh_token');
+          // Supabase puts tokens in hash fragment, not query params
+          const hashIndex = result.url.indexOf('#');
+          if (hashIndex === -1) {
+            setError('No auth tokens in response');
+            return;
+          }
+          const hashParams = new URLSearchParams(result.url.substring(hashIndex + 1));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
 
           if (accessToken && refreshToken) {
             const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
@@ -190,114 +147,33 @@ export default function LoginScreen() {
 
             if (sessionError) {
               setError(sessionError.message);
-            } else if (sessionData?.user) {
-              await consumeBetaCode(sessionData.user.id);
+            } else if (sessionData?.user && mode === 'signup') {
+              // Only consume code if signing up
+              await consumeStoredCode(sessionData.user.id);
             }
+            // For signin, navigation happens via auth state change
+            // If new user via signin (edge case), beta gate will catch it
           }
         }
       }
     } catch (e) {
-      setError('Google sign in failed: ' + (e as Error).message);
+      setError('Google auth failed: ' + (e as Error).message);
     } finally {
       setLoading(false);
     }
   };
 
-  const resetCode = async () => {
-    await SecureStore.deleteItemAsync(BETA_CODE_KEY);
-    setBetaCode('');
-    setCodeValidated(false);
-    setCodeError(null);
+  const switchMode = (newMode: AuthMode) => {
+    setMode(newMode);
+    setError(null);
+    // Reset signup-specific state when switching to signin
+    if (newMode === 'signin') {
+      setCodeValidated(false);
+      setInviteCode('');
+    }
   };
 
-  // Waitlist form
-  if (screen === 'waitlist') {
-    return (
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1 bg-slate-900"
-      >
-        <View className="flex-1 justify-center px-6">
-          <View className="items-center mb-4">
-            <Logo size={80} />
-          </View>
-          <Text className="text-3xl font-bold text-white mb-2 text-center">Join the Waitlist</Text>
-          <Text className="text-slate-400 mb-8 text-center">We'll notify you when we have a spot</Text>
-
-          {waitlistError && (
-            <View className="bg-red-900/50 p-3 rounded-lg mb-4">
-              <Text className="text-red-300 text-center">{waitlistError}</Text>
-            </View>
-          )}
-
-          <TextInput
-            className="bg-slate-800 text-white px-4 py-3 rounded-lg mb-4"
-            placeholder="Enter your email"
-            placeholderTextColor="#64748b"
-            value={waitlistEmail}
-            onChangeText={setWaitlistEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoComplete="email"
-          />
-
-          <Pressable
-            onPress={joinWaitlist}
-            disabled={submittingWaitlist}
-            className="bg-teal-600 w-full py-4 rounded-lg mb-4"
-          >
-            {submittingWaitlist ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text className="text-white text-center font-semibold">Join Waitlist</Text>
-            )}
-          </Pressable>
-
-          <Pressable onPress={() => setScreen('auth')}>
-            <Text className="text-slate-400 text-center">Back to login</Text>
-          </Pressable>
-        </View>
-      </KeyboardAvoidingView>
-    );
-  }
-
-  // Waitlist success
-  if (screen === 'waitlist-success') {
-    return (
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1 bg-slate-900"
-      >
-        <View className="flex-1 justify-center px-6">
-          <View className="items-center mb-6">
-            <Logo size={80} />
-          </View>
-
-          <Text className="text-3xl font-bold text-white mb-4 text-center">
-            You're on the list!
-          </Text>
-
-          <Text className="text-slate-300 text-center mb-2">
-            Thanks for your interest in Idynic. We'll notify you at
-          </Text>
-          <Text className="text-teal-400 text-center font-semibold mb-8">
-            {waitlistEmail}
-          </Text>
-
-          <Pressable
-            onPress={() => setScreen('auth')}
-            className="bg-slate-700 w-full py-4 rounded-lg"
-          >
-            <Text className="text-white text-center font-semibold">
-              Back to login
-            </Text>
-          </Pressable>
-        </View>
-      </KeyboardAvoidingView>
-    );
-  }
-
-  // Email confirmation pending
+  // Email confirmation screen
   if (screen === 'confirmation') {
     return (
       <KeyboardAvoidingView
@@ -327,7 +203,7 @@ export default function LoginScreen() {
           <Pressable
             onPress={() => {
               setScreen('auth');
-              setIsSignUp(false);
+              switchMode('signin');
               setPassword('');
             }}
             className="bg-slate-700 w-full py-4 rounded-lg"
@@ -354,69 +230,85 @@ export default function LoginScreen() {
         <Text className="text-3xl font-bold text-white mb-2 text-center">idynic</Text>
         <Text className="text-slate-400 mb-6 text-center">Your smart career companion</Text>
 
+        {/* Mode tabs */}
+        <View className="flex-row mb-6 bg-slate-800 rounded-lg p-1">
+          <Pressable
+            onPress={() => switchMode('signin')}
+            className={`flex-1 py-3 rounded-md ${mode === 'signin' ? 'bg-slate-700' : ''}`}
+          >
+            <Text className={`text-center font-medium ${mode === 'signin' ? 'text-white' : 'text-slate-400'}`}>
+              Sign In
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => switchMode('signup')}
+            className={`flex-1 py-3 rounded-md ${mode === 'signup' ? 'bg-slate-700' : ''}`}
+          >
+            <Text className={`text-center font-medium ${mode === 'signup' ? 'text-white' : 'text-slate-400'}`}>
+              Sign Up
+            </Text>
+          </Pressable>
+        </View>
+
         {error && (
           <View className="bg-red-900/50 p-3 rounded-lg mb-4">
             <Text className="text-red-300 text-center">{error}</Text>
           </View>
         )}
 
-        {/* Invite code section for signups */}
-        {!codeValidated && (
-          <View className="bg-slate-800/50 p-4 rounded-lg mb-6 border border-slate-700">
-            <Text className="text-slate-400 text-sm text-center mb-3">
-              Have an invite code? Enter it to sign up.
+        {/* SIGNUP: Code entry first */}
+        {mode === 'signup' && !codeValidated && (
+          <View className="mb-6">
+            <Text className="text-slate-300 text-center mb-4">
+              Enter your invite code to get started
             </Text>
-            {codeError && (
-              <View className="bg-red-900/50 p-2 rounded-lg mb-3">
-                <Text className="text-red-300 text-center text-sm">{codeError}</Text>
-              </View>
-            )}
-            <View className="flex-row gap-2">
-              <TextInput
-                className="flex-1 bg-slate-800 text-white px-3 py-2 rounded-lg text-center uppercase"
-                placeholder="Code"
-                placeholderTextColor="#64748b"
-                value={betaCode}
-                onChangeText={(text) => setBetaCode(text.toUpperCase())}
-                autoCapitalize="characters"
-                autoCorrect={false}
-              />
-              <Pressable
-                onPress={validateCode}
-                disabled={validatingCode}
-                className="bg-slate-600 px-4 py-2 rounded-lg justify-center"
-              >
-                <Text className="text-white font-semibold">
-                  {validatingCode ? '...' : 'Verify'}
-                </Text>
-              </Pressable>
-            </View>
-            <Pressable onPress={() => setScreen('waitlist')} className="mt-2">
-              <Text className="text-slate-500 text-center text-xs underline">
-                No code? Join waitlist
-              </Text>
-            </Pressable>
-          </View>
-        )}
 
-        {codeValidated && (
-          <View className="bg-teal-900/30 p-3 rounded-lg mb-4 border border-teal-700">
-            <Text className="text-teal-400 text-center text-sm">
-              Invite code verified - you can now sign up!
-            </Text>
-          </View>
-        )}
+            <TextInput
+              className="bg-slate-800 text-white px-4 py-4 rounded-lg mb-4 text-center text-lg uppercase tracking-widest"
+              placeholder="Invite code"
+              placeholderTextColor="#64748b"
+              value={inviteCode}
+              onChangeText={(text) => setInviteCode(text.toUpperCase())}
+              autoCapitalize="characters"
+              autoCorrect={false}
+            />
 
-        {/* Google Sign In Button - only show when code is validated */}
-        {codeValidated && (
-          <>
             <Pressable
-              onPress={handleGoogleSignIn}
+              onPress={validateCode}
+              disabled={validatingCode}
+              className="bg-teal-600 py-4 rounded-lg mb-4"
+            >
+              {validatingCode ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text className="text-white text-center font-semibold">
+                  Validate Code
+                </Text>
+              )}
+            </Pressable>
+
+            <Text className="text-slate-500 text-center text-sm">
+              Don't have a code? Join our waitlist at idynic.com
+            </Text>
+          </View>
+        )}
+
+        {/* SIGNUP: Code validated - show auth options */}
+        {mode === 'signup' && codeValidated && (
+          <>
+            <View className="bg-teal-900/30 p-3 rounded-lg mb-4 border border-teal-700">
+              <Text className="text-teal-400 text-center text-sm">
+                Code validated! Create your account below.
+              </Text>
+            </View>
+
+            <Pressable
+              onPress={handleGoogleAuth}
               disabled={loading}
-              className="bg-white w-full py-4 rounded-lg mb-4 flex-row justify-center items-center"
+              className="bg-white w-full py-4 rounded-lg mb-4"
             >
               <Text className="text-slate-900 text-center font-semibold">
-                Continue with Google
+                Sign up with Google
               </Text>
             </Pressable>
 
@@ -425,56 +317,107 @@ export default function LoginScreen() {
               <Text className="text-slate-500 px-4">or</Text>
               <View className="flex-1 h-px bg-slate-700" />
             </View>
+
+            <TextInput
+              className="bg-slate-800 text-white px-4 py-3 rounded-lg mb-4"
+              placeholder="Email"
+              placeholderTextColor="#64748b"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoComplete="email"
+            />
+
+            <TextInput
+              className="bg-slate-800 text-white px-4 py-3 rounded-lg mb-6"
+              placeholder="Password"
+              placeholderTextColor="#64748b"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoComplete="password"
+            />
+
+            <Pressable
+              onPress={handleEmailAuth}
+              disabled={loading}
+              className="bg-teal-600 w-full py-4 rounded-lg"
+            >
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text className="text-white text-center font-semibold">
+                  Sign Up
+                </Text>
+              )}
+            </Pressable>
+
+            <Pressable
+              onPress={() => setCodeValidated(false)}
+              className="mt-4"
+            >
+              <Text className="text-slate-500 text-center text-sm">
+                Use a different invite code
+              </Text>
+            </Pressable>
           </>
         )}
 
-        <TextInput
-          className="bg-slate-800 text-white px-4 py-3 rounded-lg mb-4"
-          placeholder="Email"
-          placeholderTextColor="#64748b"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          autoComplete="email"
-        />
+        {/* SIGNIN: Show auth options directly */}
+        {mode === 'signin' && (
+          <>
+            <Pressable
+              onPress={handleGoogleAuth}
+              disabled={loading}
+              className="bg-white w-full py-4 rounded-lg mb-4"
+            >
+              <Text className="text-slate-900 text-center font-semibold">
+                Sign in with Google
+              </Text>
+            </Pressable>
 
-        <TextInput
-          className="bg-slate-800 text-white px-4 py-3 rounded-lg mb-6"
-          placeholder="Password"
-          placeholderTextColor="#64748b"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          autoComplete="password"
-        />
+            <View className="flex-row items-center mb-4">
+              <View className="flex-1 h-px bg-slate-700" />
+              <Text className="text-slate-500 px-4">or</Text>
+              <View className="flex-1 h-px bg-slate-700" />
+            </View>
 
-        <Pressable
-          onPress={handleAuth}
-          disabled={loading}
-          className="bg-teal-600 w-full py-4 rounded-lg mb-4"
-        >
-          {loading ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <Text className="text-white text-center font-semibold">
-              {isSignUp ? 'Sign Up' : 'Sign In'}
-            </Text>
-          )}
-        </Pressable>
+            <TextInput
+              className="bg-slate-800 text-white px-4 py-3 rounded-lg mb-4"
+              placeholder="Email"
+              placeholderTextColor="#64748b"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoComplete="email"
+            />
 
-        <Pressable onPress={() => setIsSignUp(!isSignUp)}>
-          <Text className="text-slate-400 text-center">
-            {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
-          </Text>
-        </Pressable>
+            <TextInput
+              className="bg-slate-800 text-white px-4 py-3 rounded-lg mb-6"
+              placeholder="Password"
+              placeholderTextColor="#64748b"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoComplete="password"
+            />
 
-        {codeValidated && (
-          <Pressable onPress={resetCode} className="mt-4">
-            <Text className="text-slate-500 text-center text-xs">
-              Use a different invite code
-            </Text>
-          </Pressable>
+            <Pressable
+              onPress={handleEmailAuth}
+              disabled={loading}
+              className="bg-teal-600 w-full py-4 rounded-lg"
+            >
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text className="text-white text-center font-semibold">
+                  Sign In
+                </Text>
+              )}
+            </Pressable>
+          </>
         )}
       </View>
     </KeyboardAvoidingView>

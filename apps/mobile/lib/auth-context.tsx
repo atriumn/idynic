@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { supabase } from './supabase';
+import { supabase, markSessionInvalid } from './supabase';
 import * as Linking from 'expo-linking';
 
 interface AuthContextType {
@@ -71,27 +71,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    const clearInvalidSession = async () => {
+      console.log('[Auth] Clearing invalid session from storage');
+      // Mark session invalid to prevent further reads from storage
+      markSessionInvalid();
+      try {
+        await supabase.auth.signOut({ scope: 'local' });
+      } catch {
+        // Ignore signOut errors
+      }
+      setSession(null);
+      setLoading(false);
+    };
+
     const initAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
           console.error('[Auth] getSession error:', error.message);
           // If we get an invalid refresh token error, clear the session
-          if (error.message.includes('Refresh Token') || error.code === 'refresh_token_not_found') {
-            console.log('[Auth] Clearing invalid session');
-            await supabase.auth.signOut();
+          if (
+            error.message.includes('Refresh Token') ||
+            error.message.includes('refresh_token') ||
+            error.code === 'refresh_token_not_found'
+          ) {
+            await clearInvalidSession();
+            return;
           }
         }
         setSession(session);
+        setLoading(false);
       } catch (error) {
         // Handle thrown errors (e.g., from auto-refresh)
         console.error('[Auth] Auth initialization error:', error);
-        if (error instanceof Error && error.message.includes('Refresh Token')) {
-          console.log('[Auth] Clearing invalid session after error');
-          await supabase.auth.signOut();
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (
+          errorMessage.includes('Refresh Token') ||
+          errorMessage.includes('refresh_token') ||
+          errorMessage.includes('Invalid')
+        ) {
+          await clearInvalidSession();
+          return;
         }
         setSession(null);
-      } finally {
         setLoading(false);
       }
     };
@@ -99,8 +121,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        console.log('[Auth] Auth state changed:', _event, session?.user?.id);
+      async (event, session) => {
+        console.log('[Auth] Auth state changed:', event, session?.user?.id);
+
+        // Handle token refresh errors
+        if (event === 'TOKEN_REFRESHED' && !session) {
+          console.log('[Auth] Token refresh failed, clearing session');
+          await clearInvalidSession();
+          return;
+        }
+
         setSession(session);
       }
     );

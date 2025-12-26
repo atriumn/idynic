@@ -1,8 +1,25 @@
 import { Tabs } from 'expo-router';
 import { User, Briefcase, Settings } from 'lucide-react-native';
+import { View, ActivityIndicator } from 'react-native';
 import { Logo } from '../../components/logo';
+import { useBetaAccess } from '../../lib/use-beta-access';
+import { BetaGate } from '../../components/beta-gate';
 
 export default function AppLayout() {
+  const { hasAccess, loading, refetch } = useBetaAccess();
+
+  if (loading) {
+    return (
+      <View className="flex-1 bg-slate-900 justify-center items-center">
+        <ActivityIndicator size="large" color="#14b8a6" />
+      </View>
+    );
+  }
+
+  if (!hasAccess) {
+    return <BetaGate onAccessGranted={refetch} />;
+  }
+
   return (
     <Tabs
       screenOptions={{

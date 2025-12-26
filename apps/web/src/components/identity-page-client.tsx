@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { FileText, LayoutGrid, Network, Sun, Sparkles, List as ListIcon } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { FileText, LayoutGrid, Network, Sun, Sparkles, List as ListIcon, Loader2 } from "lucide-react";
 import { IdentityConstellation } from "@/components/identity-constellation";
 import { EvidenceConstellation } from "@/components/evidence-constellation";
 import { ConfidenceSunburst } from "@/components/confidence-sunburst";
@@ -16,6 +16,7 @@ import { useIdentityReflection } from "@/lib/hooks/use-identity-reflection";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { BetaGate } from "@/components/beta-gate";
 
 const BETA_CODE_KEY = "idynic_beta_code";
 
@@ -33,29 +34,56 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
   const { data: reflectionData, isLoading: reflectionLoading } = useIdentityReflection();
   const betaCodeConsumed = useRef(false);
 
-  // Consume beta code after OAuth login (code stored in localStorage before OAuth redirect)
+  // Beta access state
+  const [betaAccessLoading, setBetaAccessLoading] = useState(true);
+  const [hasBetaAccess, setHasBetaAccess] = useState(false);
+
+  const checkBetaAccess = useCallback(async () => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      setBetaAccessLoading(false);
+      return;
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("beta_code_used")
+      .eq("id", user.id)
+      .single();
+
+    setHasBetaAccess(!!profile?.beta_code_used);
+    setBetaAccessLoading(false);
+  }, []);
+
+  // Check beta access and consume stored code on mount
   useEffect(() => {
-    if (betaCodeConsumed.current) return;
+    const init = async () => {
+      // First try to consume any stored code
+      if (!betaCodeConsumed.current) {
+        const code = localStorage.getItem(BETA_CODE_KEY);
+        if (code) {
+          betaCodeConsumed.current = true;
+          const supabase = createClient();
+          const { data: { user } } = await supabase.auth.getUser();
 
-    const consumeBetaCode = async () => {
-      const code = localStorage.getItem(BETA_CODE_KEY);
-      if (!code) return;
-
-      betaCodeConsumed.current = true;
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (user) {
-        await supabase.rpc("consume_beta_code", {
-          input_code: code,
-          user_id: user.id,
-        });
-        localStorage.removeItem(BETA_CODE_KEY);
+          if (user) {
+            await supabase.rpc("consume_beta_code", {
+              input_code: code,
+              user_id: user.id,
+            });
+            localStorage.removeItem(BETA_CODE_KEY);
+          }
+        }
       }
+
+      // Then check beta access
+      await checkBetaAccess();
     };
 
-    consumeBetaCode();
-  }, []);
+    init();
+  }, [checkBetaAccess]);
 
   // Detect mobile viewport
   useEffect(() => {
@@ -67,6 +95,20 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
 
   const claimCount = data?.nodes.length ?? 0;
   const showEmptyState = !hasAnyClaims && claimCount === 0;
+
+  // Show loading while checking beta access
+  if (betaAccessLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  // Show beta gate if user doesn't have access
+  if (!hasBetaAccess) {
+    return <BetaGate onAccessGranted={checkBetaAccess} />;
+  }
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
