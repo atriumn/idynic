@@ -1,15 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { findRelevantClaimsForBatch } from '@/lib/ai/rag-claims';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/lib/supabase/types';
 
 // Mock Supabase
 const mockRpc = vi.fn();
 const mockSupabase = {
   rpc: mockRpc,
-};
-
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: vi.fn().mockImplementation(async () => mockSupabase),
-}));
+} as unknown as SupabaseClient<Database>;
 
 describe('findRelevantClaimsForBatch', () => {
   beforeEach(() => {
@@ -17,7 +15,7 @@ describe('findRelevantClaimsForBatch', () => {
   });
 
   it('should return empty array when no evidence provided', async () => {
-    const result = await findRelevantClaimsForBatch('user-123', []);
+    const result = await findRelevantClaimsForBatch(mockSupabase, 'user-123', []);
     expect(result).toEqual([]);
     expect(mockRpc).not.toHaveBeenCalled();
   });
@@ -36,7 +34,7 @@ describe('findRelevantClaimsForBatch', () => {
       error: null,
     });
 
-    const result = await findRelevantClaimsForBatch('user-123', evidence);
+    const result = await findRelevantClaimsForBatch(mockSupabase, 'user-123', evidence);
 
     expect(mockRpc).toHaveBeenCalledTimes(2);
     expect(mockRpc).toHaveBeenCalledWith('find_relevant_claims_for_synthesis', {
@@ -67,7 +65,7 @@ describe('findRelevantClaimsForBatch', () => {
         error: null,
       });
 
-    const result = await findRelevantClaimsForBatch('user-123', evidence);
+    const result = await findRelevantClaimsForBatch(mockSupabase, 'user-123', evidence);
 
     expect(result).toHaveLength(2);
     expect(result.map(c => c.label).sort()).toEqual(['React', 'TypeScript']);
@@ -81,7 +79,7 @@ describe('findRelevantClaimsForBatch', () => {
       error: { message: 'Database error' },
     });
 
-    const result = await findRelevantClaimsForBatch('user-123', evidence);
+    const result = await findRelevantClaimsForBatch(mockSupabase, 'user-123', evidence);
 
     // Should return empty on error, not throw
     expect(result).toEqual([]);
@@ -92,7 +90,7 @@ describe('findRelevantClaimsForBatch', () => {
 
     mockRpc.mockResolvedValue({ data: [], error: null });
 
-    await findRelevantClaimsForBatch('user-123', evidence, {
+    await findRelevantClaimsForBatch(mockSupabase, 'user-123', evidence, {
       similarityThreshold: 0.7,
       maxClaimsPerQuery: 10,
     });

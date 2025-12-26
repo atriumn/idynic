@@ -127,6 +127,7 @@ export async function synthesizeClaimsBatch(
     try {
       // RAG retrieval: Find relevant claims for this batch using vector search
       const relevantClaims = await findRelevantClaimsForBatch(
+        supabase,
         userId,
         batch.map(e => ({ id: e.id, embedding: e.embedding }))
       );

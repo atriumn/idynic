@@ -5,7 +5,8 @@
  * semantically relevant claims for each evidence batch.
  */
 
-import { createClient } from '@/lib/supabase/server';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/lib/supabase/types';
 
 export interface RelevantClaim {
   id: string;
@@ -35,12 +36,14 @@ const DEFAULT_MAX_CLAIMS = 25;
  * Queries the vector database for each evidence embedding,
  * then deduplicates results to create focused LLM context.
  *
+ * @param supabase - Supabase client to use for queries
  * @param userId - User whose claims to search
  * @param evidenceItems - Evidence with embeddings to match against
  * @param options - Threshold and limit configuration
  * @returns Deduplicated list of relevant claims
  */
 export async function findRelevantClaimsForBatch(
+  supabase: SupabaseClient<Database>,
   userId: string,
   evidenceItems: EvidenceWithEmbedding[],
   options: RAGOptions = {}
@@ -53,8 +56,6 @@ export async function findRelevantClaimsForBatch(
     similarityThreshold = DEFAULT_SIMILARITY_THRESHOLD,
     maxClaimsPerQuery = DEFAULT_MAX_CLAIMS,
   } = options;
-
-  const supabase = await createClient();
   const claimsMap = new Map<string, RelevantClaim>();
 
   // Query for each evidence embedding
