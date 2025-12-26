@@ -9,6 +9,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [pendingConfirmation, setPendingConfirmation] = useState(false);
 
   const handleAuth = async () => {
     if (!email || !password) {
@@ -23,18 +24,34 @@ export default function LoginScreen() {
     console.log('[Login] Email:', email);
 
     try {
-      const { error: authError, data } = isSignUp
-        ? await supabase.auth.signUp({ email, password })
-        : await supabase.auth.signInWithPassword({ email, password });
+      if (isSignUp) {
+        const { error: authError, data } = await supabase.auth.signUp({ email, password });
 
-      console.log('[Login] Auth response received');
-      console.log('[Login] Error:', authError?.message);
-      console.log('[Login] User:', data?.user?.id);
+        console.log('[Login] Signup response received');
+        console.log('[Login] Error:', authError?.message);
+        console.log('[Login] User:', data?.user?.id);
+        console.log('[Login] Confirmation sent:', data?.user?.confirmation_sent_at);
 
-      setLoading(false);
+        setLoading(false);
 
-      if (authError) {
-        setError(authError.message);
+        if (authError) {
+          setError(authError.message);
+        } else if (data?.user && !data.session) {
+          // User created but needs email confirmation
+          setPendingConfirmation(true);
+        }
+      } else {
+        const { error: authError, data } = await supabase.auth.signInWithPassword({ email, password });
+
+        console.log('[Login] Sign in response received');
+        console.log('[Login] Error:', authError?.message);
+        console.log('[Login] User:', data?.user?.id);
+
+        setLoading(false);
+
+        if (authError) {
+          setError(authError.message);
+        }
       }
     } catch (e) {
       console.log('[Login] Exception:', e);
@@ -43,6 +60,52 @@ export default function LoginScreen() {
     }
     // Navigation happens automatically via auth state change in _layout.tsx
   };
+
+  const handleBackToSignIn = () => {
+    setPendingConfirmation(false);
+    setIsSignUp(false);
+    setPassword('');
+  };
+
+  // Show "check your email" screen after signup
+  if (pendingConfirmation) {
+    return (
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        className="flex-1 bg-slate-900"
+      >
+        <View className="flex-1 justify-center px-6">
+          <View className="items-center mb-6">
+            <Logo size={80} />
+          </View>
+
+          <Text className="text-3xl font-bold text-white mb-4 text-center">
+            Check your email
+          </Text>
+
+          <Text className="text-slate-300 text-center mb-2">
+            We sent a confirmation link to
+          </Text>
+          <Text className="text-teal-400 text-center font-semibold mb-6">
+            {email}
+          </Text>
+
+          <Text className="text-slate-400 text-center mb-8">
+            Click the link in your email to confirm your account, then return here to sign in.
+          </Text>
+
+          <Pressable
+            onPress={handleBackToSignIn}
+            className="bg-slate-700 w-full py-4 rounded-lg"
+          >
+            <Text className="text-white text-center font-semibold">
+              Back to Sign In
+            </Text>
+          </Pressable>
+        </View>
+      </KeyboardAvoidingView>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
