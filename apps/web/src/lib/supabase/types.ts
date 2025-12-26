@@ -61,6 +61,54 @@ export type Database = {
           },
         ]
       }
+      beta_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          created_by: string | null
+          current_uses: number
+          expires_at: string | null
+          id: string
+          max_uses: number
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          created_by?: string | null
+          current_uses?: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          created_by?: string | null
+          current_uses?: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number
+        }
+        Relationships: []
+      }
+      beta_waitlist: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
       claim_evidence: {
         Row: {
           claim_id: string
@@ -162,6 +210,7 @@ export type Database = {
           highlights: Json | null
           id: string
           job_type: string
+          opportunity_id: string | null
           phase: string | null
           progress: string | null
           started_at: string | null
@@ -181,6 +230,7 @@ export type Database = {
           highlights?: Json | null
           id?: string
           job_type: string
+          opportunity_id?: string | null
           phase?: string | null
           progress?: string | null
           started_at?: string | null
@@ -200,6 +250,7 @@ export type Database = {
           highlights?: Json | null
           id?: string
           job_type?: string
+          opportunity_id?: string | null
           phase?: string | null
           progress?: string | null
           started_at?: string | null
@@ -215,6 +266,13 @@ export type Database = {
             columns: ["document_id"]
             isOneToOne: false
             referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_jobs_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
             referencedColumns: ["id"]
           },
           {
@@ -598,6 +656,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          beta_code_used: string | null
           created_at: string | null
           email: string | null
           github: string | null
@@ -617,6 +676,7 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          beta_code_used?: string | null
           created_at?: string | null
           email?: string | null
           github?: string | null
@@ -636,6 +696,7 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          beta_code_used?: string | null
           created_at?: string | null
           email?: string | null
           github?: string | null
@@ -853,6 +914,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_beta_code: { Args: { input_code: string }; Returns: boolean }
+      consume_beta_code: {
+        Args: { input_code: string; user_id: string }
+        Returns: boolean
+      }
       find_candidate_claims: {
         Args: {
           match_count?: number

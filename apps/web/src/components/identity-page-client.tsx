@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FileText, LayoutGrid, Network, Sun, Sparkles, List as ListIcon } from "lucide-react";
 import { IdentityConstellation } from "@/components/identity-constellation";
 import { EvidenceConstellation } from "@/components/evidence-constellation";
@@ -15,6 +15,9 @@ import { useIdentityGraph } from "@/lib/hooks/use-identity-graph";
 import { useIdentityReflection } from "@/lib/hooks/use-identity-reflection";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
+
+const BETA_CODE_KEY = "idynic_beta_code";
 
 type ViewType = "treemap" | "radial" | "sunburst" | "clusters" | "list";
 
@@ -28,6 +31,31 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
   const [viewType, setViewType] = useState<ViewType>("list");
   const { data } = useIdentityGraph();
   const { data: reflectionData, isLoading: reflectionLoading } = useIdentityReflection();
+  const betaCodeConsumed = useRef(false);
+
+  // Consume beta code after OAuth login (code stored in localStorage before OAuth redirect)
+  useEffect(() => {
+    if (betaCodeConsumed.current) return;
+
+    const consumeBetaCode = async () => {
+      const code = localStorage.getItem(BETA_CODE_KEY);
+      if (!code) return;
+
+      betaCodeConsumed.current = true;
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        await supabase.rpc("consume_beta_code", {
+          input_code: code,
+          user_id: user.id,
+        });
+        localStorage.removeItem(BETA_CODE_KEY);
+      }
+    };
+
+    consumeBetaCode();
+  }, []);
 
   // Detect mobile viewport
   useEffect(() => {
