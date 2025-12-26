@@ -26,15 +26,15 @@ vi.mock('openai', () => {
   };
 });
 
-// Mock Supabase
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: vi.fn().mockImplementation(async () => ({
-    from: mockFrom,
-    rpc: mockRpc,
-  })),
-}));
-
 import { synthesizeClaimsBatch } from '@/lib/ai/synthesize-claims-batch';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/lib/supabase/types';
+
+// Create mock Supabase client
+const mockSupabase = {
+  from: mockFrom,
+  rpc: mockRpc,
+} as unknown as SupabaseClient<Database>;
 
 interface EvidenceItem {
   id: string;
@@ -141,7 +141,7 @@ describe('synthesizeClaimsBatch with RAG', () => {
       },
     ];
 
-    await synthesizeClaimsBatch('user-123', evidence);
+    await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
     // Verify RAG was called (not full table load)
     expect(mockRpc).toHaveBeenCalledWith('find_relevant_claims_for_synthesis', {
@@ -209,7 +209,7 @@ describe('synthesizeClaimsBatch with RAG', () => {
       },
     ];
 
-    const result = await synthesizeClaimsBatch('user-123', evidence);
+    const result = await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
     expect(result.claimsCreated).toBe(1);
     expect(mockRpc).toHaveBeenCalledWith('find_relevant_claims_for_synthesis', expect.any(Object));
@@ -257,7 +257,7 @@ describe('synthesizeClaimsBatch with RAG', () => {
       ],
     });
 
-    await synthesizeClaimsBatch('user-123', evidence);
+    await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
     // RAG should be called once per batch (2 times for 15 items)
     // First batch: 10 items, Second batch: 5 items
@@ -386,7 +386,7 @@ describe('synthesizeClaimsBatch with RAG', () => {
       };
     });
 
-    const result = await synthesizeClaimsBatch('user-123', evidence);
+    const result = await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
     // Should create 1 claim and update it multiple times
     expect(result.claimsCreated).toBe(1);
@@ -445,7 +445,7 @@ describe('synthesizeClaimsBatch with RAG', () => {
     ];
 
     // Should not throw, should continue processing
-    const result = await synthesizeClaimsBatch('user-123', evidence);
+    const result = await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
     expect(result).toBeDefined();
   });
@@ -494,7 +494,7 @@ describe('synthesizeClaimsBatch with RAG', () => {
       },
     ];
 
-    await synthesizeClaimsBatch('user-123', evidence);
+    await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
     // Verify LLM was called with deduplicated claims in prompt
     expect(mockChatCreate).toHaveBeenCalledWith(

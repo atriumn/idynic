@@ -323,6 +323,7 @@ export async function POST(request: NextRequest) {
 
       try {
         synthesisResult = await synthesizeClaimsBatch(
+          supabase,
           userId,
           evidenceWithIds,
           (progress) => {

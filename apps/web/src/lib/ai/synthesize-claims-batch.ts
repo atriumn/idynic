@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-import { createClient } from "@/lib/supabase/server";
 import { generateEmbeddings } from "./embeddings";
 import { findRelevantClaimsForBatch } from "./rag-claims";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -103,12 +102,12 @@ export interface ClaimUpdate {
 }
 
 export async function synthesizeClaimsBatch(
+  supabase: SupabaseClient<Database>,
   userId: string,
   evidenceItems: EvidenceItem[],
   onProgress?: (progress: BatchSynthesisProgress) => void,
   onClaimUpdate?: (update: ClaimUpdate) => void
 ): Promise<{ claimsCreated: number; claimsUpdated: number }> {
-  const supabase = await createClient();
   let claimsCreated = 0;
   let claimsUpdated = 0;
 

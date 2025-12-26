@@ -26,15 +26,15 @@ vi.mock('openai', () => {
   };
 });
 
-// Mock Supabase
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: vi.fn().mockImplementation(async () => ({
-    from: mockFrom,
-    rpc: mockRpc,
-  })),
-}));
-
 import { synthesizeClaimsBatch } from '@/lib/ai/synthesize-claims-batch';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/lib/supabase/types';
+
+// Create mock Supabase client
+const mockSupabase = {
+  from: mockFrom,
+  rpc: mockRpc,
+} as unknown as SupabaseClient<Database>;
 
 interface EvidenceItem {
   id: string;
@@ -118,7 +118,7 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
         },
       ];
 
-      await synthesizeClaimsBatch('user-123', evidence);
+      await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
       // Verify insert was called with confidence calculated by scoring module
       expect(insertMock).toHaveBeenCalledWith(
@@ -201,7 +201,7 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
         },
       ];
 
-      await synthesizeClaimsBatch('user-123', evidence);
+      await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
       const insertCall = insertMock.mock.calls[0][0];
       // For certification: base (0.5) * (strength 1.2 * source 1.5 * decay 1.0) = 0.9
@@ -266,7 +266,7 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
         },
       ];
 
-      await synthesizeClaimsBatch('user-123', evidence);
+      await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
       const insertCall = insertMock.mock.calls[0][0];
       // For inferred: base (0.5) * (strength 0.7 * source 0.6 * decay ~1.0) = ~0.21
@@ -330,7 +330,7 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
         },
       ];
 
-      await synthesizeClaimsBatch('user-123', evidence);
+      await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
       const insertCall = insertMock.mock.calls[0][0];
       // Should use resume (1.0) as default: base (0.5) * (strength 1.0 * source 1.0 * decay 1.0) = 0.5
@@ -426,7 +426,7 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
         },
       ];
 
-      await synthesizeClaimsBatch('user-123', evidence);
+      await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
       // Verify update was called with recalculated confidence
       expect(updateMock).toHaveBeenCalledWith(
@@ -526,7 +526,7 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
         },
       ];
 
-      await synthesizeClaimsBatch('user-123', evidence);
+      await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
       const updateCall = updateMock.mock.calls[0][0];
       // Single old evidence: base (0.5) * (strength 1.0 * source 1.0 * decay ~0.5) = ~0.25
@@ -618,7 +618,7 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
         },
       ];
 
-      await synthesizeClaimsBatch('user-123', evidence);
+      await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
       const updateCall = updateMock.mock.calls[0][0];
       // Single education with strong: base (0.5) * (strength 1.2 * source 1.0 * decay 1.0) = 0.6
@@ -709,7 +709,7 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
         },
       ];
 
-      await synthesizeClaimsBatch('user-123', evidence);
+      await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
       const updateCall = updateMock.mock.calls[0][0];
       // No date = no penalty: base (0.5) * (strength 1.0 * source 1.0 * decay 1.0) = 0.5
@@ -806,7 +806,7 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
         },
       ];
 
-      await synthesizeClaimsBatch('user-123', evidence);
+      await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
       const updateCall = updateMock.mock.calls[0][0];
       // Three evidence: base (0.8) * avg(cert + story + inferred weights with decay)
@@ -895,7 +895,7 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
       ];
 
       // Should not throw
-      await expect(synthesizeClaimsBatch('user-123', evidence)).resolves.toBeDefined();
+      await expect(synthesizeClaimsBatch(mockSupabase, 'user-123', evidence)).resolves.toBeDefined();
     });
 
     it('should cap confidence at 0.95 even with strong certification evidence', async () => {
@@ -958,7 +958,7 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
         },
       ];
 
-      await synthesizeClaimsBatch('user-123', evidence);
+      await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
       const insertCall = insertMock.mock.calls[0][0];
       // Even with strong + certification + recent, should be capped at 0.95

@@ -178,6 +178,7 @@ export const processStory = inngest.createFunction(
 
       try {
         const result = await synthesizeClaimsBatch(
+          supabase,
           userId,
           evidenceWithIds,
           (progress) => {
