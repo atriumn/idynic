@@ -1,8 +1,24 @@
 # Identity Reflection Feature Design
 
 **Date:** 2025-12-23
-**Status:** Approved
+**Status:** Done
 **Author:** Brainstorming session
+
+## Progress (Last reviewed: 2025-12-26)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Data Model (profiles table fields) | ✅ Complete | Migration applied, fields in types.ts |
+| Core Logic (reflect-identity.ts) | ✅ Complete | Commit 2727e9dc |
+| UI Component (identity-reflection.tsx) | ✅ Complete | Commit 2727e9dc |
+| Integration (process-resume/story) | ✅ Complete | Integrated via Inngest functions |
+| SSE/Job Updates | ✅ Complete | JobUpdater support added |
+
+### Implementation Notes
+- Full implementation in commit 2727e9dc "feat: add identity reflection feature"
+- Uses gpt-4o-mini with JSON mode
+- Archetype validation ensures only valid archetypes are stored
+- Graceful degradation - never blocks document processing
 
 ## Overview
 
