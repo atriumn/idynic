@@ -78,6 +78,14 @@ export default function AppLayout() {
           headerShown: true,
         }}
       />
+      <Tabs.Screen
+        name="add-opportunity"
+        options={{
+          href: null,
+          title: 'Add Opportunity',
+          headerShown: true,
+        }}
+      />
     </Tabs>
   );
 }

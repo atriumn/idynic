@@ -25,4 +25,12 @@ export type Events = {
       contentHash: string;
     };
   };
+  "opportunity/process": {
+    data: {
+      jobId: string;
+      userId: string;
+      url: string | null;
+      description: string | null;
+    };
+  };
 };
