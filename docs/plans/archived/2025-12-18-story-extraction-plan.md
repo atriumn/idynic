@@ -1,8 +1,26 @@
 # Story Extraction Implementation Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **Status:** ✅ COMPLETE (2025-12-18)
 
 **Goal:** Add story input as a second source for identity claims, mirroring the resume flow.
+
+---
+
+## Progress (Last reviewed: 2025-12-19)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Create Story Evidence Extractor | ✅ Complete | Commit: `1a0a3dc6` |
+| Task 2: Create Story Processing API Route | ✅ Complete | Commit: `16db658b` |
+| Task 3: Create Story Input Component | ✅ Complete | Commit: `cf4e6572` |
+| Task 4: Update Identity Page Layout | ✅ Complete | Commit: `c60409cd` |
+| Task 5: Test the Full Flow | ✅ Complete | Commit: `333c8bd3` (added processing summary) |
+
+### Drift Notes
+Minor enhancement added:
+- `333c8bd3`: Added processing summary to story input for better user feedback
+
+---
 
 **Architecture:** Free-text input → SSE streaming → evidence extraction → embeddings → claim synthesis. Reuses existing synthesis pipeline.
 
