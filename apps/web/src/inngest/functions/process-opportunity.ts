@@ -2,7 +2,7 @@ import { inngest } from "../client";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { generateEmbedding } from "@/lib/ai/embeddings";
 import { fetchLinkedInJob, isLinkedInJobUrl } from "@/lib/integrations/brightdata";
-import { fetchJobPageContent, looksLikeJobUrl } from "@/lib/integrations/scraping";
+import { fetchJobPageContent } from "@/lib/integrations/scraping";
 import { researchCompanyBackground } from "@/lib/ai/research-company-background";
 import { normalizeJobUrl } from "@/lib/utils/normalize-url";
 import { createLogger } from "@/lib/logger";
@@ -143,8 +143,9 @@ export const processOpportunity = inngest.createFunction(
           jobLog.error("LinkedIn enrichment failed", { error: enrichError instanceof Error ? enrichError.message : String(enrichError) });
           throw new Error("Couldn't fetch LinkedIn job data. Please try again or paste the job description.");
         }
-      } else if (url && !description && looksLikeJobUrl(url)) {
-        jobLog.info("Attempting generic scraping");
+      } else if (url && !description) {
+        // Try to scrape any URL the user shares - they explicitly want this job
+        jobLog.info("Attempting generic scraping for:", url);
         const scrapedContent = await fetchJobPageContent(url);
 
         if (scrapedContent) {
@@ -152,12 +153,12 @@ export const processOpportunity = inngest.createFunction(
           source = "scraped";
           jobLog.info("Generic scraping successful");
         } else {
-          throw new Error("Couldn't fetch that URL. Please provide the job description.");
+          jobLog.warn("Scraping failed, no content returned");
         }
       }
 
       if (!description) {
-        throw new Error("Description is required (or provide a job URL)");
+        throw new Error("Couldn't fetch job details from that URL. Please provide the job description.");
       }
 
       return {
