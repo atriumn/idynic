@@ -71,10 +71,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
+    const initAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('[Auth] getSession error:', error.message);
+          // If we get an invalid refresh token error, clear the session
+          if (error.message.includes('Refresh Token') || error.code === 'refresh_token_not_found') {
+            console.log('[Auth] Clearing invalid session');
+            await supabase.auth.signOut();
+          }
+        }
+        setSession(session);
+      } catch (error) {
+        // Handle thrown errors (e.g., from auto-refresh)
+        console.error('[Auth] Auth initialization error:', error);
+        if (error instanceof Error && error.message.includes('Refresh Token')) {
+          console.log('[Auth] Clearing invalid session after error');
+          await supabase.auth.signOut();
+        }
+        setSession(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
