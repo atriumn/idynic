@@ -7,6 +7,7 @@
  * Sources:
  * - OpenAI: https://platform.openai.com/docs/pricing
  * - Google: https://ai.google.dev/gemini-api/docs/pricing
+ * - Anthropic: https://www.anthropic.com/pricing
  */
 
 export interface ModelPricing {
@@ -34,6 +35,14 @@ export const AI_PRICING: Record<string, Record<string, ModelPricing>> = {
   },
   google: {
     "gemini-3-flash-preview": { input: 0.5, output: 3.0 },
+  },
+  anthropic: {
+    // Claude 4.5 series
+    "claude-sonnet-4-5-20250514": { input: 3.0, output: 15.0 },
+    "claude-opus-4-5-20250514": { input: 5.0, output: 25.0 },
+    // Claude 4 series
+    "claude-sonnet-4-20250514": { input: 3.0, output: 15.0 },
+    "claude-opus-4-20250514": { input: 15.0, output: 75.0 },
   },
 };
 

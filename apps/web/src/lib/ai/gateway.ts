@@ -2,6 +2,7 @@ import { createServiceRoleClient } from "../supabase/service-role";
 import { calculateCostCents } from "./pricing";
 import { OpenAIProvider } from "./providers/openai";
 import { GoogleProvider } from "./providers/google";
+import { AnthropicProvider } from "./providers/anthropic";
 import type {
   AIProvider,
   AICompletionRequest,
@@ -19,6 +20,8 @@ function getProvider(provider: string, model: string): AIProvider {
       return new OpenAIProvider(model);
     case "google":
       return new GoogleProvider(model);
+    case "anthropic":
+      return new AnthropicProvider(model);
     default:
       throw new Error(`Unknown AI provider: ${provider}`);
   }
