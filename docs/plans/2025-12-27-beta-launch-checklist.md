@@ -16,6 +16,9 @@
 - [x] Privacy Policy - exists at `/legal/privacy`
 - [x] Terms of Service - exists at `/legal/terms`
 - [x] Cookie Policy - exists at `/legal/cookies`
+- [ ] **Add ToS/Privacy links to signup page** - "By signing up, you agree to our Terms and Privacy Policy"
+- [ ] **Fix AI training clause in Privacy Policy** - Clarify we use OpenAI API but do NOT train models on user data
+- [ ] **Add billing/subscription section to ToS** - Refund policy, auto-renewal, cancellation terms
 - [ ] **Verify support@idynic.com is receiving emails** and someone is monitoring it
 
 ### Operational Readiness
@@ -47,6 +50,16 @@
   - Deletes storage files (resume PDFs)
   - Deletes Supabase Auth user record
   - Cancels Stripe subscription if active
+- [ ] **Build "Export My Data" feature** - GDPR data portability requirement:
+  - Export all user data as JSON + original uploaded files (PDFs)
+  - Include: profile, work_history, identity_claims, evidence, opportunities, tailored_profiles
+  - Deliver as ZIP download or email link for large exports
+
+### Legal Hardening
+- [ ] **Add data retention section to Privacy Policy** - State how long data is kept (e.g., "until you delete your account")
+- [ ] **Specify jurisdiction in ToS** - Replace vague "jurisdiction in which Idynic operates" with specific state
+- [ ] **Add warranty disclaimer to ToS** - "AS IS" / "AS AVAILABLE" language
+- [ ] **Add cookie consent banner** - Required for EU users to opt-in to analytics cookies
 
 ### Operational
 - [ ] Set up monthly manual backup to S3 (optional safety net beyond 7 days)
