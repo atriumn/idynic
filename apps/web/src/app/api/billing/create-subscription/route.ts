@@ -1,5 +1,4 @@
 import { NextRequest } from "next/server";
-import type Stripe from "stripe";
 import { apiSuccess, apiError } from "@/lib/api/response";
 import { getApiUser } from "@/lib/supabase/api-auth";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
@@ -92,35 +91,32 @@ export async function POST(request: NextRequest) {
       payment_settings: {
         save_default_payment_method: "on_subscription",
       },
-      expand: ["latest_invoice.payment_intent"],
+      expand: ["latest_invoice.confirmation_secret"],
       metadata: {
         user_id: user.id,
       },
     });
 
-    // Get the client secret from the payment intent
-    // When using expand: ["latest_invoice.payment_intent"], we get the full objects
+    // Get the client secret from the invoice's confirmation_secret
+    // In API version 2025+, use confirmation_secret instead of payment_intent
     const invoice = stripeSubscription.latest_invoice;
-    console.log("Stripe invoice response:", JSON.stringify(invoice, null, 2));
 
     if (!invoice || typeof invoice === "string") {
       throw new Error("Failed to get invoice from subscription");
     }
 
-    // Access payment_intent from the expanded invoice
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const invoiceObj = invoice as any;
-    console.log("Invoice keys:", Object.keys(invoiceObj));
-    console.log("payment_intent value:", invoiceObj.payment_intent);
+    const confirmationSecret = invoiceObj.confirmation_secret;
 
-    const paymentIntent = invoiceObj.payment_intent as Stripe.PaymentIntent | null;
-    if (!paymentIntent) {
-      throw new Error(`Failed to get payment intent from invoice. Invoice ID: ${invoiceObj.id}`);
+    if (!confirmationSecret?.client_secret) {
+      console.error("Invoice confirmation_secret:", confirmationSecret);
+      throw new Error(`Failed to get client_secret from invoice. Invoice ID: ${invoiceObj.id}`);
     }
 
     return apiSuccess({
       subscriptionId: stripeSubscription.id,
-      clientSecret: paymentIntent.client_secret,
+      clientSecret: confirmationSecret.client_secret,
     });
   } catch (err) {
     console.error("Stripe subscription error:", err);
