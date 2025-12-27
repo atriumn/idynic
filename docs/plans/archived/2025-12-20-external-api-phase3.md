@@ -2,6 +2,22 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Done
+
+## Progress (Last reviewed: 2025-12-25)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| POST /api/v1/documents/resume | ✅ Complete | Resume upload with SSE |
+| POST /api/v1/documents/story | ✅ Complete | Story submission endpoint |
+| Profile update endpoints | ✅ Complete | Work history CRUD at `/api/v1/profile/work-history` |
+
+### Implementation Notes
+All Phase 3 endpoints implemented. Files exist at:
+- `apps/web/src/app/api/v1/documents/resume/route.ts`
+- `apps/web/src/app/api/v1/documents/story/route.ts`
+- `apps/web/src/app/api/v1/profile/work-history/route.ts`
+
 **Goal:** Add content input endpoints to the external API - resume upload, story submission, and profile updates.
 
 **Architecture:** New v1 API routes with API key auth that mirror existing internal routes. Resume and story endpoints use SSE streaming for long AI operations. Profile updates are synchronous. All routes use service role client.

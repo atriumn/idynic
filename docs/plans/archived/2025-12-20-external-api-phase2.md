@@ -2,6 +2,24 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Done
+
+## Progress (Last reviewed: 2025-12-25)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Task 1: POST /api/v1/opportunities | ✅ Complete | Endpoint exists |
+| Task 2: GET /api/v1/opportunities/:id | ✅ Complete | `[id]/route.ts` |
+| Task 3: GET /api/v1/opportunities/:id/match | ✅ Complete | Match analysis endpoint |
+| Task 4: POST /api/v1/opportunities/:id/tailor | ✅ Complete | Tailoring endpoint |
+| Task 5: GET /api/v1/opportunities/:id/tailored-profile | ✅ Complete | Profile retrieval |
+| Task 6: POST /api/v1/opportunities/:id/share | ✅ Complete | Share link creation |
+| Task 7: POST /api/v1/opportunities/add-and-tailor | ✅ Complete | Compound endpoint |
+| Task 8: POST /api/v1/opportunities/add-tailor-share | ✅ Complete | Full compound |
+
+### Implementation Notes
+All Phase 2 endpoints implemented. Files exist under `apps/web/src/app/api/v1/opportunities/`.
+
 **Goal:** Add opportunity management endpoints to the external API - create, match, tailor, and share.
 
 **Architecture:** New v1 API routes with API key auth that call existing lib functions. Each endpoint is thin: validate request, call lib function, format response. Long operations (tailor) stream progress via SSE.

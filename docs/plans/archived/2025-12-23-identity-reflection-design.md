@@ -1,8 +1,22 @@
 # Identity Reflection Feature Design
 
 **Date:** 2025-12-23
-**Status:** Approved
+**Status:** Done
 **Author:** Brainstorming session
+
+## Progress (Last reviewed: 2025-12-25)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Database migration | ✅ Complete | `20251223100000_add_identity_reflection.sql` |
+| Core generation logic | ✅ Complete | `apps/web/src/lib/ai/reflect-identity.ts` |
+| Web UI component | ✅ Complete | `apps/web/src/components/identity/identity-reflection.tsx` |
+| Hook for data fetching | ✅ Complete | `apps/web/src/lib/hooks/use-identity-reflection.ts` |
+| Mobile component | ✅ Complete | `apps/mobile/components/identity-reflection.tsx` |
+| Integration with profile | ✅ Complete | Added to profile endpoints |
+
+### Implementation Notes
+Feature fully implemented in commit `2727e9dc` (2025-12-23). Includes archetype system with 10 archetypes, headline/bio generation, and keyword extraction.
 
 ## Overview
 
