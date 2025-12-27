@@ -1,8 +1,28 @@
 # External API Phase 2: Opportunity Operations
 
+**Status:** Done
+**Last Reviewed:** 2025-12-27
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Add opportunity management endpoints to the external API - create, match, tailor, and share.
+
+## Progress (Last reviewed: 2025-12-27)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: POST /api/v1/opportunities | ✅ Complete | Route exists |
+| Task 2: GET /api/v1/opportunities/:id | ✅ Complete | Route exists |
+| Task 3: GET /api/v1/opportunities/:id/match | ✅ Complete | Route exists |
+| Task 4: POST /api/v1/opportunities/:id/tailor | ✅ Complete | Route exists |
+| Task 5: GET /api/v1/opportunities/:id/tailored-profile | ✅ Complete | Route exists |
+| Task 6: POST /api/v1/opportunities/:id/share | ✅ Complete | Route exists |
+| Task 7: POST /api/v1/opportunities/add-and-tailor | ✅ Complete | Route exists |
+| Task 8: POST /api/v1/opportunities/add-tailor-share | ✅ Complete | Route exists |
+| Task 9: Fix Lib Function Dependencies | ✅ Complete | Service role compatible |
+| Task 10: Integration Testing | ✅ Complete | Part of PR #6 |
+
+---
 
 **Architecture:** New v1 API routes with API key auth that call existing lib functions. Each endpoint is thin: validate request, call lib function, format response. Long operations (tailor) stream progress via SSE.
 

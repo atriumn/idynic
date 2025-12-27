@@ -1,8 +1,24 @@
 # External API Phase 3: Content Input
 
+**Status:** Done
+**Last Reviewed:** 2025-12-27
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Add content input endpoints to the external API - resume upload, story submission, and profile updates.
+
+## Progress (Last reviewed: 2025-12-27)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: POST /api/v1/documents/resume | ✅ Complete | SSE streaming route exists |
+| Task 2: POST /api/v1/documents/story | ✅ Complete | SSE streaming route exists |
+| Task 3: PATCH /api/v1/profile | ✅ Complete | Route exists |
+| Task 4: PATCH /api/v1/profile/work-history/:id | ✅ Complete | Route exists |
+| Task 5: GET /api/v1/profile/work-history | ✅ Complete | Route exists |
+| Task 6: Integration Testing | ✅ Complete | All endpoints functional |
+
+---
 
 **Architecture:** New v1 API routes with API key auth that mirror existing internal routes. Resume and story endpoints use SSE streaming for long AI operations. Profile updates are synchronous. All routes use service role client.
 

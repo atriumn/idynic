@@ -1,8 +1,23 @@
 # External API Phase 5: Recruiter & Polish
 
+**Status:** Done
+**Last Reviewed:** 2025-12-27
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Add recruiter-facing AI summary endpoint, rate limiting, and API documentation.
+
+## Progress (Last reviewed: 2025-12-27)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: GET /api/v1/shared/:token/summary | ✅ Complete | AI summary endpoint exists |
+| Task 2: Rate Limiting Middleware | ✅ Complete | `apps/web/src/lib/api/rate-limit.ts` |
+| Task 3: Usage Tracking Endpoint | ✅ Complete | `GET /api/v1/usage` |
+| Task 4: OpenAPI Spec | ✅ Complete | `/api/v1/openapi.json` route |
+| Task 5: API Docs Page | ✅ Complete | `/docs/api` page |
+
+---
 
 **Architecture:** New public endpoint for AI-generated candidate summaries (no auth required - uses share token). Rate limiting via middleware. OpenAPI spec for documentation.
 

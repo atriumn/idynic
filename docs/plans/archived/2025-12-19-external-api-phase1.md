@@ -1,8 +1,31 @@
 # External API Phase 1: Foundation
 
+**Status:** Done
+**Last Reviewed:** 2025-12-27
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Set up API key infrastructure and core read endpoints for the external API.
+
+## Progress (Last reviewed: 2025-12-27)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Create api_keys Table | ✅ Complete | `supabase/migrations/20251219194017_create_api_keys.sql` |
+| Task 2: Generate TypeScript Types | ✅ Complete | Types regenerated |
+| Task 3: Create API Key Utilities | ✅ Complete | `apps/web/src/lib/api/keys.ts` |
+| Task 4: Create API Auth Middleware | ✅ Complete | `apps/web/src/lib/api/auth.ts` |
+| Task 5: Create API Response Helpers | ✅ Complete | `apps/web/src/lib/api/response.ts` |
+| Task 6: GET /api/v1/profile | ✅ Complete | Route exists |
+| Task 7: GET /api/v1/claims | ✅ Complete | Route exists |
+| Task 8: GET /api/v1/opportunities | ✅ Complete | Route exists |
+| Task 9: API Key Management Actions | ✅ Complete | Server actions in settings |
+| Task 10: API Keys Management Page | ✅ Complete | `/settings/api-keys` |
+| Task 11: API Keys Client Component | ✅ Complete | UI functional |
+| Task 12: Add Settings Link to Nav | ✅ Complete | Link in user dropdown |
+| Task 13: Final Integration Test | ✅ Complete | Merged PR #6 |
+
+---
 
 **Architecture:** Add `api_keys` table with hashed keys mapped to users. Create auth middleware that validates keys and sets RLS context. Build UI for users to manage keys. Implement first three endpoints: `/api/v1/profile`, `/api/v1/claims`, `/api/v1/opportunities`.
 
