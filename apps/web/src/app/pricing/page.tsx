@@ -78,23 +78,23 @@ export default function PricingPage() {
 
           {/* Candidates Pricing */}
           <TabsContent value="candidates" className="mt-12">
-            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
               {/* Free Tier */}
-              <div className="rounded-2xl border bg-card text-card-foreground shadow-sm p-6 space-y-6 relative">
+              <div className="rounded-2xl border bg-card text-card-foreground shadow-sm p-6 relative flex flex-col">
                 {currentPlan === "free" && (
                   <Badge className="absolute -top-3 left-4" variant="secondary">
                     Current Plan
                   </Badge>
                 )}
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-xl">Free</h3>
+                  <h3 className="font-semibold text-xl h-7 flex items-center">Free</h3>
                   <p className="text-sm text-muted-foreground">Get started building your identity.</p>
                 </div>
-                <div className="flex items-baseline gap-1">
+                <div className="flex items-baseline gap-1 mt-6">
                   <span className="text-3xl font-bold">$0</span>
                   <span className="text-muted-foreground text-sm">forever</span>
                 </div>
-                <ul className="space-y-2 text-sm">
+                <ul className="space-y-2 text-sm mt-6 flex-1">
                   <li className="flex gap-2">
                     <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                     <span>1 document upload per month</span>
@@ -112,30 +112,30 @@ export default function PricingPage() {
                     <span>Shareable profile links</span>
                   </li>
                 </ul>
-                <Button className="w-full" variant="outline" asChild>
+                <Button className="w-full mt-6" variant="outline" asChild>
                   <Link href="/login">Get Started</Link>
                 </Button>
               </div>
 
               {/* Pro Tier */}
-              <div className="rounded-2xl border bg-card text-card-foreground shadow-sm p-6 space-y-6 relative">
+              <div className="rounded-2xl border bg-card text-card-foreground shadow-sm p-6 relative flex flex-col">
                 {currentPlan === "pro" && (
                   <Badge className="absolute -top-3 left-4">
                     Current Plan
                   </Badge>
                 )}
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-xl flex items-center gap-2">
+                  <h3 className="font-semibold text-xl h-7 flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-primary" />
                     Pro
                   </h3>
                   <p className="text-sm text-muted-foreground">For career builders.</p>
                 </div>
-                <div className="flex items-baseline gap-1">
+                <div className="flex items-baseline gap-1 mt-6">
                   <span className="text-3xl font-bold">$100</span>
                   <span className="text-muted-foreground text-sm">/year</span>
                 </div>
-                <ul className="space-y-2 text-sm">
+                <ul className="space-y-2 text-sm mt-6 flex-1">
                   <li className="flex gap-2">
                     <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                     <span>Unlimited document uploads</span>
@@ -162,12 +162,12 @@ export default function PricingPage() {
                   </li>
                 </ul>
                 {currentPlan === "pro" ? (
-                  <Button className="w-full" variant="outline" asChild>
+                  <Button className="w-full mt-6" variant="outline" asChild>
                     <Link href="/settings/usage">Manage Plan</Link>
                   </Button>
                 ) : (
                   <Button
-                    className="w-full"
+                    className="w-full mt-6"
                     onClick={() => handleUpgrade("pro")}
                     disabled={checkoutMutation.isPending || currentPlan === "job_search"}
                   >
@@ -177,7 +177,7 @@ export default function PricingPage() {
               </div>
 
               {/* Job Search Tier */}
-              <div className="rounded-2xl border-2 border-primary bg-card text-card-foreground shadow-lg p-6 space-y-6 relative">
+              <div className="rounded-2xl border-2 border-primary bg-card text-card-foreground shadow-lg p-6 relative flex flex-col">
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap">
                   Best for job seekers
                 </div>
@@ -186,18 +186,18 @@ export default function PricingPage() {
                     Current Plan
                   </Badge>
                 )}
-                <div className="space-y-2 pt-2">
-                  <h3 className="font-semibold text-xl flex items-center gap-2">
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-xl h-7 flex items-center gap-2">
                     <Zap className="h-4 w-4 text-primary" />
                     Job Search
                   </h3>
                   <p className="text-sm text-muted-foreground">For active job hunters.</p>
                 </div>
-                <div className="flex items-baseline gap-1">
+                <div className="flex items-baseline gap-1 mt-6">
                   <span className="text-3xl font-bold">$50</span>
                   <span className="text-muted-foreground text-sm">/3 months</span>
                 </div>
-                <ul className="space-y-2 text-sm">
+                <ul className="space-y-2 text-sm mt-6 flex-1">
                   <li className="flex gap-2">
                     <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                     <span className="font-medium">Unlimited everything</span>
@@ -220,12 +220,12 @@ export default function PricingPage() {
                   </li>
                 </ul>
                 {currentPlan === "job_search" ? (
-                  <Button className="w-full" variant="outline" asChild>
+                  <Button className="w-full mt-6" variant="outline" asChild>
                     <Link href="/settings/usage">Manage Plan</Link>
                   </Button>
                 ) : (
                   <Button
-                    className="w-full"
+                    className="w-full mt-6"
                     onClick={() => handleUpgrade("job_search")}
                     disabled={checkoutMutation.isPending}
                   >
