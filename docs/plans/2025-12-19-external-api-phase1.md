@@ -4,6 +4,23 @@
 
 **Goal:** Set up API key infrastructure and core read endpoints for the external API.
 
+**Status:** Done
+
+## Progress (Last reviewed: 2025-12-26)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| api_keys table | ✅ Complete | Migration applied |
+| TypeScript types | ✅ Complete | types.ts regenerated |
+| API key utilities | ✅ Complete | src/lib/api/keys.ts |
+| Auth middleware | ✅ Complete | src/lib/api/auth.ts |
+| Response helpers | ✅ Complete | src/lib/api/response.ts |
+| GET /api/v1/profile | ✅ Complete | |
+| GET /api/v1/claims | ✅ Complete | |
+| GET /api/v1/opportunities | ✅ Complete | |
+| API key management UI | ✅ Complete | /settings/api-keys |
+| Navigation link | ✅ Complete | Added to user dropdown |
+
 **Architecture:** Add `api_keys` table with hashed keys mapped to users. Create auth middleware that validates keys and sets RLS context. Build UI for users to manage keys. Implement first three endpoints: `/api/v1/profile`, `/api/v1/claims`, `/api/v1/opportunities`.
 
 **Tech Stack:** Next.js 14 API routes, Supabase PostgreSQL, TypeScript, Tailwind CSS, Radix UI

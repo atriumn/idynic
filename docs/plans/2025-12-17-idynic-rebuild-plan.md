@@ -1,8 +1,29 @@
 # Idynic Rebuild Plan
 
-**Status:** Ready for execution
+**Status:** Done
 **Created:** 2025-12-17
 **Decision:** Full rebuild on Supabase + Vercel, nuke existing AWS infrastructure
+
+## Progress (Last reviewed: 2025-12-26)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 0: Teardown | ✅ Complete | AWS nuked, old repo archived |
+| Phase 1: Foundation | ✅ Complete | Next.js 14, Supabase, Vercel |
+| Phase 2: Auth | ✅ Complete | Supabase Auth + RLS |
+| Phase 3: Resume Upload + Extraction | ✅ Complete | unpdf + GPT-4o-mini |
+| Phase 4: Identity View | ✅ Complete | Claims UI |
+| Phase 5: Opportunities | ✅ Complete | Job tracking + extraction |
+| Phase 6: Matching | ✅ Complete | Vector search |
+| Phase 7: Polish | ✅ Complete | Loading states, dark mode |
+| Phase 8: Go Live | ✅ Complete | idynic.com deployed |
+| Phase 9: Operational Maturity | 🔄 In Progress | Observability added (Sentry, Inngest) |
+
+### Recent Additions (not in original plan)
+- Identity Reflection feature (archetypes, headlines, bios)
+- Mobile app (iOS in TestFlight)
+- Background job processing (Inngest)
+- Observability stack (Sentry, Axiom, correlation IDs)
 
 ## Overview
 

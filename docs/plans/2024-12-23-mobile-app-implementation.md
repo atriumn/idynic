@@ -4,9 +4,32 @@
 
 **Goal:** Build a React Native + Expo mobile app with full feature parity to the idynic web app, starting with iOS.
 
+**Status:** In Progress
+
 **Architecture:** Monorepo with shared TypeScript packages for types, schemas, and API client. Expo Router for file-based navigation. NativeWind for Tailwind-style styling. Supabase for auth and data.
 
 **Tech Stack:** Expo SDK 52, Expo Router, NativeWind v4, React Query, Supabase JS, expo-secure-store
+
+## Progress (Last reviewed: 2025-12-26)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Phase 1: Monorepo Setup | ✅ Complete | pnpm workspaces, apps/web, packages/shared |
+| Phase 2: Expo App Setup | ✅ Complete | NativeWind, Supabase client, navigation |
+| Phase 3: Core Screens | ✅ Complete | Identity graph, profile editing, opportunities |
+| iOS Build Pipeline | ✅ Complete | EAS + Fastlane configured (mobile-deploy.yml) |
+| TestFlight Distribution | ✅ Complete | App available in TestFlight |
+
+### Recent Progress
+- Commit c4a91f2d: "feat(mobile): add identity graph, profile editing, and logo integration"
+- Commit a34a75fe: "feat: add mobile CI/CD workflow and app store badges"
+- Commit efe58027: "feat: add mobile iOS build pipeline with EAS and local xcodebuild"
+- Commit c0881119: "feat(mobile): improve signup flow with email confirmation"
+
+### Remaining Work
+- Android build/distribution (see 2025-12-23-android-launch-plan.md)
+- Push notifications
+- Additional polish items
 
 ---
 
