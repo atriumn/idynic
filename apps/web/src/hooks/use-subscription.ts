@@ -87,6 +87,37 @@ export function useCreateCheckoutSession() {
   });
 }
 
+interface CreateSubscriptionOptions {
+  plan: "pro" | "job_search";
+}
+
+interface CreateSubscriptionResult {
+  subscriptionId: string;
+  clientSecret: string;
+}
+
+async function createSubscription(options: CreateSubscriptionOptions): Promise<CreateSubscriptionResult> {
+  const res = await fetch("/api/billing/create-subscription", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(options),
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error?.message || "Failed to create subscription");
+  }
+
+  const json = await res.json();
+  return json.data;
+}
+
+export function useCreateSubscription() {
+  return useMutation({
+    mutationFn: createSubscription,
+  });
+}
+
 interface PortalOptions {
   returnUrl: string;
 }
