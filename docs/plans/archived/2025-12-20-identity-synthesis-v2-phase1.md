@@ -2,6 +2,29 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Done
+**Last Updated:** 2025-12-21
+
+## Progress (Last reviewed: 2025-12-21)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Create Migration for Source Metadata Columns | ✅ Complete | evidence_source_metadata.sql |
+| Task 2: Backfill Existing Evidence with Source Type | ✅ Complete | backfill_evidence_source_type.sql |
+| Task 3: Backfill Evidence Dates from Context | ✅ Complete | backfill_evidence_dates.sql |
+| Task 4: Create Confidence Scoring Module - Types | ✅ Complete | confidence-scoring.ts |
+| Task 5: Implement Recency Decay Function | ✅ Complete | calculateRecencyDecay() |
+| Task 6: Implement Source Weight Function | ✅ Complete | getSourceWeight() |
+| Task 7: Implement Combined Evidence Weight Function | ✅ Complete | calculateEvidenceWeight() |
+| Task 8: Implement Claim Confidence Calculator | ✅ Complete | calculateClaimConfidence() |
+| Task 9: Update Evidence Extraction to Set Source Type | ✅ Complete | sourceType parameter added |
+| Task 10: Run Full Test Suite and Verify | ✅ Complete | All tests passing |
+
+### Drift Notes
+None - implementation followed plan closely.
+
+---
+
 **Goal:** Add source metadata columns to evidence table and implement decay/weight calculation utilities.
 
 **Architecture:** Extend evidence table with `source_type` and `evidence_date` columns. Create pure functions for confidence scoring that incorporate recency decay and source weighting. Backfill existing data.

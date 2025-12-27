@@ -2,6 +2,34 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Done
+**Last Updated:** 2025-12-21
+
+## Progress (Last reviewed: 2025-12-21)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Create api_keys Table | ✅ Complete | Migration with RLS |
+| Task 2: Generate Updated TypeScript Types | ✅ Complete | types.ts regenerated |
+| Task 3: Create API Key Utilities | ✅ Complete | keys.ts (generate, hash) |
+| Task 4: Create API Auth Middleware | ✅ Complete | auth.ts (validateApiKey) |
+| Task 5: Create API Response Helpers | ✅ Complete | response.ts |
+| Task 6: Create GET /api/v1/profile Endpoint | ✅ Complete | profile/route.ts |
+| Task 7: Create GET /api/v1/claims Endpoint | ✅ Complete | claims/route.ts |
+| Task 8: Create GET /api/v1/opportunities Endpoint | ✅ Complete | opportunities/route.ts |
+| Task 9: Create API Key Management Server Actions | ✅ Complete | settings/api-keys/actions.ts |
+| Task 10: Create API Keys Management Page | ✅ Complete | settings/api-keys/page.tsx |
+| Task 11: Create API Keys Client Component | ✅ Complete | settings/api-keys/client.tsx |
+| Task 12: Add Settings Link to Navigation | ✅ Complete | API Keys in user dropdown |
+| Task 13: Final Integration Test | ✅ Complete | Merged in PR #6 |
+
+### Drift Notes
+- Added service role Supabase client for API routes (bypasses RLS for authenticated API calls)
+- Added SSE stream fix to handle client disconnects gracefully
+- Added pre-commit hooks (husky + lint-staged)
+
+---
+
 **Goal:** Set up API key infrastructure and core read endpoints for the external API.
 
 **Architecture:** Add `api_keys` table with hashed keys mapped to users. Create auth middleware that validates keys and sets RLS context. Build UI for users to manage keys. Implement first three endpoints: `/api/v1/profile`, `/api/v1/claims`, `/api/v1/opportunities`.

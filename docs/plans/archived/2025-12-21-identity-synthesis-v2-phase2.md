@@ -2,6 +2,25 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Done
+**Last Updated:** 2025-12-21
+
+## Progress (Last reviewed: 2025-12-21)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Create RAG Retrieval RPC Function | ✅ Complete | find_relevant_claims_for_synthesis RPC |
+| Task 2: Create RAG Retrieval TypeScript Module | ✅ Complete | rag-claims.ts with tests |
+| Task 3: Update synthesizeClaimsBatch to Use RAG | ✅ Complete | Integrated into batch processing |
+| Task 4: Add Integration Tests for RAG Synthesis | ✅ Complete | synthesize-claims-rag.test.ts |
+| Task 5: Update Progress UX (Reveal at End) | ✅ Complete | Batch claim updates implemented |
+| Task 6: Run Full Test Suite and Verify | ✅ Complete | All tests passing |
+
+### Drift Notes
+Minor: RPC function call uses JSON.stringify for embedding array (fix: pass embedding array directly).
+
+---
+
 **Goal:** Replace full-context claim loading with vector search, enabling synthesis to scale to 500+ claims.
 
 **Architecture:** Before LLM synthesis, query `find_relevant_claims_for_synthesis()` RPC to retrieve only semantically similar claims (similarity > 0.50, max 25). Union results across evidence batch, deduplicate, then pass focused context to LLM.

@@ -2,6 +2,24 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Done
+**Last Updated:** 2025-12-21
+
+## Progress (Last reviewed: 2025-12-21)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Update recalculateConfidence to Use Scoring Module | ✅ Complete | Integrated into synthesize-claims-batch.ts |
+| Task 2: Update New Claim Creation to Use Scoring Module | ✅ Complete | Uses evidence metadata |
+| Task 3: Create Migration to Recalculate Existing Confidences | ✅ Complete | recalculate_claim_confidences.sql |
+| Task 4: Add Tests for Enhanced Synthesis Scoring | ✅ Complete | synthesize-claims-scoring.test.ts |
+| Task 5: Run Full Test Suite and Push | ✅ Complete | All tests passing |
+
+### Drift Notes
+- Story evidence now properly sets source_type and evidence_date (additional fix applied)
+
+---
+
 **Goal:** Wire up the confidence scoring module so recency decay and source weighting affect claim confidence.
 
 **Architecture:** Replace hardcoded confidence calculation in synthesis with the new `calculateClaimConfidence()` function that considers evidence date, source type, and claim type.
