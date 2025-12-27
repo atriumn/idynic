@@ -55,6 +55,9 @@ export function withRequestContext(handler: RouteHandler): RouteHandler {
           status: response.status,
         });
 
+        // Flush logs to Axiom before response completes
+        await log.flush();
+
         return newResponse;
       } catch (error) {
         log.error(`${request.method} ${url.pathname} failed`, {
@@ -70,6 +73,9 @@ export function withRequestContext(handler: RouteHandler): RouteHandler {
             method: request.method,
           },
         });
+
+        // Flush logs to Axiom even on error
+        await log.flush();
 
         const errorResponse = NextResponse.json(
           { error: "Internal server error" },

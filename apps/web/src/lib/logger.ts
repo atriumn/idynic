@@ -154,6 +154,16 @@ export const log = {
     const entry = createLogEntry("error", message, data);
     logToConsole(entry);
   },
+
+  /**
+   * Flush logs to Axiom. Call this at the end of API route handlers
+   * to ensure logs are sent before the response completes.
+   */
+  async flush(): Promise<void> {
+    if (axiomLogger) {
+      await axiomLogger.flush();
+    }
+  },
 };
 
 /**
