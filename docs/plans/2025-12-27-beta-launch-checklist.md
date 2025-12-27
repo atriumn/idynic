@@ -19,9 +19,18 @@
 - [ ] **Verify support@idynic.com is receiving emails** and someone is monitoring it
 
 ### Operational Readiness
-- [ ] **Set up UptimeRobot** (free tier) - monitors for homepage + API health
-- [ ] **Set up support channel** - either Crisp (live chat + inbox) or Discord
-- [ ] **Verify Sentry alerts are configured** - check you're getting notified on errors
+- [ ] **Set up UptimeRobot** (free tier) - monitors for homepage + API health endpoint
+- [ ] **Set up Discord server** for community + support:
+  - Create channels: #announcements, #general, #support, #feature-requests
+  - Add Ticket Tool bot for private support threads
+  - Pin bug report template (redirects to in-app reporter)
+- [ ] **Create public `atriumn/idynic-feedback` repo** for bug reports (keeps code private, feedback public)
+- [ ] **Build in-app bug reporter** - "Report a Bug" button that:
+  - Collects: title, description, optional screenshot, user email (if logged in)
+  - Auto-includes: browser/device info, current URL
+  - Creates GitHub issue in `idynic-feedback` repo via API
+  - Labels as `bug` automatically
+- [ ] **Verify Sentry alerts are configured** - check you're getting email notifications on errors
 - [ ] **Verify Axiom is receiving logs** - check dashboard has recent data
 
 ---
@@ -89,5 +98,28 @@
 1. **Backups**: Supabase Pro daily backups sufficient for beta (7-day retention)
 2. **Storage backups**: Not critical - extracted claims/evidence are what matter, users can re-upload
 3. **Status page**: Skip for beta, add when paying customers expect it
-4. **Support**: Start with Crisp or Discord, not heavyweight ticketing
-5. **GDPR**: Privacy policy covers it; deletion requests handled manually until feature built
+4. **Support channel**: Discord for community + support (free, builds community)
+5. **Bug reporting**: In-app reporter → public GitHub `idynic-feedback` repo (free, 2-way comms via public issues)
+6. **2-way communication**: Users can follow their GitHub issue for updates; optionally capture email for direct follow-up
+7. **GDPR**: Privacy policy covers it; deletion requests handled manually until feature built
+8. **Monitoring**: UptimeRobot (free) + Sentry email alerts; upgrade to Sentry Team ($29/mo) for Discord webhooks later
+
+---
+
+## Bug Reporter Implementation Notes
+
+**API Route:** `POST /api/feedback`
+- Accepts: `{ title, description, screenshot?, email? }`
+- Auto-attaches: browser info, URL, user ID (if authenticated)
+- Creates issue via GitHub API in `atriumn/idynic-feedback`
+- Requires: `GITHUB_FEEDBACK_TOKEN` env var with `issues:write` scope
+
+**UI Placement:**
+- Footer link: "Report a Bug"
+- Settings page: feedback section
+- Optional: floating button or help menu
+
+**Public Feedback Repo Structure:**
+- Labels: `bug`, `feature-request`, `question`
+- Issue template for consistent formatting
+- Link back to private repo issues when needed (for internal tracking)
