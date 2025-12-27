@@ -24,16 +24,28 @@ fi
 # Set up environment based on build type
 if [ "$BUILD_TYPE" = "dev" ]; then
     echo "🔧 Using development environment"
-    # .env.local is already set up for dev
+    ENV_FILE=".env.local"
 elif [ "$BUILD_TYPE" = "testflight" ] || [ "$BUILD_TYPE" = "prod" ]; then
     echo "🔧 Using production environment"
-    if [ -f ".env.production" ]; then
-        cp .env.production .env.local
-    else
-        echo "❌ .env.production not found!"
+    ENV_FILE=".env.production"
+    if [ ! -f "$ENV_FILE" ]; then
+        echo "❌ $ENV_FILE not found!"
         exit 1
     fi
 fi
+
+# Export env vars to shell (Expo reads EXPO_PUBLIC_* from shell at prebuild time)
+echo "📦 Loading environment from $ENV_FILE..."
+set -a  # automatically export all variables
+source "$ENV_FILE"
+set +a
+
+# Verify env vars are set
+if [ -z "$EXPO_PUBLIC_SUPABASE_URL" ]; then
+    echo "❌ EXPO_PUBLIC_SUPABASE_URL not set!"
+    exit 1
+fi
+echo "✓ EXPO_PUBLIC_SUPABASE_URL is set"
 
 # Always regenerate native project to pick up env changes
 echo "📱 Generating iOS project..."
