@@ -74,9 +74,19 @@
 - [ ] Consider PITR add-on if RPO < 24h becomes important ($100/mo)
 - [ ] Add uptime SLA commitments to Terms of Service
 
-### User Experience
-- [ ] User onboarding flow (to be designed separately)
-- [ ] In-app help/documentation
+### User Experience - Onboarding
+- [ ] **Create shared onboarding content** - `packages/shared/src/content/onboarding.ts` with prompt copy
+- [ ] **Create shared onboarding hook** - `packages/shared/src/hooks/useOnboardingProgress.ts`
+  - Track milestones: `resume_uploaded`, `story_added`, `opportunity_added`, `profile_tailored`
+  - Accept storage adapter (localStorage for web, AsyncStorage for mobile)
+- [ ] **Web: Add OnboardingPrompt component** - use existing toast system
+- [ ] **Mobile: Add OnboardingPrompt component** - React Native toast or bottom sheet
+- [ ] **Wire up trigger points:**
+  - After resume upload → "Explore your claims or add an opportunity"
+  - After story added → "Add more stories or upload a resume"
+  - After opportunity added → "Try tailoring to see your match"
+  - After profile tailored → "Share with a recruiter or download PDF"
+- [ ] In-app help/documentation (future)
 
 ### I18n Architectural Prep
 - [ ] **Create `lib/format.ts` utility** - centralize date/number/currency formatting using Intl APIs (~30 min)
@@ -123,6 +133,7 @@
 8. **Monitoring**: UptimeRobot (free) + Sentry email alerts; upgrade to Sentry Team ($29/mo) for Discord webhooks later
 9. **I18n**: No full i18n for beta; adopt conventions (string constants, Intl APIs) to ease future localization
 10. **UI string retrofit**: Don't retrofit existing ~154 strings; apply pattern to new code only
+11. **Onboarding**: Lightweight "next steps" prompts (not full wizard); shared logic for web + mobile via `@idynic/shared`
 
 ---
 
@@ -143,3 +154,41 @@
 - Labels: `bug`, `feature-request`, `question`
 - Issue template for consistent formatting
 - Link back to private repo issues when needed (for internal tracking)
+
+---
+
+## Onboarding Implementation Notes
+
+**Architecture:**
+```
+packages/shared/src/
+├── content/
+│   └── onboarding.ts       # Prompt copy for each milestone
+└── hooks/
+    └── useOnboardingProgress.ts  # Milestone tracking logic
+```
+
+**Milestone Triggers:**
+
+| Milestone | Trigger Location | Prompt |
+|-----------|------------------|--------|
+| `resume_uploaded` | After resume extraction completes | "Your identity is taking shape! Explore your claims below, or add an opportunity to see how you match." |
+| `story_added` | After story save | "Great story! We extracted [N] claims. Add more stories or upload a resume to build a fuller picture." |
+| `opportunity_added` | After opportunity save | "Ready to tailor? Click any opportunity to generate a custom profile matched to the role." |
+| `profile_tailored` | After tailored profile generated | "Your tailored profile is ready. Share it with a recruiter or download as PDF." |
+
+**Storage Abstraction:**
+```typescript
+interface OnboardingStorage {
+  getMilestone(key: string): Promise<boolean>;
+  setMilestone(key: string): Promise<void>;
+}
+
+// Web: localStorage adapter
+// Mobile: AsyncStorage adapter
+```
+
+**UI Behavior:**
+- Prompts persist until dismissed (not auto-dismiss)
+- Include action button linking to suggested next step
+- Only show each prompt once per user (tracked via storage)
