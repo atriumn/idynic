@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Check, Building2, User, Sparkles, Zap } from "lucide-react";
@@ -20,6 +20,8 @@ export default function PricingPage() {
   const searchParams = useSearchParams();
   const { data: subscriptionData } = useSubscription();
   const checkoutMutation = useCreateCheckoutSession();
+
+  const [loadingPlan, setLoadingPlan] = useState<"pro" | "job_search" | null>(null);
 
   const currentPlan = subscriptionData?.subscription?.plan_type || null;
   const isAuthenticated = !!subscriptionData;
@@ -42,10 +44,13 @@ export default function PricingPage() {
       return;
     }
 
+    setLoadingPlan(plan);
     checkoutMutation.mutate({
       plan,
       successUrl: `${window.location.origin}/settings/usage?success=true`,
       cancelUrl: `${window.location.origin}/pricing?canceled=true`,
+    }, {
+      onSettled: () => setLoadingPlan(null),
     });
   };
 
@@ -169,9 +174,9 @@ export default function PricingPage() {
                   <Button
                     className="w-full mt-6"
                     onClick={() => handleUpgrade("pro")}
-                    disabled={checkoutMutation.isPending || currentPlan === "job_search"}
+                    disabled={loadingPlan !== null || currentPlan === "job_search"}
                   >
-                    {checkoutMutation.isPending ? "Loading..." : "Subscribe"}
+                    {loadingPlan === "pro" ? "Loading..." : "Subscribe"}
                   </Button>
                 )}
               </div>
@@ -227,9 +232,9 @@ export default function PricingPage() {
                   <Button
                     className="w-full mt-6"
                     onClick={() => handleUpgrade("job_search")}
-                    disabled={checkoutMutation.isPending}
+                    disabled={loadingPlan !== null}
                   >
-                    {checkoutMutation.isPending ? "Loading..." : "Subscribe"}
+                    {loadingPlan === "job_search" ? "Loading..." : "Subscribe"}
                   </Button>
                 )}
               </div>
