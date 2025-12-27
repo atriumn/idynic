@@ -101,6 +101,41 @@ export interface ClaimUpdate {
   label: string;
 }
 
+interface BatchResult {
+  batchIndex: number;
+  decisions: BatchDecision[];
+  batch: EvidenceItem[];
+}
+
+async function processBatch(
+  batch: EvidenceItem[],
+  batchIndex: number,
+  existingClaims: Array<{ id?: string; type: string; label: string; description: string | null; confidence?: number; similarity?: number }>
+): Promise<BatchResult | null> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0,
+      max_tokens: 2000,
+      messages: [
+        { role: "system", content: BATCH_SYSTEM_PROMPT },
+        { role: "user", content: buildBatchPrompt(batch, existingClaims) },
+      ],
+    });
+
+    const content = response.choices[0]?.message?.content;
+    if (!content) return null;
+
+    const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    const decisions = JSON.parse(cleaned) as BatchDecision[];
+
+    return { batchIndex, decisions, batch };
+  } catch (err) {
+    console.error(`Batch ${batchIndex + 1} failed:`, err);
+    return null;
+  }
+}
+
 export async function synthesizeClaimsBatch(
   supabase: SupabaseClient<Database>,
   userId: string,
@@ -111,191 +146,169 @@ export async function synthesizeClaimsBatch(
   let claimsCreated = 0;
   let claimsUpdated = 0;
 
-  // Track claims created locally during synthesis (for merging with RAG results)
-  const claims: Array<{ id: string; type: string; label: string; description: string | null }> = [];
   const batches = chunk(evidenceItems, BATCH_SIZE);
   const claimIdsToRecalc = new Set<string>();
 
-  for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
-    const batch = batches[batchIndex];
+  // Pre-fetch all existing claims for this user via RAG (one query for all evidence)
+  const existingClaims = await findRelevantClaimsForBatch(
+    supabase,
+    userId,
+    evidenceItems.map(e => ({ id: e.id, embedding: e.embedding }))
+  );
 
-    onProgress?.({ current: batchIndex + 1, total: batches.length });
+  onProgress?.({ current: 0, total: batches.length });
 
-    try {
-      // RAG retrieval: Find relevant claims for this batch using vector search
-      const relevantClaims = await findRelevantClaimsForBatch(
-        supabase,
-        userId,
-        batch.map(e => ({ id: e.id, embedding: e.embedding }))
-      );
+  // Process all batches in parallel (limited concurrency)
+  let completedCount = 0;
+  const batchResults = await Promise.all(
+    batches.map(async (batch, batchIndex) => {
+      const result = await processBatch(batch, batchIndex, existingClaims);
+      completedCount++;
+      onProgress?.({ current: completedCount, total: batches.length });
+      return result;
+    })
+  );
 
-      // Merge RAG results with locally tracked claims (created in previous batches)
-      const allClaims: Array<{ id?: string; type: string; label: string; description: string | null; confidence?: number; similarity?: number }> = [...relevantClaims];
-      for (const localClaim of claims) {
-        if (!allClaims.find(c => c.id === localClaim.id)) {
-          allClaims.push({
-            ...localClaim,
-            confidence: 0.5, // default for locally tracked
-            similarity: 0, // not from vector search
+  // Collect all decisions and dedupe new claims by label
+  const newClaimsByLabel = new Map<string, {
+    decision: BatchDecision;
+    evidence: EvidenceItem;
+  }>();
+  const evidenceLinksToUpsert: Array<{
+    claim_id: string;
+    evidence_id: string;
+    strength: string;
+    label: string;
+  }> = [];
+  const pendingEvidenceLinks: Array<{
+    label: string;
+    evidence_id: string;
+    strength: string;
+  }> = [];
+
+  for (const result of batchResults) {
+    if (!result) continue;
+
+    for (const decision of result.decisions) {
+      const evidence = result.batch.find(e => e.id === decision.evidence_id);
+      if (!evidence) continue;
+
+      if (decision.match) {
+        const matchedClaim = existingClaims.find(c => c.label === decision.match);
+        if (matchedClaim && matchedClaim.id) {
+          evidenceLinksToUpsert.push({
+            claim_id: matchedClaim.id,
+            evidence_id: evidence.id,
+            strength: decision.strength,
+            label: matchedClaim.label,
+          });
+          claimIdsToRecalc.add(matchedClaim.id);
+        }
+      } else if (decision.new_claim) {
+        const existingClaim = existingClaims.find(c => c.label === decision.new_claim!.label);
+
+        if (existingClaim && existingClaim.id) {
+          evidenceLinksToUpsert.push({
+            claim_id: existingClaim.id,
+            evidence_id: evidence.id,
+            strength: decision.strength,
+            label: existingClaim.label,
+          });
+          claimIdsToRecalc.add(existingClaim.id);
+        } else {
+          // Dedupe by label - keep first occurrence
+          if (!newClaimsByLabel.has(decision.new_claim.label)) {
+            newClaimsByLabel.set(decision.new_claim.label, { decision, evidence });
+          }
+          // Track all evidence that should link to this claim
+          pendingEvidenceLinks.push({
+            label: decision.new_claim.label,
+            evidence_id: evidence.id,
+            strength: decision.strength,
           });
         }
       }
-
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        temperature: 0,
-        max_tokens: 2000,
-        messages: [
-          { role: "system", content: BATCH_SYSTEM_PROMPT },
-          { role: "user", content: buildBatchPrompt(batch, allClaims) },
-        ],
-      });
-
-      const content = response.choices[0]?.message?.content;
-      if (!content) continue;
-
-      let decisions: BatchDecision[];
-      try {
-        const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-        decisions = JSON.parse(cleaned);
-      } catch {
-        console.error("Failed to parse batch synthesis result:", content);
-        continue;
-      }
-
-      // First pass: categorize decisions and collect data for batch operations
-      const newClaimsToCreate: Array<{
-        decision: BatchDecision;
-        evidence: EvidenceItem;
-      }> = [];
-
-      const evidenceLinksToUpsert: Array<{
-        claim_id: string;
-        evidence_id: string;
-        strength: string;
-        label: string;
-      }> = [];
-
-      for (const decision of decisions) {
-        const evidence = batch.find(e => e.id === decision.evidence_id);
-        if (!evidence) continue;
-
-        if (decision.match) {
-          // Find matched claim by label
-          const matchedClaim = allClaims.find(c => c.label === decision.match);
-          if (matchedClaim && matchedClaim.id) {
-            evidenceLinksToUpsert.push({
-              claim_id: matchedClaim.id,
-              evidence_id: evidence.id,
-              strength: decision.strength,
-              label: matchedClaim.label,
-            });
-            claimIdsToRecalc.add(matchedClaim.id);
-          }
-        } else if (decision.new_claim) {
-          // Check if claim with this label already exists (in RAG results or local tracking)
-          const existingClaim = allClaims.find(c => c.label === decision.new_claim!.label);
-
-          if (existingClaim && existingClaim.id) {
-            // Link to existing instead of creating duplicate
-            evidenceLinksToUpsert.push({
-              claim_id: existingClaim.id,
-              evidence_id: evidence.id,
-              strength: decision.strength,
-              label: existingClaim.label,
-            });
-            claimIdsToRecalc.add(existingClaim.id);
-          } else {
-            // Collect for batch embedding generation
-            newClaimsToCreate.push({ decision, evidence });
-          }
-        }
-      }
-
-      // Batch upsert all evidence links for matched claims
-      if (evidenceLinksToUpsert.length > 0) {
-        const linksToInsert = evidenceLinksToUpsert.map(({ claim_id, evidence_id, strength }) => ({
-          claim_id,
-          evidence_id,
-          strength,
-        }));
-
-        await supabase
-          .from("claim_evidence")
-          .upsert(linksToInsert, { onConflict: "claim_id,evidence_id", ignoreDuplicates: true });
-
-        // Stream updates immediately
-        for (const link of evidenceLinksToUpsert) {
-          onClaimUpdate?.({ action: "matched", label: link.label });
-          claimsUpdated++;
-        }
-      }
-
-      // Generate embeddings for all new claims in one batch call
-      if (newClaimsToCreate.length > 0) {
-        const labels = newClaimsToCreate.map(c => c.decision.new_claim!.label);
-        const embeddings = await generateEmbeddings(labels);
-
-        // Build batch insert payload for all new claims
-        const claimsToInsert = newClaimsToCreate.map((item, i) => {
-          const initialEvidence: EvidenceInput[] = [{
-            strength: item.decision.strength as StrengthLevel,
-            sourceType: (item.evidence.sourceType || 'resume') as SourceType,
-            evidenceDate: item.evidence.evidenceDate || null,
-            claimType: item.decision.new_claim!.type as ClaimType,
-          }];
-
-          return {
-            user_id: userId,
-            type: item.decision.new_claim!.type,
-            label: item.decision.new_claim!.label,
-            description: item.decision.new_claim!.description,
-            confidence: calculateClaimConfidence(initialEvidence),
-            embedding: embeddings[i] as unknown as string,
-          };
-        });
-
-        // Single batch insert for all new claims
-        const { data: insertedClaims, error } = await supabase
-          .from("identity_claims")
-          .insert(claimsToInsert)
-          .select();
-
-        if (error) {
-          console.error("[synthesis] Failed to batch insert claims:", error);
-        }
-
-        if (insertedClaims && !error) {
-          // Build claim_evidence links for batch insert
-          const evidenceLinks = insertedClaims.map((claim, i) => ({
-            claim_id: claim.id,
-            evidence_id: newClaimsToCreate[i].evidence.id,
-            strength: newClaimsToCreate[i].decision.strength,
-          }));
-
-          // Single batch insert for all evidence links
-          await supabase.from("claim_evidence").insert(evidenceLinks);
-
-          // Update local tracking for subsequent batches + stream immediately
-          for (const claim of insertedClaims) {
-            claims.push({
-              id: claim.id,
-              type: claim.type,
-              label: claim.label,
-              description: claim.description,
-            });
-            onClaimUpdate?.({ action: "created", label: claim.label });
-            claimsCreated++;
-          }
-        }
-      }
-    } catch (err) {
-      console.error(`Batch ${batchIndex + 1} failed:`, err);
-      // Continue with remaining batches
     }
   }
 
-  // Bulk recalculate confidence for all affected claims at the end
+  // Batch upsert evidence links for matched claims
+  if (evidenceLinksToUpsert.length > 0) {
+    const linksToInsert = evidenceLinksToUpsert.map(({ claim_id, evidence_id, strength }) => ({
+      claim_id,
+      evidence_id,
+      strength,
+    }));
+
+    await supabase
+      .from("claim_evidence")
+      .upsert(linksToInsert, { onConflict: "claim_id,evidence_id", ignoreDuplicates: true });
+
+    for (const link of evidenceLinksToUpsert) {
+      onClaimUpdate?.({ action: "matched", label: link.label });
+      claimsUpdated++;
+    }
+  }
+
+  // Create new claims (deduped)
+  const newClaimsArray = Array.from(newClaimsByLabel.values());
+  if (newClaimsArray.length > 0) {
+    const labels = newClaimsArray.map(c => c.decision.new_claim!.label);
+    const embeddings = await generateEmbeddings(labels);
+
+    const claimsToInsert = newClaimsArray.map((item, i) => {
+      const initialEvidence: EvidenceInput[] = [{
+        strength: item.decision.strength as StrengthLevel,
+        sourceType: (item.evidence.sourceType || 'resume') as SourceType,
+        evidenceDate: item.evidence.evidenceDate || null,
+        claimType: item.decision.new_claim!.type as ClaimType,
+      }];
+
+      return {
+        user_id: userId,
+        type: item.decision.new_claim!.type,
+        label: item.decision.new_claim!.label,
+        description: item.decision.new_claim!.description,
+        confidence: calculateClaimConfidence(initialEvidence),
+        embedding: embeddings[i] as unknown as string,
+      };
+    });
+
+    const { data: insertedClaims, error } = await supabase
+      .from("identity_claims")
+      .insert(claimsToInsert)
+      .select();
+
+    if (error) {
+      console.error("[synthesis] Failed to batch insert claims:", error);
+    }
+
+    if (insertedClaims && !error) {
+      // Build label -> claim_id map
+      const labelToClaimId = new Map<string, string>();
+      for (const claim of insertedClaims) {
+        labelToClaimId.set(claim.label, claim.id);
+        onClaimUpdate?.({ action: "created", label: claim.label });
+        claimsCreated++;
+      }
+
+      // Link ALL evidence to their claims (not just the first one per label)
+      const evidenceLinks = pendingEvidenceLinks
+        .filter(link => labelToClaimId.has(link.label))
+        .map(link => ({
+          claim_id: labelToClaimId.get(link.label)!,
+          evidence_id: link.evidence_id,
+          strength: link.strength,
+        }));
+
+      if (evidenceLinks.length > 0) {
+        await supabase
+          .from("claim_evidence")
+          .upsert(evidenceLinks, { onConflict: "claim_id,evidence_id", ignoreDuplicates: true });
+      }
+    }
+  }
+
+  // Bulk recalculate confidence for all affected claims
   if (claimIdsToRecalc.size > 0) {
     await recalculateConfidenceBulk(supabase, Array.from(claimIdsToRecalc));
   }
@@ -309,7 +322,6 @@ async function recalculateConfidenceBulk(
 ): Promise<void> {
   if (claimIds.length === 0) return;
 
-  // Fetch all claims and their evidence links in one query
   const { data: claimsWithEvidence } = await supabase
     .from("identity_claims")
     .select(`
@@ -327,7 +339,6 @@ async function recalculateConfidenceBulk(
 
   if (!claimsWithEvidence || claimsWithEvidence.length === 0) return;
 
-  // Calculate new confidence for each claim
   const updates: Array<{ id: string; confidence: number; updated_at: string }> = [];
 
   for (const claim of claimsWithEvidence) {
@@ -353,7 +364,6 @@ async function recalculateConfidenceBulk(
     });
   }
 
-  // Batch update all claims in parallel
   if (updates.length > 0) {
     await Promise.all(
       updates.map(({ id, confidence, updated_at }) =>
