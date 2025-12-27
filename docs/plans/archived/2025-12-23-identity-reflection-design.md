@@ -1,8 +1,21 @@
 # Identity Reflection Feature Design
 
 **Date:** 2025-12-23
-**Status:** Approved
+**Status:** Done
 **Author:** Brainstorming session
+
+## Progress (Last reviewed: 2025-12-24)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Database Schema (profiles table) | ✅ Complete | identity_* fields added |
+| src/lib/ai/reflect-identity.ts | ✅ Complete | Commit 2727e9dc |
+| src/components/identity/identity-reflection.tsx | ✅ Complete | UI component verified |
+| Integration with process-resume | ✅ Complete | |
+| Integration with process-story | ✅ Complete | |
+
+### Drift Notes
+None - implementation matches design
 
 ## Overview
 

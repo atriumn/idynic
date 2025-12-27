@@ -2,7 +2,22 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Done
 **Goal:** Add content input endpoints to the external API - resume upload, story submission, and profile updates.
+
+## Progress (Last reviewed: 2025-12-24)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: POST /api/v1/documents/resume | ✅ Complete | Verified documents/resume/ |
+| Task 2: POST /api/v1/documents/story | ✅ Complete | Verified documents/story/ |
+| Task 3: PATCH /api/v1/profile | ✅ Complete | Verified profile/route.ts |
+| Task 4: PATCH /api/v1/profile/work-history/:id | ✅ Complete | Verified work-history/ |
+| Task 5: GET /api/v1/profile/work-history | ✅ Complete | Verified work-history/route.ts |
+| Task 6: Integration Testing | ✅ Complete | |
+
+### Drift Notes
+None - implementation matches plan
 
 **Architecture:** New v1 API routes with API key auth that mirror existing internal routes. Resume and story endpoints use SSE streaming for long AI operations. Profile updates are synchronous. All routes use service role client.
 
