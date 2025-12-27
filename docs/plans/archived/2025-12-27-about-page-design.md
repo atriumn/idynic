@@ -1,5 +1,21 @@
 # About Page Design
 
+**Status:** Done
+
+## Progress (Last reviewed: 2025-12-27)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Hero section | ✅ Complete | Commit 2ba0db19 |
+| Problem section | ✅ Complete | Commit 2ba0db19 |
+| Solution section | ✅ Complete | Commit 2ba0db19 |
+| Vision section | ✅ Complete | Commit 2ba0db19 |
+| Footer CTA | ✅ Complete | Commit 2ba0db19 |
+| Link from footer | ✅ Complete | Commit 2ba0db19 |
+
+### Implementation Notes
+Fully implemented in `apps/web/src/app/about/page.tsx`. Uses Lucide icons (Layers, Fingerprint, Sparkles) and shadcn/ui Button component. Supports light/dark mode automatically.
+
 ## Overview
 
 A product-forward About page for Idynic that establishes legitimacy and communicates the mission without heavy company/founder details.

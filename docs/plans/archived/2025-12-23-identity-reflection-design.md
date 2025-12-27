@@ -1,8 +1,22 @@
 # Identity Reflection Feature Design
 
 **Date:** 2025-12-23
-**Status:** Approved
+**Status:** Done
 **Author:** Brainstorming session
+
+## Progress (Last reviewed: 2025-12-27)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Database schema changes | ✅ Complete | Commit 2727e9dc |
+| LLM reflect-identity.ts | ✅ Complete | Commit 2727e9dc |
+| Integration with process-resume | ✅ Complete | Commit 2727e9dc |
+| Integration with process-story | ✅ Complete | Commit 2727e9dc |
+| UI component IdentityReflection | ✅ Complete | Commit 2727e9dc |
+| SSE REFLECTION phase | ✅ Complete | Commit 2727e9dc |
+
+### Implementation Notes
+Feature fully implemented. Identity reflection (headline, bio, archetype, keywords, matches) is generated automatically after resume/story processing.
 
 ## Overview
 
