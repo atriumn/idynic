@@ -39,30 +39,31 @@
     --radius: 0.5rem;
   }
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
+    /* Slate-blue dark theme matching mobile app */
+    --background: 222 47% 11%;        /* slate-900 #0f172a */
+    --foreground: 210 40% 98%;        /* slate-50 #f8fafc */
+    --card: 217 33% 17%;              /* slate-800 #1e293b */
+    --card-foreground: 210 40% 98%;   /* slate-50 */
+    --popover: 222 47% 11%;           /* slate-900 */
+    --popover-foreground: 210 40% 98%;
+    --primary: 168 80% 40%;           /* teal-500 #14b8a6 */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217 33% 17%;         /* slate-800 */
+    --secondary-foreground: 210 40% 98%;
+    --muted: 215 25% 27%;             /* slate-700 #334155 */
+    --muted-foreground: 215 20% 65%;  /* slate-400 #94a3b8 */
+    --accent: 217 33% 17%;            /* slate-800 */
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%;            /* slate-800 */
+    --input: 215 25% 27%;             /* slate-700 */
+    --ring: 168 80% 40%;              /* teal-500 */
+    --chart-1: 168 80% 40%;           /* teal */
+    --chart-2: 199 89% 48%;           /* sky */
+    --chart-3: 262 83% 58%;           /* violet */
+    --chart-4: 43 74% 66%;            /* amber */
+    --chart-5: 12 76% 61%;            /* orange */
   }
 }
 
