@@ -1,8 +1,24 @@
 # Identity Synthesis Design
 
-**Status:** Approved
+**Status:** Implemented
 **Created:** 2025-12-17
+**Implemented:** 2025-12-17
 **Context:** Refactoring claims system from bullet-copying to true identity synthesis
+
+## Progress (Last reviewed: 2025-12-18)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Data Model | ✅ Complete | evidence, identity_claims, claim_evidence tables |
+| Evidence Extraction | ✅ Complete | `src/lib/ai/extract-evidence.ts` |
+| Claim Synthesis | ✅ Complete | `src/lib/ai/synthesize-claims.ts` |
+| Confidence Calculation | ✅ Complete | Base score + strength multiplier |
+| UI Updates | ✅ Complete | Identity page shows synthesized claims |
+| Migration Path | ✅ Complete | New tables created, old claims table preserved |
+
+### Implementation Notes
+- Document deduplication added via content_hash column
+- Duplicate claim prevention in synthesis module
 
 ## Problem
 

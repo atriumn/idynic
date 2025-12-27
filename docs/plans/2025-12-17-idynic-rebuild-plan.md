@@ -1,8 +1,26 @@
 # Idynic Rebuild Plan
 
-**Status:** Ready for execution
+**Status:** In Progress
 **Created:** 2025-12-17
 **Decision:** Full rebuild on Supabase + Vercel, nuke existing AWS infrastructure
+
+## Progress (Last reviewed: 2025-12-18)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 0: Teardown | ⏳ Not Started | AWS cleanup pending |
+| Phase 1: Foundation | ✅ Complete | Next.js + Supabase + Vercel |
+| Phase 2: Auth | ✅ Complete | Supabase Auth integrated |
+| Phase 3: Resume Upload | ✅ Complete | With identity synthesis |
+| Phase 4: Identity View | 🔄 In Progress | Task 4.5 pending (source document display) |
+| Phase 5: Opportunities | ⏳ Not Started | |
+| Phase 6: Matching | ⏳ Not Started | |
+| Phase 7: Polish | ⏳ Not Started | |
+| Phase 8: Go Live | ⏳ Not Started | |
+
+### Drift Notes
+- Identity synthesis design was added (2025-12-17-identity-synthesis-design.md) - enhances Phase 3/4 with two-layer evidence + claims model
+- Document deduplication via content hash added beyond original plan
 
 ## Overview
 

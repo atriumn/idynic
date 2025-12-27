@@ -2,11 +2,29 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Done
 **Goal:** Replace bullet-copying with true identity synthesis using a two-layer model (evidence + synthesized claims).
 
 **Architecture:** Upload → Extract evidence (Pass 1) → Synthesize claims (Pass 2). Evidence is immutable facts from sources. Claims are synthesized identity that evolves as new evidence arrives.
 
 **Tech Stack:** Supabase (Postgres + pg_vector), OpenAI (GPT-4o-mini + text-embedding-3-small), Next.js API routes.
+
+## Progress (Last reviewed: 2025-12-18)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Database Migration | ✅ Complete | `20251217100000_identity_synthesis.sql` |
+| Task 2: Update TypeScript Types | ✅ Complete | Types added for evidence, identity_claims, claim_evidence |
+| Task 3: Create Evidence Extraction Module | ✅ Complete | `src/lib/ai/extract-evidence.ts` |
+| Task 4: Create Claim Synthesis Module | ✅ Complete | `src/lib/ai/synthesize-claims.ts` |
+| Task 5: Update Process Resume API Route | ✅ Complete | With document deduplication |
+| Task 6: Update Identity Page | ✅ Complete | Using IdentityClaimsList component |
+| Task 7: Create Identity Claims List Component | ✅ Complete | `src/components/identity-claims-list.tsx` |
+| Task 8: Test End-to-End | ✅ Complete | Implementation verified |
+
+### Additional Enhancements (Post-Plan)
+- Document-level duplicate detection via content hash
+- Improved evidence extraction with duplicate prevention
 
 ---
 
