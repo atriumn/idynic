@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
 
       // Run in parallel: evidence, work history, contact info, storage upload
       const [evidenceResult, workHistoryResult, resumeResult] = await Promise.all([
-        extractEvidence(rawText).catch(err => {
+        extractEvidence(rawText, 'resume', { userId }).catch(err => {
           console.error('Evidence extraction error:', err);
           return [];
         }),
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
           console.error('Work history extraction error:', err);
           return [];
         }),
-        extractResume(rawText).catch(err => {
+        extractResume(rawText, { userId }).catch(err => {
           console.error('Resume extraction error:', err);
           return null;
         }),

@@ -1,6 +1,5 @@
-import OpenAI from "openai";
-
-const openai = new OpenAI();
+import { aiComplete } from "./gateway";
+import { getModelConfig } from "./config";
 
 export interface ExtractedEvidence {
   text: string;
@@ -99,22 +98,40 @@ IMPORTANT:
 RESUME TEXT:
 `;
 
+export interface ExtractEvidenceOptions {
+  userId?: string;
+  documentId?: string;
+}
+
 export async function extractEvidence(
   text: string,
-  sourceType: 'resume' | 'story' = 'resume'
+  sourceType: 'resume' | 'story' = 'resume',
+  options: ExtractEvidenceOptions = {}
 ): Promise<ExtractedEvidence[]> {
-  const response = await openai.chat.completions.create({
-    model: "gpt-5-mini",
-    max_completion_tokens: 16000,
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: USER_PROMPT + text },
-    ],
-  });
+  const config = getModelConfig("extract_evidence");
 
-  const content = response.choices[0]?.message?.content;
+  const response = await aiComplete(
+    config.provider,
+    config.model,
+    {
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: USER_PROMPT + text },
+      ],
+      temperature: 0,
+      maxTokens: 16000,
+      jsonMode: true,
+    },
+    {
+      operation: "extract_evidence",
+      userId: options.userId,
+      documentId: options.documentId,
+    }
+  );
+
+  const content = response.content;
   if (!content) {
-    throw new Error("No response from OpenAI");
+    throw new Error("No response from AI provider");
   }
 
   // Clean markdown code blocks if present

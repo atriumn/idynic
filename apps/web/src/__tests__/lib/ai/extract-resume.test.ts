@@ -120,7 +120,7 @@ describe('extract-resume', () => {
 
       const { extractResume } = await import('@/lib/ai/extract-resume')
 
-      await expect(extractResume('Resume text')).rejects.toThrow('No response from OpenAI')
+      await expect(extractResume('Resume text')).rejects.toThrow('No response from AI provider')
     })
 
     it('throws error when response is empty', async () => {
@@ -133,7 +133,7 @@ describe('extract-resume', () => {
       const { extractResume } = await import('@/lib/ai/extract-resume')
 
       // Empty string is falsy, should throw no response error
-      await expect(extractResume('Resume text')).rejects.toThrow('No response from OpenAI')
+      await expect(extractResume('Resume text')).rejects.toThrow('No response from AI provider')
     })
 
     it('cleans markdown code blocks from response', async () => {

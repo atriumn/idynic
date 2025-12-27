@@ -14,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_usage_log: {
+        Row: {
+          cost_cents: number
+          created_at: string
+          document_id: string | null
+          error_message: string | null
+          id: string
+          input_tokens: number
+          latency_ms: number
+          model: string
+          operation: string
+          opportunity_id: string | null
+          output_tokens: number
+          provider: string
+          success: boolean
+          user_id: string | null
+        }
+        Insert: {
+          cost_cents?: number
+          created_at?: string
+          document_id?: string | null
+          error_message?: string | null
+          id?: string
+          input_tokens?: number
+          latency_ms?: number
+          model: string
+          operation: string
+          opportunity_id?: string | null
+          output_tokens?: number
+          provider: string
+          success?: boolean
+          user_id?: string | null
+        }
+        Update: {
+          cost_cents?: number
+          created_at?: string
+          document_id?: string | null
+          error_message?: string | null
+          id?: string
+          input_tokens?: number
+          latency_ms?: number
+          model?: string
+          operation?: string
+          opportunity_id?: string | null
+          output_tokens?: number
+          provider?: string
+          success?: boolean
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       api_keys: {
         Row: {
           created_at: string | null
@@ -806,6 +865,56 @@ export type Database = {
           },
         ]
       }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          plan_type: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_type?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_type?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tailored_profiles: {
         Row: {
           created_at: string
@@ -849,6 +958,44 @@ export type Database = {
             columns: ["opportunity_id"]
             isOneToOne: false
             referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usage_tracking: {
+        Row: {
+          created_at: string | null
+          id: string
+          period_start: string
+          tailored_profiles_count: number
+          updated_at: string | null
+          uploads_count: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          period_start: string
+          tailored_profiles_count?: number
+          updated_at?: string | null
+          uploads_count?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          period_start?: string
+          tailored_profiles_count?: number
+          updated_at?: string | null
+          uploads_count?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_tracking_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -909,94 +1056,6 @@ export type Database = {
           },
         ]
       }
-      subscriptions: {
-        Row: {
-          id: string
-          user_id: string
-          stripe_customer_id: string | null
-          stripe_subscription_id: string | null
-          plan_type: string
-          status: string
-          current_period_start: string | null
-          current_period_end: string | null
-          cancel_at_period_end: boolean
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          plan_type?: string
-          status?: string
-          current_period_start?: string | null
-          current_period_end?: string | null
-          cancel_at_period_end?: boolean
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          plan_type?: string
-          status?: string
-          current_period_start?: string | null
-          current_period_end?: string | null
-          cancel_at_period_end?: boolean
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "subscriptions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      usage_tracking: {
-        Row: {
-          id: string
-          user_id: string
-          period_start: string
-          uploads_count: number
-          tailored_profiles_count: number
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          period_start: string
-          uploads_count?: number
-          tailored_profiles_count?: number
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          period_start?: string
-          uploads_count?: number
-          tailored_profiles_count?: number
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "usage_tracking_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never
@@ -1038,7 +1097,35 @@ export type Database = {
           type: string
         }[]
       }
+      get_current_period_start: { Args: never; Returns: string }
+      get_or_create_usage: {
+        Args: { p_user_id: string }
+        Returns: {
+          created_at: string | null
+          id: string
+          period_start: string
+          tailored_profiles_count: number
+          updated_at: string | null
+          uploads_count: number
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "usage_tracking"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       get_shared_profile: { Args: { p_token: string }; Returns: Json }
+      get_user_plan_type: { Args: { p_user_id: string }; Returns: string }
+      increment_tailored_profiles_count: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
+      increment_upload_count: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       match_claims: {
         Args: {
           match_count: number
@@ -1070,22 +1157,6 @@ export type Database = {
           type: string
         }[]
       }
-      get_current_period_start: { Args: Record<string, never>; Returns: string }
-      get_or_create_usage: {
-        Args: { p_user_id: string }
-        Returns: {
-          id: string
-          user_id: string
-          period_start: string
-          uploads_count: number
-          tailored_profiles_count: number
-          created_at: string | null
-          updated_at: string | null
-        }
-      }
-      increment_upload_count: { Args: { p_user_id: string }; Returns: undefined }
-      increment_tailored_profiles_count: { Args: { p_user_id: string }; Returns: undefined }
-      get_user_plan_type: { Args: { p_user_id: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never

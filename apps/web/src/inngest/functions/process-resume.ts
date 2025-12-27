@@ -102,7 +102,7 @@ export const processResume = inngest.createFunction(
       jobLog.info("Starting content extraction");
 
       const [evidenceResult, workHistoryResult, resumeResult] = await Promise.all([
-        extractEvidence(rawText).catch((err) => {
+        extractEvidence(rawText, 'resume', { userId }).catch((err) => {
           jobLog.error("Evidence extraction error", { error: err.message });
           return [];
         }),
@@ -110,7 +110,7 @@ export const processResume = inngest.createFunction(
           jobLog.error("Work history extraction error", { error: err.message });
           return [];
         }),
-        extractResume(rawText).catch((err) => {
+        extractResume(rawText, { userId }).catch((err) => {
           jobLog.error("Resume extraction error", { error: err.message });
           return null;
         }),

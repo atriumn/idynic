@@ -1,6 +1,5 @@
-import OpenAI from "openai";
-
-const openai = new OpenAI();
+import { aiComplete } from "./gateway";
+import { getModelConfig } from "./config";
 
 export interface ResumeExtraction {
   contact: {
@@ -111,20 +110,39 @@ IMPORTANT:
 RESUME TEXT:
 `;
 
-export async function extractResume(text: string): Promise<ResumeExtraction> {
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: 0,
-    max_tokens: 16000,
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: USER_PROMPT + text },
-    ],
-  });
+export interface ExtractResumeOptions {
+  userId?: string;
+  documentId?: string;
+}
 
-  const content = response.choices[0]?.message?.content;
+export async function extractResume(
+  text: string,
+  options: ExtractResumeOptions = {}
+): Promise<ResumeExtraction> {
+  const config = getModelConfig("extract_resume");
+
+  const response = await aiComplete(
+    config.provider,
+    config.model,
+    {
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: USER_PROMPT + text },
+      ],
+      temperature: 0,
+      maxTokens: 16000,
+      jsonMode: true,
+    },
+    {
+      operation: "extract_resume",
+      userId: options.userId,
+      documentId: options.documentId,
+    }
+  );
+
+  const content = response.content;
   if (!content) {
-    throw new Error("No response from OpenAI");
+    throw new Error("No response from AI provider");
   }
 
   // Clean markdown code blocks if present
@@ -136,6 +154,8 @@ export async function extractResume(text: string): Promise<ResumeExtraction> {
   try {
     return JSON.parse(cleanedContent) as ResumeExtraction;
   } catch {
-    throw new Error(`Failed to parse extraction response: ${cleanedContent.slice(0, 200)}`);
+    throw new Error(
+      `Failed to parse extraction response: ${cleanedContent.slice(0, 200)}`
+    );
   }
 }
