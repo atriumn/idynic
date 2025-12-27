@@ -34,22 +34,31 @@ jobs:
         working-directory: apps/mobile
         run: pnpm exec tsc --noEmit
 
-      - name: Run unit tests
-        run: pnpm test:coverage
+      - name: Run type check (shared)
+        working-directory: packages/shared
+        run: pnpm exec tsc --noEmit
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        if: always()
-        with:
-          files: ./coverage/coverage-final.json
-          fail_ci_if_error: false
-          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Run type check (mcp-server)
+        working-directory: packages/mcp-server
+        run: pnpm exec tsc --noEmit
 
-      - name: Comment PR with coverage
+      - name: Run shared package tests
+        run: pnpm --filter @idynic/shared test:coverage
+
+      - name: Run MCP server tests
+        run: pnpm --filter @atriumn/idynic-mcp test:coverage
+
+      - name: Run web tests
+        run: pnpm --filter web test:coverage
+
+      - name: Run mobile tests
+        run: pnpm --filter mobile test:coverage
+
+      - name: Comment PR with coverage (web)
         if: github.event_name == 'pull_request'
         uses: romeovs/lcov-reporter-action@v0.3.1
         with:
-          lcov-file: ./coverage/lcov.info
+          lcov-file: ./apps/web/coverage/lcov.info
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
   # Integration tests run separately (requires Supabase setup)

@@ -10,7 +10,10 @@
     "build:ios:dev": "./scripts/build-ios.sh dev",
     "build:ios:testflight": "./scripts/build-ios.sh testflight",
     "build:ios:prod": "./scripts/build-ios.sh prod",
-    "prebuild": "expo prebuild"
+    "prebuild": "expo prebuild",
+    "test": "jest --watch",
+    "test:run": "jest",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -48,9 +51,13 @@
     "tailwindcss": "^3.4.19"
   },
   "devDependencies": {
+    "@testing-library/react-native": "^13.2.0",
+    "@types/jest": "^29.5.14",
     "@types/react": "~19.1.0",
     "eslint": "^8.57.1",
     "eslint-config-expo": "^10.0.0",
+    "jest": "^29.7.0",
+    "jest-expo": "~54.0.16",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "react-test-renderer": "19.1.0",
     "typescript": "~5.9.2"
