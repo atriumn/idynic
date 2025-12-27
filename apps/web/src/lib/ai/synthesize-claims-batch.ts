@@ -116,9 +116,6 @@ export async function synthesizeClaimsBatch(
   const batches = chunk(evidenceItems, BATCH_SIZE);
   const claimIdsToRecalc = new Set<string>();
 
-  // Collect claim updates for reveal-at-end UX
-  const claimUpdates: ClaimUpdate[] = [];
-
   for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
     const batch = batches[batchIndex];
 
@@ -227,9 +224,9 @@ export async function synthesizeClaimsBatch(
           .from("claim_evidence")
           .upsert(linksToInsert, { onConflict: "claim_id,evidence_id", ignoreDuplicates: true });
 
-        // Track updates
+        // Stream updates immediately
         for (const link of evidenceLinksToUpsert) {
-          claimUpdates.push({ action: "matched", label: link.label });
+          onClaimUpdate?.({ action: "matched", label: link.label });
           claimsUpdated++;
         }
       }
@@ -279,7 +276,7 @@ export async function synthesizeClaimsBatch(
           // Single batch insert for all evidence links
           await supabase.from("claim_evidence").insert(evidenceLinks);
 
-          // Update local tracking for subsequent batches
+          // Update local tracking for subsequent batches + stream immediately
           for (const claim of insertedClaims) {
             claims.push({
               id: claim.id,
@@ -287,7 +284,7 @@ export async function synthesizeClaimsBatch(
               label: claim.label,
               description: claim.description,
             });
-            claimUpdates.push({ action: "created", label: claim.label });
+            onClaimUpdate?.({ action: "created", label: claim.label });
             claimsCreated++;
           }
         }
@@ -301,11 +298,6 @@ export async function synthesizeClaimsBatch(
   // Bulk recalculate confidence for all affected claims at the end
   if (claimIdsToRecalc.size > 0) {
     await recalculateConfidenceBulk(supabase, Array.from(claimIdsToRecalc));
-  }
-
-  // Reveal all claims at once (reveal-at-end UX)
-  for (const update of claimUpdates) {
-    onClaimUpdate?.(update);
   }
 
   return { claimsCreated, claimsUpdated };

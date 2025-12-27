@@ -67,7 +67,7 @@ export function useDocumentJob(jobId: string | null): UseDocumentJobResult {
         setTickerMessages((prev) => [{ id, text }, ...prev].slice(0, 5));
         index++;
       }
-    }, 2000);
+    }, 4000);
   }, []);
 
   const stopTicker = useCallback(() => {
