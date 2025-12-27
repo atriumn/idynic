@@ -6,6 +6,7 @@ import { fetchJobPageContent } from "@/lib/integrations/scraping";
 import { researchCompanyBackground } from "@/lib/ai/research-company-background";
 import { normalizeJobUrl } from "@/lib/utils/normalize-url";
 import { createLogger } from "@/lib/logger";
+import { JobUpdater } from "@/lib/jobs/job-updater";
 import OpenAI from "openai";
 import type { Json } from "@/lib/supabase/types";
 
@@ -45,16 +46,6 @@ Return JSON:
 JOB DESCRIPTION:
 `;
 
-/**
- * Helper to update job status in the database
- */
-async function updateJob(
-  supabase: ReturnType<typeof createServiceRoleClient>,
-  jobId: string,
-  updates: Record<string, unknown>
-) {
-  await supabase.from("document_jobs").update(updates).eq("id", jobId);
-}
 
 export const processOpportunity = inngest.createFunction(
   {
@@ -87,14 +78,11 @@ export const processOpportunity = inngest.createFunction(
     const { jobId, userId, url, description: initialDescription } = event.data;
     const supabase = createServiceRoleClient();
     const jobLog = createLogger({ jobId, userId, url, inngest: true });
+    const job = new JobUpdater(supabase, jobId);
 
     // Step 1: Check for duplicate URL
     const isDuplicate = await step.run("check-duplicate", async () => {
-      await updateJob(supabase, jobId, {
-        status: "processing",
-        phase: "validating",
-        started_at: new Date().toISOString(),
-      });
+      await job.setPhase("validating");
 
       if (url) {
         const normalizedUrl = normalizeJobUrl(url);
@@ -107,11 +95,9 @@ export const processOpportunity = inngest.createFunction(
             .single();
 
           if (existing) {
-            await updateJob(supabase, jobId, {
-              status: "failed",
-              error: `You have already saved this job: ${existing.title} at ${existing.company || "Unknown"}`,
-              completed_at: new Date().toISOString(),
-            });
+            await job.setError(
+              `You have already saved this job: ${existing.title} at ${existing.company || "Unknown"}`
+            );
             return { isDuplicate: true, existing };
           }
         }
@@ -127,7 +113,7 @@ export const processOpportunity = inngest.createFunction(
 
     // Step 2: Enrich from LinkedIn or scrape
     const enrichmentResult = await step.run("enrich-job", async () => {
-      await updateJob(supabase, jobId, { phase: "enriching" });
+      await job.setPhase("enriching");
       jobLog.info("Starting job enrichment");
 
       let description = initialDescription;
@@ -138,6 +124,7 @@ export const processOpportunity = inngest.createFunction(
 
       if (url && isLinkedInJobUrl(url)) {
         try {
+          await job.addHighlight("Fetching LinkedIn data...", "found");
           jobLog.info("Enriching LinkedIn job URL");
           const linkedInJob = await fetchLinkedInJob(url);
 
@@ -162,12 +149,30 @@ export const processOpportunity = inngest.createFunction(
           };
           source = "linkedin";
           jobLog.info("LinkedIn enrichment successful", { title: enrichedTitle, company: enrichedCompany });
+
+          // Add highlights for what we found
+          if (enrichedTitle) {
+            await job.addHighlight(enrichedTitle, "found");
+          }
+          if (enrichedCompany) {
+            await job.addHighlight(enrichedCompany, "found");
+          }
+          if (linkedInJob.job_location) {
+            await job.addHighlight(linkedInJob.job_location, "found");
+          }
+          if (linkedInJob.base_salary?.min_amount && linkedInJob.base_salary?.max_amount) {
+            const salary = `$${linkedInJob.base_salary.min_amount.toLocaleString()}-$${linkedInJob.base_salary.max_amount.toLocaleString()}`;
+            await job.addHighlight(salary, "found");
+          }
         } catch (enrichError) {
-          jobLog.error("LinkedIn enrichment failed", { error: enrichError instanceof Error ? enrichError.message : String(enrichError) });
+          const errorMsg = enrichError instanceof Error ? enrichError.message : String(enrichError);
+          jobLog.error("LinkedIn enrichment failed", { error: errorMsg });
+          await job.setError("Couldn't fetch LinkedIn job data. Please try again or paste the job description.");
           throw new Error("Couldn't fetch LinkedIn job data. Please try again or paste the job description.");
         }
       } else if (url && !description) {
         // Try to scrape any URL the user shares - they explicitly want this job
+        await job.addHighlight("Scraping job page...", "found");
         jobLog.info("Attempting generic scraping for:", url);
         const scrapedContent = await fetchJobPageContent(url);
 
@@ -175,12 +180,15 @@ export const processOpportunity = inngest.createFunction(
           description = scrapedContent;
           source = "scraped";
           jobLog.info("Generic scraping successful");
+          await job.addHighlight("Job content extracted", "found");
         } else {
           jobLog.warn("Scraping failed, no content returned");
+          await job.setWarning("Could not scrape page content - please paste job description manually");
         }
       }
 
       if (!description) {
+        await job.setError("Couldn't fetch job details from that URL. Please provide the job description.");
         throw new Error("Couldn't fetch job details from that URL. Please provide the job description.");
       }
 
@@ -195,7 +203,7 @@ export const processOpportunity = inngest.createFunction(
 
     // Step 3: Extract requirements using GPT
     const extractionResult = await step.run("extract-requirements", async () => {
-      await updateJob(supabase, jobId, { phase: "extracting" });
+      await job.setPhase("extracting");
       jobLog.info("Extracting requirements with GPT");
 
       const response = await openai.chat.completions.create({
@@ -224,6 +232,7 @@ export const processOpportunity = inngest.createFunction(
           extracted = JSON.parse(cleaned);
         } catch {
           jobLog.error("Failed to parse extraction", { content });
+          await job.setWarning("Could not parse all job requirements");
         }
       }
 
@@ -233,12 +242,24 @@ export const processOpportunity = inngest.createFunction(
         niceToHaveCount: extracted.niceToHave.length,
       });
 
+      // Add highlights for extracted requirements
+      if (extracted.mustHave.length > 0) {
+        await job.addHighlight(`${extracted.mustHave.length} required qualifications`, "found");
+        // Show first few requirements
+        for (const req of extracted.mustHave.slice(0, 3)) {
+          await job.addHighlight(req.text.slice(0, 50) + (req.text.length > 50 ? "..." : ""), "found");
+        }
+      }
+      if (extracted.niceToHave.length > 0) {
+        await job.addHighlight(`${extracted.niceToHave.length} preferred qualifications`, "found");
+      }
+
       return extracted;
     });
 
     // Step 4: Generate embedding
     const embedding = await step.run("generate-embedding", async () => {
-      await updateJob(supabase, jobId, { phase: "embeddings" });
+      await job.setPhase("embeddings");
       jobLog.info("Generating embedding");
 
       const finalTitle = enrichmentResult.enrichedTitle || extractionResult.title;
@@ -294,13 +315,14 @@ export const processOpportunity = inngest.createFunction(
 
     // Step 6: Trigger company research (non-blocking)
     await step.run("trigger-research", async () => {
-      await updateJob(supabase, jobId, { phase: "researching" });
+      await job.setPhase("researching");
 
       const finalCompany = enrichmentResult.enrichedCompany || extractionResult.company;
       const finalTitle = enrichmentResult.enrichedTitle || extractionResult.title;
 
       if (finalCompany) {
         jobLog.info("Triggering company research", { company: finalCompany });
+        await job.addHighlight(`Researching ${finalCompany}...`, "found");
         // Fire and forget - research runs in background
         researchCompanyBackground(
           opportunity.id,
@@ -313,23 +335,22 @@ export const processOpportunity = inngest.createFunction(
 
     // Step 7: Complete job
     await step.run("complete-job", async () => {
-      await updateJob(supabase, jobId, {
-        status: "completed",
-        opportunity_id: opportunity.id,
-        highlights: [
-          { text: opportunity.title, type: "found" },
-          ...(opportunity.company ? [{ text: opportunity.company, type: "found" }] : []),
-          { text: `${extractionResult.mustHave.length} requirements`, type: "found" },
-        ],
-        summary: {
-          opportunityId: opportunity.id,
-          title: opportunity.title,
-          company: opportunity.company,
-          source: opportunity.source,
-          requirementsCount: extractionResult.mustHave.length + extractionResult.niceToHave.length,
-        },
-        completed_at: new Date().toISOString(),
-      });
+      // Use direct update since opportunities use opportunity_id instead of document_id
+      await supabase
+        .from("document_jobs")
+        .update({
+          status: "completed",
+          opportunity_id: opportunity.id,
+          summary: {
+            opportunityId: opportunity.id,
+            title: opportunity.title,
+            company: opportunity.company,
+            source: opportunity.source,
+            requirementsCount: extractionResult.mustHave.length + extractionResult.niceToHave.length,
+          },
+          completed_at: new Date().toISOString(),
+        })
+        .eq("id", jobId);
 
       jobLog.info("Job completed successfully");
     });
