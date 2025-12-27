@@ -48,15 +48,21 @@ export async function POST(request: NextRequest) {
       .single();
 
     // Create Stripe customer
-    const customer = await stripe.customers.create({
-      email: profile?.email || user.email,
-      name: profile?.name || undefined,
-      metadata: {
-        user_id: user.id,
-      },
-    });
+    try {
+      const customer = await stripe.customers.create({
+        email: profile?.email || user.email,
+        name: profile?.name || undefined,
+        metadata: {
+          user_id: user.id,
+        },
+      });
 
-    customerId = customer.id;
+      customerId = customer.id;
+    } catch (err) {
+      console.error("Failed to create Stripe customer:", err);
+      const message = err instanceof Error ? err.message : "Failed to create customer";
+      return apiError("stripe_error", message, 500);
+    }
 
     // Update or create subscription record with customer ID
     await supabase
@@ -72,33 +78,45 @@ export async function POST(request: NextRequest) {
   }
 
   // Get the price ID for the selected plan
-  const priceId = getPriceIdForPlan(plan);
+  let priceId: string;
+  try {
+    priceId = getPriceIdForPlan(plan);
+  } catch (err) {
+    console.error("Failed to get price ID:", err);
+    return apiError("configuration_error", `Price ID not configured for plan: ${plan}`, 500);
+  }
 
   // Create Stripe Checkout session
-  const session = await stripe.checkout.sessions.create({
-    customer: customerId,
-    mode: "subscription",
-    line_items: [
-      {
-        price: priceId,
-        quantity: 1,
+  try {
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      mode: "subscription",
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      subscription_data: {
+        metadata: {
+          user_id: user.id,
+        },
       },
-    ],
-    success_url: successUrl,
-    cancel_url: cancelUrl,
-    subscription_data: {
-      metadata: {
-        user_id: user.id,
-      },
-    },
-    // Allow promotion codes
-    allow_promotion_codes: true,
-    // Collect billing address for tax purposes
-    billing_address_collection: "auto",
-  });
+      // Allow promotion codes
+      allow_promotion_codes: true,
+      // Collect billing address for tax purposes
+      billing_address_collection: "auto",
+    });
 
-  return apiSuccess({
-    sessionId: session.id,
-    url: session.url,
-  });
+    return apiSuccess({
+      sessionId: session.id,
+      url: session.url,
+    });
+  } catch (err) {
+    console.error("Stripe checkout session error:", err);
+    const message = err instanceof Error ? err.message : "Failed to create checkout session";
+    return apiError("stripe_error", message, 500);
+  }
 }
