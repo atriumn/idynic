@@ -1,5 +1,27 @@
 # About Page Design
 
+**Status:** Done
+**Last Reviewed:** 2025-12-27
+
+## Progress (Last reviewed: 2025-12-27)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Page Implementation | ✅ Complete | `apps/web/src/app/about/page.tsx` |
+| Hero Section | ✅ Complete | Headline + subheadline |
+| Problem Section | ✅ Complete | Two blocks describing pain points |
+| Solution Section | ✅ Complete | Three-step how it works |
+| Vision Section | ✅ Complete | Mission statement |
+| Footer CTA | ✅ Complete | Get Started button |
+| Dark/Light Mode | ✅ Complete | Inherited from app theme |
+| Nav/Footer Links | ✅ Complete | Added in `2ba0db19` |
+
+### Commits
+- `1cd5e55e` - docs: add about page design
+- `2ba0db19` - feat: add About page
+
+---
+
 ## Overview
 
 A product-forward About page for Idynic that establishes legitimacy and communicates the mission without heavy company/founder details.

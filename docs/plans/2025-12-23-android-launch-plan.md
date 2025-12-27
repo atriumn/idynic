@@ -1,8 +1,31 @@
 # Android Launch Plan
 
 **Date:** 2025-12-23
-**Status:** Approved
+**Status:** In Progress
+**Last Reviewed:** 2025-12-27
 **Goal:** Get the existing Expo/React Native app running on Android and distributed via Google Play Store
+
+## Progress (Last reviewed: 2025-12-27)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1: Local Build | ✅ Complete | App runs on emulator |
+| Phase 2: Fix & Polish | ✅ Complete | Dark mode, icons fixed |
+| Phase 3: Internal APK | ✅ Complete | Can build signed APK/AAB |
+| Phase 4: Play Internal Testing | 🔄 Blocked | Waiting for DUNS → Play Store account |
+| Phase 5: CI/CD | ✅ Complete | GitHub Actions workflow added (`620f3499`) |
+| Phase 6: Production Release | ⏳ Not Started | Depends on Phase 4 |
+
+### Blockers
+- **DUNS Number**: Waiting for D&B approval to create Google Play Developer account
+
+### Recent Commits
+- `620f3499` - feat: add Android build to mobile deploy workflow
+- `0642e7ea` - style: update dark mode to match mobile slate+teal theme
+- `a22688e5` - fix: regenerate app icons from SVG with proper resolution
+- `1a58f168` - fix: add padding to app icons so they don't fill edge-to-edge
+
+---
 
 ## Context
 
