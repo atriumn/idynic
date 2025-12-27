@@ -1,0 +1,30 @@
+import Stripe from "stripe";
+
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error("STRIPE_SECRET_KEY is not set");
+}
+
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2025-12-15.clover",
+  typescript: true,
+});
+
+// Price IDs from Stripe Dashboard - configure in env
+export const STRIPE_PRICE_IDS = {
+  pro: process.env.STRIPE_PRO_PRICE_ID!,
+  job_search: process.env.STRIPE_JOBSEARCH_PRICE_ID!,
+} as const;
+
+export function getPriceIdForPlan(plan: "pro" | "job_search"): string {
+  const priceId = STRIPE_PRICE_IDS[plan];
+  if (!priceId) {
+    throw new Error(`Price ID not configured for plan: ${plan}`);
+  }
+  return priceId;
+}
+
+export function getPlanFromPriceId(priceId: string): "pro" | "job_search" | null {
+  if (priceId === STRIPE_PRICE_IDS.pro) return "pro";
+  if (priceId === STRIPE_PRICE_IDS.job_search) return "job_search";
+  return null;
+}

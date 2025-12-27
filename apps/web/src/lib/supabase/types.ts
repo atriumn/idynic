@@ -909,6 +909,94 @@ export type Database = {
           },
         ]
       }
+      subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          plan_type: string
+          status: string
+          current_period_start: string | null
+          current_period_end: string | null
+          cancel_at_period_end: boolean
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          plan_type?: string
+          status?: string
+          current_period_start?: string | null
+          current_period_end?: string | null
+          cancel_at_period_end?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          plan_type?: string
+          status?: string
+          current_period_start?: string | null
+          current_period_end?: string | null
+          cancel_at_period_end?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usage_tracking: {
+        Row: {
+          id: string
+          user_id: string
+          period_start: string
+          uploads_count: number
+          tailored_profiles_count: number
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          period_start: string
+          uploads_count?: number
+          tailored_profiles_count?: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          period_start?: string
+          uploads_count?: number
+          tailored_profiles_count?: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_tracking_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -982,6 +1070,22 @@ export type Database = {
           type: string
         }[]
       }
+      get_current_period_start: { Args: Record<string, never>; Returns: string }
+      get_or_create_usage: {
+        Args: { p_user_id: string }
+        Returns: {
+          id: string
+          user_id: string
+          period_start: string
+          uploads_count: number
+          tailored_profiles_count: number
+          created_at: string | null
+          updated_at: string | null
+        }
+      }
+      increment_upload_count: { Args: { p_user_id: string }; Returns: undefined }
+      increment_tailored_profiles_count: { Args: { p_user_id: string }; Returns: undefined }
+      get_user_plan_type: { Args: { p_user_id: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never

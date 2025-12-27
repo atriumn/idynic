@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Check, Building2, User } from "lucide-react";
+import { Check, Building2, User, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Accordion,
@@ -11,9 +13,41 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useSubscription, useCreateCheckoutSession } from "@/hooks/use-subscription";
+import { toast } from "sonner";
 
 export default function PricingPage() {
-  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">("monthly");
+  const searchParams = useSearchParams();
+  const { data: subscriptionData } = useSubscription();
+  const checkoutMutation = useCreateCheckoutSession();
+
+  const currentPlan = subscriptionData?.subscription?.plan_type || null;
+  const isAuthenticated = !!subscriptionData;
+
+  // Handle success/cancel from Stripe
+  useEffect(() => {
+    if (searchParams.get("success") === "true") {
+      toast.success("Subscription updated successfully!");
+      window.history.replaceState({}, "", "/pricing");
+    } else if (searchParams.get("canceled") === "true") {
+      toast.info("Checkout was canceled.");
+      window.history.replaceState({}, "", "/pricing");
+    }
+  }, [searchParams]);
+
+  const handleUpgrade = (plan: "pro" | "job_search") => {
+    if (!isAuthenticated) {
+      // Redirect to login with return URL
+      window.location.href = `/login?returnTo=/pricing?plan=${plan}`;
+      return;
+    }
+
+    checkoutMutation.mutate({
+      plan,
+      successUrl: `${window.location.origin}/settings/usage?success=true`,
+      cancelUrl: `${window.location.origin}/pricing?canceled=true`,
+    });
+  };
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-3.5rem)] py-20 px-4">
@@ -44,59 +78,37 @@ export default function PricingPage() {
 
           {/* Candidates Pricing */}
           <TabsContent value="candidates" className="mt-12">
-            {/* Billing Toggle */}
-            <div className="flex items-center justify-center gap-4 mb-12">
-              <button
-                onClick={() => setBillingPeriod("monthly")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  billingPeriod === "monthly"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Monthly
-              </button>
-              <button
-                onClick={() => setBillingPeriod("annual")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  billingPeriod === "annual"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Annual
-                <span className="ml-2 text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full">
-                  Save 17%
-                </span>
-              </button>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
               {/* Free Tier */}
-              <div className="rounded-2xl border bg-card text-card-foreground shadow-sm p-8 space-y-6">
+              <div className="rounded-2xl border bg-card text-card-foreground shadow-sm p-6 space-y-6 relative">
+                {currentPlan === "free" && (
+                  <Badge className="absolute -top-3 left-4" variant="secondary">
+                    Current Plan
+                  </Badge>
+                )}
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-2xl">Free</h3>
-                  <p className="text-muted-foreground">Get started building your identity.</p>
+                  <h3 className="font-semibold text-xl">Free</h3>
+                  <p className="text-sm text-muted-foreground">Get started building your identity.</p>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold">$0</span>
-                  <span className="text-muted-foreground">/month</span>
+                  <span className="text-3xl font-bold">$0</span>
+                  <span className="text-muted-foreground text-sm">forever</span>
                 </div>
-                <ul className="space-y-3 pt-4">
+                <ul className="space-y-2 text-sm">
                   <li className="flex gap-2">
-                    <Check className="h-5 w-5 text-primary shrink-0" />
-                    <span>1 document upload</span>
+                    <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    <span>1 document upload per month</span>
                   </li>
                   <li className="flex gap-2">
-                    <Check className="h-5 w-5 text-primary shrink-0" />
-                    <span>3 tailored profiles per month</span>
+                    <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    <span>5 tailored profiles per month</span>
                   </li>
                   <li className="flex gap-2">
-                    <Check className="h-5 w-5 text-primary shrink-0" />
+                    <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                     <span>Basic identity graph</span>
                   </li>
                   <li className="flex gap-2">
-                    <Check className="h-5 w-5 text-primary shrink-0" />
+                    <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                     <span>Shareable profile links</span>
                   </li>
                 </ul>
@@ -106,54 +118,120 @@ export default function PricingPage() {
               </div>
 
               {/* Pro Tier */}
-              <div className="rounded-2xl border-2 border-primary bg-card text-card-foreground shadow-lg p-8 space-y-6 relative">
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
-                  Recommended
-                </div>
+              <div className="rounded-2xl border bg-card text-card-foreground shadow-sm p-6 space-y-6 relative">
+                {currentPlan === "pro" && (
+                  <Badge className="absolute -top-3 left-4">
+                    Current Plan
+                  </Badge>
+                )}
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-2xl">Pro</h3>
-                  <p className="text-muted-foreground">For serious job seekers.</p>
+                  <h3 className="font-semibold text-xl flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    Pro
+                  </h3>
+                  <p className="text-sm text-muted-foreground">For career builders.</p>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold">
-                    ${billingPeriod === "monthly" ? "30" : "25"}
-                  </span>
-                  <span className="text-muted-foreground">/month</span>
-                  {billingPeriod === "annual" && (
-                    <span className="text-sm text-muted-foreground ml-2">
-                      ($300/year)
-                    </span>
-                  )}
+                  <span className="text-3xl font-bold">$100</span>
+                  <span className="text-muted-foreground text-sm">/year</span>
                 </div>
-                <ul className="space-y-3 pt-4">
+                <ul className="space-y-2 text-sm">
                   <li className="flex gap-2">
-                    <Check className="h-5 w-5 text-primary shrink-0" />
+                    <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                     <span>Unlimited document uploads</span>
                   </li>
                   <li className="flex gap-2">
-                    <Check className="h-5 w-5 text-primary shrink-0" />
-                    <span>Unlimited tailored profiles</span>
+                    <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    <span>15 tailored profiles per month</span>
                   </li>
                   <li className="flex gap-2">
-                    <Check className="h-5 w-5 text-primary shrink-0" />
+                    <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                     <span>Full identity graph with evidence</span>
                   </li>
                   <li className="flex gap-2">
-                    <Check className="h-5 w-5 text-primary shrink-0" />
+                    <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                     <span>Profile view tracking</span>
                   </li>
                   <li className="flex gap-2">
-                    <Check className="h-5 w-5 text-primary shrink-0" />
+                    <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                     <span>PDF export</span>
                   </li>
                   <li className="flex gap-2">
-                    <Check className="h-5 w-5 text-primary shrink-0" />
+                    <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                     <span>Priority support</span>
                   </li>
                 </ul>
-                <Button className="w-full" asChild>
-                  <Link href="/login">Start Free Trial</Link>
-                </Button>
+                {currentPlan === "pro" ? (
+                  <Button className="w-full" variant="outline" asChild>
+                    <Link href="/settings/usage">Manage Plan</Link>
+                  </Button>
+                ) : (
+                  <Button
+                    className="w-full"
+                    onClick={() => handleUpgrade("pro")}
+                    disabled={checkoutMutation.isPending || currentPlan === "job_search"}
+                  >
+                    {checkoutMutation.isPending ? "Loading..." : "Subscribe"}
+                  </Button>
+                )}
+              </div>
+
+              {/* Job Search Tier */}
+              <div className="rounded-2xl border-2 border-primary bg-card text-card-foreground shadow-lg p-6 space-y-6 relative">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap">
+                  Best for job seekers
+                </div>
+                {currentPlan === "job_search" && (
+                  <Badge className="absolute -top-3 right-4">
+                    Current Plan
+                  </Badge>
+                )}
+                <div className="space-y-2 pt-2">
+                  <h3 className="font-semibold text-xl flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-primary" />
+                    Job Search
+                  </h3>
+                  <p className="text-sm text-muted-foreground">For active job hunters.</p>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-bold">$50</span>
+                  <span className="text-muted-foreground text-sm">/3 months</span>
+                </div>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex gap-2">
+                    <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    <span className="font-medium">Unlimited everything</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    <span>Unlimited document uploads</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    <span>Unlimited tailored profiles</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    <span>All Pro features included</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    <span>Perfect for job search sprints</span>
+                  </li>
+                </ul>
+                {currentPlan === "job_search" ? (
+                  <Button className="w-full" variant="outline" asChild>
+                    <Link href="/settings/usage">Manage Plan</Link>
+                  </Button>
+                ) : (
+                  <Button
+                    className="w-full"
+                    onClick={() => handleUpgrade("job_search")}
+                    disabled={checkoutMutation.isPending}
+                  >
+                    {checkoutMutation.isPending ? "Loading..." : "Subscribe"}
+                  </Button>
+                )}
               </div>
             </div>
           </TabsContent>
@@ -254,6 +332,12 @@ export default function PricingPage() {
               <AccordionTrigger>What if I&apos;m not happy?</AccordionTrigger>
               <AccordionContent>
                 We offer a 14-day money-back guarantee on all paid plans. No questions asked.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-5">
+              <AccordionTrigger>What&apos;s the difference between Pro and Job Search?</AccordionTrigger>
+              <AccordionContent>
+                Pro ($100/year) is for ongoing career management—keeping your identity up to date with 15 tailored profiles per month. Job Search ($50/3 months) is for when you&apos;re actively hunting—unlimited everything to maximize your chances during a job search sprint.
               </AccordionContent>
             </AccordionItem>
           </Accordion>

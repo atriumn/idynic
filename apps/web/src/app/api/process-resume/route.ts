@@ -3,6 +3,7 @@ import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { log } from "@/lib/logger";
 import { withRequestContext, setContextUserId } from "@/lib/api/with-context";
 import { inngest } from "@/inngest";
+import { checkUploadLimit, incrementUploadCount } from "@/lib/billing/check-usage";
 
 // Vercel Pro plan allows up to 300 seconds (5 min)
 export const maxDuration = 300;
@@ -19,6 +20,19 @@ export const POST = withRequestContext(async (request: Request) => {
 
   // Set user in context for logging
   setContextUserId(user.id);
+
+  // Check upload limit
+  const usageCheck = await checkUploadLimit(serviceSupabase, user.id);
+  if (!usageCheck.allowed) {
+    log.info("Upload limit reached", { userId: user.id, current: usageCheck.current, limit: usageCheck.limit });
+    return Response.json({
+      error: "upload_limit_reached",
+      message: usageCheck.reason,
+      current: usageCheck.current,
+      limit: usageCheck.limit,
+      planType: usageCheck.planType,
+    }, { status: 403 });
+  }
 
   // Get file from form data
   let formData: globalThis.FormData;
@@ -88,6 +102,9 @@ export const POST = withRequestContext(async (request: Request) => {
       storagePath,
     },
   });
+
+  // Increment upload count after successful job creation
+  await incrementUploadCount(serviceSupabase, user.id);
 
   // Return immediately with job ID
   return Response.json({ jobId: job.id });

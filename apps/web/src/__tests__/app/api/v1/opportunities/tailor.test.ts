@@ -6,6 +6,8 @@ import type { NextResponse } from 'next/server'
 const mockSupabaseFrom = vi.fn()
 const mockValidateApiKey = vi.fn()
 const mockGenerateProfile = vi.fn()
+const mockCheckTailoredProfileLimit = vi.fn()
+const mockIncrementTailoredProfileCount = vi.fn()
 
 // Mock Supabase service role client
 vi.mock('@/lib/supabase/service-role', () => ({
@@ -23,6 +25,12 @@ vi.mock('@/lib/api/auth', () => ({
 // Mock profile generation
 vi.mock('@/lib/ai/generate-profile-api', () => ({
   generateProfileWithClient: (...args: unknown[]) => mockGenerateProfile(...args)
+}))
+
+// Mock billing/check-usage
+vi.mock('@/lib/billing/check-usage', () => ({
+  checkTailoredProfileLimit: (...args: unknown[]) => mockCheckTailoredProfileLimit(...args),
+  incrementTailoredProfileCount: (...args: unknown[]) => mockIncrementTailoredProfileCount(...args)
 }))
 
 // Mock response helpers
@@ -104,15 +112,22 @@ describe('Tailor API Route', () => {
     vi.clearAllMocks()
     mockValidateApiKey.mockResolvedValue({ userId: 'user-123' })
     mockGenerateProfile.mockResolvedValue(mockProfileResult)
+    // Default: allow usage
+    mockCheckTailoredProfileLimit.mockResolvedValue({ allowed: true })
+    mockIncrementTailoredProfileCount.mockResolvedValue(undefined)
   })
 
   describe('POST /api/v1/opportunities/[id]/tailor', () => {
     it('generates tailored profile successfully', async () => {
-      mockSupabaseFrom.mockImplementation(() => ({
+      mockSupabaseFrom.mockImplementation((table: string) => ({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({ data: mockOpportunity, error: null })
+              single: vi.fn().mockResolvedValue(
+                table === 'opportunities'
+                  ? { data: mockOpportunity, error: null }
+                  : { data: null, error: null } // No cached profile
+              )
             })
           })
         })
@@ -144,11 +159,15 @@ describe('Tailor API Route', () => {
     })
 
     it('returns opportunity info in response', async () => {
-      mockSupabaseFrom.mockImplementation(() => ({
+      mockSupabaseFrom.mockImplementation((table: string) => ({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({ data: mockOpportunity, error: null })
+              single: vi.fn().mockResolvedValue(
+                table === 'opportunities'
+                  ? { data: mockOpportunity, error: null }
+                  : { data: null, error: null }
+              )
             })
           })
         })
@@ -176,11 +195,15 @@ describe('Tailor API Route', () => {
         cached: true
       })
 
-      mockSupabaseFrom.mockImplementation(() => ({
+      mockSupabaseFrom.mockImplementation((table: string) => ({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({ data: mockOpportunity, error: null })
+              single: vi.fn().mockResolvedValue(
+                table === 'opportunities'
+                  ? { data: mockOpportunity, error: null }
+                  : { data: { id: 'existing-profile' }, error: null } // Has cached profile
+              )
             })
           })
         })
@@ -201,11 +224,15 @@ describe('Tailor API Route', () => {
     })
 
     it('regenerates profile when regenerate flag is true', async () => {
-      mockSupabaseFrom.mockImplementation(() => ({
+      mockSupabaseFrom.mockImplementation((table: string) => ({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({ data: mockOpportunity, error: null })
+              single: vi.fn().mockResolvedValue(
+                table === 'opportunities'
+                  ? { data: mockOpportunity, error: null }
+                  : { data: null, error: null }
+              )
             })
           })
         })
@@ -228,11 +255,15 @@ describe('Tailor API Route', () => {
     })
 
     it('uses regenerate=false by default', async () => {
-      mockSupabaseFrom.mockImplementation(() => ({
+      mockSupabaseFrom.mockImplementation((table: string) => ({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({ data: mockOpportunity, error: null })
+              single: vi.fn().mockResolvedValue(
+                table === 'opportunities'
+                  ? { data: mockOpportunity, error: null }
+                  : { data: null, error: null }
+              )
             })
           })
         })
@@ -254,11 +285,15 @@ describe('Tailor API Route', () => {
     })
 
     it('handles empty request body gracefully', async () => {
-      mockSupabaseFrom.mockImplementation(() => ({
+      mockSupabaseFrom.mockImplementation((table: string) => ({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({ data: mockOpportunity, error: null })
+              single: vi.fn().mockResolvedValue(
+                table === 'opportunities'
+                  ? { data: mockOpportunity, error: null }
+                  : { data: null, error: null }
+              )
             })
           })
         })
@@ -294,11 +329,15 @@ describe('Tailor API Route', () => {
     })
 
     it('returns 404 when opportunity not found', async () => {
-      mockSupabaseFrom.mockImplementation(() => ({
+      mockSupabaseFrom.mockImplementation((table: string) => ({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({ data: null, error: { message: 'Not found' } })
+              single: vi.fn().mockResolvedValue(
+                table === 'opportunities'
+                  ? { data: null, error: { message: 'Not found' } }
+                  : { data: null, error: null }
+              )
             })
           })
         })
@@ -319,11 +358,15 @@ describe('Tailor API Route', () => {
     it('returns 500 when profile generation fails', async () => {
       mockGenerateProfile.mockRejectedValue(new Error('AI generation failed'))
 
-      mockSupabaseFrom.mockImplementation(() => ({
+      mockSupabaseFrom.mockImplementation((table: string) => ({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({ data: mockOpportunity, error: null })
+              single: vi.fn().mockResolvedValue(
+                table === 'opportunities'
+                  ? { data: mockOpportunity, error: null }
+                  : { data: null, error: null }
+              )
             })
           })
         })
@@ -342,11 +385,15 @@ describe('Tailor API Route', () => {
     })
 
     it('includes resume_data in response', async () => {
-      mockSupabaseFrom.mockImplementation(() => ({
+      mockSupabaseFrom.mockImplementation((table: string) => ({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({ data: mockOpportunity, error: null })
+              single: vi.fn().mockResolvedValue(
+                table === 'opportunities'
+                  ? { data: mockOpportunity, error: null }
+                  : { data: null, error: null }
+              )
             })
           })
         })
