@@ -101,15 +101,21 @@ export async function POST(request: NextRequest) {
     // Get the client secret from the payment intent
     // When using expand: ["latest_invoice.payment_intent"], we get the full objects
     const invoice = stripeSubscription.latest_invoice;
+    console.log("Stripe invoice response:", JSON.stringify(invoice, null, 2));
+
     if (!invoice || typeof invoice === "string") {
       throw new Error("Failed to get invoice from subscription");
     }
 
     // Access payment_intent from the expanded invoice
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const paymentIntent = (invoice as any).payment_intent as Stripe.PaymentIntent | null;
+    const invoiceObj = invoice as any;
+    console.log("Invoice keys:", Object.keys(invoiceObj));
+    console.log("payment_intent value:", invoiceObj.payment_intent);
+
+    const paymentIntent = invoiceObj.payment_intent as Stripe.PaymentIntent | null;
     if (!paymentIntent) {
-      throw new Error("Failed to get payment intent from invoice");
+      throw new Error(`Failed to get payment intent from invoice. Invoice ID: ${invoiceObj.id}`);
     }
 
     return apiSuccess({
