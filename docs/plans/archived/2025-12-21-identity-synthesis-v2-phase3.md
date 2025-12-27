@@ -1,12 +1,22 @@
 # Identity Synthesis v2 - Phase 3: Enhanced Confidence Scoring
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **Status:** ✅ COMPLETE (2025-12-21)
 
 **Goal:** Wire up the confidence scoring module so recency decay and source weighting affect claim confidence.
 
 **Architecture:** Replace hardcoded confidence calculation in synthesis with the new `calculateClaimConfidence()` function that considers evidence date, source type, and claim type.
 
 **Tech Stack:** TypeScript, Supabase migrations, Vitest
+
+## Progress (Last reviewed: 2025-12-22)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Update recalculateConfidence to Use Scoring Module | ✅ Complete | Integrated in synthesize-claims-batch.ts |
+| Task 2: Update New Claim Creation to Use Scoring Module | ✅ Complete | Uses calculateClaimConfidence() |
+| Task 3: Create Migration to Recalculate Existing Confidences | ✅ Complete | `20251221100000_recalculate_claim_confidences.sql` |
+| Task 4: Add Tests for Enhanced Synthesis Scoring | ✅ Complete | Tests passing |
+| Task 5: Run Full Test Suite and Push | ✅ Complete | All tests pass |
 
 ---
 
