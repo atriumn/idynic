@@ -19,6 +19,14 @@ import { createClient } from "@/lib/supabase/client";
 import { BetaGate } from "@/components/beta-gate";
 import { EMPTY_STATE } from "@idynic/shared";
 
+/** Parse **bold** markdown to React elements */
+function parseBold(text: string): React.ReactNode {
+  const parts = text.split(/\*\*(.+?)\*\*/g);
+  return parts.map((part, i) =>
+    i % 2 === 1 ? <strong key={i}>{part}</strong> : part
+  );
+}
+
 const BETA_CODE_KEY = "idynic_beta_code";
 
 type ViewType = "treemap" | "radial" | "sunburst" | "clusters" | "list";
@@ -223,7 +231,7 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
                 {Object.values(EMPTY_STATE.help).map((item) => (
                   <div key={item.title}>
                     <h4 className="text-sm font-medium mb-1">{item.title}</h4>
-                    <p className="text-sm text-muted-foreground">{item.content}</p>
+                    <p className="text-sm text-muted-foreground">{parseBold(item.content)}</p>
                   </div>
                 ))}
               </div>

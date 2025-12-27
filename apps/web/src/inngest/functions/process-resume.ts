@@ -147,7 +147,7 @@ export const processResume = inngest.createFunction(
       if (certs > 0) parts.push(`${certs} certifications`);
 
       if (parts.length > 0) {
-        await job.addHighlight(`Found ${parts.join(", ")}`, "found");
+        await job.addHighlight(parts.join(", "), "found");
       }
     }
 
@@ -271,14 +271,13 @@ export const processResume = inngest.createFunction(
 
     // Step 7: Generate embeddings
     const embeddings = await step.run("generate-embeddings", async () => {
-      await job.setPhase("embeddings", `0/${evidenceItems.length}`);
-      jobLog.info("Generating embeddings", { count: evidenceItems.length });
+      const totalBatches = Math.ceil(evidenceItems.length / 100); // Match BATCH_SIZE in embeddings.ts
+      await job.setPhase("embeddings", `0/${totalBatches}`);
+      jobLog.info("Generating embeddings", { count: evidenceItems.length, batches: totalBatches });
 
       const evidenceTexts = evidenceItems.map((e) => e.text);
       const embeddings = await generateEmbeddings(evidenceTexts, (progress) => {
-        // Update progress for multi-batch embedding generation
-        const processed = Math.min(progress.current * 100, evidenceItems.length);
-        job.updateProgress(`${processed}/${evidenceItems.length}`);
+        job.updateProgress(`${progress.current}/${progress.total}`);
       });
       jobLog.info("Embeddings generated");
       return embeddings;
