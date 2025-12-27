@@ -122,6 +122,24 @@ export const processResume = inngest.createFunction(
         hasContact: !!resumeResult?.contact,
       });
 
+      // Send extraction summary (inside step so it only runs once)
+      if (evidenceResult.length > 0) {
+        const skills = evidenceResult.filter(e => e.type === "skill_listed").length;
+        const achievements = evidenceResult.filter(e => e.type === "accomplishment").length;
+        const education = evidenceResult.filter(e => e.type === "education").length;
+        const certs = evidenceResult.filter(e => e.type === "certification").length;
+
+        const parts: string[] = [];
+        if (skills > 0) parts.push(`${skills} skills`);
+        if (achievements > 0) parts.push(`${achievements} achievements`);
+        if (education > 0) parts.push(`${education} degrees`);
+        if (certs > 0) parts.push(`${certs} certifications`);
+
+        if (parts.length > 0) {
+          await job.addHighlight(parts.join(", "), "found");
+        }
+      }
+
       return {
         evidenceItems: evidenceResult,
         workHistoryItems: workHistoryResult,
@@ -132,24 +150,6 @@ export const processResume = inngest.createFunction(
     const evidenceItems = extractionResult.evidenceItems as ExtractedEvidence[];
     const workHistoryItems = extractionResult.workHistoryItems as ExtractedJob[];
     const resumeData = extractionResult.resumeData;
-
-    // Send extraction summary immediately (reduces "dead air")
-    if (evidenceItems.length > 0) {
-      const skills = evidenceItems.filter(e => e.type === "skill_listed").length;
-      const achievements = evidenceItems.filter(e => e.type === "accomplishment").length;
-      const education = evidenceItems.filter(e => e.type === "education").length;
-      const certs = evidenceItems.filter(e => e.type === "certification").length;
-
-      const parts: string[] = [];
-      if (skills > 0) parts.push(`${skills} skills`);
-      if (achievements > 0) parts.push(`${achievements} achievements`);
-      if (education > 0) parts.push(`${education} degrees`);
-      if (certs > 0) parts.push(`${certs} certifications`);
-
-      if (parts.length > 0) {
-        await job.addHighlight(parts.join(", "), "found");
-      }
-    }
 
     // Step 4: Update profile with contact info
     if (resumeData?.contact) {
