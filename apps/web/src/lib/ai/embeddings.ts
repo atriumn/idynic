@@ -16,16 +16,26 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   return response.data[0].embedding;
 }
 
+export interface EmbeddingsProgress {
+  current: number;
+  total: number;
+}
+
 export async function generateEmbeddings(
-  texts: string[]
+  texts: string[],
+  onProgress?: (progress: EmbeddingsProgress) => void
 ): Promise<number[][]> {
   if (texts.length === 0) return [];
 
   const embeddings: number[][] = [];
+  const totalBatches = Math.ceil(texts.length / BATCH_SIZE);
 
   // Process in batches
   for (let i = 0; i < texts.length; i += BATCH_SIZE) {
     const batch = texts.slice(i, i + BATCH_SIZE);
+    const batchIndex = Math.floor(i / BATCH_SIZE);
+
+    onProgress?.({ current: batchIndex + 1, total: totalBatches });
 
     const response = await openai.embeddings.create({
       model: EMBEDDING_MODEL,

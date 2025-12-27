@@ -133,6 +133,24 @@ export const processResume = inngest.createFunction(
     const workHistoryItems = extractionResult.workHistoryItems as ExtractedJob[];
     const resumeData = extractionResult.resumeData;
 
+    // Send extraction summary immediately (reduces "dead air")
+    if (evidenceItems.length > 0) {
+      const skills = evidenceItems.filter(e => e.type === "skill_listed").length;
+      const achievements = evidenceItems.filter(e => e.type === "accomplishment").length;
+      const education = evidenceItems.filter(e => e.type === "education").length;
+      const certs = evidenceItems.filter(e => e.type === "certification").length;
+
+      const parts: string[] = [];
+      if (skills > 0) parts.push(`${skills} skills`);
+      if (achievements > 0) parts.push(`${achievements} achievements`);
+      if (education > 0) parts.push(`${education} degrees`);
+      if (certs > 0) parts.push(`${certs} certifications`);
+
+      if (parts.length > 0) {
+        await job.addHighlight(`Found ${parts.join(", ")}`, "found");
+      }
+    }
+
     // Step 4: Update profile with contact info
     if (resumeData?.contact) {
       await step.run("update-profile", async () => {
@@ -253,11 +271,15 @@ export const processResume = inngest.createFunction(
 
     // Step 7: Generate embeddings
     const embeddings = await step.run("generate-embeddings", async () => {
-      await job.setPhase("embeddings");
+      await job.setPhase("embeddings", `0/${evidenceItems.length}`);
       jobLog.info("Generating embeddings", { count: evidenceItems.length });
 
       const evidenceTexts = evidenceItems.map((e) => e.text);
-      const embeddings = await generateEmbeddings(evidenceTexts);
+      const embeddings = await generateEmbeddings(evidenceTexts, (progress) => {
+        // Update progress for multi-batch embedding generation
+        const processed = Math.min(progress.current * 100, evidenceItems.length);
+        job.updateProgress(`${processed}/${evidenceItems.length}`);
+      });
       jobLog.info("Embeddings generated");
       return embeddings;
     });

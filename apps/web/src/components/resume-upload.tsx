@@ -150,9 +150,9 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
                     )}
                   >
                     {isCompleted ? (
-                      <span className="text-green-600">✓</span>
+                      <span className="text-green-500">✓</span>
                     ) : isCurrent ? (
-                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <svg className="h-4 w-4 animate-spin text-teal-500" viewBox="0 0 24 24" fill="none">
                         <circle
                           className="opacity-25"
                           cx="12"
@@ -208,8 +208,8 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
               </div>
             )}
 
-            {isComplete && <p className="text-sm font-medium text-green-600">Processing complete!</p>}
-            {job?.warning && <p className="text-sm text-yellow-600">{job.warning}</p>}
+            {isComplete && <p className="text-sm font-medium text-green-500">Processing complete!</p>}
+            {job?.warning && <p className="text-sm text-yellow-500">{job.warning}</p>}
           </div>
         ) : (
           <>

@@ -114,9 +114,9 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
                     )}
                   >
                     {isCompleted ? (
-                      <span className="text-green-600">✓</span>
+                      <span className="text-green-500">✓</span>
                     ) : isCurrent ? (
-                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <svg className="h-4 w-4 animate-spin text-teal-500" viewBox="0 0 24 24" fill="none">
                         <circle
                           className="opacity-25"
                           cx="12"
@@ -167,9 +167,9 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
             )}
 
             {isComplete && summary && (
-              <div className="rounded-md bg-green-50 border border-green-200 p-3 text-sm">
-                <p className="font-medium text-green-800">Processing complete!</p>
-                <p className="text-green-700 mt-1">
+              <div className="rounded-md bg-teal-500/10 border border-teal-600 p-3 text-sm">
+                <p className="font-medium text-teal-400">Processing complete!</p>
+                <p className="text-teal-300 mt-1">
                   {summary.claimsCreated > 0 &&
                     `+${summary.claimsCreated} new claim${summary.claimsCreated > 1 ? "s" : ""}`}
                   {summary.claimsCreated > 0 && summary.claimsUpdated > 0 && ", "}
@@ -181,7 +181,7 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
               </div>
             )}
 
-            {job?.warning && <p className="text-sm text-yellow-600">{job.warning}</p>}
+            {job?.warning && <p className="text-sm text-yellow-500">{job.warning}</p>}
           </div>
         ) : (
           <div className="space-y-4">
