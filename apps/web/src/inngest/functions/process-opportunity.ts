@@ -76,6 +76,10 @@ export const processOpportunity = inngest.createFunction(
         .eq("id", jobId);
 
       console.error("[process-opportunity] Job failed after retries:", { jobId, error: errorMessage });
+
+      // Flush logs to Axiom on failure
+      const { log } = await import("@/lib/logger");
+      await log.flush();
     },
   },
   { event: "opportunity/process" },
@@ -116,6 +120,8 @@ export const processOpportunity = inngest.createFunction(
     });
 
     if (isDuplicate.isDuplicate && isDuplicate.existing) {
+      const { log } = await import("@/lib/logger");
+      await log.flush();
       return { status: "duplicate", existing: isDuplicate.existing };
     }
 
@@ -327,6 +333,10 @@ export const processOpportunity = inngest.createFunction(
 
       jobLog.info("Job completed successfully");
     });
+
+    // Flush logs to Axiom before function completes
+    const { log } = await import("@/lib/logger");
+    await log.flush();
 
     return {
       status: "completed",
