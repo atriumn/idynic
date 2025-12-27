@@ -1,5 +1,21 @@
 # Constellation Visualization Design
 
+**Status:** Not Started
+
+## Progress (Last reviewed: 2025-12-26)
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| API endpoint `/api/identity/graph` | ⏳ Not Started | Graph data structure needed |
+| D3 force-directed visualization | ⏳ Not Started | Main constellation component |
+| Side panel for claim details | ⏳ Not Started | Detail view on click |
+| Upload modals integration | ⏳ Not Started | Resume/story upload in header |
+
+### Notes
+- Identity page currently uses list-based view
+- D3 is available in web app dependencies
+- Mobile app has simpler identity graph visualization
+
 ## Overview
 
 Transform the `/identity` page from a list-based view to an interactive constellation visualization that shows how evidence connects to claims.

@@ -4,11 +4,38 @@
 
 **Goal:** Set up API key infrastructure and core read endpoints for the external API.
 
+**Status:** Done
+
 **Architecture:** Add `api_keys` table with hashed keys mapped to users. Create auth middleware that validates keys and sets RLS context. Build UI for users to manage keys. Implement first three endpoints: `/api/v1/profile`, `/api/v1/claims`, `/api/v1/opportunities`.
 
 **Tech Stack:** Next.js 14 API routes, Supabase PostgreSQL, TypeScript, Tailwind CSS, Radix UI
 
 **Design Document:** `docs/plans/2025-12-19-external-api-mcp-design.md`
+
+## Progress (Last reviewed: 2025-12-26)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Task 1: Create api_keys table | ✅ Complete | `supabase/migrations/20251219194017_create_api_keys.sql` |
+| Task 2: Generate TypeScript types | ✅ Complete | Types in `apps/web/src/lib/supabase/types.ts` |
+| Task 3: Create API key utilities | ✅ Complete | Key generation and hashing |
+| Task 4: Create API auth middleware | ✅ Complete | `apps/web/src/lib/api/auth.ts` |
+| Task 5: Create API response helpers | ✅ Complete | Standardized responses |
+| Task 6: GET /api/v1/profile | ✅ Complete | Profile endpoint with identity reflection |
+| Task 7: GET /api/v1/claims | ✅ Complete | Claims endpoint |
+| Task 8: GET /api/v1/opportunities | ✅ Complete | Opportunities endpoint |
+| Task 9: API key management server actions | ✅ Complete | `apps/web/src/app/settings/api-keys/actions.ts` |
+| Task 10: API keys management page | ✅ Complete | Settings page for key management |
+| Task 11: API keys client component | ✅ Complete | UI for creating/revoking keys |
+| Task 12: Add settings link to nav | ✅ Complete | Navigation updated |
+| Task 13: Integration test | ✅ Complete | Manual and automated tests |
+
+### Additional Implementation
+- MCP Server package created (`packages/mcp-server/`)
+- JWT token support added for API authentication
+- API documentation page at `/docs/api`
+- OpenAPI spec endpoint at `/api/v1/openapi.json`
+- Comprehensive test coverage for API endpoints
 
 ---
 

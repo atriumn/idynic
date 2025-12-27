@@ -1,12 +1,28 @@
 # Chrome Extension Implementation Plan: Idynic Job Saver
 
-**Status:** Implemented
+**Status:** Done
 
 **Goal:** Build a Chrome extension that saves job postings to Idynic with one click.
 
 **Architecture:** Browser action popup reads current tab URL, sends to existing `/api/v1/opportunities` endpoint. Backend adds duplicate detection via normalized URLs and a verify endpoint for testing API keys.
 
 **Tech Stack:** Chrome Extension Manifest V3, vanilla JS (no build step), Next.js API routes, Supabase/PostgreSQL
+
+## Progress (Last reviewed: 2025-12-26)
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Extension manifest (V3) | ✅ Complete | `chrome-extension/manifest.json` |
+| Popup UI | ✅ Complete | Save job button with status |
+| Options page | ✅ Complete | API key configuration |
+| API client | ✅ Complete | `chrome-extension/lib/api.js` |
+| Auth verification endpoint | ✅ Complete | `/api/v1/auth/verify` |
+| Duplicate detection | ✅ Complete | Normalized URL matching |
+
+### Implementation Notes
+- Extension located in `chrome-extension/` directory
+- Uses existing `/api/v1/opportunities` endpoint
+- Not yet published to Chrome Web Store
 
 ---
 
