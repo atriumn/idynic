@@ -1,8 +1,24 @@
 # Android Launch Plan
 
 **Date:** 2025-12-23
-**Status:** Approved
+**Status:** Not Started
 **Goal:** Get the existing Expo/React Native app running on Android and distributed via Google Play Store
+
+## Progress (Last reviewed: 2025-12-25)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Phase 1: Local Build & Smoke Test | ⏳ Not Started | No Android builds attempted yet |
+| Phase 2: Fix & Polish | ⏳ Not Started | Blocked by Phase 1 |
+| Phase 3: Internal Distribution (APK) | ⏳ Not Started | Blocked by Phase 2 |
+| Phase 4: Google Play Internal Testing | ⏳ Not Started | Requires $25 registration |
+| Phase 5: CI/CD Automation | ⏳ Not Started | Fastlane iOS config exists, needs Android |
+| Phase 6: Production Release | ⏳ Not Started | Blocked by all prior phases |
+
+### Drift Notes
+- iOS CI/CD is fully operational (fastlane config exists at `apps/mobile/fastlane/`)
+- iOS app is actively being deployed to TestFlight
+- Android build has not been attempted yet
 
 ## Context
 

@@ -1,12 +1,31 @@
 # Idynic Mobile App Implementation Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **Status:** ✅ COMPLETE (iOS Phase)
 
 **Goal:** Build a React Native + Expo mobile app with full feature parity to the idynic web app, starting with iOS.
 
 **Architecture:** Monorepo with shared TypeScript packages for types, schemas, and API client. Expo Router for file-based navigation. NativeWind for Tailwind-style styling. Supabase for auth and data.
 
-**Tech Stack:** Expo SDK 52, Expo Router, NativeWind v4, React Query, Supabase JS, expo-secure-store
+**Tech Stack:** Expo SDK 54, Expo Router, NativeWind v4, React Query, Supabase JS, expo-secure-store
+
+## Progress (Last reviewed: 2025-12-25)
+
+| Phase/Task | Status | Notes |
+|------------|--------|-------|
+| Phase 1: Monorepo Setup | ✅ Complete | pnpm workspaces, shared package |
+| Phase 2: Expo App Setup | ✅ Complete | NativeWind, Supabase, navigation |
+| Phase 3: Core Screens | ✅ Complete | Profile, Opportunities, Settings |
+| Identity graph visualization | ✅ Complete | `apps/mobile/app/(app)/index.tsx` |
+| Opportunities list + detail | ✅ Complete | `apps/mobile/app/(app)/opportunities/[id].tsx` |
+| Profile editing | ✅ Complete | Work history, education forms |
+| iOS CI/CD | ✅ Complete | Fastlane + TestFlight deployment |
+| Identity Reflection | ✅ Complete | Mobile component added |
+
+### Drift Notes
+- Upgraded to Expo SDK 54 (plan said 52)
+- Added shared links management screen
+- iOS deployments are active via fastlane
+- Android launch is a separate plan (`2025-12-23-android-launch-plan.md`)
 
 ---
 

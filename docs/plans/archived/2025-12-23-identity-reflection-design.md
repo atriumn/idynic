@@ -1,8 +1,23 @@
 # Identity Reflection Feature Design
 
 **Date:** 2025-12-23
-**Status:** Approved
+**Status:** Done
 **Author:** Brainstorming session
+
+## Progress (Last reviewed: 2025-12-25)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Data Model (migration) | ✅ Complete | `supabase/migrations/20251223100000_add_identity_reflection.sql` |
+| Core generation logic | ✅ Complete | `apps/web/src/lib/ai/reflect-identity.ts` |
+| UI component | ✅ Complete | `apps/web/src/components/identity/identity-reflection.tsx` |
+| React hook | ✅ Complete | `apps/web/src/lib/hooks/use-identity-reflection.ts` |
+| process-resume integration | ✅ Complete | REFLECTION phase added |
+| process-story integration | ✅ Complete | REFLECTION phase added |
+| Mobile component | ✅ Complete | `apps/mobile/components/identity-reflection.tsx` |
+
+### Drift Notes
+None - implementation matches design exactly.
 
 ## Overview
 
