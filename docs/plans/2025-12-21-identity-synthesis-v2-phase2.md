@@ -2,6 +2,24 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Done
+
+## Progress (Last reviewed: 2025-12-22)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Create RAG Retrieval RPC Function | ✅ Complete | Migration `20251221000000_rag_synthesis_function.sql` |
+| Task 2: Create RAG Retrieval TypeScript Module | ✅ Complete | `src/lib/ai/rag-claims.ts` |
+| Task 3: Update synthesizeClaimsBatch to Use RAG | ✅ Complete | Integration complete |
+| Task 4: Add Integration Tests for RAG Synthesis | ✅ Complete | Tests passing |
+| Task 5: Update Progress UX | ✅ Complete | Reveal at end |
+| Task 6: Run Full Test Suite and Verify | ✅ Complete | All tests pass |
+
+### Drift Notes
+None - implementation matches plan exactly.
+
+---
+
 **Goal:** Replace full-context claim loading with vector search, enabling synthesis to scale to 500+ claims.
 
 **Architecture:** Before LLM synthesis, query `find_relevant_claims_for_synthesis()` RPC to retrieve only semantically similar claims (similarity > 0.50, max 25). Union results across evidence batch, deduplicate, then pass focused context to LLM.

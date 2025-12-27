@@ -2,6 +2,23 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Done
+
+## Progress (Last reviewed: 2025-12-22)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Update recalculateConfidence to Use Scoring Module | ✅ Complete | Scoring integrated |
+| Task 2: Update New Claim Creation to Use Scoring Module | ✅ Complete | Using `calculateClaimConfidence()` |
+| Task 3: Create Migration to Recalculate Existing Confidences | ✅ Complete | Migration `20251221100000_recalculate_claim_confidences.sql` |
+| Task 4: Add Tests for Enhanced Synthesis Scoring | ✅ Complete | Tests passing |
+| Task 5: Run Full Test Suite and Push | ✅ Complete | All tests pass |
+
+### Drift Notes
+None - implementation matches plan exactly.
+
+---
+
 **Goal:** Wire up the confidence scoring module so recency decay and source weighting affect claim confidence.
 
 **Architecture:** Replace hardcoded confidence calculation in synthesis with the new `calculateClaimConfidence()` function that considers evidence date, source type, and claim type.

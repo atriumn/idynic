@@ -2,6 +2,24 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** Done
+
+## Progress (Last reviewed: 2025-12-22)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Create Migration for Source Metadata | ✅ Complete | `20251220200000_evidence_source_metadata.sql` |
+| Task 2: Create Backfill Migration | ✅ Complete | `20251220200001_backfill_evidence_source_type.sql` |
+| Task 3: Create Confidence Scoring Module | ✅ Complete | `src/lib/ai/confidence-scoring.ts` |
+| Task 4: Add Tests for Scoring Module | ✅ Complete | Tests passing |
+| Task 5: Generate TypeScript Types | ✅ Complete | Types regenerated |
+| Task 6: Run Full Test Suite | ✅ Complete | All tests pass |
+
+### Drift Notes
+None - implementation matches plan exactly.
+
+---
+
 **Goal:** Add source metadata columns to evidence table and implement decay/weight calculation utilities.
 
 **Architecture:** Extend evidence table with `source_type` and `evidence_date` columns. Create pure functions for confidence scoring that incorporate recency decay and source weighting. Backfill existing data.
