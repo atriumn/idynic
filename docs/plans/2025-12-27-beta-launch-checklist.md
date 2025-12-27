@@ -78,6 +78,11 @@
 - [ ] User onboarding flow (to be designed separately)
 - [ ] In-app help/documentation
 
+### I18n Architectural Prep
+- [ ] **Create `lib/format.ts` utility** - centralize date/number/currency formatting using Intl APIs (~30 min)
+- [ ] **Adopt UI string constant pattern** - for new code only, extract strings to component-level constants
+- [ ] (No action needed for AI content - handled via prompts when needed)
+
 ---
 
 ## Reference: Current Infrastructure
@@ -116,6 +121,8 @@
 6. **2-way communication**: Users can follow their GitHub issue for updates; optionally capture email for direct follow-up
 7. **GDPR**: Privacy policy covers it; deletion requests handled manually until feature built
 8. **Monitoring**: UptimeRobot (free) + Sentry email alerts; upgrade to Sentry Team ($29/mo) for Discord webhooks later
+9. **I18n**: No full i18n for beta; adopt conventions (string constants, Intl APIs) to ease future localization
+10. **UI string retrofit**: Don't retrofit existing ~154 strings; apply pattern to new code only
 
 ---
 
