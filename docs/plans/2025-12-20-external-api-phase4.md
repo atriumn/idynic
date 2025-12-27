@@ -1,12 +1,31 @@
 # External API Phase 4: MCP Server
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **Status:** ✅ COMPLETE (2025-12-20)
 
 **Goal:** Create an MCP server package that exposes Idynic functionality to AI assistants like Claude Desktop.
 
 **Architecture:** Standalone npm package using `@modelcontextprotocol/sdk` that wraps the REST API. Uses stdio transport for Claude Desktop integration. Tools map 1:1 to REST endpoints.
 
 **Tech Stack:** TypeScript, @modelcontextprotocol/sdk, node-fetch, zod
+
+## Progress (Last reviewed: 2025-12-21)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Package Setup | ✅ Complete | f74e99b0 - packages/mcp-server |
+| Task 2: REST API Client | ✅ Complete | f5e37c98 |
+| Task 3: MCP Tools | ✅ Complete | 959ddee9 |
+| Task 4: MCP Resources | ✅ Complete | 3330774a |
+| Task 5: README & npm prep | ✅ Complete | ab052cbd |
+| Task 6: Resource listing handler | ✅ Complete | 097a1676 |
+
+### Publishing
+- Package published to npm as `@atriumn/idynic-mcp` (91d78e7b)
+- Version 0.1.3 (717ec6b2)
+
+---
+
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 ---
 

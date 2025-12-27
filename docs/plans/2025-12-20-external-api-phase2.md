@@ -1,12 +1,29 @@
 # External API Phase 2: Opportunity Operations
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **Status:** ✅ COMPLETE (2025-12-20)
 
 **Goal:** Add opportunity management endpoints to the external API - create, match, tailor, and share.
 
 **Architecture:** New v1 API routes with API key auth that call existing lib functions. Each endpoint is thin: validate request, call lib function, format response. Long operations (tailor) stream progress via SSE.
 
 **Tech Stack:** Next.js 14 API routes, Supabase PostgreSQL, OpenAI, SSE streaming
+
+## Progress (Last reviewed: 2025-12-21)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: POST /api/v1/opportunities | ✅ Complete | dfd03387 |
+| Task 2: GET /api/v1/opportunities/:id | ✅ Complete | fedd8e92 |
+| Task 3: GET /api/v1/opportunities/:id/match | ✅ Complete | 6a7882d5 |
+| Task 4: POST /api/v1/opportunities/:id/tailor | ✅ Complete | 21894a2b |
+| Task 5: GET /api/v1/opportunities/:id/tailored-profile | ✅ Complete | d70e5c2a |
+| Task 6: POST /api/v1/opportunities/:id/share | ✅ Complete | b7ab56a5 |
+| Task 7: POST /api/v1/opportunities/add-and-tailor | ✅ Complete | 3966556d |
+| Task 8: POST /api/v1/opportunities/add-tailor-share | ✅ Complete | 52dfa92d |
+
+---
+
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 ---
 

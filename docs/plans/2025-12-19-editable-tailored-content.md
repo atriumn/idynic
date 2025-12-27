@@ -1,12 +1,35 @@
 # Editable Tailored Content Implementation Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **Status:** ✅ COMPLETE (2025-12-19)
 
 **Goal:** Enable users to edit AI-generated resume bullets, summaries, and cover letter narratives with both direct text editing and AI-assisted refinement.
 
 **Architecture:** Add original content columns to track pre-edit state, create PATCH endpoint for edits with AI rewriting capability, build reusable EditableText component with floating toolbar for quick actions.
 
 **Tech Stack:** Next.js 14, Supabase (Postgres), OpenAI GPT-4o-mini, shadcn/ui components, React portals for toolbar positioning.
+
+## Progress (Last reviewed: 2025-12-21)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Database Migration | ✅ Complete | 20251219142319_add_editable_content_columns.sql |
+| Task 2: Update Profile Generation | ✅ Complete | Implemented |
+| Task 3: AI Rewrite Helper | ✅ Complete | b271b24c |
+| Task 4: PATCH API Endpoint | ✅ Complete | src/app/api/tailored-profile/[opportunityId]/route.ts |
+| Task 5: Revert API Endpoint | ✅ Complete | POST handler added |
+| Task 6: Popover UI Component | ✅ Complete | shadcn/ui added |
+| Task 7: Dropdown Menu Component | ✅ Complete | shadcn/ui added |
+| Task 8: EditableText Component | ✅ Complete | a80abfd0 |
+| Task 9: Regenerate Warning Dialog | ✅ Complete | Component created |
+| Task 10: Integrate into TailoredProfile | ✅ Complete | 8f7bbd0c |
+| Task 11: Make Summary Editable | ✅ Complete | Integrated |
+| Task 12: Make Bullets Editable | ✅ Complete | Integrated |
+| Task 13: Make Narrative Editable | ✅ Complete | Integrated |
+| Task 14: Final Testing | ✅ Complete | 68918a47 - fixes applied |
+
+---
+
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 ---
 
