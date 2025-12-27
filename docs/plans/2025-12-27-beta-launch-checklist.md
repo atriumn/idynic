@@ -25,8 +25,7 @@
 - [ ] **Set up UptimeRobot** (free tier) - monitors for homepage + API health endpoint
 - [ ] **Set up Discord server** for community + support:
   - Create channels: #announcements, #general, #support, #feature-requests
-  - Add Ticket Tool bot for private support threads
-  - Pin bug report template (redirects to in-app reporter)
+  - Pin in #support: "For bug reports, use Report a Bug in the app"
 - [ ] **Create public `atriumn/idynic-feedback` repo** for bug reports (keeps code private, feedback public)
 - [ ] **Build in-app bug reporter** - "Report a Bug" button that:
   - Collects: title, description, optional screenshot, user email (if logged in)
@@ -34,7 +33,7 @@
   - Creates GitHub issue in `idynic-feedback` repo via API
   - Labels as `bug` automatically
 - [ ] **Verify Sentry alerts are configured** - check you're getting email notifications on errors
-- [ ] **Verify Axiom is receiving logs** - check dashboard has recent data
+- [ ] **Verify Axiom is receiving logs** - for request tracing, debugging, and performance analysis (not errors - that's Sentry)
 
 ---
 
