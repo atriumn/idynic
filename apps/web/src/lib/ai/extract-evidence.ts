@@ -104,7 +104,7 @@ export async function extractEvidence(
   sourceType: 'resume' | 'story' = 'resume'
 ): Promise<ExtractedEvidence[]> {
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-5-mini",
     max_completion_tokens: 16000,
     messages: [
       { role: "system", content: SYSTEM_PROMPT },

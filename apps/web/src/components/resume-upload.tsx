@@ -106,7 +106,8 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
   );
 
   // Calculate phase states
-  const isProcessing = isUploading || job?.status === "processing";
+  // Include jobId to prevent flash between upload completing and realtime connecting
+  const isProcessing = isUploading || !!jobId || job?.status === "processing";
   const isComplete = job?.status === "completed";
   const currentPhase = job?.phase as DocumentJobPhase | null;
 
