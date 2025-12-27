@@ -121,19 +121,23 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
       await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
       // Verify insert was called with confidence calculated by scoring module
+      // Batch insert passes an array
       expect(insertMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          user_id: 'user-123',
-          type: 'skill',
-          label: 'React',
-          description: 'JavaScript library',
-          // For single evidence with medium strength + resume source + recent date:
-          // base (0.5) * (strength 1.0 * source 1.0 * decay ~1.0) = ~0.5
-          confidence: expect.any(Number),
-        })
+        expect.arrayContaining([
+          expect.objectContaining({
+            user_id: 'user-123',
+            type: 'skill',
+            label: 'React',
+            description: 'JavaScript library',
+            // For single evidence with medium strength + resume source + recent date:
+            // base (0.5) * (strength 1.0 * source 1.0 * decay ~1.0) = ~0.5
+            confidence: expect.any(Number),
+          })
+        ])
       );
 
-      const insertCall = insertMock.mock.calls[0][0];
+      const insertCalls = insertMock.mock.calls[0][0];
+      const insertCall = Array.isArray(insertCalls) ? insertCalls[0] : insertCalls;
       // For single evidence with medium strength + resume source:
       // base (0.5) * (strength 1.0 * source 1.0 * decay for 1yr old skill)
       // Evidence from 2024-01-01 is ~1 year old, causing some decay
@@ -203,7 +207,8 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
 
       await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
-      const insertCall = insertMock.mock.calls[0][0];
+      const insertCalls = insertMock.mock.calls[0][0];
+      const insertCall = Array.isArray(insertCalls) ? insertCalls[0] : insertCalls;
       // For certification: base (0.5) * (strength 1.2 * source 1.5 * decay 1.0) = 0.9
       // Should be significantly higher than resume-sourced evidence
       expect(insertCall.confidence).toBeGreaterThan(0.85);
@@ -268,7 +273,8 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
 
       await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
-      const insertCall = insertMock.mock.calls[0][0];
+      const insertCalls = insertMock.mock.calls[0][0];
+      const insertCall = Array.isArray(insertCalls) ? insertCalls[0] : insertCalls;
       // For inferred: base (0.5) * (strength 0.7 * source 0.6 * decay ~1.0) = ~0.21
       // Should be significantly lower than resume-sourced evidence
       expect(insertCall.confidence).toBeLessThan(0.3);
@@ -332,7 +338,8 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
 
       await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
-      const insertCall = insertMock.mock.calls[0][0];
+      const insertCalls = insertMock.mock.calls[0][0];
+      const insertCall = Array.isArray(insertCalls) ? insertCalls[0] : insertCalls;
       // Should use resume (1.0) as default: base (0.5) * (strength 1.0 * source 1.0 * decay 1.0) = 0.5
       expect(insertCall.confidence).toBeCloseTo(0.5, 1);
     });
@@ -353,6 +360,17 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
                   data: { type: 'skill' },
                   error: null,
                 }),
+              }),
+              in: vi.fn().mockResolvedValue({
+                data: [{
+                  id: 'claim-1',
+                  type: 'skill',
+                  claim_evidence: [
+                    { strength: 'strong', evidence: { source_type: 'certification', evidence_date: '2023-01-01' } },
+                    { strength: 'medium', evidence: { source_type: 'resume', evidence_date: '2024-01-01' } },
+                  ]
+                }],
+                error: null,
               }),
             }),
             update: updateMock,
@@ -458,6 +476,10 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
                   error: null,
                 }),
               }),
+              in: vi.fn().mockResolvedValue({
+                data: [{ id: 'claim-1', type: 'skill', claim_evidence: [{ strength: 'medium', evidence: { source_type: 'resume', evidence_date: '2021-01-01' } }] }],
+                error: null,
+              }),
             }),
             update: updateMock,
           };
@@ -549,6 +571,10 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
                   data: { type: 'education' },
                   error: null,
                 }),
+              }),
+              in: vi.fn().mockResolvedValue({
+                data: [{ id: 'claim-1', type: 'education', claim_evidence: [{ strength: 'strong', evidence: { source_type: 'resume', evidence_date: '2005-01-01' } }] }],
+                error: null,
               }),
             }),
             update: updateMock,
@@ -642,6 +668,10 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
                   error: null,
                 }),
               }),
+              in: vi.fn().mockResolvedValue({
+                data: [{ id: 'claim-1', type: 'skill', claim_evidence: [{ strength: 'medium', evidence: { source_type: 'resume', evidence_date: null } }] }],
+                error: null,
+              }),
             }),
             update: updateMock,
           };
@@ -730,6 +760,18 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
                   data: { type: 'skill' },
                   error: null,
                 }),
+              }),
+              in: vi.fn().mockResolvedValue({
+                data: [{
+                  id: 'claim-1',
+                  type: 'skill',
+                  claim_evidence: [
+                    { strength: 'strong', evidence: { source_type: 'certification', evidence_date: '2024-01-01' } },
+                    { strength: 'medium', evidence: { source_type: 'story', evidence_date: '2023-01-01' } },
+                    { strength: 'weak', evidence: { source_type: 'inferred', evidence_date: '2024-06-01' } },
+                  ]
+                }],
+                error: null,
               }),
             }),
             update: updateMock,
@@ -832,6 +874,10 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
                   error: null,
                 }),
               }),
+              in: vi.fn().mockResolvedValue({
+                data: [{ id: 'claim-1', type: 'skill', claim_evidence: [] }],
+                error: null,
+              }),
             }),
             update: updateMock,
           };
@@ -912,6 +958,12 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
         if (table === 'identity_claims') {
           return {
             insert: insertMock,
+            select: vi.fn().mockReturnValue({
+              in: vi.fn().mockResolvedValue({
+                data: [],
+                error: null,
+              }),
+            }),
           };
         }
         if (table === 'claim_evidence') {
@@ -960,7 +1012,9 @@ describe('synthesize-claims-batch confidence scoring integration', () => {
 
       await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
 
-      const insertCall = insertMock.mock.calls[0][0];
+      // Batch insert passes an array, so access first item
+      const insertCalls = insertMock.mock.calls[0][0];
+      const insertCall = Array.isArray(insertCalls) ? insertCalls[0] : insertCalls;
       // Even with strong + certification + recent, should be capped at 0.95
       expect(insertCall.confidence).toBeLessThanOrEqual(0.95);
     });

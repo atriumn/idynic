@@ -66,6 +66,18 @@ describe('synthesizeClaimsBatch with RAG', () => {
                 error: null
               }),
             }),
+            in: vi.fn().mockResolvedValue({
+              data: [
+                {
+                  id: 'claim-1',
+                  type: 'skill',
+                  claim_evidence: [
+                    { strength: 'medium', evidence: { source_type: 'resume', evidence_date: null } }
+                  ]
+                }
+              ],
+              error: null
+            }),
           }),
           insert: vi.fn().mockReturnValue({
             select: vi.fn().mockReturnValue({
@@ -174,16 +186,14 @@ describe('synthesizeClaimsBatch with RAG', () => {
       ],
     });
 
-    // Mock successful claim creation
+    // Mock successful claim creation (batch insert returns array)
     mockFrom.mockImplementation((table: string) => {
       if (table === 'identity_claims') {
         return {
           insert: vi.fn().mockReturnValue({
-            select: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({
-                data: { id: 'new-claim-id', label: 'Python' },
-                error: null,
-              }),
+            select: vi.fn().mockResolvedValue({
+              data: [{ id: 'new-claim-id', label: 'Python', type: 'skill', description: 'Programming language' }],
+              error: null,
             }),
           }),
         };
@@ -348,13 +358,15 @@ describe('synthesizeClaimsBatch with RAG', () => {
                 error: null
               }),
             }),
+            in: vi.fn().mockResolvedValue({
+              data: [{ id: 'local-claim-id', type: 'skill', claim_evidence: [{ strength: 'medium', evidence: { source_type: 'resume', evidence_date: null } }] }],
+              error: null,
+            }),
           }),
           insert: vi.fn().mockReturnValue({
-            select: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({
-                data: { id: 'local-claim-id', label: 'TypeScript' },
-                error: null,
-              }),
+            select: vi.fn().mockResolvedValue({
+              data: [{ id: 'local-claim-id', label: 'TypeScript', type: 'skill', description: 'Language' }],
+              error: null,
             }),
           }),
           update: vi.fn().mockReturnValue({

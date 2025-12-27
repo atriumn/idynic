@@ -166,10 +166,17 @@ export async function synthesizeClaimsBatch(
         continue;
       }
 
-      // First pass: handle matches and collect new claims needing embeddings
+      // First pass: categorize decisions and collect data for batch operations
       const newClaimsToCreate: Array<{
         decision: BatchDecision;
         evidence: EvidenceItem;
+      }> = [];
+
+      const evidenceLinksToUpsert: Array<{
+        claim_id: string;
+        evidence_id: string;
+        strength: string;
+        label: string;
       }> = [];
 
       for (const decision of decisions) {
@@ -180,19 +187,13 @@ export async function synthesizeClaimsBatch(
           // Find matched claim by label
           const matchedClaim = allClaims.find(c => c.label === decision.match);
           if (matchedClaim && matchedClaim.id) {
-            await supabase
-              .from("claim_evidence")
-              .upsert(
-                {
-                  claim_id: matchedClaim.id,
-                  evidence_id: evidence.id,
-                  strength: decision.strength,
-                },
-                { onConflict: "claim_id,evidence_id", ignoreDuplicates: true }
-              );
+            evidenceLinksToUpsert.push({
+              claim_id: matchedClaim.id,
+              evidence_id: evidence.id,
+              strength: decision.strength,
+              label: matchedClaim.label,
+            });
             claimIdsToRecalc.add(matchedClaim.id);
-            claimUpdates.push({ action: "matched", label: matchedClaim.label });
-            claimsUpdated++;
           }
         } else if (decision.new_claim) {
           // Check if claim with this label already exists (in RAG results or local tracking)
@@ -200,23 +201,36 @@ export async function synthesizeClaimsBatch(
 
           if (existingClaim && existingClaim.id) {
             // Link to existing instead of creating duplicate
-            await supabase
-              .from("claim_evidence")
-              .upsert(
-                {
-                  claim_id: existingClaim.id,
-                  evidence_id: evidence.id,
-                  strength: decision.strength,
-                },
-                { onConflict: "claim_id,evidence_id", ignoreDuplicates: true }
-              );
+            evidenceLinksToUpsert.push({
+              claim_id: existingClaim.id,
+              evidence_id: evidence.id,
+              strength: decision.strength,
+              label: existingClaim.label,
+            });
             claimIdsToRecalc.add(existingClaim.id);
-            claimUpdates.push({ action: "matched", label: existingClaim.label });
-            claimsUpdated++;
           } else {
             // Collect for batch embedding generation
             newClaimsToCreate.push({ decision, evidence });
           }
+        }
+      }
+
+      // Batch upsert all evidence links for matched claims
+      if (evidenceLinksToUpsert.length > 0) {
+        const linksToInsert = evidenceLinksToUpsert.map(({ claim_id, evidence_id, strength }) => ({
+          claim_id,
+          evidence_id,
+          strength,
+        }));
+
+        await supabase
+          .from("claim_evidence")
+          .upsert(linksToInsert, { onConflict: "claim_id,evidence_id", ignoreDuplicates: true });
+
+        // Track updates
+        for (const link of evidenceLinksToUpsert) {
+          claimUpdates.push({ action: "matched", label: link.label });
+          claimsUpdated++;
         }
       }
 
@@ -225,50 +239,55 @@ export async function synthesizeClaimsBatch(
         const labels = newClaimsToCreate.map(c => c.decision.new_claim!.label);
         const embeddings = await generateEmbeddings(labels);
 
-        // Create all new claims with their embeddings
-        for (let i = 0; i < newClaimsToCreate.length; i++) {
-          const { decision, evidence } = newClaimsToCreate[i];
-          const claimEmbedding = embeddings[i];
-
-          // Calculate initial confidence for new claim
+        // Build batch insert payload for all new claims
+        const claimsToInsert = newClaimsToCreate.map((item, i) => {
           const initialEvidence: EvidenceInput[] = [{
-            strength: decision.strength as StrengthLevel,
-            sourceType: (evidence.sourceType || 'resume') as SourceType,
-            evidenceDate: evidence.evidenceDate || null,
-            claimType: decision.new_claim!.type as ClaimType,
+            strength: item.decision.strength as StrengthLevel,
+            sourceType: (item.evidence.sourceType || 'resume') as SourceType,
+            evidenceDate: item.evidence.evidenceDate || null,
+            claimType: item.decision.new_claim!.type as ClaimType,
           }];
 
-          const { data: newClaim, error } = await supabase
-            .from("identity_claims")
-            .insert({
-              user_id: userId,
-              type: decision.new_claim!.type,
-              label: decision.new_claim!.label,
-              description: decision.new_claim!.description,
-              confidence: calculateClaimConfidence(initialEvidence),
-              embedding: claimEmbedding as unknown as string,
-            })
-            .select()
-            .single();
+          return {
+            user_id: userId,
+            type: item.decision.new_claim!.type,
+            label: item.decision.new_claim!.label,
+            description: item.decision.new_claim!.description,
+            confidence: calculateClaimConfidence(initialEvidence),
+            embedding: embeddings[i] as unknown as string,
+          };
+        });
 
-          if (error) {
-            console.error("[synthesis] Failed to insert claim:", error, decision.new_claim);
-          }
+        // Single batch insert for all new claims
+        const { data: insertedClaims, error } = await supabase
+          .from("identity_claims")
+          .insert(claimsToInsert)
+          .select();
 
-          if (newClaim && !error) {
-            await supabase.from("claim_evidence").insert({
-              claim_id: newClaim.id,
-              evidence_id: evidence.id,
-              strength: decision.strength,
-            });
-            // Add to local claims list for subsequent batches
+        if (error) {
+          console.error("[synthesis] Failed to batch insert claims:", error);
+        }
+
+        if (insertedClaims && !error) {
+          // Build claim_evidence links for batch insert
+          const evidenceLinks = insertedClaims.map((claim, i) => ({
+            claim_id: claim.id,
+            evidence_id: newClaimsToCreate[i].evidence.id,
+            strength: newClaimsToCreate[i].decision.strength,
+          }));
+
+          // Single batch insert for all evidence links
+          await supabase.from("claim_evidence").insert(evidenceLinks);
+
+          // Update local tracking for subsequent batches
+          for (const claim of insertedClaims) {
             claims.push({
-              id: newClaim.id,
-              type: decision.new_claim!.type,
-              label: decision.new_claim!.label,
-              description: decision.new_claim!.description,
+              id: claim.id,
+              type: claim.type,
+              label: claim.label,
+              description: claim.description,
             });
-            claimUpdates.push({ action: "created", label: decision.new_claim!.label });
+            claimUpdates.push({ action: "created", label: claim.label });
             claimsCreated++;
           }
         }
@@ -281,9 +300,7 @@ export async function synthesizeClaimsBatch(
 
   // Bulk recalculate confidence for all affected claims at the end
   if (claimIdsToRecalc.size > 0) {
-    for (const claimId of Array.from(claimIdsToRecalc)) {
-      await recalculateConfidence(supabase, claimId);
-    }
+    await recalculateConfidenceBulk(supabase, Array.from(claimIdsToRecalc));
   }
 
   // Reveal all claims at once (reveal-at-end UX)
@@ -294,51 +311,65 @@ export async function synthesizeClaimsBatch(
   return { claimsCreated, claimsUpdated };
 }
 
-async function recalculateConfidence(
+async function recalculateConfidenceBulk(
   supabase: SupabaseClient<Database>,
-  claimId: string
+  claimIds: string[]
 ): Promise<void> {
-  // Get claim type
-  const { data: claim } = await supabase
+  if (claimIds.length === 0) return;
+
+  // Fetch all claims and their evidence links in one query
+  const { data: claimsWithEvidence } = await supabase
     .from("identity_claims")
-    .select("type")
-    .eq("id", claimId)
-    .single();
-
-  if (!claim) return;
-
-  // Get all evidence linked to this claim with metadata
-  const { data: links } = await supabase
-    .from("claim_evidence")
     .select(`
-      strength,
-      evidence:evidence_id (
-        source_type,
-        evidence_date
+      id,
+      type,
+      claim_evidence (
+        strength,
+        evidence:evidence_id (
+          source_type,
+          evidence_date
+        )
       )
     `)
-    .eq("claim_id", claimId);
+    .in("id", claimIds);
 
-  if (!links || links.length === 0) return;
+  if (!claimsWithEvidence || claimsWithEvidence.length === 0) return;
 
-  // Build evidence inputs for scoring
-  const evidenceItems: EvidenceInput[] = links.map(link => {
-    const evidence = link.evidence as { source_type?: string; evidence_date?: string } | null;
-    return {
-      strength: (link.strength || 'medium') as StrengthLevel,
-      sourceType: (evidence?.source_type || 'resume') as SourceType,
-      evidenceDate: evidence?.evidence_date
-        ? new Date(evidence.evidence_date)
-        : null,
-      claimType: claim.type as ClaimType,
-    };
-  });
+  // Calculate new confidence for each claim
+  const updates: Array<{ id: string; confidence: number; updated_at: string }> = [];
 
-  // Calculate new confidence using enhanced scoring
-  const confidence = calculateClaimConfidence(evidenceItems);
+  for (const claim of claimsWithEvidence) {
+    const links = claim.claim_evidence || [];
+    if (links.length === 0) continue;
 
-  await supabase
-    .from("identity_claims")
-    .update({ confidence, updated_at: new Date().toISOString() })
-    .eq("id", claimId);
+    const evidenceInputs: EvidenceInput[] = links.map(link => {
+      const evidence = link.evidence as { source_type?: string; evidence_date?: string } | null;
+      return {
+        strength: (link.strength || 'medium') as StrengthLevel,
+        sourceType: (evidence?.source_type || 'resume') as SourceType,
+        evidenceDate: evidence?.evidence_date
+          ? new Date(evidence.evidence_date)
+          : null,
+        claimType: claim.type as ClaimType,
+      };
+    });
+
+    updates.push({
+      id: claim.id,
+      confidence: calculateClaimConfidence(evidenceInputs),
+      updated_at: new Date().toISOString(),
+    });
+  }
+
+  // Batch update all claims in parallel
+  if (updates.length > 0) {
+    await Promise.all(
+      updates.map(({ id, confidence, updated_at }) =>
+        supabase
+          .from("identity_claims")
+          .update({ confidence, updated_at })
+          .eq("id", id)
+      )
+    );
+  }
 }

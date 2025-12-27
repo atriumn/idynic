@@ -58,21 +58,25 @@ export async function findRelevantClaimsForBatch(
   } = options;
   const claimsMap = new Map<string, RelevantClaim>();
 
-  // Query for each evidence embedding
-  for (const evidence of evidenceItems) {
-    const { data, error } = await supabase.rpc('find_relevant_claims_for_synthesis', {
-      query_embedding: evidence.embedding as unknown as string,
-      p_user_id: userId,
-      similarity_threshold: similarityThreshold,
-      max_claims: maxClaimsPerQuery,
-    });
+  // Query all evidence embeddings in parallel
+  const results = await Promise.all(
+    evidenceItems.map(evidence =>
+      supabase.rpc('find_relevant_claims_for_synthesis', {
+        query_embedding: evidence.embedding as unknown as string,
+        p_user_id: userId,
+        similarity_threshold: similarityThreshold,
+        max_claims: maxClaimsPerQuery,
+      })
+    )
+  );
 
+  // Deduplicate results
+  for (const { data, error } of results) {
     if (error) {
       console.error('RAG query failed:', error.message);
       continue;
     }
 
-    // Add to map (deduplicates by id)
     for (const claim of data || []) {
       if (!claimsMap.has(claim.id)) {
         claimsMap.set(claim.id, claim);

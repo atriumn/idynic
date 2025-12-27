@@ -289,6 +289,9 @@ export const processResume = inngest.createFunction(
     // Step 9: Link evidence to work history
     if (storedWorkHistory.length > 0 && storedEvidence.length > 0) {
       await step.run("link-evidence", async () => {
+        // Collect all updates first
+        const updates: Array<{ evidenceId: string; workHistoryId: string }> = [];
+
         for (const evidence of storedEvidence) {
           const context = evidence.context as { role?: string; company?: string } | null;
           if (context?.company || context?.role) {
@@ -299,12 +302,21 @@ export const processResume = inngest.createFunction(
                 (context.role && wh.title.toLowerCase().includes(context.role.toLowerCase()))
             );
             if (match) {
-              await supabase
-                .from("evidence")
-                .update({ work_history_id: match.id })
-                .eq("id", evidence.id);
+              updates.push({ evidenceId: evidence.id, workHistoryId: match.id });
             }
           }
+        }
+
+        // Execute all updates in parallel
+        if (updates.length > 0) {
+          await Promise.all(
+            updates.map(({ evidenceId, workHistoryId }) =>
+              supabase
+                .from("evidence")
+                .update({ work_history_id: workHistoryId })
+                .eq("id", evidenceId)
+            )
+          );
         }
       });
     }
