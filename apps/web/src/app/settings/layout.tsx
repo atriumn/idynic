@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { BarChart3, Key } from "lucide-react";
+import { BarChart3, Key, User } from "lucide-react";
 
 const settingsNav = [
   {
@@ -15,6 +15,11 @@ const settingsNav = [
     title: "API Keys",
     href: "/settings/api-keys",
     icon: Key,
+  },
+  {
+    title: "Account",
+    href: "/settings/account",
+    icon: User,
   },
 ];
 

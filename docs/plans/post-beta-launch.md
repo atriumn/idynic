@@ -5,22 +5,22 @@
 ## Data Management (GDPR)
 
 ### Delete My Account
-- [ ] Add "Delete My Account" button to settings page
-- [ ] Create `DELETE /api/v1/account` endpoint that:
+- [x] Add "Delete My Account" button to settings page
+- [x] Create `DELETE /api/v1/account` endpoint that:
   - Deletes all user data across tables (profiles, identity_claims, evidence, claim_evidence, work_history, documents, opportunities, tailored_profiles, shared_links, matches, api_keys, usage_tracking, subscriptions, opportunity_notes, document_jobs)
   - Deletes storage files (resume PDFs)
   - Cancels Stripe subscription if active
   - Deletes Supabase Auth user record
-- [ ] Add confirmation modal with password verification
-- [ ] Send confirmation email after deletion
+- [x] Add confirmation modal with password verification
+- [ ] Send confirmation email after deletion (optional enhancement)
 
 ### Export My Data
-- [ ] Add "Export My Data" button to settings page
-- [ ] Create `POST /api/v1/account/export` endpoint that:
+- [x] Add "Export My Data" button to settings page
+- [x] Create `POST /api/v1/account/export` endpoint that:
   - Exports all user data as JSON
   - Includes original uploaded files (PDFs)
   - Covers: profile, work_history, identity_claims, evidence, opportunities, tailored_profiles
-- [ ] Deliver as ZIP download (or email link for large exports)
+- [x] Deliver as ZIP download
 
 ---
 
