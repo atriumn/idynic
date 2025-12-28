@@ -383,3 +383,13 @@ Negligible compared to extraction costs.
 8. Only hallucinations fail tailoring; utilization/gaps are info
 9. Claim edit clears issues (trust user's fix)
 10. Rule checks MVP: duplicates + required fields only
+
+## Implementation Decisions (from clarification)
+
+11. **Anthropic client**: Follow existing AI gateway pattern (see OpenAI/Google implementations)
+12. **Claim sampling**: Prioritize newer claims and claims with thin evidence (fewer evidence items)
+13. **Duplicate detection**: Jaro-Winkler similarity, case-insensitive, labels only for MVP
+14. **AI eval failures**: Flag claims as "unevaluated" with warning severity (don't block processing)
+15. **Eval step placement**: After `reflect-identity`, before `complete-job` in process-resume/story
+16. **UI patterns**: Follow existing Tailwind + shadcn/ui component patterns
+17. **Testing**: Unit tests for rule checks and eval logic; integration tests deferred

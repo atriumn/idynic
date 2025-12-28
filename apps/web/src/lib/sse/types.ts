@@ -4,7 +4,8 @@ export type ProcessingPhase =
   | "extracting"
   | "embeddings"
   | "synthesis"
-  | "reflection";
+  | "reflection"
+  | "eval";
 
 export interface PhaseEvent {
   phase: ProcessingPhase;
@@ -31,6 +32,7 @@ export interface DoneEvent {
     workHistoryCount: number;
     claimsCreated: number;
     claimsUpdated: number;
+    issuesFound?: number;
   };
 }
 

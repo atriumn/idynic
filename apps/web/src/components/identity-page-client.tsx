@@ -247,6 +247,7 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
                 user_id: "",
                 embedding: null,
                 source: null,
+                issues: node.issues,
                 claim_evidence: (node.claim_evidence || []).map(ce => ({
                   strength: ce.strength,
                   evidence: ce.evidence ? {
@@ -290,6 +291,7 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
                   user_id: "",
                   embedding: null,
                   source: null,
+                  issues: node.issues,
                   claim_evidence: (node.claim_evidence || []).map(ce => ({
                     strength: ce.strength,
                     evidence: ce.evidence ? {

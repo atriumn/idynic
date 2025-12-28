@@ -15,6 +15,15 @@ interface ClaimEvidenceNode {
   evidence: EvidenceDetail | null;
 }
 
+interface ClaimIssue {
+  id: string;
+  issue_type: string;
+  severity: string;
+  message: string;
+  related_claim_id: string | null;
+  created_at: string;
+}
+
 interface GraphNode {
   id: string;
   type: string;
@@ -22,6 +31,7 @@ interface GraphNode {
   confidence: number;
   description: string | null;
   claim_evidence?: ClaimEvidenceNode[];
+  issues?: ClaimIssue[];
 }
 
 interface GraphEdge {
@@ -60,7 +70,7 @@ export async function GET(): Promise<NextResponse<GraphResponse | { error: strin
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Fetch claims with their evidence
+  // Fetch claims with their evidence and active issues
   const { data: claims, error } = await supabase
     .from("identity_claims")
     .select(`
@@ -79,6 +89,15 @@ export async function GET(): Promise<NextResponse<GraphResponse | { error: strin
           evidence_date,
           document_id
         )
+      ),
+      claim_issues!claim_issues_claim_id_fkey(
+        id,
+        issue_type,
+        severity,
+        message,
+        related_claim_id,
+        created_at,
+        dismissed_at
       )
     `)
     .eq("user_id", user.id);
@@ -105,15 +124,31 @@ export async function GET(): Promise<NextResponse<GraphResponse | { error: strin
     createdAt: d.created_at || new Date().toISOString(),
   }));
 
-  // Build nodes
-  const nodes: GraphNode[] = claims.map(claim => ({
-    id: claim.id,
-    type: claim.type,
-    label: claim.label,
-    confidence: claim.confidence ?? 0.5,
-    description: claim.description,
-    claim_evidence: claim.claim_evidence as unknown as ClaimEvidenceNode[],
-  }));
+  // Build nodes with filtered active issues
+  const nodes: GraphNode[] = claims.map(claim => {
+    // Filter to only include non-dismissed issues
+    const allIssues = (claim as unknown as { claim_issues?: Array<ClaimIssue & { dismissed_at: string | null }> }).claim_issues || [];
+    const activeIssues = allIssues
+      .filter(issue => issue.dismissed_at === null)
+      .map(issue => ({
+        id: issue.id,
+        issue_type: issue.issue_type,
+        severity: issue.severity,
+        message: issue.message,
+        related_claim_id: issue.related_claim_id,
+        created_at: issue.created_at,
+      }));
+
+    return {
+      id: claim.id,
+      type: claim.type,
+      label: claim.label,
+      confidence: claim.confidence ?? 0.5,
+      description: claim.description,
+      claim_evidence: claim.claim_evidence as unknown as ClaimEvidenceNode[],
+      issues: activeIssues.length > 0 ? activeIssues : undefined,
+    };
+  });
 
   // Build evidence map and collect unique evidence
   const evidenceMap = new Map<string, EvidenceItem>();

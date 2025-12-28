@@ -8,6 +8,7 @@ import { generateEmbeddings } from '@/lib/ai/embeddings';
 import { synthesizeClaimsBatch } from '@/lib/ai/synthesize-claims-batch';
 import { extractHighlights } from '@/lib/resume/extract-highlights';
 import { SSEStream, createSSEResponse } from '@/lib/sse/stream';
+import { runClaimEval } from '@/lib/ai/eval';
 import { extractText } from 'unpdf';
 import { createHash } from 'crypto';
 
@@ -341,6 +342,20 @@ export async function POST(request: NextRequest) {
         sse.send({ warning: 'Claim synthesis partially failed' });
       }
 
+      // === PHASE: Eval ===
+      sse.send({ phase: 'eval' });
+
+      let evalResult = { issuesFound: 0, issuesStored: 0, costCents: 0 };
+      try {
+        evalResult = await runClaimEval(supabase, userId, document.id);
+        if (evalResult.issuesFound > 0) {
+          sse.send({ highlight: `Found ${evalResult.issuesFound} claim issue(s)` });
+        }
+      } catch (err) {
+        console.error('Eval error:', err);
+        sse.send({ warning: 'Claim evaluation partially failed' });
+      }
+
       // Update document status
       await supabase
         .from('documents')
@@ -355,6 +370,7 @@ export async function POST(request: NextRequest) {
           workHistoryCount: storedWorkHistory.length,
           claimsCreated: synthesisResult.claimsCreated,
           claimsUpdated: synthesisResult.claimsUpdated,
+          issuesFound: evalResult.issuesFound,
         },
       });
     } catch (err) {

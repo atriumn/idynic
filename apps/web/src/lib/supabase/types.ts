@@ -207,6 +207,64 @@ export type Database = {
           },
         ]
       }
+      claim_issues: {
+        Row: {
+          claim_id: string
+          created_at: string
+          dismissed_at: string | null
+          document_id: string | null
+          id: string
+          issue_type: string
+          message: string
+          related_claim_id: string | null
+          severity: string
+        }
+        Insert: {
+          claim_id: string
+          created_at?: string
+          dismissed_at?: string | null
+          document_id?: string | null
+          id?: string
+          issue_type: string
+          message: string
+          related_claim_id?: string | null
+          severity?: string
+        }
+        Update: {
+          claim_id?: string
+          created_at?: string
+          dismissed_at?: string | null
+          document_id?: string | null
+          id?: string
+          issue_type?: string
+          message?: string
+          related_claim_id?: string | null
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_issues_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "identity_claims"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_issues_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_issues_related_claim_id_fkey"
+            columns: ["related_claim_id"]
+            isOneToOne: false
+            referencedRelation: "identity_claims"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       claims: {
         Row: {
           claim_type: string
@@ -958,6 +1016,63 @@ export type Database = {
             columns: ["opportunity_id"]
             isOneToOne: false
             referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tailoring_eval_log: {
+        Row: {
+          created_at: string
+          eval_cost_cents: number | null
+          eval_model: string
+          gaps: Json | null
+          grounding_passed: boolean
+          hallucinations: Json | null
+          id: string
+          missed_opportunities: Json | null
+          passed: boolean
+          tailored_profile_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          eval_cost_cents?: number | null
+          eval_model: string
+          gaps?: Json | null
+          grounding_passed: boolean
+          hallucinations?: Json | null
+          id?: string
+          missed_opportunities?: Json | null
+          passed: boolean
+          tailored_profile_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          eval_cost_cents?: number | null
+          eval_model?: string
+          gaps?: Json | null
+          grounding_passed?: boolean
+          hallucinations?: Json | null
+          id?: string
+          missed_opportunities?: Json | null
+          passed?: boolean
+          tailored_profile_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tailoring_eval_log_tailored_profile_id_fkey"
+            columns: ["tailored_profile_id"]
+            isOneToOne: false
+            referencedRelation: "tailored_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tailoring_eval_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

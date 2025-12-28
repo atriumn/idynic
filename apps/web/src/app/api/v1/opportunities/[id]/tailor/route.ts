@@ -4,6 +4,8 @@ import { validateApiKey, isAuthError } from '@/lib/api/auth';
 import { apiSuccess, ApiErrors, apiError } from '@/lib/api/response';
 import { generateProfileWithClient } from '@/lib/ai/generate-profile-api';
 import { checkTailoredProfileLimit, incrementTailoredProfileCount } from '@/lib/billing/check-usage';
+import { evaluateTailoredProfile, getUserClaimsForEval } from '@/lib/ai/eval';
+import type { TablesInsert, Json } from '@/lib/supabase/types';
 
 export async function POST(
   request: NextRequest,
@@ -65,9 +67,46 @@ export async function POST(
   try {
     const result = await generateProfileWithClient(supabase, id, userId, regenerate);
 
-    // If we generated a new profile (not cached), increment the count
+    // If we generated a new profile (not cached), increment the count and run eval
+    let evalResult = null;
     if (!result.cached) {
       await incrementTailoredProfileCount(supabase, userId);
+
+      // Run tailoring evaluation
+      try {
+        const userClaims = await getUserClaimsForEval(supabase, userId);
+        const evaluation = await evaluateTailoredProfile({
+          tailoredProfileId: result.profile.id,
+          userId,
+          narrative: result.profile.narrative,
+          resumeData: result.profile.resume_data,
+          userClaims,
+        });
+
+        // Store eval result in tailoring_eval_log
+        const evalLogEntry: TablesInsert<'tailoring_eval_log'> = {
+          tailored_profile_id: result.profile.id,
+          user_id: userId,
+          passed: evaluation.passed,
+          grounding_passed: evaluation.grounding.passed,
+          hallucinations: evaluation.grounding.hallucinations as unknown as Json,
+          missed_opportunities: evaluation.utilization.missed as unknown as Json,
+          gaps: evaluation.gaps as unknown as Json,
+          eval_model: evaluation.model,
+          eval_cost_cents: evaluation.costCents,
+        };
+        await supabase.from('tailoring_eval_log').insert(evalLogEntry);
+
+        evalResult = {
+          passed: evaluation.passed,
+          hallucinations: evaluation.grounding.hallucinations,
+          missedOpportunities: evaluation.utilization.missed,
+          gaps: evaluation.gaps,
+        };
+      } catch (evalErr) {
+        console.error('Tailoring eval error:', evalErr);
+        // Continue without eval - don't fail the request
+      }
     }
 
     return apiSuccess({
@@ -81,6 +120,7 @@ export async function POST(
       resume_data: result.profile.resume_data,
       cached: result.cached,
       created_at: result.profile.created_at,
+      evaluation: evalResult,
     });
   } catch (err) {
     console.error('Profile generation error:', err);

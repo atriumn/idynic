@@ -20,7 +20,19 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Search, Filter, ChevronRight, FileText } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Search, Filter, ChevronRight, FileText, AlertTriangle, X, Pencil, Trash2, Loader2 } from "lucide-react";
+import { useInvalidateGraph } from "@/lib/hooks/use-identity-graph";
+import { EditClaimModal } from "@/components/edit-claim-modal";
 import type { Database } from "@/lib/supabase/types";
 
 type EvidenceWithDocument = {
@@ -33,12 +45,23 @@ type ClaimEvidence = {
   evidence: EvidenceWithDocument | null;
 };
 
+type ClaimIssue = {
+  id: string;
+  issue_type: string;
+  severity: string;
+  message: string;
+  related_claim_id: string | null;
+  created_at: string;
+};
+
 type IdentityClaim = Database["public"]["Tables"]["identity_claims"]["Row"] & {
   claim_evidence: ClaimEvidence[];
+  issues?: ClaimIssue[];
 };
 
 interface IdentityClaimsListProps {
   claims: IdentityClaim[];
+  onClaimUpdated?: () => void;
 }
 
 const CLAIM_TYPE_COLORS: Record<string, string> = {
@@ -61,12 +84,19 @@ function getConfidenceLevel(confidence: number): "high" | "medium" | "low" {
   return "low";
 }
 
-export function IdentityClaimsList({ claims }: IdentityClaimsListProps) {
+export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [showIssuesOnly, setShowIssuesOnly] = useState(false);
+  const [dismissingClaim, setDismissingClaim] = useState<string | null>(null);
+  const [deletingClaim, setDeletingClaim] = useState<string | null>(null);
+  const [claimToDelete, setClaimToDelete] = useState<IdentityClaim | null>(null);
+  const [claimToEdit, setClaimToEdit] = useState<IdentityClaim | null>(null);
+  const invalidateGraph = useInvalidateGraph();
 
   const allTypes = Array.from(new Set(claims.map((c) => c.type)));
+  const claimsWithIssues = claims.filter((c) => c.issues && c.issues.length > 0);
 
   const toggleTypeFilter = (type: string) => {
     setTypeFilters((prev) =>
@@ -86,13 +116,52 @@ export function IdentityClaimsList({ claims }: IdentityClaimsListProps) {
     });
   };
 
+  const handleDismissIssues = async (claimId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDismissingClaim(claimId);
+    try {
+      const response = await fetch(`/api/v1/claims/${claimId}/dismiss`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (response.ok) {
+        invalidateGraph();
+        onClaimUpdated?.();
+      }
+    } catch (error) {
+      console.error('Failed to dismiss issues:', error);
+    } finally {
+      setDismissingClaim(null);
+    }
+  };
+
+  const handleDeleteClaim = async () => {
+    if (!claimToDelete) return;
+    setDeletingClaim(claimToDelete.id);
+    try {
+      const response = await fetch(`/api/v1/claims/${claimToDelete.id}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        invalidateGraph();
+        onClaimUpdated?.();
+      }
+    } catch (error) {
+      console.error('Failed to delete claim:', error);
+    } finally {
+      setDeletingClaim(null);
+      setClaimToDelete(null);
+    }
+  };
+
   const filteredClaims = claims.filter((claim) => {
     const matchesSearch =
       claim.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
       claim.description?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType =
       typeFilters.length === 0 || typeFilters.includes(claim.type);
-    return matchesSearch && matchesType;
+    const matchesIssueFilter = !showIssuesOnly || (claim.issues && claim.issues.length > 0);
+    return matchesSearch && matchesType && matchesIssueFilter;
   });
 
   return (
@@ -109,41 +178,55 @@ export function IdentityClaimsList({ claims }: IdentityClaimsListProps) {
           />
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-9 border-dashed">
-              <Filter className="h-3.5 w-3.5 mr-2" />
-              Type
-              {typeFilters.length > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="ml-2 h-5 px-1.5 rounded-sm text-[10px]"
-                >
-                  {typeFilters.length}
-                </Badge>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[180px]">
-            <DropdownMenuItem
-              onClick={() => setTypeFilters([])}
-              className="justify-center text-xs text-muted-foreground"
+        <div className="flex items-center gap-2">
+          {claimsWithIssues.length > 0 && (
+            <Button
+              variant={showIssuesOnly ? "default" : "outline"}
+              size="sm"
+              className={`h-9 ${showIssuesOnly ? "bg-amber-600 hover:bg-amber-700" : "border-amber-500/50 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30"}`}
+              onClick={() => setShowIssuesOnly(!showIssuesOnly)}
             >
-              Clear filters
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            {allTypes.map((type) => (
-              <DropdownMenuCheckboxItem
-                key={type}
-                checked={typeFilters.includes(type)}
-                onCheckedChange={() => toggleTypeFilter(type)}
-                className="capitalize"
+              <AlertTriangle className="h-3.5 w-3.5 mr-2" />
+              {claimsWithIssues.length} Issue{claimsWithIssues.length !== 1 ? "s" : ""}
+            </Button>
+          )}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-9 border-dashed">
+                <Filter className="h-3.5 w-3.5 mr-2" />
+                Type
+                {typeFilters.length > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className="ml-2 h-5 px-1.5 rounded-sm text-[10px]"
+                  >
+                    {typeFilters.length}
+                  </Badge>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[180px]">
+              <DropdownMenuItem
+                onClick={() => setTypeFilters([])}
+                className="justify-center text-xs text-muted-foreground"
               >
-                {type}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+                Clear filters
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {allTypes.map((type) => (
+                <DropdownMenuCheckboxItem
+                  key={type}
+                  checked={typeFilters.includes(type)}
+                  onCheckedChange={() => toggleTypeFilter(type)}
+                  className="capitalize"
+                >
+                  {type}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {/* Table */}
@@ -195,7 +278,12 @@ export function IdentityClaimsList({ claims }: IdentityClaimsListProps) {
                       </TableCell>
                       <TableCell className="py-3 font-medium">
                         <div className="flex flex-col">
-                          <span>{claim.label}</span>
+                          <div className="flex items-center gap-2">
+                            <span>{claim.label}</span>
+                            {claim.issues && claim.issues.length > 0 && (
+                              <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+                            )}
+                          </div>
                           {claim.description && (
                             <span className="text-xs text-muted-foreground font-normal line-clamp-1">
                               {claim.description}
@@ -235,10 +323,75 @@ export function IdentityClaimsList({ claims }: IdentityClaimsListProps) {
                         </div>
                       </TableCell>
                     </TableRow>
-                    {isExpanded && evidenceCount > 0 && (
+                    {isExpanded && (evidenceCount > 0 || (claim.issues && claim.issues.length > 0)) && (
                       <TableRow className="bg-muted/10 hover:bg-muted/10 border-b">
                         <TableCell colSpan={5} className="p-0">
-                          <div className="px-4 py-3 pl-12 space-y-2">
+                          <div className="px-4 py-3 pl-12 space-y-3">
+                            {/* Issue Banner */}
+                            {claim.issues && claim.issues.length > 0 && (
+                              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="flex gap-2">
+                                    <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                                    <div className="space-y-1">
+                                      {claim.issues.map((issue) => (
+                                        <p key={issue.id} className="text-sm text-amber-800 dark:text-amber-200">
+                                          <span className="font-medium capitalize">{issue.issue_type.replace('_', ' ')}:</span>{' '}
+                                          {issue.message}
+                                        </p>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7 px-2 text-amber-700 hover:text-amber-800 hover:bg-amber-100 dark:text-amber-300 dark:hover:text-amber-200 dark:hover:bg-amber-900/50"
+                                      onClick={(e) => handleDismissIssues(claim.id, e)}
+                                      disabled={dismissingClaim === claim.id}
+                                    >
+                                      {dismissingClaim === claim.id ? (
+                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                      ) : (
+                                        <X className="h-3.5 w-3.5" />
+                                      )}
+                                      <span className="ml-1 text-xs">Dismiss</span>
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7 px-2 text-amber-700 hover:text-amber-800 hover:bg-amber-100 dark:text-amber-300 dark:hover:text-amber-200 dark:hover:bg-amber-900/50"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setClaimToEdit(claim);
+                                      }}
+                                    >
+                                      <Pencil className="h-3.5 w-3.5" />
+                                      <span className="ml-1 text-xs">Edit</span>
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7 px-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/50"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setClaimToDelete(claim);
+                                      }}
+                                      disabled={deletingClaim === claim.id}
+                                    >
+                                      {deletingClaim === claim.id ? (
+                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                      ) : (
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      )}
+                                      <span className="ml-1 text-xs">Delete</span>
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Evidence Items */}
                             {evidenceItems.map((item, idx) => (
                               <div key={idx} className="flex gap-3 text-sm group">
                                 <div className="mt-0.5 shrink-0 text-muted-foreground">
@@ -272,6 +425,45 @@ export function IdentityClaimsList({ claims }: IdentityClaimsListProps) {
           </TableBody>
         </Table>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!claimToDelete} onOpenChange={(open) => !open && setClaimToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Claim</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{claimToDelete?.label}&quot;? This will also remove all associated evidence links and issues. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteClaim}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {deletingClaim ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Edit Claim Modal */}
+      <EditClaimModal
+        claim={claimToEdit}
+        open={!!claimToEdit}
+        onOpenChange={(open) => !open && setClaimToEdit(null)}
+        onSaved={() => {
+          invalidateGraph();
+          onClaimUpdated?.();
+        }}
+      />
     </div>
   );
 }

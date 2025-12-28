@@ -38,7 +38,26 @@ export async function GET(request: Request) {
     return NextResponse.json({ profile: null });
   }
 
-  return NextResponse.json({ profile });
+  // Fetch the latest eval log for this profile
+  const { data: evalLog } = await supabase
+    .from("tailoring_eval_log")
+    .select("passed, grounding_passed, hallucinations, missed_opportunities, gaps")
+    .eq("tailored_profile_id", profile.id)
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  return NextResponse.json({
+    profile,
+    evaluation: evalLog ? {
+      passed: evalLog.passed,
+      groundingPassed: evalLog.grounding_passed,
+      hallucinations: evalLog.hallucinations,
+      missedOpportunities: evalLog.missed_opportunities,
+      gaps: evalLog.gaps,
+    } : null,
+  });
 }
 
 export async function POST(request: Request) {

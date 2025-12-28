@@ -5,6 +5,7 @@ import { extractStoryEvidence } from '@/lib/ai/extract-story-evidence';
 import { generateEmbeddings } from '@/lib/ai/embeddings';
 import { synthesizeClaimsBatch } from '@/lib/ai/synthesize-claims-batch';
 import { SSEStream, createSSEResponse } from '@/lib/sse/stream';
+import { runClaimEval } from '@/lib/ai/eval';
 import { createHash } from 'crypto';
 
 export const maxDuration = 300;
@@ -222,6 +223,20 @@ export async function POST(request: NextRequest) {
         sse.send({ warning: 'Claim synthesis partially failed' });
       }
 
+      // === PHASE: Eval ===
+      sse.send({ phase: 'eval' });
+
+      let evalResult = { issuesFound: 0, issuesStored: 0, costCents: 0 };
+      try {
+        evalResult = await runClaimEval(supabase, userId, document.id);
+        if (evalResult.issuesFound > 0) {
+          sse.send({ highlight: `Found ${evalResult.issuesFound} claim issue(s)` });
+        }
+      } catch (err) {
+        console.error('Eval error:', err);
+        sse.send({ warning: 'Claim evaluation partially failed' });
+      }
+
       await supabase
         .from('documents')
         .update({ status: 'completed' })
@@ -235,6 +250,7 @@ export async function POST(request: NextRequest) {
           workHistoryCount: 0,
           claimsCreated: synthesisResult.claimsCreated,
           claimsUpdated: synthesisResult.claimsUpdated,
+          issuesFound: evalResult.issuesFound,
         },
       });
     } catch (err) {

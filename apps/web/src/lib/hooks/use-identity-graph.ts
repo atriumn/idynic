@@ -16,6 +16,15 @@ interface ClaimEvidenceNode {
   evidence: EvidenceDetail | null;
 }
 
+interface ClaimIssue {
+  id: string;
+  issue_type: string;
+  severity: string;
+  message: string;
+  related_claim_id: string | null;
+  created_at: string;
+}
+
 interface GraphNode {
   id: string;
   type: string;
@@ -23,6 +32,7 @@ interface GraphNode {
   confidence: number;
   description: string | null;
   claim_evidence?: ClaimEvidenceNode[];
+  issues?: ClaimIssue[];
 }
 
 interface GraphEdge {

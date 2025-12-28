@@ -36,7 +36,7 @@ export interface AICallOptions {
 }
 
 export interface ModelConfig {
-  provider: "openai" | "google";
+  provider: "openai" | "google" | "anthropic";
   model: string;
 }
 

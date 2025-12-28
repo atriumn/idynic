@@ -10,11 +10,11 @@ import type { ModelConfig } from "./types";
  * Defaults are provided for all operations.
  */
 
-type ProviderType = "openai" | "google";
+type ProviderType = "openai" | "google" | "anthropic";
 
 function getEnvProvider(envKey: string, defaultValue: ProviderType): ProviderType {
   const value = process.env[envKey];
-  if (value === "openai" || value === "google") {
+  if (value === "openai" || value === "google" || value === "anthropic") {
     return value;
   }
   return defaultValue;
@@ -87,6 +87,18 @@ export function getModelConfig(operation: string): ModelConfig {
       return {
         provider: getEnvProvider("REWRITE_CONTENT_PROVIDER", "openai"),
         model: getEnvString("REWRITE_CONTENT_MODEL", "gpt-4o-mini"),
+      };
+
+    case "claim_eval":
+      return {
+        provider: getEnvProvider("CLAIM_EVAL_PROVIDER", "anthropic"),
+        model: getEnvString("CLAIM_EVAL_MODEL", "claude-sonnet-4-20250514"),
+      };
+
+    case "tailoring_eval":
+      return {
+        provider: getEnvProvider("TAILORING_EVAL_PROVIDER", "anthropic"),
+        model: getEnvString("TAILORING_EVAL_MODEL", "claude-sonnet-4-20250514"),
       };
 
     default:

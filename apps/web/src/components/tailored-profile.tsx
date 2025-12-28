@@ -15,6 +15,7 @@ import {
   X,
   Eye,
   Sparkle,
+  Warning,
 } from "@phosphor-icons/react";
 import { ResumePDFViewer, ResumePDFDownload } from "@/components/resume-pdf";
 import type { ResumeDocumentProps } from "@/components/resume-pdf";
@@ -98,6 +99,20 @@ interface RequirementMatch {
   } | null;
 }
 
+interface Hallucination {
+  field: string;
+  claim: string;
+  reason: string;
+}
+
+interface EvaluationData {
+  passed: boolean;
+  groundingPassed: boolean;
+  hallucinations: Hallucination[] | null;
+  missedOpportunities: string[] | null;
+  gaps: string[] | null;
+}
+
 interface TailoredProfileProps {
   opportunityId: string;
   requirementMatches?: RequirementMatch[];
@@ -131,6 +146,8 @@ export function TailoredProfile({
     narrative: string;
     resume_data: ResumeData;
   } | null>(null);
+  const [evaluation, setEvaluation] = useState<EvaluationData | null>(null);
+  const [evalWarningDismissed, setEvalWarningDismissed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [editedFields, setEditedFields] = useState<string[]>([]);
@@ -148,6 +165,9 @@ export function TailoredProfile({
             if (data.profile?.edited_fields) {
               setEditedFields(data.profile.edited_fields);
             }
+          }
+          if (data.evaluation) {
+            setEvaluation(data.evaluation);
           }
         }
       } catch {
@@ -167,6 +187,8 @@ export function TailoredProfile({
       setLoading(true);
     }
     setError(null);
+    setEvaluation(null);
+    setEvalWarningDismissed(false);
 
     try {
       const response = await fetch("/api/generate-profile", {
@@ -316,6 +338,10 @@ export function TailoredProfile({
     education: resume_data.education || [],
   } : null;
 
+  // Check if there are hallucinations to warn about
+  const hasHallucinations = evaluation?.hallucinations && evaluation.hallucinations.length > 0;
+  const showEvalWarning = hasHallucinations && !evalWarningDismissed;
+
   return (
     <div className="space-y-4 mb-6">
       <div className="flex items-center justify-between">
@@ -336,6 +362,41 @@ export function TailoredProfile({
           )}
         </Button>
       </div>
+
+      {/* Evaluation Warning Banner */}
+      {showEvalWarning && (
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex gap-3">
+              <Warning className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" weight="fill" />
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                  Potential accuracy issues detected
+                </p>
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  Our AI review flagged {evaluation.hallucinations?.length} item(s) that may not be fully grounded in your uploaded documents. Review the highlighted sections before sharing.
+                </p>
+                <div className="space-y-1.5 mt-3">
+                  {evaluation.hallucinations?.map((h, i) => (
+                    <div key={i} className="text-xs bg-amber-100 dark:bg-amber-900/50 rounded px-2 py-1.5">
+                      <span className="font-medium text-amber-800 dark:text-amber-200">{h.field}:</span>{' '}
+                      <span className="text-amber-700 dark:text-amber-300">{h.reason}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 text-amber-700 hover:text-amber-800 hover:bg-amber-100 dark:text-amber-300 dark:hover:text-amber-200 dark:hover:bg-amber-900/50 shrink-0"
+              onClick={() => setEvalWarningDismissed(true)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       <Tabs defaultValue="talking-points">
         <TabsList className="grid w-full grid-cols-3">
