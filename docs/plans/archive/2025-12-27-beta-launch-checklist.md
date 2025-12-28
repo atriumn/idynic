@@ -1,8 +1,10 @@
 # Beta Launch Checklist
 
 > Generated from brainstorming session on 2025-12-27
+>
+> **STATUS: COMPLETE** - All blocking items finished 2025-12-28. Ready for beta launch.
 
-## Before Launch (Blocking)
+## Before Launch (Blocking) ✅
 
 ### Data Safety
 - [x] **Upgrade to Supabase Pro** ($25/mo) - enables daily automated backups with 7-day retention
@@ -27,14 +29,14 @@
   - Create channels: #announcements, #general, #support, #feature-requests
   - Pin in #support: "For bug reports, use Report a Bug in the app"
 - [x] **Create public `atriumn/idynic-feedback` repo** for bug reports (keeps code private, feedback public) - https://github.com/atriumn/idynic-feedback
-- [ ] **Set up GitHub→Discord webhook** for bug notifications - Discord Server Settings → Integrations → GitHub, subscribe to `atriumn/idynic-feedback` issues
+- [x] **Set up GitHub→Discord webhook** for bug notifications - Discord Server Settings → Integrations → GitHub, subscribe to `atriumn/idynic-feedback` issues
 - [x] **Build in-app bug reporter** - "Report a Bug" button that:
   - Collects: title, description, optional screenshot, user email (if logged in)
   - Auto-includes: browser/device info, current URL
   - Creates GitHub issue in `idynic-feedback` repo via API
   - Labels as `bug` automatically
 - [x] **Verify Sentry alerts are configured** - check you're getting email notifications on errors
-- [ ] **Set up Axiom logging** - deferred, see `docs/plans/axiom-setup.md`
+- [ ] **Set up Axiom logging** - deferred (not blocking), see `docs/plans/axiom-setup.md`
 
 ---
 
