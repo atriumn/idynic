@@ -1,6 +1,25 @@
 # Axiom Logging Setup
 
+**Status:** In Progress
+**Last Reviewed:** 2025-12-28
+
 > Deferred from beta launch checklist - not blocking for launch
+
+## Progress Summary
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Integration Code | ✅ Complete | next-axiom in next.config.mjs, logger.ts |
+| Logger Usage | ✅ Complete | Inngest functions use logger |
+| Environment Variables | ⏳ Not Started | AXIOM_DATASET and AXIOM_TOKEN missing |
+| Verification | ⏳ Not Started | |
+
+### Recent Commits
+- `70cbef68` - debug: add Axiom logging diagnostics
+- `f31bbaee` - fix: flush Axiom logs in Inngest functions
+- `dd472b47` - fix: flush logs to Axiom at end of API requests
+
+---
 
 ## Purpose
 

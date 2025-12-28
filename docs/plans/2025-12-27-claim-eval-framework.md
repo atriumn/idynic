@@ -1,5 +1,25 @@
 # Claim Evaluation Framework
 
+**Status:** Not Started (Planning Complete)
+**Last Reviewed:** 2025-12-28
+
+## Progress Summary
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1: Infrastructure | ⏳ Not Started | DB schema, types, config |
+| Phase 2: Rule Checks | ⏳ Not Started | Duplicates, dates, required fields |
+| Phase 3: AI Eval | ⏳ Not Started | Sampling + prompt |
+| Phase 4: Integration | ⏳ Not Started | Inngest function, trigger |
+| Phase 5: UI | ⏳ Not Started | Review badges, issue panel |
+| Tailoring Eval | ⏳ Not Started | Part 2 of this plan |
+
+### Prerequisites Complete
+- ✅ AI gateway supports OpenAI, Gemini, and Claude providers
+- ✅ Pricing configured for eval models (gpt-4o-mini, claude-sonnet-4-5)
+
+---
+
 ## Overview
 
 Hybrid evaluation system to sanity-check AI-generated claims after extraction. Combines fast rule-based checks with sampled AI evaluation to catch duplicates, conflicts, hallucinations, and data quality issues.

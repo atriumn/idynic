@@ -1,5 +1,10 @@
 # Future Optimizations
 
+**Status:** Backlog
+**Last Reviewed:** 2025-12-28
+
+---
+
 ## Custom Subscription Management UI
 
 **Priority:** Low

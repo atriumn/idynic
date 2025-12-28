@@ -4,9 +4,29 @@
 
 **Goal:** Reduce resume processing from 5+ minutes to ~60 seconds.
 
-**Current State:** Phase 1 complete (Inngest pipeline, batched synthesis, parallel extraction). Still slow due to sequential DB operations.
+**Status:** In Progress
+**Last Reviewed:** 2025-12-28
 
-**Remaining Work:** Parallelize and batch database operations in the synthesis pipeline.
+## Progress Summary
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1: Inngest + Batching | ✅ Complete | Parallel extraction, batched synthesis |
+| Phase 2 Task 1: Parallelize RAG | ✅ Complete | Promise.all in rag-claims.ts |
+| Phase 2 Task 2: Batch Claim Inserts | ⏳ Not Started | |
+| Phase 2 Task 3: Bulk Confidence Recalc | ⏳ Not Started | |
+| Phase 2 Task 4: Batch Evidence Linking | ⏳ Not Started | |
+| Testing & Validation | ⏳ Not Started | |
+
+### Recent Commits
+- `98615f5f` - perf: parallelize synthesis batch processing
+- `6b35eab3` - perf: parallelize database operations for resume processing
+
+---
+
+**Current State:** Phase 1 complete (Inngest pipeline, batched synthesis, parallel extraction). Phase 2 Task 1 (RAG parallelization) complete.
+
+**Remaining Work:** Tasks 2-4 - Batch claim inserts, bulk confidence recalculation, and parallel evidence linking.
 
 ---
 
