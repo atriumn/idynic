@@ -60,6 +60,15 @@ jobs:
         with:
           lcov-file: ./apps/web/coverage/lcov.info
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          title: 'Web Coverage'
+
+      - name: Comment PR with coverage (mobile)
+        if: github.event_name == 'pull_request'
+        uses: romeovs/lcov-reporter-action@v0.3.1
+        with:
+          lcov-file: ./apps/mobile/coverage/lcov.info
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          title: 'Mobile Coverage'
 
   # Integration tests run separately (requires Supabase setup)
   integration:
