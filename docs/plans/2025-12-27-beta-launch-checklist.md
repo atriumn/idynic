@@ -22,8 +22,8 @@
 - [x] **Verify support@idynic.com is receiving emails** - Google Workspace set up, DKIM/SPF configured
 
 ### Operational Readiness
-- [ ] **Set up UptimeRobot** (free tier) - monitors for homepage + API health endpoint
-- [ ] **Set up Discord server** for community + support:
+- [ ] **Set up UptimeRobot** (free tier) - monitors homepage (`https://idynic.com`) + API health (`https://idynic.com/api/health`)
+- [x] **Set up Discord server** for community + support: https://discord.gg/tCeeZDFd
   - Create channels: #announcements, #general, #support, #feature-requests
   - Pin in #support: "For bug reports, use Report a Bug in the app"
 - [ ] **Create public `atriumn/idynic-feedback` repo** for bug reports (keeps code private, feedback public)

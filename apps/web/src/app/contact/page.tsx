@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, MessageSquare } from "lucide-react";
+import { Mail, MessageSquare, Users } from "lucide-react";
 
 export default function ContactPage() {
   return (
@@ -37,6 +37,27 @@ export default function ContactPage() {
                 <h3 className="font-semibold">Support</h3>
                 <p className="text-muted-foreground">
                   Visit our help center or chat with us for immediate assistance.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+                <Users className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Community</h3>
+                <p className="text-muted-foreground">
+                  Join our{" "}
+                  <a
+                    href="https://discord.gg/tCeeZDFd"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Discord server
+                  </a>{" "}
+                  to connect with other users and get support.
                 </p>
               </div>
             </div>

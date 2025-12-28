@@ -103,6 +103,16 @@ export function SiteFooter() {
                   Cookies
                 </Link>
               </li>
+              <li>
+                <a
+                  href="https://discord.gg/tCeeZDFd"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground"
+                >
+                  Discord
+                </a>
+              </li>
             </ul>
           </div>
         </div>
