@@ -45,7 +45,7 @@ export default function AccountSettingsPage() {
       {/* Delete Account Section */}
       <Card className="border-destructive/50">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base text-destructive">
+          <CardTitle className="flex items-center gap-2 text-base text-red-600 dark:text-red-400">
             <Trash2 className="h-5 w-5" />
             Delete My Account
           </CardTitle>
