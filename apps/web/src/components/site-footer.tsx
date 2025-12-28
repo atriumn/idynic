@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { FeedbackModal } from "./feedback-modal";
 
 export function SiteFooter() {
   return (
@@ -72,6 +75,15 @@ export function SiteFooter() {
                 <Link href="/help" className="hover:text-foreground">
                   Help Center
                 </Link>
+              </li>
+              <li>
+                <FeedbackModal
+                  trigger={
+                    <button className="hover:text-foreground text-left">
+                      Report a Bug
+                    </button>
+                  }
+                />
               </li>
             </ul>
           </div>
