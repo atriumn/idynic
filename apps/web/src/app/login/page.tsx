@@ -340,6 +340,17 @@ export default function LoginPage() {
                 {loading ? "Creating account..." : "Sign Up"}
               </Button>
 
+              <p className="text-center text-xs text-muted-foreground">
+                By signing up, you agree to our{" "}
+                <a href="/legal/terms" className="underline hover:text-foreground">
+                  Terms of Service
+                </a>{" "}
+                and{" "}
+                <a href="/legal/privacy" className="underline hover:text-foreground">
+                  Privacy Policy
+                </a>
+              </p>
+
               <button
                 type="button"
                 className="w-full text-sm text-muted-foreground hover:text-foreground"

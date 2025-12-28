@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, MessageSquare, MapPin } from "lucide-react";
+import { Mail, MessageSquare } from "lucide-react";
 
 export default function ContactPage() {
   return (
@@ -41,18 +41,6 @@ export default function ContactPage() {
               </div>
             </div>
 
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-                <MapPin className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Office</h3>
-                <p className="text-muted-foreground">
-                  123 Innovation Drive<br />
-                  San Francisco, CA 94103
-                </p>
-              </div>
-            </div>
           </div>
         </div>
 

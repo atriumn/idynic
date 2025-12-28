@@ -50,6 +50,7 @@ export const metadata: Metadata = {
 };
 
 import { SiteFooter } from "@/components/site-footer";
+import { CookieConsent } from "@/components/cookie-consent";
 
 // ... existing imports
 
@@ -72,6 +73,7 @@ export default async function RootLayout({
           <Nav user={user} />
           <main>{children}</main>
           <SiteFooter />
+          <CookieConsent />
         </Providers>
       </body>
     </html>

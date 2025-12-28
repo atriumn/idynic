@@ -3,7 +3,7 @@ export default function TermsPage() {
     <div className="space-y-6">
       <div className="border-b pb-4 mb-6">
         <h1 className="text-3xl font-bold tracking-tight mb-2">Terms of Service</h1>
-        <p className="text-muted-foreground">Last updated: December 23, 2025</p>
+        <p className="text-muted-foreground">Last updated: December 27, 2025</p>
       </div>
 
       <section className="space-y-3">
@@ -70,28 +70,72 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold tracking-tight">6. Limitation of Liability</h2>
+        <h2 className="text-xl font-semibold tracking-tight">6. Billing and Subscriptions</h2>
+
+        <h3 className="text-lg font-medium mt-4">Subscription Plans</h3>
+        <p>
+          The Service offers both free and paid subscription plans. Paid plans provide access to additional features as described on our pricing page. By subscribing to a paid plan, you agree to pay the applicable fees.
+        </p>
+
+        <h3 className="text-lg font-medium mt-4">Payment Processing</h3>
+        <p>
+          All payments are processed securely through Stripe, our third-party payment processor. By providing payment information, you represent that you are authorized to use the payment method and authorize us to charge the applicable fees.
+        </p>
+
+        <h3 className="text-lg font-medium mt-4">Auto-Renewal</h3>
+        <p>
+          Paid subscriptions automatically renew at the end of each billing period (monthly or annually, depending on your plan) unless you cancel before the renewal date. You will be charged the then-current subscription rate upon renewal.
+        </p>
+
+        <h3 className="text-lg font-medium mt-4">Cancellation</h3>
+        <p>
+          You may cancel your subscription at any time through your account settings. Upon cancellation, you will retain access to paid features until the end of your current billing period. No partial refunds will be issued for unused time within a billing period.
+        </p>
+
+        <h3 className="text-lg font-medium mt-4">Refund Policy</h3>
+        <p>
+          We offer a 7-day money-back guarantee for new subscriptions. If you are not satisfied with the Service, you may request a full refund within 7 days of your initial subscription purchase by contacting support@idynic.com. Refunds are not available for renewal charges or after the 7-day period.
+        </p>
+
+        <h3 className="text-lg font-medium mt-4">Price Changes</h3>
+        <p>
+          We reserve the right to modify subscription pricing at any time. Price changes will not affect your current billing period. We will provide at least 30 days&apos; notice before any price increase takes effect for your subscription.
+        </p>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold tracking-tight">7. Disclaimer of Warranties</h2>
+        <p className="uppercase text-sm">
+          THE SERVICE IS PROVIDED ON AN &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; BASIS, WITHOUT ANY WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, OR COURSE OF PERFORMANCE.
+        </p>
+        <p>
+          We do not warrant that (a) the Service will function uninterrupted, secure, or available at any particular time or location; (b) any errors or defects will be corrected; (c) the Service is free of viruses or other harmful components; or (d) the results of using the Service will meet your requirements.
+        </p>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold tracking-tight">8. Limitation of Liability</h2>
         <p>
           In no event will we or our directors, employees, or agents be liable to you or any third party for any direct, indirect, consequential, exemplary, incidental, special, or punitive damages, including lost profit, lost revenue, loss of data, or other damages arising from your use of the Service, even if we have been advised of the possibility of such damages.
         </p>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold tracking-tight">7. Termination</h2>
+        <h2 className="text-xl font-semibold tracking-tight">9. Termination</h2>
         <p>
           We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms. Upon termination, your right to use the Service will immediately cease.
         </p>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold tracking-tight">8. Governing Law</h2>
+        <h2 className="text-xl font-semibold tracking-tight">10. Governing Law</h2>
         <p>
-          These Terms shall be governed and construed in accordance with the laws of the jurisdiction in which Idynic operates, without regard to its conflict of law provisions.
+          These Terms shall be governed and construed in accordance with the laws of the State of Delaware, United States, without regard to its conflict of law provisions.
         </p>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold tracking-tight">9. Contact Us</h2>
+        <h2 className="text-xl font-semibold tracking-tight">11. Contact Us</h2>
         <p>
           In order to resolve a complaint regarding the Service or to receive further information regarding use of the Service, please contact us at:
         </p>

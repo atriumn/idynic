@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform, Image } from 'react-native';
+import { View, Text, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform, Image, Linking } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as WebBrowser from 'expo-web-browser';
 import Svg, { Path } from 'react-native-svg';
@@ -422,6 +422,23 @@ export default function LoginScreen() {
                 </Text>
               )}
             </Pressable>
+
+            <Text className="text-slate-500 text-center text-xs mt-4">
+              By signing up, you agree to our{' '}
+              <Text
+                className="underline"
+                onPress={() => Linking.openURL('https://idynic.com/legal/terms')}
+              >
+                Terms of Service
+              </Text>
+              {' '}and{' '}
+              <Text
+                className="underline"
+                onPress={() => Linking.openURL('https://idynic.com/legal/privacy')}
+              >
+                Privacy Policy
+              </Text>
+            </Text>
 
             <Pressable
               onPress={() => setCodeValidated(false)}

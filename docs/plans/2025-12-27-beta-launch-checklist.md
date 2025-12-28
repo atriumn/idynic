@@ -5,21 +5,21 @@
 ## Before Launch (Blocking)
 
 ### Data Safety
-- [ ] **Upgrade to Supabase Pro** ($25/mo) - enables daily automated backups with 7-day retention
-- [ ] Verify backup is working after upgrade (check Dashboard → Database → Backups)
+- [x] **Upgrade to Supabase Pro** ($25/mo) - enables daily automated backups with 7-day retention
+- [x] Verify backup is working after upgrade (check Dashboard → Database → Backups)
 
 ### Security
-- [ ] **Enable leaked password protection** - Supabase Dashboard → Authentication → Providers → Email → Enable "Leaked password protection" (2 min)
-- [ ] Add RLS policy to `beta_codes` table (or confirm no policy is intentional)
+- [x] **Enable leaked password protection** - Supabase Dashboard → Authentication → Providers → Email → Enable "Leaked password protection" (2 min)
+- [x] `beta_codes` RLS confirmed intentional - table locked down, access via security definer functions only
 
 ### Compliance
 - [x] Privacy Policy - exists at `/legal/privacy`
 - [x] Terms of Service - exists at `/legal/terms`
 - [x] Cookie Policy - exists at `/legal/cookies`
-- [ ] **Add ToS/Privacy links to signup page** - "By signing up, you agree to our Terms and Privacy Policy"
-- [ ] **Fix AI training clause in Privacy Policy** - Clarify we use OpenAI API but do NOT train models on user data
-- [ ] **Add billing/subscription section to ToS** - Refund policy, auto-renewal, cancellation terms
-- [ ] **Verify support@idynic.com is receiving emails** and someone is monitoring it
+- [x] **Add ToS/Privacy links to signup page** - Added to both web and mobile signup flows
+- [x] **Fix AI training clause in Privacy Policy** - Clarified we use OpenAI API, data NOT used to train models
+- [x] **Add billing/subscription section to ToS** - Added section 6 with refund policy (7-day), auto-renewal, cancellation, price changes
+- [x] **Verify support@idynic.com is receiving emails** - Google Workspace set up, DKIM/SPF configured
 
 ### Operational Readiness
 - [ ] **Set up UptimeRobot** (free tier) - monitors for homepage + API health endpoint
@@ -55,10 +55,10 @@
   - Deliver as ZIP download or email link for large exports
 
 ### Legal Hardening
-- [ ] **Add data retention section to Privacy Policy** - State how long data is kept (e.g., "until you delete your account")
-- [ ] **Specify jurisdiction in ToS** - Replace vague "jurisdiction in which Idynic operates" with specific state
-- [ ] **Add warranty disclaimer to ToS** - "AS IS" / "AS AVAILABLE" language
-- [ ] **Add cookie consent banner** - Required for EU users to opt-in to analytics cookies
+- [x] **Add data retention section to Privacy Policy** - Added section 7 with account/professional/usage data retention periods
+- [x] **Specify jurisdiction in ToS** - Set to State of Delaware, United States
+- [x] **Add warranty disclaimer to ToS** - Added section 7 with "AS IS" / "AS AVAILABLE" language
+- [x] **Add cookie consent banner** - Added CookieConsent component with accept/decline, stores in localStorage
 
 ### Operational
 - [ ] Set up monthly manual backup to S3 (optional safety net beyond 7 days)
