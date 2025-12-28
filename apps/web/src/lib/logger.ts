@@ -19,9 +19,18 @@ interface LogEntry {
 
 // Axiom logger instance for sending logs to Axiom
 let axiomLogger: AxiomLogger | null = null;
+let axiomInitialized = false;
 
 function getAxiomLogger(): AxiomLogger {
   if (!axiomLogger) {
+    // Log env var status on first initialization (helps debug Axiom issues)
+    if (!axiomInitialized) {
+      axiomInitialized = true;
+      const hasDataset = !!process.env.NEXT_PUBLIC_AXIOM_DATASET;
+      const hasToken = !!process.env.NEXT_PUBLIC_AXIOM_TOKEN;
+      const hasIngestEndpoint = !!process.env.NEXT_PUBLIC_AXIOM_INGEST_ENDPOINT;
+      console.log(`[AXIOM INIT] dataset=${hasDataset}, token=${hasToken}, ingest=${hasIngestEndpoint}`);
+    }
     axiomLogger = new AxiomLogger();
   }
   return axiomLogger;
@@ -129,8 +138,9 @@ function logToConsole(entry: LogEntry): void {
         axiom.error(entry.message, data);
         break;
     }
-  } catch {
-    // Silently ignore Axiom errors - don't break the app
+  } catch (axiomError) {
+    // Log Axiom errors to console so we can debug
+    console.error("[AXIOM ERROR]", axiomError instanceof Error ? axiomError.message : axiomError);
   }
 }
 
@@ -161,7 +171,13 @@ export const log = {
    */
   async flush(): Promise<void> {
     if (axiomLogger) {
-      await axiomLogger.flush();
+      try {
+        await axiomLogger.flush();
+      } catch (flushError) {
+        console.error("[AXIOM FLUSH ERROR]", flushError instanceof Error ? flushError.message : flushError);
+      }
+    } else {
+      console.warn("[AXIOM] No logger instance to flush");
     }
   },
 };
