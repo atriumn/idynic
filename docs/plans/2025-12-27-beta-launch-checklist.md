@@ -28,7 +28,7 @@
   - Pin in #support: "For bug reports, use Report a Bug in the app"
 - [x] **Create public `atriumn/idynic-feedback` repo** for bug reports (keeps code private, feedback public) - https://github.com/atriumn/idynic-feedback
 - [ ] **Set up GitHub→Discord webhook** for bug notifications - Discord Server Settings → Integrations → GitHub, subscribe to `atriumn/idynic-feedback` issues
-- [ ] **Build in-app bug reporter** - "Report a Bug" button that:
+- [x] **Build in-app bug reporter** - "Report a Bug" button that:
   - Collects: title, description, optional screenshot, user email (if logged in)
   - Auto-includes: browser/device info, current URL
   - Creates GitHub issue in `idynic-feedback` repo via API
