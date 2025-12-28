@@ -1,5 +1,8 @@
 # Future Optimizations
 
+**Status:** Backlog (Low Priority)
+**Last reviewed:** 2025-12-28
+
 ## Custom Subscription Management UI
 
 **Priority:** Low

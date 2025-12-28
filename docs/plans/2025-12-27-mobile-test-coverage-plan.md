@@ -1,8 +1,23 @@
 # Mobile Test Coverage Improvement Plan
 
+**Status:** Not Started
+
 **Goal:** Raise mobile test coverage from ~7% to 70%
 **Approach:** Phased milestones with incremental threshold enforcement
 **Testing depth:** Critical path thorough, rest lean
+
+## Progress (Last reviewed: 2025-12-28)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Test Utilities | ⏳ Not Started | test-utils.tsx, mocks |
+| Phase 1: Foundation | ⏳ Not Started | Target: 30% coverage |
+| Phase 2: Business Logic | ⏳ Not Started | Target: 50% coverage |
+| Phase 3: Screens & Polish | ⏳ Not Started | Target: 70% coverage |
+
+### Notes
+- Plan created 2025-12-27, no implementation started yet
+- One new test file added: `use-opportunity.test.ts` (commit `9ef7a61e`)
 
 ## Current State
 

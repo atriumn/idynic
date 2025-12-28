@@ -2,11 +2,25 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** In Progress
+**Last reviewed:** 2025-12-28
+
 **Goal:** Reduce resume processing from 5+ minutes to ~60 seconds.
 
 **Current State:** Phase 1 complete (Inngest pipeline, batched synthesis, parallel extraction). Still slow due to sequential DB operations.
 
 **Remaining Work:** Parallelize and batch database operations in the synthesis pipeline.
+
+## Progress (Last reviewed: 2025-12-28)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1: Core Pipeline | ✅ Complete | Inngest pipeline, batched synthesis, parallel extraction |
+| Phase 2: DB Optimization | ⏳ Not Started | RAG parallelization, batch inserts |
+
+### Recent Changes
+- Opportunity processing UX improved with meaningful updates (commit `81743467`)
+- Axiom logging added to Inngest functions (commits `f31bbaee`, `70cbef68`)
 
 ---
 

@@ -2,6 +2,24 @@
 
 > Generated from brainstorming session on 2025-12-27
 
+**Status:** In Progress
+
+## Progress (Last reviewed: 2025-12-28)
+
+| Category | Status | Notes |
+|----------|--------|-------|
+| Data Safety | ✅ Complete | Supabase Pro upgrade done |
+| Security | ✅ Complete | Leaked password protection enabled |
+| Compliance | ✅ Complete | All legal docs updated |
+| Operational Readiness | 🔄 In Progress | Discord done, UptimeRobot/bug reporter pending |
+| Legal Hardening | ✅ Complete | Data retention, jurisdiction, cookie consent done |
+
+### Recent Changes (since 2025-12-27)
+- Discord community links added to footer and contact page (commit `deac8af0`)
+- API health endpoint created at `/api/health` (commit `9ef7a61e`)
+- Cookie consent component integrated (commit `9ef7a61e`)
+- Axiom logging integrated with flush support (commits `70cbef68`, `dd472b47`, `f31bbaee`)
+
 ## Before Launch (Blocking)
 
 ### Data Safety

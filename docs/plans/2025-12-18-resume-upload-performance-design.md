@@ -1,5 +1,10 @@
 # Resume Upload Performance & UX Design
 
+**Status:** Partially Implemented
+**Last reviewed:** 2025-12-28
+
+> Implementation: See `2025-12-18-resume-upload-performance-plan.md` for detailed implementation plan and progress.
+
 ## Problem
 
 Resume upload currently takes 5+ minutes with no progress feedback. Users see only a spinner. Additionally, the current architecture will timeout on Vercel (Pro plan allows max 300 seconds).
