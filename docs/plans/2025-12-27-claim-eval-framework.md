@@ -375,9 +375,146 @@ Pricing configured in `src/lib/ai/pricing.ts` for:
 - `claude-sonnet-4-5-20250514`: $3.00/$15.00 per MTok
 - `claude-opus-4-5-20250514`: $5.00/$25.00 per MTok
 
+---
+
+# Part 2: Tailoring Eval Framework
+
+## Overview
+
+Post-tailoring evaluation to ensure generated profiles are truthful and don't miss opportunities. Runs after a tailored profile is generated for a job opportunity.
+
+**Core rule: We can't lie.**
+
+## What We Check
+
+| Check | What it catches | Severity |
+|-------|-----------------|----------|
+| **Grounding** | Output claims something user doesn't have | ❌ Fail |
+| **Utilization** | User has relevant skill but output missed it | ⚠️ Warning |
+| **Gap awareness** | Job requires X, user lacks X | ℹ️ Info only |
+
+## Scenarios
+
+| Scenario | Eval Result |
+|----------|-------------|
+| Job requires AWS, user has AWS, output mentions it | ✅ Good |
+| Job requires AWS, user has AWS, output **doesn't** mention it | ⚠️ Missed opportunity (flag) |
+| Job requires AWS, user **doesn't** have AWS, output says nothing | ✅ Fine (surface as info) |
+| Job requires AWS, user **doesn't** have AWS, output **claims they have it** | ❌ Hallucination (fail) |
+
+## Source of Truth
+
+- **User's claims** (not raw resume text)
+- Claims are already validated/structured data
+- If it's not in claims, user doesn't have it
+
+## AI Eval Prompt
+
+```
+You are evaluating a tailored job profile for truthfulness.
+
+User's verified claims (source of truth):
+{claims_json}
+
+Job posting requirements:
+{job_requirements}
+
+Generated tailored profile:
+{tailored_profile}
+
+Evaluate:
+
+1. GROUNDING: Does every skill, experience, or qualification mentioned in the
+   tailored profile exist in the user's claims? Flag any hallucinations.
+
+2. UTILIZATION: Are there relevant claims that match job requirements but
+   weren't highlighted in the profile? Flag missed opportunities.
+
+3. GAPS: What key job requirements does the user lack? (Informational only,
+   not a failure - users can still apply)
+
+Respond with JSON:
+{
+  "grounding": {
+    "passed": true|false,
+    "hallucinations": [
+      { "claim": "what output said", "issue": "not found in user claims" }
+    ]
+  },
+  "utilization": {
+    "passed": true|false,
+    "missed": [
+      { "requirement": "AWS experience", "matching_claim": "claim user has" }
+    ]
+  },
+  "gaps": [
+    { "requirement": "5+ years Python", "note": "User has 3 years" }
+  ],
+  "overall": "good|acceptable|poor"
+}
+```
+
+## Thresholds
+
+- **Fail**: Any hallucination (grounding.passed = false)
+- **Warning**: Missed utilization opportunities
+- **Info**: Gaps surfaced to user (not a failure)
+
+## Action on Failure
+
+Same as claims eval: **Flag for review**
+
+User sees:
+> "Review needed: The generated profile may contain inaccuracies."
+
+With expandable details showing the specific issues.
+
+## Informational Gap Surfacing (UX, not eval)
+
+When gaps are detected, surface to user:
+
+> "This role asks for AWS experience. Your profile doesn't include this -
+> consider adding if you have relevant experience, or be prepared to
+> address in the interview."
+
+This is helpful context, not a blocker.
+
+## Integration
+
+Trigger after `tailor-profile` completes:
+
+```typescript
+await step.sendEvent('trigger-tailoring-eval', {
+  name: 'tailoring/completed',
+  data: {
+    userId,
+    opportunityId,
+    claims: userClaims,
+    jobRequirements: extractedRequirements,
+    tailoredProfile: generatedProfile,
+  },
+});
+```
+
+## Implementation Steps
+
+### Phase 1: Core Eval
+1. Add `tailoring_eval_log` table (or reuse `claim_eval_log` with type field)
+2. Add `src/lib/ai/eval/tailoring-eval.ts`
+3. Add Inngest function `evaluate-tailoring.ts`
+
+### Phase 2: Integration
+4. Update tailoring flow to trigger eval
+5. Add flag to opportunity when eval fails
+
+### Phase 3: UX
+6. Show "Review needed" badge on opportunity
+7. Surface gap information to user
+
+---
+
 ## Future Extensions
 
-- **Tailor profile eval**: Same pattern for generated profiles
 - **A/B model comparison**: Run same claims through multiple models, compare
 - **Adaptive sampling**: Increase sample size if quality drops
 - **Auto-remediation**: Automatically merge obvious duplicates
