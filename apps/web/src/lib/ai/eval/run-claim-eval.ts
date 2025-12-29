@@ -34,7 +34,7 @@ export async function runClaimEval(
     maxClaimsForAiEval?: number;
   }
 ): Promise<ClaimEvalResult> {
-  const maxClaimsForAiEval = options?.maxClaimsForAiEval ?? 5;
+  const maxClaimsForAiEval = options?.maxClaimsForAiEval ?? 10;
 
   // Fetch all claims for the user
   const { data: claims, error: claimsError } = await supabase

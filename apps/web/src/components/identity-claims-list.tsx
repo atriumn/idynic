@@ -30,7 +30,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Search, Filter, ChevronRight, FileText, AlertTriangle, X, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Search, Filter, ChevronRight, FileText, AlertTriangle, X, Pencil, Trash2, Loader2, CheckCircle2 } from "lucide-react";
 import { useInvalidateGraph } from "@/lib/hooks/use-identity-graph";
 import { EditClaimModal } from "@/components/edit-claim-modal";
 import type { Database } from "@/lib/supabase/types";
@@ -179,7 +179,7 @@ export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsLis
         </div>
 
         <div className="flex items-center gap-2">
-          {claimsWithIssues.length > 0 && (
+          {claimsWithIssues.length > 0 ? (
             <Button
               variant={showIssuesOnly ? "default" : "outline"}
               size="sm"
@@ -189,7 +189,12 @@ export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsLis
               <AlertTriangle className="h-3.5 w-3.5 mr-2" />
               {claimsWithIssues.length} Issue{claimsWithIssues.length !== 1 ? "s" : ""}
             </Button>
-          )}
+          ) : claims.length > 0 ? (
+            <div className="flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400 px-2">
+              <CheckCircle2 className="h-4 w-4" />
+              <span>All verified</span>
+            </div>
+          ) : null}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
