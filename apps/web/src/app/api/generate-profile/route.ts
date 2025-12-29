@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import { generateTalkingPoints } from "@/lib/ai/generate-talking-points";
 import { generateNarrative } from "@/lib/ai/generate-narrative";
 import { generateResume } from "@/lib/ai/generate-resume";
-import type { Json } from "@/lib/supabase/types";
+import { evaluateTailoredProfile, getUserClaimsForEval } from "@/lib/ai/eval";
+import type { Json, TablesInsert } from "@/lib/supabase/types";
 
 // Fetch existing profile (doesn't create one)
 export async function GET(request: Request) {
@@ -151,9 +152,48 @@ export async function POST(request: Request) {
       );
     }
 
+    // Run tailoring evaluation
+    let evalResult = null;
+    try {
+      const userClaims = await getUserClaimsForEval(supabase, user.id);
+      const evaluation = await evaluateTailoredProfile({
+        tailoredProfileId: profile.id,
+        userId: user.id,
+        narrative,
+        resumeData,
+        userClaims,
+      });
+
+      // Store eval result in tailoring_eval_log
+      const evalLogEntry: TablesInsert<"tailoring_eval_log"> = {
+        tailored_profile_id: profile.id,
+        user_id: user.id,
+        passed: evaluation.passed,
+        grounding_passed: evaluation.grounding.passed,
+        hallucinations: evaluation.grounding.hallucinations as unknown as Json,
+        missed_opportunities: evaluation.utilization.missed as unknown as Json,
+        gaps: evaluation.gaps as unknown as Json,
+        eval_model: evaluation.model,
+        eval_cost_cents: evaluation.costCents,
+      };
+      await supabase.from("tailoring_eval_log").insert(evalLogEntry);
+
+      evalResult = {
+        passed: evaluation.passed,
+        groundingPassed: evaluation.grounding.passed,
+        hallucinations: evaluation.grounding.hallucinations,
+        missedOpportunities: evaluation.utilization.missed,
+        gaps: evaluation.gaps,
+      };
+    } catch (evalErr) {
+      console.error("Tailoring eval error:", evalErr);
+      // Continue without eval - don't fail the request
+    }
+
     return NextResponse.json({
       profile,
       cached: false,
+      evaluation: evalResult,
     });
   } catch (err) {
     console.error("Profile generation error:", err);
