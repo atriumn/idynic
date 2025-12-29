@@ -43,6 +43,15 @@ export class GoogleProvider implements AIProvider {
     const response = result.response;
     const usageMetadata = response.usageMetadata;
 
+    // Log finish reason to debug truncation issues
+    const candidate = response.candidates?.[0];
+    const finishReason = candidate?.finishReason;
+    if (finishReason && finishReason !== "STOP") {
+      console.error(`[Google AI] Unexpected finish reason: ${finishReason}`, {
+        safetyRatings: candidate?.safetyRatings,
+      });
+    }
+
     return {
       content: response.text(),
       usage: {
