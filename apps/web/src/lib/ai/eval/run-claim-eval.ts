@@ -77,17 +77,22 @@ export async function runClaimEval(
   if (sampledClaims.length > 0) {
     const sampledIds = sampledClaims.map(c => c.id);
 
-    const { data: claimsWithEvidence } = await supabase
+    const { data: claimsWithEvidence, error: evidenceError } = await supabase
       .from('identity_claims')
       .select(`
         id,
         label,
         description,
         claim_evidence(
-          evidence(text, strength)
+          strength,
+          evidence(text)
         )
       `)
       .in('id', sampledIds);
+
+    if (evidenceError) {
+      console.error('[run-claim-eval] Failed to fetch evidence:', evidenceError);
+    }
 
     if (claimsWithEvidence && claimsWithEvidence.length > 0) {
       // Transform to ClaimWithEvidence format
@@ -95,13 +100,15 @@ export async function runClaimEval(
         id: c.id,
         label: c.label,
         description: c.description,
-        evidence: ((c.claim_evidence as unknown as Array<{ evidence: { text: string; strength: string } | null }>) || [])
-          .filter((ce): ce is { evidence: { text: string; strength: string } } => ce?.evidence != null)
+        evidence: ((c.claim_evidence as unknown as Array<{ strength: string; evidence: { text: string } | null }>) || [])
+          .filter((ce): ce is { strength: string; evidence: { text: string } } => ce?.evidence != null)
           .map(ce => ({
             text: ce.evidence.text,
-            strength: ce.evidence.strength,
+            strength: ce.strength,
           })),
       }));
+
+      console.log('[run-claim-eval] Sending to Claude:', claimsForGrounding.length, 'claims');
 
       // Run AI grounding check
       const groundingResult = await runClaimGroundingEval(claimsForGrounding, { userId });
