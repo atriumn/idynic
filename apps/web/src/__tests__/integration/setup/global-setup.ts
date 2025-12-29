@@ -53,6 +53,13 @@ export default async function globalSetup() {
     throw new Error('Failed to reset database. Check Supabase logs.')
   }
 
+  // Reload PostgREST schema cache after database reset
+  // This is necessary because PostgREST caches the schema and won't see
+  // new tables/policies until it reloads
+  console.log('[Integration Tests] Reloading PostgREST schema cache...')
+  await reloadPostgrestSchema()
+  console.log('[Integration Tests] Schema cache reloaded')
+
   // Apply test fixtures
   console.log('[Integration Tests] Applying test fixtures...')
   await applyTestFixtures()
@@ -154,4 +161,54 @@ async function applyTestFixtures(): Promise<void> {
  */
 function getPostgresConnectionString(): string {
   return 'postgresql://postgres:postgres@localhost:54322/postgres'
+}
+
+/**
+ * Reload PostgREST schema cache.
+ * After database schema changes, PostgREST needs to reload its schema cache
+ * to see new tables and policies. We do this by:
+ * 1. Sending a NOTIFY to pgrst channel (the official way)
+ * 2. Waiting a bit for PostgREST to process the notification
+ * 3. Making a test request to verify the schema is loaded
+ */
+async function reloadPostgrestSchema(): Promise<void> {
+  // Send NOTIFY to PostgREST to reload schema
+  try {
+    execSync(`psql "${getPostgresConnectionString()}" -c "NOTIFY pgrst, 'reload schema'"`, {
+      cwd: getRepoRoot(),
+      stdio: 'pipe'
+    })
+  } catch {
+    // If psql fails, try supabase db execute
+    try {
+      execSync(`supabase db execute -c "NOTIFY pgrst, 'reload schema'"`, {
+        cwd: getRepoRoot(),
+        stdio: 'pipe'
+      })
+    } catch {
+      console.warn('[Integration Tests] Could not send NOTIFY to PostgREST')
+    }
+  }
+
+  // Wait for PostgREST to reload (it should be nearly instant, but give it some time)
+  await new Promise(resolve => setTimeout(resolve, 1000))
+
+  // Verify by making a test request to ensure schema is loaded
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+
+  // Try up to 5 times with 1 second delay to wait for schema to be available
+  for (let i = 0; i < 5; i++) {
+    const { error } = await supabase.from('documents').select('id').limit(1)
+    if (!error || error.code !== 'PGRST205') {
+      // Schema is loaded (either no error, or a different error like no rows)
+      return
+    }
+    console.log(`[Integration Tests] Schema not yet loaded, waiting... (attempt ${i + 1}/5)`)
+    await new Promise(resolve => setTimeout(resolve, 1000))
+  }
+
+  throw new Error('PostgREST schema cache did not reload in time')
 }
