@@ -72,7 +72,8 @@ function checkSupabaseRunning(cwd: string): boolean {
       encoding: 'utf8',
       timeout: 10000
     })
-    return result.status === 0 && result.stdout.includes('API URL')
+    // Check for either "API URL" (older versions) or "Project URL" (newer versions)
+    return result.status === 0 && (result.stdout.includes('API URL') || result.stdout.includes('Project URL'))
   } catch {
     return false
   }

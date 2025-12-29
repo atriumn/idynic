@@ -15,11 +15,7 @@ export default defineConfig({
     globalSetup: ['./src/__tests__/integration/setup/global-setup.ts'],
     teardownTimeout: 60000,
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: true
-      }
-    },
+    isolate: false,  // Run tests in the same process (replaces poolOptions.forks.singleFork)
     env: {
       SUPABASE_URL: 'http://127.0.0.1:54321',
       SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0',
