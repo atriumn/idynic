@@ -2,7 +2,7 @@
 
 **Priority**: HIGH
 **Effort**: 2-3 days
-**Status**: Not Started
+**Status**: Done
 
 ## Overview
 
@@ -238,3 +238,28 @@ Update `.github/workflows/test.yml`:
 - `apps/web/src/__tests__/integration/` directory with tests
 - Updated `.github/workflows/test.yml`
 - Updated `apps/web/package.json` with new scripts
+
+---
+
+## Progress (Last reviewed: 2025-12-29)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Directory structure | ✅ Complete | `auth/`, `profile/`, `documents/`, `opportunities/` |
+| Step 2: Vitest integration config | ✅ Complete | `vitest.integration.config.ts` |
+| Step 3: Global setup/teardown | ✅ Complete | `global-setup.ts`, `global-teardown.ts` |
+| Step 4: Test fixtures SQL | ✅ Complete | `test-fixtures.sql` |
+| Step 5: Integration test utilities | ✅ Complete | `test-utils.ts` |
+| Step 6: Auth integration tests | ✅ Complete | `signup`, `login`, `token-refresh` tests |
+| Step 7: RLS policy tests | ✅ Complete | `rls-policies.integration.test.ts` |
+| Step 8: Profile CRUD tests | ✅ Complete | `profile-crud.integration.test.ts` |
+| Step 9: Document tests | ✅ Complete | `document-crud.integration.test.ts` |
+| Step 10: Opportunity tests | ✅ Complete | `opportunity-crud.integration.test.ts` |
+| Step 11: Package.json scripts | ✅ Complete | `test:integration` command works |
+| Step 12: Update CI workflow | ⏳ Deferred | Tests run locally only for now |
+
+### Drift Notes
+
+- CI integration deferred - integration tests require running Supabase which adds complexity
+- 7 test files created covering auth, RLS, profile, documents, opportunities
+- Merged in PR #38

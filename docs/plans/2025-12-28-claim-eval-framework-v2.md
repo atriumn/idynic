@@ -393,3 +393,54 @@ Negligible compared to extraction costs.
 15. **Eval step placement**: After `reflect-identity`, before `complete-job` in process-resume/story
 16. **UI patterns**: Follow existing Tailwind + shadcn/ui component patterns
 17. **Testing**: Unit tests for rule checks and eval logic; integration tests deferred
+
+---
+
+## Progress (Last reviewed: 2025-12-29)
+
+**Status:** In Progress
+
+### Phase 1: Infrastructure
+| Step | Status | Notes |
+|------|--------|-------|
+| 1. Create `claim_issues` migration | ✅ Complete | `20251228000000_claim_issues.sql` |
+| 2. Create `tailoring_eval_log` migration | ✅ Complete | Included in claim_issues migration |
+| 3. Add `anthropic` to provider type | ✅ Complete | `config.ts` |
+| 4. Add `claim_eval` and `tailoring_eval` operations | ✅ Complete | `config.ts` |
+| 5. Regenerate Supabase types | ✅ Complete | Types include `claim_issues` |
+
+### Phase 2: Eval Logic
+| Step | Status | Notes |
+|------|--------|-------|
+| 6. Create `rule-checks.ts` | ✅ Complete | Duplicates + missing fields |
+| 7. Create `claim-grounding.ts` | ✅ Complete | AI eval with Claude |
+| 8. Create `tailoring-grounding.ts` | ✅ Complete | AI eval ready |
+
+### Phase 3: Integration
+| Step | Status | Notes |
+|------|--------|-------|
+| 9. Add eval step to `process-resume.ts` | ✅ Complete | Step 12: claim-eval |
+| 10. Add eval step to `process-story.ts` | ✅ Complete | Step 8: claim-eval |
+| 11. Add eval to tailor API route | ⏳ Not Started | Tailoring eval not wired up |
+
+### Phase 4: Claim Management API
+| Step | Status | Notes |
+|------|--------|-------|
+| 12. PATCH /api/v1/claims/[id] | ✅ Complete | Edit claim endpoint |
+| 13. DELETE /api/v1/claims/[id] | ✅ Complete | Delete claim endpoint |
+| 14. POST /api/v1/claims/[id]/dismiss | ✅ Complete | Dismiss issues endpoint |
+
+### Phase 5: UI
+| Step | Status | Notes |
+|------|--------|-------|
+| 15. Update claims list query to include issues | ✅ Complete | `identity-claims-list.tsx` |
+| 16. Add issue banner with dismiss/edit/delete | ✅ Complete | AlertTriangle + actions |
+| 17. Add "Show issues only" filter | ✅ Complete | `showIssuesOnly` state |
+| 18. Add edit claim modal | ⏳ Not Started | Deferred |
+| 19. Add warning banner to tailored profile | ⏳ Not Started | Waiting on tailoring eval |
+
+### Drift Notes
+
+- **AI Gateway routing**: All AI operations now route through `gateway.ts` for centralized usage tracking (commit `2b0ef814`)
+- **Job ID tracking**: Added `job_id` to AI usage log for better traceability (commit `6a6bb396`)
+- **Unit tests added**: Tests for `run-claim-eval.ts` (commit `36a7c2e6`)
