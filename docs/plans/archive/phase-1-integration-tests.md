@@ -2,7 +2,29 @@
 
 **Priority**: HIGH
 **Effort**: 2-3 days
-**Status**: Not Started
+**Status**: Done
+
+## Progress (Last reviewed: 2025-12-29)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Create directory structure | ✅ Complete | Integration test directories created |
+| Step 2: Create Vitest integration config | ✅ Complete | vitest.integration.config.ts |
+| Step 3: Create global setup/teardown | ✅ Complete | global-setup.ts, global-teardown.ts |
+| Step 4: Create test fixtures SQL | ✅ Complete | test-fixtures.sql |
+| Step 5: Create test utilities | ✅ Complete | test-utils.ts |
+| Step 6: Write auth tests | ✅ Complete | signup, login, token-refresh |
+| Step 7: Write RLS policy tests | ✅ Complete | rls-policies.integration.test.ts |
+| Step 8: Write profile CRUD tests | ✅ Complete | profile-crud.integration.test.ts |
+| Step 9: Write document tests | ✅ Complete | document-crud.integration.test.ts |
+| Step 10: Write opportunity tests | ✅ Complete | opportunity-crud.integration.test.ts |
+| Step 11: Add package.json scripts | ✅ Complete | test:integration, test:integration:watch |
+| Step 12: Update CI workflow | ✅ Complete | test.yml runs integration tests |
+
+### Drift Notes
+- Implementation matched plan exactly
+- All 12 steps completed as specified
+- PR #38 merged 2025-12-29
 
 ## Overview
 

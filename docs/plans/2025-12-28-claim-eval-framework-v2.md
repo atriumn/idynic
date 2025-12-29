@@ -2,6 +2,50 @@
 
 > Updated 2025-12-28 after brainstorming session. Replaces 2025-12-27-claim-eval-framework.md.
 
+**Status:** In Progress
+
+## Progress (Last reviewed: 2025-12-29)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Phase 1: Infrastructure | | |
+| Step 1: Create `claim_issues` migration | ✅ Complete | Migration 20251228000000 |
+| Step 2: Create `tailoring_eval_log` migration | ✅ Complete | Migration 20251228000001 |
+| Step 3: Add `anthropic` to provider type | ✅ Complete | Already existed in gateway |
+| Step 4: Add eval operations to config.ts | ✅ Complete | claim_eval, tailoring_eval configured |
+| Step 5: Regenerate Supabase types | ✅ Complete | Types include claim_issues, tailoring_eval_log |
+| Phase 2: Eval Logic | | |
+| Step 6: Create rule-checks.ts | ✅ Complete | Duplicates + required fields |
+| Step 7: Create claim-grounding.ts | ✅ Complete | AI eval with Claude |
+| Step 8: Create tailoring-grounding.ts | ✅ Complete | Full implementation |
+| Phase 3: Integration | | |
+| Step 9: Add eval step to process-resume.ts | ✅ Complete | Runs after reflect step |
+| Step 10: Add eval step to process-story.ts | ✅ Complete | Runs after reflect step |
+| Step 11: Add eval to tailor API route | ✅ Complete | Both /api/v1 and /api routes |
+| Phase 4: Claim Management API | | |
+| Step 12: Create PATCH /api/v1/claims/[id] | ⏳ Not Started | |
+| Step 13: Create DELETE /api/v1/claims/[id] | ⏳ Not Started | |
+| Step 14: Create POST /api/v1/claims/[id]/dismiss | ⏳ Not Started | |
+| Phase 5: UI | | |
+| Step 15: Update claims list query | ⏳ Not Started | |
+| Step 16: Add issue banner with actions | ⏳ Not Started | |
+| Step 17: Add "Show issues only" filter | ⏳ Not Started | |
+| Step 18: Add edit claim modal | ⏳ Not Started | |
+| Step 19: Add warning banner to tailored profile | ⏳ Not Started | |
+
+### Recent Progress (2025-12-29)
+- All AI operations now routed through gateway for usage tracking (commit 2b0ef814)
+- Fixed Claude response parsing with markdown code block stripping (commit dd0474ee)
+- Added job_id tracking to AI usage log (commit 6a6bb396)
+- Added unit tests for run-claim-eval (commit 36a7c2e6)
+- Fixed claim eval query - strength is on claim_evidence table (commit 6eba9cc5)
+- Improved claim eval coverage and added verified status (commit 337a2a81)
+
+### Drift Notes
+- Implementation followed plan closely
+- Added `job_id` tracking to usage log (enhancement not in original plan)
+- Tests added for run-claim-eval (not explicitly planned but good practice)
+
 ## Overview
 
 Two eval systems that catch quality issues before users see or share content:
