@@ -295,18 +295,21 @@ describe('Profile API Key Management', () => {
   })
 
   it('should revoke API key', async () => {
-    // Create a key to revoke
-    const { data: created } = await client
+    // Create a key to revoke (key_prefix must be idn_ followed by exactly 4 lowercase alphanumeric chars)
+    const { data: created, error: createError } = await client
       .from('api_keys')
       .insert({
         user_id: user.id,
         key_hash: crypto.randomUUID(),
-        key_prefix: 'idn_revoke',
+        key_prefix: 'idn_rev0', // Must match pattern ^idn_[a-z0-9]{4}$
         name: 'Key to Revoke',
         scopes: ['read']
       })
       .select()
       .single()
+
+    expect(createError).toBeNull()
+    expect(created).not.toBeNull()
 
     // Revoke it
     const { data, error } = await client

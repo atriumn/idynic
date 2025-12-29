@@ -112,14 +112,20 @@ describe('RLS Policies: Profiles', () => {
     it('should verify other profile was not modified', async () => {
       // Get user2's profile using admin client (bypasses RLS) to verify
       const admin = getAdminClient()
-      const { data: user2Profile } = await admin
+      const { data: user2Profile, error } = await admin
         .from('profiles')
         .select('name')
         .eq('id', user2.id)
         .single()
 
-      // Name should NOT be "Hacked Name..."
-      expect(user2Profile?.name).not.toContain('Hacked')
+      expect(error).toBeNull()
+      expect(user2Profile).not.toBeNull()
+      // Name should NOT be "Hacked Name..." (it should be null or the original value)
+      // Handle case where name might be null (default for new profiles)
+      if (user2Profile?.name !== null) {
+        expect(user2Profile?.name).not.toContain('Hacked')
+      }
+      // If name is null, the update definitely didn't work
     })
   })
 
