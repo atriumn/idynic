@@ -6,6 +6,7 @@ import { extractResume } from "@/lib/ai/extract-resume";
 import { generateEmbeddings } from "@/lib/ai/embeddings";
 import { synthesizeClaimsBatch } from "@/lib/ai/synthesize-claims-batch";
 import { reflectIdentity } from "@/lib/ai/reflect-identity";
+import { runClaimEval } from "@/lib/ai/eval/run-claim-eval";
 import { extractHighlights } from "@/lib/resume/extract-highlights";
 import { JobUpdater } from "@/lib/jobs/job-updater";
 import { extractText } from "unpdf";
@@ -418,7 +419,21 @@ export const processResume = inngest.createFunction(
       await reflectIdentity(supabase, userId, undefined, job);
     });
 
-    // Step 12: Complete job
+    // Step 12: Run claim evaluation
+    await step.run("claim-eval", async () => {
+      await job.setPhase("evaluation");
+      try {
+        const evalResult = await runClaimEval(supabase, userId, document.id);
+        if (evalResult.issuesFound > 0) {
+          jobLog.info("Claim eval complete", { ...evalResult });
+        }
+      } catch (err) {
+        // Don't fail the job if eval fails - it's supplementary
+        jobLog.error("Claim eval error", { error: err instanceof Error ? err.message : String(err) });
+      }
+    });
+
+    // Step 13: Complete job
     await step.run("complete-job", async () => {
       await supabase.from("documents").update({ status: "completed" }).eq("id", document.id);
 

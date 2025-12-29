@@ -11,6 +11,7 @@ export type DocumentJobPhase =
   | 'embeddings'
   | 'synthesis'
   | 'reflection'
+  | 'evaluation'
   | 'enriching'
   | 'researching';
 
@@ -58,6 +59,7 @@ export const PHASE_LABELS: Record<DocumentJobPhase, string> = {
   embeddings: 'Generating embeddings',
   synthesis: 'Synthesizing claims',
   reflection: 'Reflecting identity',
+  evaluation: 'Evaluating claims',
   enriching: 'Enriching job data',
   researching: 'Researching company',
 };
@@ -69,6 +71,7 @@ export const RESUME_PHASES: DocumentJobPhase[] = [
   'embeddings',
   'synthesis',
   'reflection',
+  'evaluation',
 ];
 
 /** Ordered phases for story processing */
@@ -78,6 +81,7 @@ export const STORY_PHASES: DocumentJobPhase[] = [
   'embeddings',
   'synthesis',
   'reflection',
+  'evaluation',
 ];
 
 /** Ordered phases for opportunity processing */
@@ -130,6 +134,11 @@ export const TICKER_MESSAGES: Record<DocumentJobPhase, string[]> = {
     'synthesizing identity...',
     'building profile...',
     'crafting narrative...',
+  ],
+  evaluation: [
+    'checking claim quality...',
+    'verifying grounding...',
+    'validating evidence...',
   ],
   enriching: [
     'fetching job details...',
