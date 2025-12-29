@@ -134,6 +134,9 @@ export async function extractEvidence(
     throw new Error("No response from AI provider");
   }
 
+  // Log raw response for debugging (first 500 chars)
+  console.log("[extract-evidence] Raw response preview:", content.slice(0, 500));
+
   // Clean markdown code blocks if present
   const cleanedContent = content
     .replace(/```json\n?/g, "")
@@ -141,7 +144,21 @@ export async function extractEvidence(
     .trim();
 
   try {
-    const parsed = JSON.parse(cleanedContent) as ExtractedEvidence[];
+    // Handle case where response might be wrapped in an object (Gemini sometimes does this)
+    let jsonToParse = cleanedContent;
+
+    // If it starts with { and contains an array property, extract the array
+    if (cleanedContent.startsWith("{") && !cleanedContent.startsWith("[")) {
+      const obj = JSON.parse(cleanedContent);
+      // Look for array property (evidence, items, results, etc.)
+      const arrayProp = Object.keys(obj).find(k => Array.isArray(obj[k]));
+      if (arrayProp) {
+        console.log("[extract-evidence] Unwrapping array from property:", arrayProp);
+        jsonToParse = JSON.stringify(obj[arrayProp]);
+      }
+    }
+
+    const parsed = JSON.parse(jsonToParse) as ExtractedEvidence[];
 
     // Validate the structure
     if (!Array.isArray(parsed)) {
