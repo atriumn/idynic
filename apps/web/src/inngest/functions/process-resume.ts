@@ -120,9 +120,12 @@ export const processResume = inngest.createFunction(
       await job.setPhase("extracting");
       jobLog.info("Starting content extraction");
 
+      let evidenceError: string | null = null;
+
       const [evidenceResult, workHistoryResult, resumeResult] = await Promise.all([
         extractEvidence(rawText, 'resume', { userId }).catch((err) => {
           jobLog.error("Evidence extraction error", { error: err.message });
+          evidenceError = err.message;
           return [];
         }),
         extractWorkHistory(rawText).catch((err) => {
@@ -134,6 +137,11 @@ export const processResume = inngest.createFunction(
           return null;
         }),
       ]);
+
+      // If evidence extraction failed, show the error to the user
+      if (evidenceError) {
+        await job.setWarning(`Evidence extraction failed: ${evidenceError}`);
+      }
 
       jobLog.info("Extraction complete", {
         evidenceCount: evidenceResult.length,
@@ -233,6 +241,8 @@ export const processResume = inngest.createFunction(
     if (evidenceItems.length === 0) {
       await step.run("complete-no-evidence", async () => {
         await supabase.from("documents").update({ status: "completed" }).eq("id", document.id);
+        // Show warning that no evidence was found
+        await job.setWarning("No evidence could be extracted from this resume. The file may be image-based or in an unsupported format.");
         await job.complete(
           {
             documentId: document.id,

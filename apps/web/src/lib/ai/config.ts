@@ -38,7 +38,7 @@ export function getModelConfig(operation: string): ModelConfig {
     case "extract_evidence":
       return {
         provider: getEnvProvider("EXTRACT_EVIDENCE_PROVIDER", "openai"),
-        model: getEnvString("EXTRACT_EVIDENCE_MODEL", "gpt-4o-mini"),
+        model: getEnvString("EXTRACT_EVIDENCE_MODEL", "gpt-5-mini"),
       };
 
     case "extract_work_history":
