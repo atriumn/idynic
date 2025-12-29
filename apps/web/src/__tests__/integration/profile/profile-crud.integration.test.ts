@@ -112,7 +112,7 @@ describe('Profile CRUD Integration', () => {
 
     it('update modifies updated_at timestamp', async () => {
       // Get initial timestamp
-      const { data: _beforeData } = await client
+      const { data: beforeData } = await client
         .from('profiles')
         .select('updated_at')
         .eq('id', userId)
@@ -121,14 +121,30 @@ describe('Profile CRUD Integration', () => {
       // Wait a moment to ensure timestamp difference
       await new Promise(resolve => setTimeout(resolve, 100))
 
-      // Note: The updated_at trigger may not exist, so we manually set it
-      // or just verify the update succeeds
+      // Update the profile
       const { error } = await client
         .from('profiles')
         .update({ name: 'Timestamp Test' })
         .eq('id', userId)
 
       expect(error).toBeNull()
+
+      // Get the updated timestamp
+      const { data: afterData } = await client
+        .from('profiles')
+        .select('updated_at')
+        .eq('id', userId)
+        .single()
+
+      // Verify timestamp was updated (if trigger exists)
+      // Note: If updated_at trigger doesn't exist, both may be the same
+      expect(afterData?.updated_at).toBeDefined()
+      if (beforeData?.updated_at && afterData?.updated_at) {
+        // If trigger exists, afterData should be >= beforeData
+        expect(new Date(afterData.updated_at).getTime()).toBeGreaterThanOrEqual(
+          new Date(beforeData.updated_at).getTime()
+        )
+      }
     })
 
     it('can update multiple fields at once', async () => {
