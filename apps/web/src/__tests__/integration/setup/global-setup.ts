@@ -51,9 +51,8 @@ export default async function globalSetup() {
   if (fs.existsSync(fixturesPath)) {
     console.log('📋 Applying test fixtures...')
     try {
-      const fixtures = fs.readFileSync(fixturesPath, 'utf8')
-      // Use psql to apply fixtures
-      execSync(`psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -c "${fixtures.replace(/"/g, '\\"')}"`, {
+      // Use psql with -f flag to safely apply fixtures from file (avoids shell injection)
+      execSync(`psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f "${fixturesPath}"`, {
         cwd: monorepoRoot,
         stdio: 'inherit'
       })
