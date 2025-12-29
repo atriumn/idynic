@@ -22,7 +22,7 @@ const USER_PROMPT = `Extract all professional entries from this resume, includin
 
 For each entry, extract:
 - company: Company/organization/venture name
-- company_domain: The company's website domain (e.g., "google.com", "meta.com", "mckinsey.com"). Use your knowledge of well-known companies. For small/unknown companies or personal ventures, use null.
+- company_domain: The company's website domain (e.g., "google.com", "meta.com", "mckinsey.com"). ALWAYS try to provide a domain - use your knowledge OR make an educated guess based on the company name (e.g., "Acme Corp" → "acmecorp.com", "Smith & Associates" → "smithassociates.com"). Only use null for personal ventures, side projects, or clearly non-commercial entities.
 - title: Job title/role (e.g., "Founder", "Co-Owner", "Principal Owner")
 - start_date: Start date (format as written, e.g., "Jan 2020", "2020", "January 2020")
 - end_date: End date, or null if current/ongoing (look for "Present", "Current", "In Development", "Pre-Launch", etc.)
@@ -67,7 +67,7 @@ IMPORTANT:
 - If dates are unclear, make best effort (year only is fine)
 - Return ONLY valid JSON array, no markdown
 - Do NOT skip any ventures - each one is a separate entry!
-- For company_domain: use well-known domains (e.g., "Amazon" → "amazon.com", "McKinsey & Company" → "mckinsey.com"). Use null for personal ventures or unknown companies.
+- For company_domain: ALWAYS try to provide a domain. Use well-known domains (e.g., "Amazon" → "amazon.com", "McKinsey & Company" → "mckinsey.com") or make educated guesses for others (e.g., "TechCorp Inc" → "techcorp.com"). Only use null for personal ventures or side projects.
 
 RESUME TEXT:
 `;
