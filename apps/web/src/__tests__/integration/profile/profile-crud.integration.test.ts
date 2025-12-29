@@ -351,7 +351,7 @@ describe('Document CRUD Operations', () => {
       expect(deleteError).toBeNull()
 
       // Verify it's gone
-      const { data, error } = await userClient
+      const { data } = await userClient
         .from('documents')
         .select('id')
         .eq('id', created!.id)

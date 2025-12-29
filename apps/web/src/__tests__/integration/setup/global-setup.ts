@@ -50,7 +50,7 @@ export default async function globalSetup() {
       cwd: projectRoot
     })
     console.log('✅ Test fixtures applied')
-  } catch (error) {
+  } catch {
     // Fixtures are optional, don't fail if file doesn't exist
     console.log('⚠️ No test fixtures applied (file may not exist or psql not available)')
   }

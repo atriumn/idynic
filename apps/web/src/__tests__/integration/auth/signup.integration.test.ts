@@ -131,7 +131,7 @@ describe('Auth: Signup', () => {
     }
 
     // Try to signup with the same email
-    const { data: secondData, error: secondError } = await anonClient.auth.signUp({
+    const { data: secondData } = await anonClient.auth.signUp({
       email,
       password
     })

@@ -107,7 +107,7 @@ describe('Auth: Login', () => {
     const client = getAnonClient()
 
     // Try to access profiles without being logged in
-    const { data: profiles, error } = await client
+    const { data: profiles } = await client
       .from('profiles')
       .select('*')
 

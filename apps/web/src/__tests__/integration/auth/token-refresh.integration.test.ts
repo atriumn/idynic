@@ -43,7 +43,6 @@ describe('Auth: Token Refresh', () => {
     expect(loginError).toBeNull()
     expect(loginData.session).toBeDefined()
 
-    const originalAccessToken = loginData.session!.access_token
     const refreshToken = loginData.session!.refresh_token
 
     // Wait a tiny bit to ensure tokens are different

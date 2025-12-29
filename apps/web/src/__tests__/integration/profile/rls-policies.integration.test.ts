@@ -53,7 +53,7 @@ describe('Profile RLS Policies', () => {
 
     it('user cannot read another user profile directly by ID', async () => {
       // User B tries to read User A's profile
-      const { data, error } = await userBClient
+      const { data } = await userBClient
         .from('profiles')
         .select('*')
         .eq('id', userA.id)
@@ -104,7 +104,7 @@ describe('Profile RLS Policies', () => {
     })
 
     it('user cannot update another user profile', async () => {
-      const { error, count } = await userBClient
+      await userBClient
         .from('profiles')
         .update({ name: 'Hacked!' })
         .eq('id', userA.id)
@@ -145,7 +145,7 @@ describe('Profile RLS Policies', () => {
 
   describe('DELETE policies', () => {
     it('user cannot delete another user profile', async () => {
-      const { error, count } = await userBClient
+      await userBClient
         .from('profiles')
         .delete()
         .eq('id', userA.id)
@@ -222,7 +222,7 @@ describe('Documents RLS Policies', () => {
   })
 
   it('user cannot read another user documents', async () => {
-    const { data, error } = await userBClient
+    const { data } = await userBClient
       .from('documents')
       .select('*')
       .eq('id', userADocumentId)
@@ -261,7 +261,7 @@ describe('Documents RLS Policies', () => {
   })
 
   it('user cannot update another user documents', async () => {
-    const { error } = await userBClient
+    await userBClient
       .from('documents')
       .update({ filename: 'hacked.pdf' })
       .eq('id', userADocumentId)
@@ -277,7 +277,7 @@ describe('Documents RLS Policies', () => {
   })
 
   it('user cannot delete another user documents', async () => {
-    const { error } = await userBClient
+    await userBClient
       .from('documents')
       .delete()
       .eq('id', userADocumentId)
@@ -350,7 +350,7 @@ describe('Opportunities RLS Policies', () => {
   })
 
   it('user cannot read another user opportunities', async () => {
-    const { data, error } = await userBClient
+    const { data } = await userBClient
       .from('opportunities')
       .select('*')
       .eq('id', userAOpportunityId)
@@ -383,7 +383,7 @@ describe('Opportunities RLS Policies', () => {
   })
 
   it('user cannot update another user opportunities', async () => {
-    const { error } = await userBClient
+    await userBClient
       .from('opportunities')
       .update({ title: 'Hacked Job Title' })
       .eq('id', userAOpportunityId)
