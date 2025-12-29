@@ -65,7 +65,8 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Upload failed");
+        // Use message for user-friendly text, fall back to error code
+        throw new Error(data.message || data.error || "Upload failed");
       }
 
       // Start listening to job updates
