@@ -112,7 +112,7 @@ describe('Profile CRUD Integration', () => {
 
     it('update modifies updated_at timestamp', async () => {
       // Get initial timestamp
-      const { data: beforeData } = await client
+      const { data: _beforeData } = await client
         .from('profiles')
         .select('updated_at')
         .eq('id', userId)

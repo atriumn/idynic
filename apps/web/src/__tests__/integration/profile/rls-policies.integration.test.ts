@@ -187,7 +187,7 @@ describe('Profile RLS Policies Integration', () => {
     it('anonymous user cannot SELECT any profiles', async () => {
       const anonClient = getAnonClient()
 
-      const { data, error } = await anonClient
+      const { data } = await anonClient
         .from('profiles')
         .select('*')
 
