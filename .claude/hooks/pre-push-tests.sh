@@ -17,8 +17,16 @@ cd "$CLAUDE_PROJECT_DIR" || exit 1
 echo "🧪 Running tests before push..."
 echo ""
 
-# Check if package.json exists and has test script
-# Run typecheck first (faster than tests)
+# Run lint first (fastest)
+echo "Running lint..."
+if ! pnpm run lint 2>&1; then
+  echo ""
+  echo "❌ Lint failed. Push blocked." >&2
+  exit 2
+fi
+
+# Run typecheck
+echo ""
 echo "Running typecheck..."
 if ! pnpm run typecheck 2>&1; then
   echo ""
