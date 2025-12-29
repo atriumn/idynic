@@ -166,50 +166,70 @@ function getPostgresConnectionString(): string {
 
 /**
  * Reload PostgREST schema cache.
- * After database schema changes, PostgREST needs to reload its schema cache
- * to see new tables and policies. We use multiple strategies:
- * 1. Send NOTIFY pgrst to trigger schema reload
- * 2. If that fails, try restarting the PostgREST container
- * 3. Verify with exponential backoff until schema is available
+ * After database schema changes (like db reset), PostgREST needs to reload its
+ * schema cache to see new tables and policies. We use multiple strategies:
+ * 1. Restart the PostgREST Docker container (most reliable)
+ * 2. Fall back to NOTIFY if Docker restart fails
+ * 3. Verify the schema is accessible before continuing
  */
 async function reloadPostgrestSchema(): Promise<void> {
-  // Strategy 1: Send NOTIFY to PostgREST to reload schema
-  let notifySuccess = false
+  // Strategy 1: Restart PostgREST container (most reliable after db reset)
+  let restartSucceeded = false
   try {
-    execSync(`psql "${getPostgresConnectionString()}" -c "NOTIFY pgrst, 'reload schema'"`, {
-      cwd: getRepoRoot(),
-      stdio: 'pipe',
-      timeout: 10000
-    })
-    notifySuccess = true
-    console.log('[Integration Tests] Sent NOTIFY pgrst to reload schema')
-  } catch {
-    // If psql fails, try supabase db execute
+    // Get the PostgREST container ID
+    const containerId = execSync(
+      'docker ps --filter "name=supabase_rest" --format "{{.ID}}"',
+      { cwd: getRepoRoot(), encoding: 'utf-8', timeout: 10000 }
+    ).trim()
+
+    if (containerId) {
+      console.log(`[Integration Tests] Restarting PostgREST container: ${containerId}`)
+      execSync(`docker restart ${containerId}`, {
+        cwd: getRepoRoot(),
+        stdio: 'pipe',
+        timeout: 30000
+      })
+      restartSucceeded = true
+      // Wait for container to be ready
+      await new Promise(resolve => setTimeout(resolve, 5000))
+    } else {
+      console.warn('[Integration Tests] PostgREST container not found')
+    }
+  } catch (error) {
+    console.warn('[Integration Tests] Failed to restart PostgREST container:', error)
+  }
+
+  // Strategy 2: If container restart failed, try NOTIFY
+  if (!restartSucceeded) {
+    console.log('[Integration Tests] Trying NOTIFY method to reload schema...')
     try {
-      execSync(`supabase db execute -c "NOTIFY pgrst, 'reload schema'"`, {
+      execSync(`psql "${getPostgresConnectionString()}" -c "NOTIFY pgrst, 'reload schema'"`, {
         cwd: getRepoRoot(),
         stdio: 'pipe',
         timeout: 10000
       })
-      notifySuccess = true
-      console.log('[Integration Tests] Sent NOTIFY via supabase CLI')
+      await new Promise(resolve => setTimeout(resolve, 2000))
     } catch {
-      console.warn('[Integration Tests] Could not send NOTIFY to PostgREST')
+      try {
+        execSync(`supabase db execute -c "NOTIFY pgrst, 'reload schema'"`, {
+          cwd: getRepoRoot(),
+          stdio: 'pipe',
+          timeout: 10000
+        })
+        await new Promise(resolve => setTimeout(resolve, 2000))
+      } catch {
+        console.warn('[Integration Tests] NOTIFY method also failed')
+      }
     }
   }
 
-  // Wait a bit for PostgREST to process the notification
-  await new Promise(resolve => setTimeout(resolve, 2000))
-
-  // Verify schema is loaded with exponential backoff
+  // Verify schema is loaded
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  const maxAttempts = 15
-  const baseDelay = 500 // Start with 500ms
-
+  const maxAttempts = 30
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const { error } = await supabase.from('profiles').select('id').limit(1)
 
@@ -219,16 +239,16 @@ async function reloadPostgrestSchema(): Promise<void> {
     }
 
     if (error.code !== 'PGRST205') {
-      // Different error (like no rows or auth error) - schema is loaded
-      console.log(`[Integration Tests] Schema loaded with expected error (attempt ${attempt}/${maxAttempts})`)
+      // Different error (like no rows or RLS error) - schema is loaded
+      console.log(`[Integration Tests] Schema loaded with expected error: ${error.code} (attempt ${attempt}/${maxAttempts})`)
       return
     }
 
     console.log(`[Integration Tests] Schema not yet loaded (attempt ${attempt}/${maxAttempts}), waiting...`)
 
-    // On attempt 5, try restarting the PostgREST container as a fallback
-    if (attempt === 5 && !notifySuccess) {
-      console.log('[Integration Tests] Trying to restart PostgREST container...')
+    // On attempt 15, try restarting the PostgREST container again
+    if (attempt === 15) {
+      console.log('[Integration Tests] Retrying PostgREST container restart...')
       try {
         const containerId = execSync('docker ps --filter "name=supabase_rest" --format "{{.ID}}"', {
           cwd: getRepoRoot(),
@@ -242,32 +262,16 @@ async function reloadPostgrestSchema(): Promise<void> {
             stdio: 'pipe',
             timeout: 30000
           })
-          console.log('[Integration Tests] PostgREST container restarted')
-          // Wait for container to be ready
-          await new Promise(resolve => setTimeout(resolve, 3000))
+          console.log('[Integration Tests] PostgREST container restarted again')
+          await new Promise(resolve => setTimeout(resolve, 5000))
         }
       } catch {
         console.warn('[Integration Tests] Could not restart PostgREST container')
       }
     }
 
-    // On each attempt, try sending NOTIFY again
-    if (attempt % 3 === 0) {
-      try {
-        execSync(`psql "${getPostgresConnectionString()}" -c "NOTIFY pgrst, 'reload schema'"`, {
-          cwd: getRepoRoot(),
-          stdio: 'pipe',
-          timeout: 5000
-        })
-      } catch {
-        // Ignore
-      }
-    }
-
-    // Exponential backoff with cap at 3 seconds
-    const delay = Math.min(baseDelay * Math.pow(1.5, attempt - 1), 3000)
-    await new Promise(resolve => setTimeout(resolve, delay))
+    await new Promise(resolve => setTimeout(resolve, 1000))
   }
 
-  throw new Error('PostgREST schema cache did not reload in time after 15 attempts')
+  throw new Error(`PostgREST schema cache did not reload in time after ${maxAttempts} attempts`)
 }
