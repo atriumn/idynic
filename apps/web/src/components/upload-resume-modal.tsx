@@ -198,7 +198,9 @@ export function UploadResumeModal() {
                   ? "Your resume has been processed successfully."
                   : currentPhase
                     ? PHASE_LABELS[currentPhase]
-                    : "Starting..."
+                    : job?.status === "pending"
+                      ? "Queued for processing..."
+                      : "Starting..."
                 }
               </DialogDescription>
             </DialogHeader>

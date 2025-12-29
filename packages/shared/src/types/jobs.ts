@@ -158,7 +158,7 @@ export const TICKER_MESSAGES: Record<DocumentJobPhase, string[]> = {
 export function formatHighlight(highlight: JobHighlight): string {
   switch (highlight.type) {
     case 'found':
-      return `Found: ${highlight.text}`;
+      return highlight.text;
     case 'created':
       return `+ ${highlight.text}`;
     case 'updated':

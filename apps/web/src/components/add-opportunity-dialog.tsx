@@ -236,7 +236,9 @@ export function AddOpportunityDialog() {
                   ? "Your opportunity has been saved successfully."
                   : currentPhase
                     ? PHASE_LABELS[currentPhase]
-                    : "Starting..."
+                    : job?.status === "pending"
+                      ? "Queued for processing..."
+                      : "Starting..."
                 }
               </DialogDescription>
             </DialogHeader>

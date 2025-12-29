@@ -24,7 +24,7 @@ export interface ClaimForEval {
   evidenceCount?: number;
 }
 
-const DUPLICATE_THRESHOLD = 0.85;
+const DUPLICATE_THRESHOLD = 0.92; // Higher threshold to reduce false positives
 
 /**
  * Jaro-Winkler similarity algorithm
@@ -79,7 +79,41 @@ export function jaroWinklerSimilarity(s1: string, s2: string): number {
 }
 
 /**
+ * Check if two claims should be excluded from duplicate comparison
+ * Returns true if they are semantically distinct despite high string similarity
+ */
+function shouldExcludeFromDuplicateCheck(label1: string, label2: string): boolean {
+  // Pattern: "Founded X" / "Co-Founded X" - ventures are distinct by company name
+  const founderPattern = /^(co-)?found(ed|er|ing)/i;
+  if (founderPattern.test(label1) && founderPattern.test(label2)) {
+    // Both are founder claims - only duplicate if company names match
+    const company1 = label1.replace(founderPattern, '').trim();
+    const company2 = label2.replace(founderPattern, '').trim();
+    return company1.toLowerCase() !== company2.toLowerCase();
+  }
+
+  // Pattern: "AWS X" / "AWS Y" - AWS services are distinct
+  const awsPattern = /^aws\s+/i;
+  if (awsPattern.test(label1) && awsPattern.test(label2)) {
+    // Only duplicate if the service name is the same
+    const service1 = label1.replace(awsPattern, '').trim().toLowerCase();
+    const service2 = label2.replace(awsPattern, '').trim().toLowerCase();
+    return service1 !== service2;
+  }
+
+  // Pattern: Short labels (< 10 chars) - require exact match
+  // "React" vs "React Native" should not be duplicates
+  if (label1.length < 10 || label2.length < 10) {
+    // For short labels, only consider duplicates if nearly identical
+    return label1.toLowerCase() !== label2.toLowerCase();
+  }
+
+  return false;
+}
+
+/**
  * Check for duplicate claims based on label similarity
+ * Uses type-awareness and semantic rules to reduce false positives
  */
 export function findDuplicates(claims: ClaimForEval[]): ClaimIssue[] {
   const issues: ClaimIssue[] = [];
@@ -91,8 +125,17 @@ export function findDuplicates(claims: ClaimForEval[]): ClaimIssue[] {
     for (let j = i + 1; j < claims.length; j++) {
       if (processed.has(claims[j].id)) continue;
 
+      // Only compare claims of the same type
+      if (claims[i].type !== claims[j].type) continue;
+
       const label1 = claims[i].label.toLowerCase().trim();
       const label2 = claims[j].label.toLowerCase().trim();
+
+      // Skip if semantically distinct despite string similarity
+      if (shouldExcludeFromDuplicateCheck(claims[i].label, claims[j].label)) {
+        continue;
+      }
+
       const similarity = jaroWinklerSimilarity(label1, label2);
 
       if (similarity >= DUPLICATE_THRESHOLD) {
