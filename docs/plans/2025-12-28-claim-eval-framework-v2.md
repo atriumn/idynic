@@ -2,6 +2,28 @@
 
 > Updated 2025-12-28 after brainstorming session. Replaces 2025-12-27-claim-eval-framework.md.
 
+**Status**: In Progress
+
+## Progress (Last reviewed: 2025-12-29)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1: Infrastructure | ✅ Complete | Migrations created, types regenerated |
+| Phase 2: Eval Logic | ✅ Complete | rule-checks.ts, claim-grounding.ts, tailoring-grounding.ts |
+| Phase 3: Integration | ✅ Complete | Integrated in process-resume.ts, process-story.ts |
+| Phase 4: Claim Management API | 🔄 In Progress | Partial - needs PATCH/DELETE/dismiss endpoints |
+| Phase 5: UI | ⏳ Not Started | Issue display, edit modal, filter toggle |
+
+### Implementation Details
+- `claim_issues` table: Created via migration `20251228000000_claim_issues.sql`
+- `tailoring_eval_log` table: Created via migration `20251228000001_tailoring_eval_log.sql`
+- Eval files: `apps/web/src/lib/ai/eval/` (rule-checks.ts, claim-grounding.ts, tailoring-grounding.ts, run-claim-eval.ts)
+- Integration: `runClaimEval` called in process-resume.ts and process-story.ts
+
+### Drift Notes
+- Core eval logic implemented as planned
+- UI components deferred to future iteration
+
 ## Overview
 
 Two eval systems that catch quality issues before users see or share content:

@@ -2,6 +2,22 @@
 
 > Created 2025-12-28 after completing beta launch checklist
 
+**Status**: In Progress
+
+## Progress (Last reviewed: 2025-12-29)
+
+| Section | Status | Notes |
+|---------|--------|-------|
+| Delete My Account | ✅ Complete | All features implemented |
+| Export My Data | ✅ Complete | ZIP export working |
+| Security Hardening | ⏳ Not Started | search_path warnings, vector extension |
+| Onboarding Prompts | ⏳ Not Started | Shared logic for web + mobile |
+| Axiom Logging | ⏳ Not Started | See axiom-setup.md |
+
+### Drift Notes
+- Data management (GDPR) features completed ahead of schedule
+- Security hardening and onboarding remain as future work
+
 ## Data Management (GDPR)
 
 ### Delete My Account

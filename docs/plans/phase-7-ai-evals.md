@@ -4,6 +4,16 @@
 **Effort**: 2-3 days
 **Status**: Not Started
 
+## Progress (Last reviewed: 2025-12-29)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1-11: All steps | ⏳ Not Started | See also claim-eval-framework-v2.md for in-flight eval |
+
+### Drift Notes
+- No implementation started yet
+- Note: claim-eval-framework-v2.md covers related sync evals (different scope)
+
 ## Overview
 
 Create a weekly evaluation pipeline that tests AI-generated content (resumes, stories, opportunity matching) against quality benchmarks. E2E tests mock AI for speed; this catches quality regressions with real AI providers.

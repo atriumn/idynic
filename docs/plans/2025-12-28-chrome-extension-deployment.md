@@ -1,5 +1,20 @@
 # Chrome Extension Deployment Plan
 
+**Status**: Not Started
+
+## Progress (Last reviewed: 2025-12-29)
+
+| Section | Status | Notes |
+|---------|--------|-------|
+| Pre-Submission Checklist | ⏳ Not Started | Code updates, assets, privacy policy |
+| Developer Account Setup | ⏳ Not Started | $5 registration fee |
+| Submission Process | ⏳ Not Started | Package, upload, submit |
+| Post-Publication | ⏳ Not Started | Monitoring, marketing |
+
+### Drift Notes
+- No implementation started yet
+- Extension is functional locally
+
 ## Overview
 
 Deploy the Idynic Job Saver Chrome extension to the Google Chrome Web Store for public distribution.

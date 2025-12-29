@@ -4,6 +4,16 @@
 **Effort**: 1-2 days
 **Status**: Not Started
 
+## Progress (Last reviewed: 2025-12-29)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1-6: All steps | ⏳ Not Started | Blocked on Phase 1-4 |
+
+### Drift Notes
+- No implementation started yet
+- Blocked on earlier phases
+
 ## Overview
 
 Ensure API changes don't break mobile, MCP, or Chrome extension clients. Leverage `@idynic/shared` as the source of truth for types and endpoints.

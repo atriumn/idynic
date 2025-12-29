@@ -2,6 +2,24 @@
 
 > Created 2025-12-28
 
+**Status**: Done
+
+## Progress (Last reviewed: 2025-12-29)
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| POST /api/v1/account/export endpoint | ✅ Complete | Implemented in route.ts |
+| Parallel data fetching | ✅ Complete | |
+| Document file downloading | ✅ Complete | |
+| Export data structure | ✅ Complete | |
+| ZIP generation | ✅ Complete | With data.json, documents/, README.txt |
+| ExportDataButton component | ✅ Complete | export-data-button.tsx |
+| Rate limiting | ⏳ Not Started | Optional enhancement |
+
+### Drift Notes
+- Implementation matches plan exactly
+- Rate limiting deferred (not critical for beta)
+
 ## Overview
 
 GDPR-compliant data export that downloads all user data as a ZIP file containing JSON data and original documents. Must be fast for typical users and handle large exports gracefully.

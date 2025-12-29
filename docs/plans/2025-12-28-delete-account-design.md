@@ -2,6 +2,27 @@
 
 > Created 2025-12-28
 
+**Status**: Done
+
+## Progress (Last reviewed: 2025-12-29)
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| DELETE /api/v1/account endpoint | ✅ Complete | Implemented in route.ts |
+| Password verification | ✅ Complete | |
+| Stripe subscription cancellation | ✅ Complete | |
+| Storage file deletion | ✅ Complete | |
+| Database record deletion | ✅ Complete | All tables covered |
+| Auth user deletion | ✅ Complete | |
+| Settings nav item | ✅ Complete | Account nav added |
+| Account settings page | ✅ Complete | page.tsx created |
+| Delete account modal | ✅ Complete | delete-account-modal.tsx |
+| Confirmation email | ⏳ Not Started | Optional enhancement |
+
+### Drift Notes
+- Implementation matches plan exactly
+- Confirmation email deferred as optional enhancement
+
 ## Overview
 
 GDPR-compliant account deletion that removes all user data across the platform. Must handle cascading deletes, storage cleanup, and Stripe subscription cancellation.

@@ -2,7 +2,28 @@
 
 **Priority**: HIGH
 **Effort**: 2-3 days
-**Status**: Not Started
+**Status**: Done
+
+## Progress (Last reviewed: 2025-12-29)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Create directory structure | ✅ Complete | PR #38 |
+| Step 2: Create Vitest config | ✅ Complete | PR #38 |
+| Step 3: Global setup/teardown | ✅ Complete | PR #38 |
+| Step 4: Test fixtures SQL | ✅ Complete | PR #38 |
+| Step 5: Test utilities | ✅ Complete | PR #38 |
+| Step 6: Auth integration tests | ✅ Complete | PR #38 - signup, login, token-refresh |
+| Step 7: RLS policy tests | ✅ Complete | PR #38 |
+| Step 8: Profile CRUD tests | ✅ Complete | PR #38 |
+| Step 9: Document tests | ✅ Complete | PR #38 |
+| Step 10: Opportunity tests | ✅ Complete | PR #38 |
+| Step 11: Package.json scripts | ✅ Complete | PR #38 |
+| Step 12: Update CI workflow | ⏳ Not Started | CI integration not yet implemented |
+
+### Drift Notes
+- Implementation matches plan closely
+- CI integration (Step 12) deferred - tests run locally only for now
 
 ## Overview
 
