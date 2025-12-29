@@ -179,7 +179,8 @@ export async function extractEvidence(
       ...item,
       sourceType,
     }));
-  } catch {
-    throw new Error(`Failed to parse evidence response: ${cleanedContent.slice(0, 200)}`);
+  } catch (parseError) {
+    const errMsg = parseError instanceof Error ? parseError.message : String(parseError);
+    throw new Error(`Failed to parse evidence (${errMsg}). Length: ${cleanedContent.length}. Start: ${cleanedContent.slice(0, 100)}... End: ${cleanedContent.slice(-100)}`);
   }
 }
