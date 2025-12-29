@@ -70,23 +70,12 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           title: 'Mobile Coverage'
 
-  # Integration tests run separately (requires Supabase setup)
+  # Integration tests run against real local Supabase
+  # Validates RLS policies, auth flows, and database operations
   integration:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    services:
-      postgres:
-        image: supabase/postgres:15.1.0.147
-        env:
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    # Run on all PRs and pushes to main
+    needs: [test]
 
     steps:
       - uses: actions/checkout@v4

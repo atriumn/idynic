@@ -16,7 +16,7 @@
     "test:shared": "pnpm --filter @idynic/shared test",
     "test:mcp": "pnpm --filter @atriumn/idynic-mcp test",
     "test:ui": "pnpm --filter web test:ui",
-    "test:integration": "echo 'No integration tests yet'"
+    "test:integration": "pnpm --filter web test:integration"
   },
   "devDependencies": {
     "dotenv": "^17.2.3",
