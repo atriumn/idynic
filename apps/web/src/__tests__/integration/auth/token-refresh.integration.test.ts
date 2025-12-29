@@ -41,8 +41,6 @@ describe('Auth - Token Refresh Integration', () => {
     const { data: initialSession } = await client.auth.getSession()
     expect(initialSession.session).toBeDefined()
 
-    const initialAccessToken = initialSession.session?.access_token
-
     // Wait a bit to ensure tokens have different timestamps
     await sleep(100)
 

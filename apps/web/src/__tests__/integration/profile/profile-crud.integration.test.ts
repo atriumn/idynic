@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import {
   createTestUser,
   deleteTestUser,
@@ -117,8 +117,6 @@ describe('Profile CRUD Integration', () => {
         .select('updated_at')
         .eq('id', userId)
         .single()
-
-      const beforeTimestamp = beforeData?.updated_at
 
       // Wait a moment to ensure timestamp difference
       await new Promise(resolve => setTimeout(resolve, 100))

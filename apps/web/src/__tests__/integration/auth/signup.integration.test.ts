@@ -1,7 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
 import {
   getAdminClient,
-  getAnonClient,
   generateTestEmail,
   deleteTestUser
 } from '../setup/test-utils'
@@ -81,7 +80,7 @@ describe('Auth - Signup Integration', () => {
   it('fails to create user with invalid email format', async () => {
     const adminClient = getAdminClient()
 
-    const { data, error } = await adminClient.auth.admin.createUser({
+    const { error } = await adminClient.auth.admin.createUser({
       email: 'invalid-email',
       password: 'validPassword123!'
     })
@@ -94,7 +93,7 @@ describe('Auth - Signup Integration', () => {
     const email = generateTestEmail()
     const adminClient = getAdminClient()
 
-    const { data, error } = await adminClient.auth.admin.createUser({
+    const { error } = await adminClient.auth.admin.createUser({
       email,
       password: '12345' // Too short (min 6 characters per config)
     })
@@ -122,7 +121,7 @@ describe('Auth - Signup Integration', () => {
     }
 
     // Try to create duplicate
-    const { data: secondUser, error: secondError } = await adminClient.auth.admin.createUser({
+    const { error: secondError } = await adminClient.auth.admin.createUser({
       email,
       password,
       email_confirm: true

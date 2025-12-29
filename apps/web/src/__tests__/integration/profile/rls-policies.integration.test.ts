@@ -110,7 +110,6 @@ describe('Profile RLS Policies Integration', () => {
     })
 
     it('user cannot UPDATE another user\'s profile', async () => {
-      const originalName = 'User A'
       const hackedName = 'Hacked by User B!'
 
       // User B tries to update User A's profile
@@ -146,7 +145,7 @@ describe('Profile RLS Policies Integration', () => {
       const fakeUserId = '00000000-0000-0000-0000-000000000000'
 
       // Try to insert a profile with a fake user ID
-      const { data, error } = await userAClient
+      const { error } = await userAClient
         .from('profiles')
         .insert({
           id: fakeUserId,
@@ -163,7 +162,7 @@ describe('Profile RLS Policies Integration', () => {
   describe('Profile DELETE policies', () => {
     it('user cannot DELETE another user\'s profile', async () => {
       // User B tries to delete User A's profile
-      const { error } = await userBClient
+      await userBClient
         .from('profiles')
         .delete()
         .eq('id', userAId)
@@ -200,16 +199,14 @@ describe('Profile RLS Policies Integration', () => {
     it('anonymous user cannot UPDATE any profiles', async () => {
       const anonClient = getAnonClient()
 
-      const { data, error } = await anonClient
+      const { data } = await anonClient
         .from('profiles')
         .update({ name: 'Hacked!' })
         .eq('id', userAId)
         .select()
 
       // Should fail or affect 0 rows
-      if (!error) {
-        expect(data?.length).toBe(0)
-      }
+      expect(data?.length ?? 0).toBe(0)
 
       // Verify profile wasn't changed
       const { data: verifyData } = await getAdminClient()

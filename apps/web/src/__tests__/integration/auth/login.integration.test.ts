@@ -3,8 +3,7 @@ import {
   createTestUser,
   deleteTestUser,
   getAnonClient,
-  createAuthenticatedClient,
-  generateTestEmail
+  createAuthenticatedClient
 } from '../setup/test-utils'
 
 describe('Auth - Login Integration', () => {

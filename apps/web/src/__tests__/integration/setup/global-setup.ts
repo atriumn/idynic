@@ -20,7 +20,7 @@ export default async function globalSetup() {
     })
     console.log('Supabase is running')
     console.log(status)
-  } catch (error) {
+  } catch {
     // Supabase not running - start it
     console.log('Starting Supabase...')
     try {
