@@ -146,7 +146,7 @@ export function AddOpportunityDialog() {
           Add Opportunity
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[525px]">
+      <DialogContent className="sm:max-w-[525px] border-2 shadow-lg">
         {!jobId ? (
           <form onSubmit={handleSubmit}>
             <DialogHeader>
