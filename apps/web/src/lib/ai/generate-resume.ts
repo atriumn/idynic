@@ -1,10 +1,9 @@
-import OpenAI from "openai";
 import { createClient } from "@/lib/supabase/server";
+import { aiComplete } from "./gateway";
+import { getModelConfig } from "./config";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import type { TalkingPoints } from "./generate-talking-points";
-
-const openai = new OpenAI();
 
 interface ResumeExperience {
   work_history_id: string;
@@ -111,9 +110,11 @@ export async function generateResume(
   userId: string,
   opportunityId: string,
   talkingPoints: TalkingPoints,
-  supabase?: SupabaseClient<Database>
+  supabase?: SupabaseClient<Database>,
+  options?: { jobId?: string }
 ): Promise<ResumeData> {
   const client = supabase || await createClient();
+  const config = getModelConfig("generate_resume");
 
   // Get opportunity for context
   const { data: opportunity } = await client
@@ -212,19 +213,28 @@ export async function generateResume(
 
     // Only generate bullets if we have evidence - don't fabricate
     if (prompt) {
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        temperature: 0.5,
-        max_tokens: 500,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: prompt },
-        ],
-      });
-
       try {
-        const content = response.choices[0]?.message?.content || "{}";
+        const response = await aiComplete(
+          config.provider,
+          config.model,
+          {
+            messages: [
+              { role: "system", content: SYSTEM_PROMPT },
+              { role: "user", content: prompt },
+            ],
+            temperature: 0.5,
+            maxTokens: 500,
+            jsonMode: true,
+          },
+          {
+            operation: "generate_resume",
+            userId,
+            opportunityId,
+            jobId: options?.jobId,
+          }
+        );
+
+        const content = response.content || "{}";
         const parsed = JSON.parse(content);
         // Handle various key names the LLM might use
         bullets = Array.isArray(parsed)
@@ -255,25 +265,34 @@ export async function generateResume(
   }
 
   // Generate summary
-  const summaryResponse = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: 0.5,
-    max_tokens: 200,
-    messages: [
-      { role: "system", content: "Write a 2-3 sentence professional summary for a resume." },
-      {
-        role: "user",
-        content: `Write a professional summary for someone applying to: ${opportunity?.title || "a role"} at ${opportunity?.company || "a company"}.
+  const summaryResponse = await aiComplete(
+    config.provider,
+    config.model,
+    {
+      messages: [
+        { role: "system", content: "Write a 2-3 sentence professional summary for a resume." },
+        {
+          role: "user",
+          content: `Write a professional summary for someone applying to: ${opportunity?.title || "a role"} at ${opportunity?.company || "a company"}.
 
 Top strengths:
 ${talkingPoints.strengths.slice(0, 3).map((s) => `- ${s.claim_label}: ${s.framing}`).join("\n")}
 
 Keep it concise, professional, and tailored to the role. No first person ("I am..."), use third person or implied subject.`,
-      },
-    ],
-  });
+        },
+      ],
+      temperature: 0.5,
+      maxTokens: 200,
+    },
+    {
+      operation: "generate_resume",
+      userId,
+      opportunityId,
+      jobId: options?.jobId,
+    }
+  );
 
-  const summary = summaryResponse.choices[0]?.message?.content?.trim() || "";
+  const summary = summaryResponse.content?.trim() || "";
 
   // Get all skills, ordered by confidence
   const { data: skillClaims } = await client
@@ -295,19 +314,19 @@ Keep it concise, professional, and tailored to the role. No first person ("I am.
   // Categorize skills using LLM
   let categorizedSkills: SkillCategory[] = [];
   if (orderedSkills.length > 0) {
-    const categorizationResponse = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: 0,
-      max_tokens: 2000,
-      response_format: { type: "json_object" },
-      messages: [
+    try {
+      const categorizationResponse = await aiComplete(
+        config.provider,
+        config.model,
         {
-          role: "system",
-          content: "You categorize technical and professional skills into logical groups. Return JSON only.",
-        },
-        {
-          role: "user",
-          content: `Categorize these skills into 4-7 logical groups. Use clear, concise category names (e.g., "Languages", "Cloud & Infrastructure", "Leadership", "AI & ML", "Testing", "Databases").
+          messages: [
+            {
+              role: "system",
+              content: "You categorize technical and professional skills into logical groups. Return JSON only.",
+            },
+            {
+              role: "user",
+              content: `Categorize these skills into 4-7 logical groups. Use clear, concise category names (e.g., "Languages", "Cloud & Infrastructure", "Leadership", "AI & ML", "Testing", "Databases").
 
 Skills (in order of relevance - preserve this order within categories):
 ${orderedSkills.join(", ")}
@@ -326,12 +345,21 @@ Rules:
 - Put categories with more relevant skills first
 - Use 4-7 categories total
 - Keep category names short (1-3 words)`,
+            },
+          ],
+          temperature: 0,
+          maxTokens: 2000,
+          jsonMode: true,
         },
-      ],
-    });
+        {
+          operation: "generate_resume",
+          userId,
+          opportunityId,
+          jobId: options?.jobId,
+        }
+      );
 
-    try {
-      const content = categorizationResponse.choices[0]?.message?.content || "{}";
+      const content = categorizationResponse.content || "{}";
       const parsed = JSON.parse(content);
       categorizedSkills = parsed.categories || [];
     } catch {

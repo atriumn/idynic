@@ -1,9 +1,8 @@
-import OpenAI from "openai";
 import { createClient } from "@/lib/supabase/server";
+import { aiComplete } from "./gateway";
+import { getModelConfig } from "./config";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
-
-const openai = new OpenAI();
 
 interface Strength {
   requirement: string;
@@ -205,20 +204,29 @@ export async function generateTalkingPoints(
   }
 
   // Generate talking points via LLM
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: 0.3,
-    max_tokens: 4000,
-    response_format: { type: "json_object" },
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: buildUserPrompt(requirements, claimsWithEvidence) },
-    ],
-  });
+  const config = getModelConfig("generate_talking_points");
+  const response = await aiComplete(
+    config.provider,
+    config.model,
+    {
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: buildUserPrompt(requirements, claimsWithEvidence) },
+      ],
+      temperature: 0.3,
+      maxTokens: 4000,
+      jsonMode: true,
+    },
+    {
+      operation: "generate_talking_points",
+      userId,
+      opportunityId,
+    }
+  );
 
-  const content = response.choices[0]?.message?.content;
+  const content = response.content;
   if (!content) {
-    throw new Error("No response from OpenAI");
+    throw new Error("No response from AI provider");
   }
 
   try {

@@ -309,7 +309,7 @@ describe('generate-talking-points', () => {
       const { generateTalkingPoints } = await import('@/lib/ai/generate-talking-points')
 
       await expect(generateTalkingPoints('opp-123', 'user-456'))
-        .rejects.toThrow('No response from OpenAI')
+        .rejects.toThrow('No response from AI provider')
     })
 
     it('throws error for invalid JSON response', async () => {

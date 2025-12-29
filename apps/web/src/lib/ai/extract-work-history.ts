@@ -1,6 +1,10 @@
-import OpenAI from "openai";
+import { aiComplete } from "./gateway";
+import { getModelConfig } from "./config";
 
-const openai = new OpenAI();
+export interface ExtractWorkHistoryOptions {
+  userId?: string;
+  jobId?: string;
+}
 
 export interface ExtractedJob {
   company: string;
@@ -72,20 +76,33 @@ IMPORTANT:
 RESUME TEXT:
 `;
 
-export async function extractWorkHistory(text: string): Promise<ExtractedJob[]> {
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: 0,
-    max_tokens: 4000,
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: USER_PROMPT + text },
-    ],
-  });
+export async function extractWorkHistory(
+  text: string,
+  options: ExtractWorkHistoryOptions = {}
+): Promise<ExtractedJob[]> {
+  const config = getModelConfig("extract_work_history");
 
-  const content = response.choices[0]?.message?.content;
+  const response = await aiComplete(
+    config.provider,
+    config.model,
+    {
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: USER_PROMPT + text },
+      ],
+      temperature: 0,
+      maxTokens: 4000,
+    },
+    {
+      operation: "extract_work_history",
+      userId: options.userId,
+      jobId: options.jobId,
+    }
+  );
+
+  const content = response.content;
   if (!content) {
-    throw new Error("No response from OpenAI");
+    throw new Error("No response from AI provider");
   }
 
   const cleanedContent = content

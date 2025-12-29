@@ -1,7 +1,6 @@
-import OpenAI from "openai";
+import { aiComplete } from "./gateway";
+import { getModelConfig } from "./config";
 import type { TalkingPoints } from "./generate-talking-points";
-
-const openai = new OpenAI();
 
 const SYSTEM_PROMPT = `You are a professional writer helping job candidates craft compelling narratives for cover letters and applications. Write in first person, professional but warm tone. Be authentic - emphasize genuine strengths, honestly address gaps.`;
 
@@ -34,25 +33,35 @@ Return ONLY the narrative text, no JSON or markdown formatting.`;
 export async function generateNarrative(
   talkingPoints: TalkingPoints,
   jobTitle: string,
-  company: string | null
+  company: string | null,
+  options?: { userId?: string; opportunityId?: string }
 ): Promise<string> {
   if (talkingPoints.strengths.length === 0 && talkingPoints.gaps.length === 0) {
     return "";
   }
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: 0.7,
-    max_tokens: 1000,
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: buildUserPrompt(talkingPoints, jobTitle, company) },
-    ],
-  });
+  const config = getModelConfig("generate_narrative");
+  const response = await aiComplete(
+    config.provider,
+    config.model,
+    {
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: buildUserPrompt(talkingPoints, jobTitle, company) },
+      ],
+      temperature: 0.7,
+      maxTokens: 1000,
+    },
+    {
+      operation: "generate_narrative",
+      userId: options?.userId,
+      opportunityId: options?.opportunityId,
+    }
+  );
 
-  const content = response.choices[0]?.message?.content;
+  const content = response.content;
   if (!content) {
-    throw new Error("No response from OpenAI");
+    throw new Error("No response from AI provider");
   }
 
   return content.trim();

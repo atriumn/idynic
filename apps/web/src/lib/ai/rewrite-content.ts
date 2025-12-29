@@ -1,6 +1,5 @@
-import OpenAI from "openai";
-
-const openai = new OpenAI();
+import { aiComplete } from "./gateway";
+import { getModelConfig } from "./config";
 
 export type ContentType = "bullet" | "summary" | "narrative";
 
@@ -9,6 +8,8 @@ interface RewriteOptions {
   contentType: ContentType;
   instruction: string;
   selection?: { start: number; end: number };
+  userId?: string;
+  opportunityId?: string;
 }
 
 const CONTENT_TYPE_CONTEXT: Record<ContentType, string> = {
@@ -22,6 +23,8 @@ export async function rewriteContent({
   contentType,
   instruction,
   selection,
+  userId,
+  opportunityId,
 }: RewriteOptions): Promise<string> {
   // Input validation
   if (!content || content.trim().length === 0) {
@@ -80,22 +83,31 @@ Instruction: ${instruction}
 Rewrite the text according to the instruction. Keep similar length unless the instruction specifies otherwise. Return ONLY the rewritten text, no quotes or explanation.`;
   }
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: 0.7,
-    max_tokens: 500,
-    messages: [
-      {
-        role: "system",
-        content: "You are a professional resume and cover letter editor. Make precise edits as instructed. Preserve the original voice and style unless told otherwise.",
-      },
-      { role: "user", content: prompt },
-    ],
-  });
+  const config = getModelConfig("rewrite_content");
+  const response = await aiComplete(
+    config.provider,
+    config.model,
+    {
+      messages: [
+        {
+          role: "system",
+          content: "You are a professional resume and cover letter editor. Make precise edits as instructed. Preserve the original voice and style unless told otherwise.",
+        },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.7,
+      maxTokens: 500,
+    },
+    {
+      operation: "rewrite_content",
+      userId,
+      opportunityId,
+    }
+  );
 
-  const result = response.choices[0]?.message?.content;
+  const result = response.content;
   if (!result) {
-    throw new Error("No response from OpenAI");
+    throw new Error("No response from AI provider");
   }
 
   // Strip any quotes the AI may have added despite instructions

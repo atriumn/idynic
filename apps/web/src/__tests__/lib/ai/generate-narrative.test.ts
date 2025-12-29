@@ -129,7 +129,7 @@ describe('generate-narrative', () => {
       const { generateNarrative } = await import('@/lib/ai/generate-narrative')
 
       await expect(generateNarrative(mockTalkingPoints, 'Engineer', 'Corp'))
-        .rejects.toThrow('No response from OpenAI')
+        .rejects.toThrow('No response from AI provider')
     })
 
     it('trims whitespace from response', async () => {

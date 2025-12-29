@@ -94,7 +94,7 @@ describe('extract-work-history', () => {
 
       const { extractWorkHistory } = await import('@/lib/ai/extract-work-history')
 
-      await expect(extractWorkHistory('Resume text')).rejects.toThrow('No response from OpenAI')
+      await expect(extractWorkHistory('Resume text')).rejects.toThrow('No response from AI provider')
     })
 
     it('cleans markdown code blocks from response', async () => {

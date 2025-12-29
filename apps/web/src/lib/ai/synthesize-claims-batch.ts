@@ -1,6 +1,7 @@
-import OpenAI from "openai";
 import { generateEmbeddings } from "./embeddings";
 import { findRelevantClaimsForBatch } from "./rag-claims";
+import { aiComplete } from "./gateway";
+import { getModelConfig } from "./config";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import {
@@ -10,8 +11,6 @@ import {
   type SourceType,
   type StrengthLevel,
 } from "./confidence-scoring";
-
-const openai = new OpenAI();
 
 const BATCH_SIZE = 10;
 
@@ -110,20 +109,30 @@ interface BatchResult {
 async function processBatch(
   batch: EvidenceItem[],
   batchIndex: number,
-  existingClaims: Array<{ id?: string; type: string; label: string; description: string | null; confidence?: number; similarity?: number }>
+  existingClaims: Array<{ id?: string; type: string; label: string; description: string | null; confidence?: number; similarity?: number }>,
+  options?: { userId?: string; jobId?: string }
 ): Promise<BatchResult | null> {
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: 0,
-      max_tokens: 2000,
-      messages: [
-        { role: "system", content: BATCH_SYSTEM_PROMPT },
-        { role: "user", content: buildBatchPrompt(batch, existingClaims) },
-      ],
-    });
+    const config = getModelConfig("synthesize_claims");
+    const response = await aiComplete(
+      config.provider,
+      config.model,
+      {
+        messages: [
+          { role: "system", content: BATCH_SYSTEM_PROMPT },
+          { role: "user", content: buildBatchPrompt(batch, existingClaims) },
+        ],
+        temperature: 0,
+        maxTokens: 2000,
+      },
+      {
+        operation: "synthesize_claims",
+        userId: options?.userId,
+        jobId: options?.jobId,
+      }
+    );
 
-    const content = response.choices[0]?.message?.content;
+    const content = response.content;
     if (!content) return null;
 
     const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
@@ -141,7 +150,8 @@ export async function synthesizeClaimsBatch(
   userId: string,
   evidenceItems: EvidenceItem[],
   onProgress?: (progress: BatchSynthesisProgress) => void,
-  onClaimUpdate?: (update: ClaimUpdate) => void
+  onClaimUpdate?: (update: ClaimUpdate) => void,
+  options?: { jobId?: string }
 ): Promise<{ claimsCreated: number; claimsUpdated: number }> {
   let claimsCreated = 0;
   let claimsUpdated = 0;
@@ -162,7 +172,7 @@ export async function synthesizeClaimsBatch(
   let completedCount = 0;
   const batchResults = await Promise.all(
     batches.map(async (batch, batchIndex) => {
-      const result = await processBatch(batch, batchIndex, existingClaims);
+      const result = await processBatch(batch, batchIndex, existingClaims, { userId, jobId: options?.jobId });
       completedCount++;
       onProgress?.({ current: completedCount, total: batches.length });
       return result;

@@ -1,9 +1,8 @@
-import OpenAI from "openai";
 import { SupabaseClient } from "@supabase/supabase-js";
+import { aiComplete } from "./gateway";
+import { getModelConfig } from "./config";
 import type { SSEStream } from "@/lib/sse/stream";
 import type { JobUpdater } from "@/lib/jobs/job-updater";
-
-const openai = new OpenAI();
 
 // Valid archetypes - must match one of these exactly
 const VALID_ARCHETYPES = [
@@ -127,7 +126,8 @@ export async function reflectIdentity(
   supabase: SupabaseClient,
   userId: string,
   sse?: SSEStream,
-  job?: JobUpdater
+  job?: JobUpdater,
+  options?: { jobId?: string }
 ): Promise<void> {
   try {
     // Fetch top 50 claims by confidence
@@ -165,21 +165,30 @@ export async function reflectIdentity(
 
     // Build prompt and call LLM
     const userPrompt = buildUserPrompt(claims as Claim[], claimCount);
+    const config = getModelConfig("reflect_identity");
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: 0,
-      max_tokens: 1000,
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: userPrompt },
-      ],
-    });
+    const response = await aiComplete(
+      config.provider,
+      config.model,
+      {
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: userPrompt },
+        ],
+        temperature: 0,
+        maxTokens: 1000,
+        jsonMode: true,
+      },
+      {
+        operation: "reflect_identity",
+        userId,
+        jobId: options?.jobId,
+      }
+    );
 
-    const content = response.choices[0]?.message?.content;
+    const content = response.content;
     if (!content) {
-      console.error("No response from OpenAI for identity reflection");
+      console.error("No response from AI provider for identity reflection");
       sse?.send({ warning: "Couldn't generate identity snapshot" });
       job?.setWarning("Couldn't generate identity snapshot");
       return;

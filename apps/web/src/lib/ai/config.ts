@@ -101,6 +101,12 @@ export function getModelConfig(operation: string): ModelConfig {
         model: getEnvString("TAILORING_EVAL_MODEL", "claude-sonnet-4-20250514"),
       };
 
+    case "extract_story_evidence":
+      return {
+        provider: getEnvProvider("EXTRACT_STORY_EVIDENCE_PROVIDER", "openai"),
+        model: getEnvString("EXTRACT_STORY_EVIDENCE_MODEL", "gpt-4o-mini"),
+      };
+
     default:
       // Fallback to gpt-4o-mini for unknown operations
       return {

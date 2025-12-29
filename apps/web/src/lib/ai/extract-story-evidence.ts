@@ -1,6 +1,5 @@
-import OpenAI from "openai";
-
-const openai = new OpenAI();
+import { aiComplete } from "./gateway";
+import { getModelConfig } from "./config";
 
 export interface ExtractedEvidence {
   text: string;
@@ -53,19 +52,31 @@ IMPORTANT:
 STORY TEXT:
 `;
 
-export async function extractStoryEvidence(text: string): Promise<ExtractedEvidence[]> {
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    max_completion_tokens: 4000,
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: USER_PROMPT + text },
-    ],
-  });
+export async function extractStoryEvidence(
+  text: string,
+  options?: { userId?: string; jobId?: string }
+): Promise<ExtractedEvidence[]> {
+  const config = getModelConfig("extract_story_evidence");
+  const response = await aiComplete(
+    config.provider,
+    config.model,
+    {
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: USER_PROMPT + text },
+      ],
+      maxTokens: 4000,
+    },
+    {
+      operation: "extract_story_evidence",
+      userId: options?.userId,
+      jobId: options?.jobId,
+    }
+  );
 
-  const content = response.choices[0]?.message?.content;
+  const content = response.content;
   if (!content) {
-    throw new Error("No response from OpenAI");
+    throw new Error("No response from AI provider");
   }
 
   // Clean markdown code blocks if present

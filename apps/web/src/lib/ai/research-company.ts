@@ -1,7 +1,6 @@
-import OpenAI from 'openai';
 import { searchTavily, TavilyResponse } from '@/lib/integrations/tavily';
-
-const openai = new OpenAI();
+import { aiComplete } from './gateway';
+import { getModelConfig } from './config';
 
 export interface CompanyInsights {
   company_url: string | null;
@@ -57,7 +56,8 @@ Focus on actionable insights. If information is not available, use null or empty
 export async function researchCompany(
   companyName: string,
   jobTitle: string,
-  jobDescription: string
+  jobDescription: string,
+  options?: { userId?: string; opportunityId?: string }
 ): Promise<CompanyInsights> {
   // Use quoted company name for more precise matching
   const quotedCompany = `"${companyName}"`;
@@ -100,7 +100,8 @@ export async function researchCompany(
     jobDescription,
     news,
     info,
-    finance
+    finance,
+    options
   );
 
   return insights;
@@ -121,7 +122,8 @@ async function synthesizeInsights(
   jobDescription: string,
   newsResults: TavilyResponse | null,
   infoResults: TavilyResponse | null,
-  financeResults: TavilyResponse | null
+  financeResults: TavilyResponse | null,
+  options?: { userId?: string; opportunityId?: string }
 ): Promise<CompanyInsights> {
   const prompt = SYNTHESIS_PROMPT
     .replace('{company}', companyName)
@@ -132,20 +134,29 @@ async function synthesizeInsights(
     .replace('{jobDescription}', jobDescription.slice(0, 1500));
 
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      temperature: 0,
-      max_tokens: 1000,
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a business analyst. Return ONLY valid JSON, no markdown.',
-        },
-        { role: 'user', content: prompt },
-      ],
-    });
+    const config = getModelConfig('research_company');
+    const response = await aiComplete(
+      config.provider,
+      config.model,
+      {
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a business analyst. Return ONLY valid JSON, no markdown.',
+          },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0,
+        maxTokens: 1000,
+      },
+      {
+        operation: 'research_company',
+        userId: options?.userId,
+        opportunityId: options?.opportunityId,
+      }
+    );
 
-    const content = response.choices[0]?.message?.content;
+    const content = response.content;
     if (!content) {
       return emptyInsights();
     }

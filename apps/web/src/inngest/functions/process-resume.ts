@@ -129,7 +129,7 @@ export const processResume = inngest.createFunction(
           evidenceError = err.message;
           return [];
         }),
-        extractWorkHistory(rawText).catch((err) => {
+        extractWorkHistory(rawText, { userId, jobId }).catch((err) => {
           jobLog.error("Work history extraction error", { error: err.message });
           return [];
         }),
@@ -402,7 +402,8 @@ export const processResume = inngest.createFunction(
           (claimUpdate) => {
             const type = claimUpdate.action === "created" ? "created" : "updated";
             job.addHighlight(claimUpdate.label, type);
-          }
+          },
+          { jobId }
         );
         jobLog.info("Synthesis complete", result);
         return result;
@@ -416,7 +417,7 @@ export const processResume = inngest.createFunction(
     // Step 11: Reflect on identity
     await step.run("reflect-identity", async () => {
       await job.setPhase("reflection");
-      await reflectIdentity(supabase, userId, undefined, job);
+      await reflectIdentity(supabase, userId, undefined, job, { jobId });
     });
 
     // Step 12: Run claim evaluation
