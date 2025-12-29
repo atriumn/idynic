@@ -88,6 +88,19 @@ export const processResume = inngest.createFunction(
         .single();
 
       if (existingDoc) {
+        // Check if the document has any evidence - if not, it was a failed upload
+        const { count } = await supabase
+          .from("evidence")
+          .select("*", { count: "exact", head: true })
+          .eq("document_id", existingDoc.id);
+
+        if (!count || count === 0) {
+          // Orphaned document from failed processing - clean it up
+          jobLog.info("Cleaning up orphaned document from previous failed upload", { docId: existingDoc.id });
+          await supabase.from("documents").delete().eq("id", existingDoc.id);
+          return false; // Allow re-upload
+        }
+
         await job.setError(
           `Duplicate document - already uploaded on ${new Date(existingDoc.created_at || Date.now()).toLocaleDateString()}`
         );
