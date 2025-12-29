@@ -106,8 +106,12 @@ export async function runClaimGroundingEval(
       }
     );
 
-    // Parse response
-    const parsed = JSON.parse(response.content) as GroundingResponse;
+    // Parse response - strip markdown code blocks if present
+    let content = response.content;
+    if (content.startsWith('```')) {
+      content = content.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+    }
+    const parsed = JSON.parse(content) as GroundingResponse;
 
     // Convert to issues
     const issues: ClaimIssue[] = parsed.evaluations
