@@ -341,6 +341,7 @@ export function TailoredProfile({
   // Check if there are hallucinations to warn about
   const hasHallucinations = evaluation?.hallucinations && evaluation.hallucinations.length > 0;
   const showEvalWarning = hasHallucinations && !evalWarningDismissed;
+  const showEvalSuccess = evaluation && !hasHallucinations;
 
   return (
     <div className="space-y-4 mb-6">
@@ -394,6 +395,23 @@ export function TailoredProfile({
             >
               <X className="h-4 w-4" />
             </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Evaluation Success Banner */}
+      {showEvalSuccess && (
+        <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg p-4">
+          <div className="flex gap-3">
+            <Check className="h-5 w-5 text-green-600 mt-0.5 shrink-0" weight="bold" />
+            <div>
+              <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                Profile verified
+              </p>
+              <p className="text-sm text-green-700 dark:text-green-300">
+                All content in this profile is grounded in your uploaded documents.
+              </p>
+            </div>
           </div>
         </div>
       )}

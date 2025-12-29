@@ -3,7 +3,7 @@ import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { generateEmbedding } from "@/lib/ai/embeddings";
 import { fetchLinkedInJob, isLinkedInJobUrl } from "@/lib/integrations/brightdata";
 import { fetchJobPageContent } from "@/lib/integrations/scraping";
-import { researchCompanyBackground } from "@/lib/ai/research-company-background";
+import { researchCompany } from "@/lib/ai/research-company";
 import { normalizeJobUrl } from "@/lib/utils/normalize-url";
 import { createLogger } from "@/lib/logger";
 import { JobUpdater } from "@/lib/jobs/job-updater";
@@ -313,23 +313,52 @@ export const processOpportunity = inngest.createFunction(
       return opp;
     });
 
-    // Step 6: Trigger company research (non-blocking)
-    await step.run("trigger-research", async () => {
+    // Step 6: Research company
+    await step.run("research-company", async () => {
       await job.setPhase("researching");
 
       const finalCompany = enrichmentResult.enrichedCompany || extractionResult.company;
       const finalTitle = enrichmentResult.enrichedTitle || extractionResult.title;
 
       if (finalCompany) {
-        jobLog.info("Triggering company research", { company: finalCompany });
+        jobLog.info("Researching company", { company: finalCompany });
         await job.addHighlight(`Researching ${finalCompany}...`, "found");
-        // Fire and forget - research runs in background
-        researchCompanyBackground(
-          opportunity.id,
-          finalCompany,
-          finalTitle,
-          enrichmentResult.description
-        );
+
+        try {
+          const insights = await researchCompany(
+            finalCompany,
+            finalTitle,
+            enrichmentResult.description
+          );
+
+          // Store research results
+          const { error } = await supabase
+            .from("opportunities")
+            .update({
+              company_url: insights.company_url,
+              company_is_public: insights.is_public,
+              company_stock_ticker: insights.stock_ticker,
+              company_industry: insights.industry,
+              company_recent_news: insights.recent_news,
+              company_challenges: insights.likely_challenges,
+              company_role_context: insights.role_context,
+              company_researched_at: new Date().toISOString(),
+            })
+            .eq("id", opportunity.id);
+
+          if (error) {
+            jobLog.error("Failed to save company research", { error: error.message });
+          } else {
+            jobLog.info("Company research complete", {
+              hasNews: insights.recent_news.length > 0,
+              hasChallenges: insights.likely_challenges.length > 0,
+              hasRoleContext: !!insights.role_context,
+            });
+          }
+        } catch (err) {
+          // Don't fail the job if research fails
+          jobLog.error("Company research failed", { error: err instanceof Error ? err.message : String(err) });
+        }
       }
     });
 
