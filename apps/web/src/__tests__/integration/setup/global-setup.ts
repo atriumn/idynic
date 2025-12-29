@@ -1,6 +1,7 @@
 import { execSync, spawnSync } from 'child_process'
 import * as path from 'path'
 import * as fs from 'fs'
+import * as http from 'http'
 
 export default async function globalSetup() {
   console.log('\n🚀 Starting integration test setup...')
@@ -14,7 +15,7 @@ export default async function globalSetup() {
   }
 
   // Check if Supabase is already running
-  const isRunning = checkSupabaseRunning(monorepoRoot)
+  const isRunning = await checkSupabaseRunning(monorepoRoot)
 
   if (!isRunning) {
     console.log('📦 Starting local Supabase...')
@@ -65,22 +66,35 @@ export default async function globalSetup() {
   console.log('✅ Integration test setup complete!\n')
 }
 
-function checkSupabaseRunning(cwd: string): boolean {
+async function checkSupabaseRunning(cwd: string): Promise<boolean> {
+  // First try supabase status command
   try {
     const result = spawnSync('supabase', ['status'], {
       cwd,
       encoding: 'utf8',
       timeout: 10000
     })
-    return result.status === 0 && result.stdout.includes('API URL')
+    if (result.status === 0 && result.stdout.includes('API URL')) {
+      return true
+    }
   } catch {
-    return false
+    // supabase CLI not in PATH, fall through to HTTP check
   }
+
+  // Fall back to HTTP health check - check if the REST API is responding
+  return new Promise<boolean>((resolve) => {
+    const req = http.get('http://127.0.0.1:54321/rest/v1/', { timeout: 5000 }, (res) => {
+      // Any response from the REST API means Supabase is running
+      resolve(res.statusCode !== undefined)
+    })
+    req.on('error', () => resolve(false))
+    req.on('timeout', () => { req.destroy(); resolve(false) })
+  })
 }
 
 async function waitForSupabase(cwd: string, maxAttempts = 30): Promise<void> {
   for (let i = 0; i < maxAttempts; i++) {
-    if (checkSupabaseRunning(cwd)) {
+    if (await checkSupabaseRunning(cwd)) {
       return
     }
     console.log(`⏳ Waiting for Supabase... (${i + 1}/${maxAttempts})`)
