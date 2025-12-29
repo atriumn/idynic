@@ -113,6 +113,7 @@ RESUME TEXT:
 export interface ExtractResumeOptions {
   userId?: string;
   documentId?: string;
+  jobId?: string;
 }
 
 export async function extractResume(
@@ -137,6 +138,7 @@ export async function extractResume(
       operation: "extract_resume",
       userId: options.userId,
       documentId: options.documentId,
+      jobId: options.jobId,
     }
   );
 

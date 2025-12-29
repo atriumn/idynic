@@ -33,6 +33,7 @@ export interface AICallOptions {
   userId?: string;
   documentId?: string;
   opportunityId?: string;
+  jobId?: string;
 }
 
 export interface ModelConfig {
@@ -53,4 +54,5 @@ export interface AIUsageLogEntry {
   errorMessage?: string;
   documentId?: string;
   opportunityId?: string;
+  jobId?: string;
 }

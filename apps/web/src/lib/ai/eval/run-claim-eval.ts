@@ -32,6 +32,7 @@ export async function runClaimEval(
   documentId: string,
   options?: {
     maxClaimsForAiEval?: number;
+    jobId?: string;
   }
 ): Promise<ClaimEvalResult> {
   const maxClaimsForAiEval = options?.maxClaimsForAiEval ?? 10;
@@ -111,7 +112,7 @@ export async function runClaimEval(
       console.log('[run-claim-eval] Sending to Claude:', claimsForGrounding.length, 'claims');
 
       // Run AI grounding check
-      const groundingResult = await runClaimGroundingEval(claimsForGrounding, { userId });
+      const groundingResult = await runClaimGroundingEval(claimsForGrounding, { userId, jobId: options?.jobId });
       aiIssues = groundingResult.issues;
       costCents = groundingResult.costCents;
     }

@@ -47,6 +47,7 @@ async function logAIUsage(entry: AIUsageLogEntry): Promise<void> {
       error_message: entry.errorMessage || null,
       document_id: entry.documentId || null,
       opportunity_id: entry.opportunityId || null,
+      job_id: entry.jobId || null,
     });
   } catch (error) {
     // Don't fail the main operation if logging fails
@@ -100,6 +101,7 @@ export async function aiComplete(
       errorMessage,
       documentId: options.documentId,
       opportunityId: options.opportunityId,
+      jobId: options.jobId,
     });
   }
 }

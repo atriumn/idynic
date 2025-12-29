@@ -124,7 +124,7 @@ export const processResume = inngest.createFunction(
       let evidenceError: string | null = null;
 
       const [evidenceResult, workHistoryResult, resumeResult] = await Promise.all([
-        extractEvidence(rawText, 'resume', { userId }).catch((err) => {
+        extractEvidence(rawText, 'resume', { userId, jobId }).catch((err) => {
           jobLog.error("Evidence extraction error", { error: err.message });
           evidenceError = err.message;
           return [];
@@ -133,7 +133,7 @@ export const processResume = inngest.createFunction(
           jobLog.error("Work history extraction error", { error: err.message });
           return [];
         }),
-        extractResume(rawText, { userId }).catch((err) => {
+        extractResume(rawText, { userId, jobId }).catch((err) => {
           jobLog.error("Resume extraction error", { error: err.message });
           return null;
         }),
@@ -423,7 +423,7 @@ export const processResume = inngest.createFunction(
     await step.run("claim-eval", async () => {
       await job.setPhase("evaluation");
       try {
-        const evalResult = await runClaimEval(supabase, userId, document.id);
+        const evalResult = await runClaimEval(supabase, userId, document.id, { jobId });
         if (evalResult.issuesFound > 0) {
           jobLog.info("Claim eval complete", { ...evalResult });
         }

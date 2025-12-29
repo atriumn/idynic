@@ -64,7 +64,7 @@ Respond with JSON only:
  */
 export async function runClaimGroundingEval(
   claims: ClaimWithEvidence[],
-  options?: { userId?: string }
+  options?: { userId?: string; jobId?: string }
 ): Promise<{ issues: ClaimIssue[]; costCents: number }> {
   if (claims.length === 0) {
     return { issues: [], costCents: 0 };
@@ -102,6 +102,7 @@ export async function runClaimGroundingEval(
       {
         operation: 'claim_eval',
         userId: options?.userId,
+        jobId: options?.jobId,
       }
     );
 

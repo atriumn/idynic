@@ -101,6 +101,7 @@ RESUME TEXT:
 export interface ExtractEvidenceOptions {
   userId?: string;
   documentId?: string;
+  jobId?: string;
 }
 
 export async function extractEvidence(
@@ -126,6 +127,7 @@ export async function extractEvidence(
       operation: "extract_evidence",
       userId: options.userId,
       documentId: options.documentId,
+      jobId: options.jobId,
     }
   );
 
