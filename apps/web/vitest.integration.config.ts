@@ -1,6 +1,5 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vitest/config'
-// @ts-expect-error - types not available in web package
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
