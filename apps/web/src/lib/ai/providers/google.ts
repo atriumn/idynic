@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import type {
   AIProvider,
   AICompletionRequest,
@@ -6,7 +6,7 @@ import type {
 } from "../types";
 
 export class GoogleProvider implements AIProvider {
-  private client: GoogleGenerativeAI;
+  private client: GoogleGenAI;
   private model: string;
 
   constructor(model: string) {
@@ -14,7 +14,7 @@ export class GoogleProvider implements AIProvider {
     if (!apiKey) {
       throw new Error("GOOGLE_AI_API_KEY environment variable is required");
     }
-    this.client = new GoogleGenerativeAI(apiKey);
+    this.client = new GoogleGenAI({ apiKey });
     this.model = model;
   }
 
@@ -23,37 +23,46 @@ export class GoogleProvider implements AIProvider {
     const systemMessage = request.messages.find((m) => m.role === "system");
     const otherMessages = request.messages.filter((m) => m.role !== "system");
 
-    const genModel = this.client.getGenerativeModel({
-      model: this.model,
-      systemInstruction: systemMessage?.content,
-      generationConfig: {
-        temperature: request.temperature ?? 0,
-        maxOutputTokens: request.maxTokens,
-        responseMimeType: request.jsonMode ? "application/json" : "text/plain",
-      },
-    });
-
     // Convert messages to Gemini format
     const contents = otherMessages.map((m) => ({
       role: m.role === "assistant" ? "model" : "user",
       parts: [{ text: m.content }],
     }));
 
-    const result = await genModel.generateContent({ contents });
-    const response = result.response;
-    const usageMetadata = response.usageMetadata;
+    // Build config with thinkingConfig for Gemini 3 models
+    const isGemini3 = this.model.includes("gemini-3");
+
+    const response = await this.client.models.generateContent({
+      model: this.model,
+      contents,
+      config: {
+        systemInstruction: systemMessage?.content,
+        temperature: request.temperature ?? 0,
+        maxOutputTokens: request.maxTokens,
+        responseMimeType: request.jsonMode ? "application/json" : "text/plain",
+        // For Gemini 3 models, set thinking to minimal to maximize output tokens
+        ...(isGemini3 && {
+          thinkingConfig: {
+            thinkingLevel: ThinkingLevel.MINIMAL,
+          },
+        }),
+      },
+    });
 
     // Log finish reason to debug truncation issues
-    const candidate = response.candidates?.[0];
-    const finishReason = candidate?.finishReason;
+    const finishReason = response.candidates?.[0]?.finishReason;
     if (finishReason && finishReason !== "STOP") {
       console.error(`[Google AI] Unexpected finish reason: ${finishReason}`, {
-        safetyRatings: candidate?.safetyRatings,
+        model: this.model,
+        safetyRatings: response.candidates?.[0]?.safetyRatings,
       });
     }
 
+    const text = response.text ?? "";
+    const usageMetadata = response.usageMetadata;
+
     return {
-      content: response.text(),
+      content: text,
       usage: {
         inputTokens: usageMetadata?.promptTokenCount ?? 0,
         outputTokens: usageMetadata?.candidatesTokenCount ?? 0,
