@@ -12,7 +12,6 @@ export default defineConfig({
     testTimeout: 30000, // DB operations can be slow
     hookTimeout: 60000,
     globalSetup: './src/__tests__/integration/setup/global-setup.ts',
-    globalTeardown: './src/__tests__/integration/setup/global-teardown.ts',
     pool: 'forks', // Isolate tests to prevent connection issues
     poolOptions: {
       forks: {
