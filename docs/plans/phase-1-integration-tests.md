@@ -2,7 +2,36 @@
 
 **Priority**: HIGH
 **Effort**: 2-3 days
-**Status**: Not Started
+**Status**: Done
+
+## Progress (Last reviewed: 2025-12-30)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Directory structure | ✅ Complete | |
+| Step 2: Vitest integration config | ✅ Complete | vitest.integration.config.ts |
+| Step 3: Global setup/teardown | ✅ Complete | global-setup.ts |
+| Step 4: Test fixtures SQL | ✅ Complete | test-fixtures.sql |
+| Step 5: Test utilities | ✅ Complete | test-utils.ts |
+| Step 6: Auth integration tests | ✅ Complete | 3 test files |
+| Step 7: RLS policy tests | ✅ Complete | rls-policies.integration.test.ts |
+| Step 8: Profile CRUD tests | ✅ Complete | profile-crud.integration.test.ts |
+| Step 9: Document tests | ✅ Complete | document-crud.integration.test.ts |
+| Step 10: Opportunity tests | ✅ Complete | opportunity-crud.integration.test.ts |
+| Step 11: Package.json scripts | ✅ Complete | test:integration |
+| Step 12: CI workflow | ⏳ Not Started | CI runs unit tests, integration tests run locally |
+
+### Implementation Summary
+7 test files implemented:
+- `auth/login.integration.test.ts`
+- `auth/signup.integration.test.ts`
+- `auth/token-refresh.integration.test.ts`
+- `profile/profile-crud.integration.test.ts`
+- `profile/rls-policies.integration.test.ts`
+- `documents/document-crud.integration.test.ts`
+- `opportunities/opportunity-crud.integration.test.ts`
+
+---
 
 ## Overview
 

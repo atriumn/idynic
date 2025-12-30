@@ -2,6 +2,18 @@
 
 > Created 2025-12-28 after completing beta launch checklist
 
+## Progress (Last reviewed: 2025-12-30)
+
+| Section | Status | Notes |
+|---------|--------|-------|
+| Delete My Account | ✅ Complete | All tasks done |
+| Export My Data | ✅ Complete | ZIP download working |
+| Security Hardening | ⏳ Not Started | |
+| Onboarding Prompts | ⏳ Not Started | |
+| Operational | ⏳ Not Started | |
+
+---
+
 ## Data Management (GDPR)
 
 ### Delete My Account

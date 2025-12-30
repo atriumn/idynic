@@ -330,6 +330,38 @@ Warning banner above profile tabs if hallucinations detected:
 ⚠️ This profile may contain inaccuracies. Review before sharing.
 ```
 
+## Progress (Last reviewed: 2025-12-30)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| **Phase 1: Infrastructure** | ✅ Complete | |
+| 1. Create `claim_issues` migration | ✅ Complete | Migration applied |
+| 2. Create `tailoring_eval_log` migration | ✅ Complete | Migration applied |
+| 3. Add `anthropic` to provider type | ✅ Complete | |
+| 4. Add eval operations to config | ✅ Complete | |
+| 5. Regenerate Supabase types | ✅ Complete | |
+| **Phase 2: Eval Logic** | ✅ Complete | |
+| 6. Create `rule-checks.ts` | ✅ Complete | With unit tests |
+| 7. Create `claim-grounding.ts` | ✅ Complete | Uses Claude Haiku |
+| 8. Create `tailoring-grounding.ts` | ✅ Complete | |
+| **Phase 3: Integration** | ✅ Complete | |
+| 9. Add eval to `process-resume.ts` | ✅ Complete | "evaluating" phase |
+| 10. Add eval to `process-story.ts` | ✅ Complete | "evaluating" phase |
+| 11. Add eval to tailor API | ⏳ Not Started | |
+| **Phase 4: Claim Management API** | ⏳ Not Started | |
+| 12. PATCH `/api/v1/claims/[id]` | ⏳ Not Started | |
+| 13. DELETE `/api/v1/claims/[id]` | ⏳ Not Started | |
+| 14. POST `/api/v1/claims/[id]/dismiss` | ⏳ Not Started | |
+| **Phase 5: UI** | ⏳ Not Started | |
+| 15-19. Claims UI updates | ⏳ Not Started | |
+
+### Drift Notes
+- **Claim quality check added** (commit 17b8bc15) - Added to eval system beyond original plan
+- **AI gateway usage tracking** (commit 2b0ef814) - All AI ops routed through gateway
+- **Skill name preservation** (commits 38533744, 2913f11b) - Improved claim synthesis accuracy
+
+---
+
 ## Implementation Steps
 
 ### Phase 1: Infrastructure
