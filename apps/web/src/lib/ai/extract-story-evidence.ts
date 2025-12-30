@@ -21,33 +21,39 @@ export interface ExtractedEvidence {
 const SYSTEM_PROMPT = `You are an evidence extractor. Extract discrete factual statements from personal stories and narratives. Return ONLY valid JSON.`;
 
 const USER_PROMPT = `Extract discrete factual statements from this personal story. Each should be:
-- An accomplishment with context (what was achieved, where, when)
+- An accomplishment = OUTCOME achieved (what was built, shipped, solved) with measurable impact
 - A skill/technology/tool that was USED (if they built with it, extract it)
-- A trait or value shown through behavior
+- A trait_indicator = behavior pattern shown, INCLUDING metrics that demonstrate traits
 - An education or certification if mentioned
 
+CRITICAL DISTINCTION:
+- Accomplishment: "Built real-time data pipeline processing 10M events/day" (outcome + scale)
+- Accomplishment: "Shipped complete platform in 13 days" (outcome + timeframe)
+- trait_indicator: "High development velocity" (when story mentions rapid iteration, many commits, fast shipping)
+- trait_indicator: "Quality-focused engineering" (when story mentions test coverage, reliability practices)
+- NOT accomplishment: "Made 411 commits" (raw metric alone - use as trait_indicator for velocity instead)
+
 For accomplishments, include company/role context if mentioned in the narrative.
-Example: "When I was at Google, I led a migration..." → context: {company: "Google"}
 
 Return JSON array:
 [
   {
-    "text": "Led migration of 500 microservices to Kubernetes",
+    "text": "Built real-time data pipeline processing 10M events/day",
     "type": "accomplishment",
-    "context": {"role": "Staff Engineer", "company": "Google"}
+    "context": {"company": "Google"}
   },
   {
-    "text": "Kubernetes",
+    "text": "Kafka",
     "type": "skill_listed",
     "context": null
   },
   {
-    "text": "Docker",
-    "type": "skill_listed",
+    "text": "High development velocity",
+    "type": "trait_indicator",
     "context": null
   },
   {
-    "text": "Stays calm under pressure",
+    "text": "Quality-focused engineering",
     "type": "trait_indicator",
     "context": null
   }
@@ -64,6 +70,8 @@ Example: "built with React, TypeScript, Supabase, and pgvector" should extract:
 IMPORTANT:
 - Extract EVERY technology, framework, and tool mentioned - if they used it, it's evidence
 - When a sentence lists multiple technologies, extract EACH as a separate skill_listed item
+- Raw metrics (commits, percentages, counts) alone are NOT accomplishments - convert to trait_indicators
+- Accomplishments must describe WHAT was achieved, not just HOW MANY of something
 - Include context when the story mentions where/when something happened
 - Return ONLY valid JSON array, no markdown
 
