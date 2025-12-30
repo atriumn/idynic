@@ -15,39 +15,31 @@ export interface ExtractedEvidence {
 
 const SYSTEM_PROMPT = `You are an evidence extractor. Extract discrete factual statements from personal stories and narratives. Return ONLY valid JSON.`;
 
-const USER_PROMPT = `Extract discrete factual statements from this personal story. Each should be:
-- An accomplishment with context (what was achieved, where, when)
-- A skill demonstrated through action (not just mentioned)
-- A trait or value shown through behavior
-- An education or certification if mentioned
+const USER_PROMPT = `Extract evidence from this professional story. Extract THREE types of items:
 
-For accomplishments, include company/role context if mentioned in the narrative.
-Example: "When I was at Google, I led a migration..." → context: {company: "Google"}
+1. ACCOMPLISHMENTS - What was achieved, with context
+2. SKILLS/TECHNOLOGIES - Every technology, tool, framework, or platform mentioned as USED (not just referenced)
+3. TRAITS - Personal qualities demonstrated through action
 
-Return JSON array:
+For accomplishments, include company/role context if mentioned.
+
+EXAMPLE INPUT:
+"At Google, I built a real-time data pipeline using Kafka and Spark. The system processed 10M events/day. I stayed calm during a major outage."
+
+EXAMPLE OUTPUT:
 [
-  {
-    "text": "Led migration of 500 microservices to Kubernetes",
-    "type": "accomplishment",
-    "context": {"role": "Staff Engineer", "company": "Google"}
-  },
-  {
-    "text": "Kubernetes",
-    "type": "skill_listed",
-    "context": null
-  },
-  {
-    "text": "Stays calm under pressure",
-    "type": "trait_indicator",
-    "context": null
-  }
+  {"text": "Built real-time data pipeline processing 10M events/day", "type": "accomplishment", "context": {"company": "Google"}},
+  {"text": "Kafka", "type": "skill_listed", "context": null},
+  {"text": "Spark", "type": "skill_listed", "context": null},
+  {"text": "Real-time data processing", "type": "skill_listed", "context": null},
+  {"text": "Stays calm under pressure", "type": "trait_indicator", "context": null}
 ]
 
 IMPORTANT:
-- Extract skills DEMONSTRATED, not just mentioned in passing
-- Include context when the story mentions where/when something happened
+- Extract EVERY technology/tool/framework/platform mentioned as being used
+- Technologies embedded in sentences like "built with React and Supabase" → extract "React" AND "Supabase" as separate skill_listed items
+- Cloud services (AWS, Supabase, Vercel), databases (PostgreSQL, Redis), frameworks (Next.js, React Native) are all skills
 - Return ONLY valid JSON array, no markdown
-- Stories are shorter than resumes - expect 3-15 items typically
 
 STORY TEXT:
 `;
