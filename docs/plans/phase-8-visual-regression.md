@@ -4,6 +4,10 @@
 **Effort**: 2-3 days
 **Status**: DEFERRED
 
+## Progress (Last reviewed: 2025-12-30)
+
+Intentionally deferred - UI still evolving.
+
 ## Overview
 
 Screenshot-based testing to catch unintended UI changes. Compare current renders against baseline images.

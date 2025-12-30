@@ -2,6 +2,19 @@
 
 > Created 2025-12-28 after completing beta launch checklist
 
+**Status:** In Progress
+
+## Progress (Last reviewed: 2025-12-30)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Delete My Account | ✅ Complete | DELETE /api/v1/account, modal, tests |
+| Export My Data | ✅ Complete | POST /api/v1/account/export, ZIP download |
+| Security Hardening | ⏳ Not Started | search_path, vector schema |
+| Onboarding Prompts | ⏳ Not Started | |
+| Axiom Logging | ⏳ Not Started | |
+| Env Var Documentation | ⏳ Not Started | |
+
 ## Data Management (GDPR)
 
 ### Delete My Account

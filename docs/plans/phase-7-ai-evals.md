@@ -4,6 +4,10 @@
 **Effort**: 2-3 days
 **Status**: Not Started
 
+## Progress (Last reviewed: 2025-12-30)
+
+No implementation progress yet. Note: Claim eval framework (docs/plans/2025-12-28-claim-eval-framework-v2.md) implements in-process quality checking for claims, which is different from this weekly regression testing plan.
+
 ## Overview
 
 Create a weekly evaluation pipeline that tests AI-generated content (resumes, stories, opportunity matching) against quality benchmarks. E2E tests mock AI for speed; this catches quality regressions with real AI providers.

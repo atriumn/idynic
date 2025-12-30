@@ -2,7 +2,27 @@
 
 **Priority**: HIGH
 **Effort**: 2-3 days
-**Status**: Not Started
+**Status**: Done
+
+## Progress (Last reviewed: 2025-12-30)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Directory Structure | ✅ Complete | apps/web/src/__tests__/integration/ |
+| Step 2: Vitest Integration Config | ✅ Complete | vitest.integration.config.ts |
+| Step 3: Global Setup/Teardown | ✅ Complete | setup/global-setup.ts, teardown |
+| Step 4: Test Fixtures SQL | ✅ Complete | test-fixtures.sql |
+| Step 5: Test Utilities | ✅ Complete | test-utils.ts with createTestUser |
+| Step 6: Auth Integration Tests | ✅ Complete | signup, login, token-refresh |
+| Step 7: RLS Policy Tests | ✅ Complete | rls-policies.integration.test.ts |
+| Step 8: Profile CRUD Tests | ✅ Complete | profile-crud.integration.test.ts |
+| Step 9: Document Tests | ✅ Complete | document-crud.integration.test.ts |
+| Step 10: Opportunity Tests | ✅ Complete | opportunity-crud.integration.test.ts |
+| Step 11: Package.json Scripts | ✅ Complete | test:integration added |
+| Step 12: CI Workflow | ✅ Complete | Merged in PR #38 |
+
+### Summary
+7 integration test files covering auth, RLS, profile, documents, and opportunities. Merged in PR #38.
 
 ## Overview
 

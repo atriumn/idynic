@@ -4,6 +4,10 @@
 **Effort**: 1-2 days
 **Status**: Not Started
 
+## Progress (Last reviewed: 2025-12-30)
+
+No implementation progress yet. Can proceed in parallel with Phase 2.
+
 ## Overview
 
 Add unit tests to the Chrome extension, which currently has zero test coverage. Focus on content script logic (job parsing), background service worker (API communication), and popup components.

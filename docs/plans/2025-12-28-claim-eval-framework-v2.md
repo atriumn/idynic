@@ -2,6 +2,23 @@
 
 > Updated 2025-12-28 after brainstorming session. Replaces 2025-12-27-claim-eval-framework.md.
 
+**Status:** In Progress
+
+## Progress (Last reviewed: 2025-12-30)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Phase 1: Infrastructure | ✅ Complete | claim_issues migration, anthropic provider, config done |
+| Phase 2: Eval Logic | ✅ Complete | rule-checks.ts, claim-grounding.ts, tailoring-grounding.ts |
+| Phase 3: Integration | ✅ Complete | Eval step in process-resume.ts and process-story.ts |
+| Phase 4: Claim Management API | ⏳ Not Started | PATCH/DELETE/dismiss endpoints |
+| Phase 5: UI | ⏳ Not Started | Issue banners, filters, edit modal |
+
+### Drift Notes
+- AI gateway routing was added (commit 2b0ef814) - all AI operations now go through gateway for usage tracking
+- Unit tests added for run-claim-eval (commit 36a7c2e6)
+- Tailoring eval is implemented but not yet wired into tailor API route
+
 ## Overview
 
 Two eval systems that catch quality issues before users see or share content:

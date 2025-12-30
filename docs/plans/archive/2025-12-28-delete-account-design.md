@@ -2,6 +2,12 @@
 
 > Created 2025-12-28
 
+**Status:** Done
+
+## Progress (Last reviewed: 2025-12-30)
+
+✅ Fully implemented. DELETE /api/v1/account endpoint, delete-account-modal.tsx, unit tests.
+
 ## Overview
 
 GDPR-compliant account deletion that removes all user data across the platform. Must handle cascading deletes, storage cleanup, and Stripe subscription cancellation.

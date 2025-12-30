@@ -2,6 +2,12 @@
 
 > Created 2025-12-28
 
+**Status:** Done
+
+## Progress (Last reviewed: 2025-12-30)
+
+✅ Fully implemented. POST /api/v1/account/export endpoint, export-data-button.tsx, unit tests.
+
 ## Overview
 
 GDPR-compliant data export that downloads all user data as a ZIP file containing JSON data and original documents. Must be fast for typical users and handle large exports gracefully.
