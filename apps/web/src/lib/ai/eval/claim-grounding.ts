@@ -20,16 +20,15 @@ export interface ClaimWithEvidence {
 interface GroundingEvaluation {
   claim_id: string;
   grounded: boolean;
-  issue: string | null;
+  issue?: string | null; // Legacy field for backwards compatibility
+  quality_issue?: string | null;
 }
 
 interface GroundingResponse {
   evaluations: GroundingEvaluation[];
 }
 
-const CLAIM_EVAL_PROMPT = `You are evaluating whether identity claims accurately represent their supporting evidence.
-
-For each claim, determine if the claim's label and description are justified by the evidence provided.
+const CLAIM_EVAL_PROMPT = `You are evaluating identity claims for grounding AND semantic quality.
 
 Claims to evaluate:
 {claims_json}
@@ -39,22 +38,34 @@ Each claim includes:
 - description: what the user claims
 - evidence: array of supporting evidence texts with their strength ratings
 
-For each claim, respond:
-- "grounded": true if evidence supports the claim
-- "grounded": false if claim overstates, misrepresents, or isn't supported by evidence
-- "issue": explanation if not grounded (null otherwise)
+For each claim, check TWO things:
 
-Be strict but fair:
-- A claim is grounded if evidence reasonably supports it
-- Flag claims that exaggerate (e.g., "expert" when evidence shows basic usage)
-- Flag claims with no supporting evidence
-- Don't flag claims just for being brief or general
+1. GROUNDING: Is the claim supported by evidence?
+   - grounded = true if evidence reasonably supports the claim
+   - grounded = false if claim overstates, misrepresents, or lacks evidence
+
+2. QUALITY: Is this a meaningful professional identity claim?
+   - quality_issue = null if the claim represents a real skill, achievement, or attribute
+   - quality_issue = explanation if the claim is problematic
+
+LOW QUALITY claims to flag:
+- Raw metrics restated as claims: "Delivered Commits", "Made Pull Requests", "Wrote Lines of Code"
+- Generic activity verbs: "Worked on Projects", "Used Tools", "Did Development"
+- Metrics without abstraction: "High Commit Count" (vs good: "High Development Velocity")
+- Non-transferable specifics: "411 Commits in 13 Days" (this is evidence, not a claim)
+
+GOOD claims (don't flag):
+- Skills: "React Development", "AWS Infrastructure", "PostgreSQL"
+- Achievements: "Shipped Production Platform", "Led Team of 5", "Reduced Latency 50%"
+- Attributes: "High Development Velocity", "Quality-Focused Engineering"
+- Roles: "Technical Leadership", "Full-Stack Development"
 
 Respond with JSON only:
 {
   "evaluations": [
-    { "claim_id": "uuid", "grounded": true, "issue": null },
-    { "claim_id": "uuid", "grounded": false, "issue": "Claim says 'expert' but evidence only shows basic usage" }
+    { "claim_id": "uuid", "grounded": true, "quality_issue": null },
+    { "claim_id": "uuid", "grounded": true, "quality_issue": "Restates raw metric - 'Delivered Commits' should be abstracted to a meaningful attribute" },
+    { "claim_id": "uuid", "grounded": false, "quality_issue": null }
   ]
 }`;
 
@@ -113,15 +124,30 @@ export async function runClaimGroundingEval(
     }
     const parsed = JSON.parse(content) as GroundingResponse;
 
-    // Convert to issues
-    const issues: ClaimIssue[] = parsed.evaluations
-      .filter(e => !e.grounded && e.issue)
-      .map(e => ({
-        claimId: e.claim_id,
-        type: 'not_grounded' as const,
-        severity: 'warning' as const,
-        message: e.issue!,
-      }));
+    // Convert to issues - check both grounding and quality
+    const issues: ClaimIssue[] = [];
+
+    for (const e of parsed.evaluations) {
+      // Grounding issue
+      if (!e.grounded) {
+        issues.push({
+          claimId: e.claim_id,
+          type: 'not_grounded' as const,
+          severity: 'warning' as const,
+          message: e.issue || 'Claim is not supported by evidence',
+        });
+      }
+
+      // Quality issue (can exist even if grounded)
+      if (e.quality_issue) {
+        issues.push({
+          claimId: e.claim_id,
+          type: 'low_quality' as const,
+          severity: 'warning' as const,
+          message: e.quality_issue,
+        });
+      }
+    }
 
     // Calculate cost (rough estimate based on tokens)
     const inputTokens = response.usage.inputTokens;

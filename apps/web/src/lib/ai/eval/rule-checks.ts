@@ -4,7 +4,7 @@
  * - Required field validation
  */
 
-export type IssueType = 'duplicate' | 'missing_field' | 'not_grounded' | 'unevaluated' | 'other';
+export type IssueType = 'duplicate' | 'missing_field' | 'not_grounded' | 'low_quality' | 'unevaluated' | 'other';
 export type IssueSeverity = 'error' | 'warning';
 
 export interface ClaimIssue {
