@@ -42,7 +42,12 @@ For each claim, check TWO things:
 
 1. GROUNDING: Is the claim supported by evidence?
    - grounded = true if evidence reasonably supports the claim
-   - grounded = false if claim overstates, misrepresents, or lacks evidence
+   - grounded = false ONLY if claim overstates, misrepresents, or lacks evidence
+
+   IMPORTANT: Summarizing or generalizing is NOT a grounding issue:
+   - Evidence: "HIPAA, SOC2, ISO 13485" → Claim: "regulated environments" = GROUNDED (valid summary)
+   - Evidence: "Led team of 5 engineers" → Claim: "Technical Leadership" = GROUNDED (valid abstraction)
+   - Evidence: "basic React usage" → Claim: "React Expert" = NOT GROUNDED (overstates)
 
 2. QUALITY: Is this a meaningful professional identity claim?
    - quality_issue = null if the claim represents a real skill, achievement, or attribute

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
@@ -17,16 +16,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { MessageSquare, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDocumentJob } from "@/lib/hooks/use-document-job";
-import { useInvalidateGraph } from "@/lib/hooks/use-identity-graph";
 import { STORY_PHASES, PHASE_LABELS, type DocumentJobPhase, type JobSummary } from "@idynic/shared/types";
 
 const MIN_LENGTH = 200;
 const MAX_LENGTH = 10000;
 
 export function AddStoryModal() {
-  const router = useRouter();
   const queryClient = useQueryClient();
-  const invalidateGraph = useInvalidateGraph();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,20 +37,25 @@ export function AddStoryModal() {
   // Handle job completion or failure
   useEffect(() => {
     if (job?.status === "completed") {
-      queryClient.invalidateQueries({ queryKey: ["identity-reflection"] });
-      queryClient.invalidateQueries({ queryKey: ["identity-graph"] });
-      invalidateGraph();
-      setTimeout(() => {
-        setOpen(false);
-        setText("");
-        router.refresh();
-      }, 1000);
+      // Refetch queries and wait for completion before closing
+      const refetchAndClose = async () => {
+        await Promise.all([
+          queryClient.refetchQueries({ queryKey: ["identity-reflection"] }),
+          queryClient.refetchQueries({ queryKey: ["identity-graph"] }),
+        ]);
+        // Small delay to show success state before closing
+        setTimeout(() => {
+          setOpen(false);
+          setText("");
+        }, 800);
+      };
+      refetchAndClose();
     }
     if (job?.status === "failed") {
       setError(job.error || "Processing failed");
       setJobId(null);
     }
-  }, [job?.status, job?.error, router, queryClient, invalidateGraph]);
+  }, [job?.status, job?.error, queryClient]);
 
   const handleOpenChange = useCallback((newOpen: boolean) => {
     setOpen(newOpen);
