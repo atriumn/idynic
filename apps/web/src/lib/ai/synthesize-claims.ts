@@ -8,17 +8,17 @@ const openai = new OpenAI();
 
 // Confidence base scores calibrated for evidence count
 const CONFIDENCE_BASE = {
-  SINGLE_EVIDENCE: 0.5,   // One data point is tentative
-  DOUBLE_EVIDENCE: 0.7,   // Two corroborating sources
-  TRIPLE_EVIDENCE: 0.8,   // Three sources provides high confidence
+  SINGLE_EVIDENCE: 0.5, // One data point is tentative
+  DOUBLE_EVIDENCE: 0.7, // Two corroborating sources
+  TRIPLE_EVIDENCE: 0.8, // Three sources provides high confidence
   MULTIPLE_EVIDENCE: 0.9, // 4+ sources is nearly certain
 } as const;
 
 // Strength multipliers for evidence quality
 const STRENGTH_MULTIPLIER = {
-  strong: 1.2,  // Direct, clear evidence
-  medium: 1.0,  // Related evidence
-  weak: 0.7,    // Tangential connection
+  strong: 1.2, // Direct, clear evidence
+  medium: 1.0, // Related evidence
+  weak: 0.7, // Tangential connection
 } as const;
 
 const MAX_CONFIDENCE = 0.95;
@@ -34,7 +34,7 @@ interface CandidateClaim {
 }
 
 interface SynthesisResult {
-  match: string | null;  // claim label if matched (used to find claim by label)
+  match: string | null; // claim label if matched (used to find claim by label)
   strength: "weak" | "medium" | "strong";
   new_claim: {
     type: "skill" | "achievement" | "attribute" | "education" | "certification";
@@ -46,14 +46,22 @@ interface SynthesisResult {
 interface EvidenceItem {
   id: string;
   text: string;
-  type: "accomplishment" | "skill_listed" | "trait_indicator" | "education" | "certification";
+  type:
+    | "accomplishment"
+    | "skill_listed"
+    | "trait_indicator"
+    | "education"
+    | "certification";
   embedding: number[];
 }
 
 const SYNTHESIS_SYSTEM_PROMPT = `You are an identity synthesizer. Given evidence and candidate claims, determine if the evidence supports an existing claim or requires a new one. Return ONLY valid JSON.`;
 
 // Map evidence types to claim types
-const EVIDENCE_TO_CLAIM_TYPE: Record<EvidenceItem["type"], SynthesisResult["new_claim"] extends { type: infer T } | null ? T : never> = {
+const EVIDENCE_TO_CLAIM_TYPE: Record<
+  EvidenceItem["type"],
+  SynthesisResult["new_claim"] extends { type: infer T } | null ? T : never
+> = {
   skill_listed: "skill",
   accomplishment: "achievement",
   trait_indicator: "attribute",
@@ -64,11 +72,17 @@ const EVIDENCE_TO_CLAIM_TYPE: Record<EvidenceItem["type"], SynthesisResult["new_
 function buildSynthesisPrompt(
   evidenceText: string,
   evidenceType: EvidenceItem["type"],
-  candidates: CandidateClaim[]
+  candidates: CandidateClaim[],
 ): string {
-  const candidateList = candidates.length > 0
-    ? candidates.map((c, i) => `${i + 1}. "${c.label}" (${c.type}) - ${c.description || "No description"}`).join("\n")
-    : "No existing claims yet.";
+  const candidateList =
+    candidates.length > 0
+      ? candidates
+          .map(
+            (c, i) =>
+              `${i + 1}. "${c.label}" (${c.type}) - ${c.description || "No description"}`,
+          )
+          .join("\n")
+      : "No existing claims yet.";
 
   const expectedClaimType = EVIDENCE_TO_CLAIM_TYPE[evidenceType];
 
@@ -92,11 +106,19 @@ Rules:
    - education → education (e.g., "BS in Computer Science", "MBA")
    - certification → certification (e.g., "AWS Solutions Architect", "PMP")
 
+CRITICAL: For skills, use the EXACT technology/tool name from the evidence, NOT a category:
+- "TypeScript" (NOT "Programming language")
+- "React Native" (NOT "Mobile framework")
+- "Next.js" (NOT "JavaScript framework")
+- "PostgreSQL" (NOT "Database system")
+- "Tailwind CSS" (NOT "CSS framework")
+
 Examples of good claim labels:
-- "Performance Engineering" (not "Reduced API latency")
-- "Distributed Team Leadership" (not "Led teams across continents")
-- "Python" (skill names stay as-is)
-- "Leadership" is a SKILL, not an achievement
+- "Python", "TypeScript", "Go" (exact language names, never "Programming language")
+- "React", "Next.js", "Vue" (exact framework names, never "JavaScript framework")
+- "PostgreSQL", "MongoDB" (exact database names, never "Database system")
+- "Performance Engineering" (for achievements, not "Reduced API latency")
+- "Distributed Team Leadership" (for achievements, not "Led teams across continents")
 - "BS in Management Information Systems" (education - include degree and major)
 - "AWS Solutions Architect Professional" (certification - include full cert name)
 
@@ -108,12 +130,20 @@ Return JSON:
 }`;
 }
 
-function isValidNewClaim(claim: unknown): claim is SynthesisResult["new_claim"] {
+function isValidNewClaim(
+  claim: unknown,
+): claim is SynthesisResult["new_claim"] {
   if (!claim || typeof claim !== "object") return false;
   const c = claim as Record<string, unknown>;
   return (
     typeof c.type === "string" &&
-    ["skill", "achievement", "attribute", "education", "certification"].includes(c.type) &&
+    [
+      "skill",
+      "achievement",
+      "attribute",
+      "education",
+      "certification",
+    ].includes(c.type) &&
     typeof c.label === "string" &&
     c.label.length > 0 &&
     typeof c.description === "string"
@@ -122,7 +152,7 @@ function isValidNewClaim(claim: unknown): claim is SynthesisResult["new_claim"] 
 
 export async function synthesizeClaims(
   userId: string,
-  evidenceItems: EvidenceItem[]
+  evidenceItems: EvidenceItem[],
 ): Promise<{ claimsCreated: number; claimsUpdated: number }> {
   const supabase = await createClient();
   let claimsCreated = 0;
@@ -131,7 +161,10 @@ export async function synthesizeClaims(
   for (const evidence of evidenceItems) {
     // Skip overly long evidence
     if (evidence.text.length > MAX_EVIDENCE_TEXT_LENGTH) {
-      console.warn("Skipping evidence exceeding max length:", evidence.text.slice(0, 100));
+      console.warn(
+        "Skipping evidence exceeding max length:",
+        evidence.text.slice(0, 100),
+      );
       continue;
     }
 
@@ -149,7 +182,14 @@ export async function synthesizeClaims(
       max_tokens: 500,
       messages: [
         { role: "system", content: SYNTHESIS_SYSTEM_PROMPT },
-        { role: "user", content: buildSynthesisPrompt(evidence.text, evidence.type, candidates || []) },
+        {
+          role: "user",
+          content: buildSynthesisPrompt(
+            evidence.text,
+            evidence.type,
+            candidates || [],
+          ),
+        },
       ],
     });
 
@@ -158,7 +198,10 @@ export async function synthesizeClaims(
 
     let result: SynthesisResult;
     try {
-      const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      const cleaned = content
+        .replace(/```json\n?/g, "")
+        .replace(/```\n?/g, "")
+        .trim();
       result = JSON.parse(cleaned);
     } catch {
       console.error("Failed to parse synthesis result:", content);
@@ -168,7 +211,7 @@ export async function synthesizeClaims(
     // 3. Update or create claim
     if (result.match && candidates) {
       // Find the matched claim
-      const matchedClaim = candidates.find(c => c.label === result.match);
+      const matchedClaim = candidates.find((c) => c.label === result.match);
       if (matchedClaim) {
         // Link evidence to existing claim (upsert to handle duplicates)
         const { error: linkError } = await supabase
@@ -179,7 +222,7 @@ export async function synthesizeClaims(
               evidence_id: evidence.id,
               strength: result.strength,
             },
-            { onConflict: "claim_id,evidence_id", ignoreDuplicates: true }
+            { onConflict: "claim_id,evidence_id", ignoreDuplicates: true },
           );
 
         if (linkError) {
@@ -208,16 +251,14 @@ export async function synthesizeClaims(
 
       if (existingClaim) {
         // Link evidence to existing claim instead of creating duplicate
-        await supabase
-          .from("claim_evidence")
-          .upsert(
-            {
-              claim_id: existingClaim.id,
-              evidence_id: evidence.id,
-              strength: result.strength,
-            },
-            { onConflict: "claim_id,evidence_id", ignoreDuplicates: true }
-          );
+        await supabase.from("claim_evidence").upsert(
+          {
+            claim_id: existingClaim.id,
+            evidence_id: evidence.id,
+            strength: result.strength,
+          },
+          { onConflict: "claim_id,evidence_id", ignoreDuplicates: true },
+        );
         await recalculateConfidence(supabase, existingClaim.id);
         claimsUpdated++;
         continue;
@@ -233,7 +274,8 @@ export async function synthesizeClaims(
           type: result.new_claim.type,
           label: result.new_claim.label,
           description: result.new_claim.description,
-          confidence: getBaseConfidence(1) * getStrengthMultiplier(result.strength),
+          confidence:
+            getBaseConfidence(1) * getStrengthMultiplier(result.strength),
           embedding: claimEmbedding as unknown as string,
         })
         .select()
@@ -256,7 +298,7 @@ export async function synthesizeClaims(
 
 async function recalculateConfidence(
   supabase: SupabaseClient<Database>,
-  claimId: string
+  claimId: string,
 ): Promise<void> {
   // Get all evidence for this claim
   const { data: links } = await supabase
@@ -267,12 +309,14 @@ async function recalculateConfidence(
   if (!links || links.length === 0) return;
 
   const count = links.length;
-  const avgMultiplier = links.reduce(
-    (sum, l) => sum + getStrengthMultiplier(l.strength),
-    0
-  ) / count;
+  const avgMultiplier =
+    links.reduce((sum, l) => sum + getStrengthMultiplier(l.strength), 0) /
+    count;
 
-  const confidence = Math.min(MAX_CONFIDENCE, getBaseConfidence(count) * avgMultiplier);
+  const confidence = Math.min(
+    MAX_CONFIDENCE,
+    getBaseConfidence(count) * avgMultiplier,
+  );
 
   await supabase
     .from("identity_claims")
@@ -288,5 +332,8 @@ function getBaseConfidence(evidenceCount: number): number {
 }
 
 function getStrengthMultiplier(strength: string): number {
-  return STRENGTH_MULTIPLIER[strength as keyof typeof STRENGTH_MULTIPLIER] ?? STRENGTH_MULTIPLIER.medium;
+  return (
+    STRENGTH_MULTIPLIER[strength as keyof typeof STRENGTH_MULTIPLIER] ??
+    STRENGTH_MULTIPLIER.medium
+  );
 }
