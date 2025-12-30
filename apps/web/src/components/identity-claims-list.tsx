@@ -37,7 +37,11 @@ import type { Database } from "@/lib/supabase/types";
 
 type EvidenceWithDocument = {
   text: string;
-  document: { filename: string | null } | null;
+  document: {
+    filename: string | null;
+    type: string | null;
+    createdAt: string | null;
+  } | null;
 };
 
 type ClaimEvidence = {
@@ -242,7 +246,7 @@ export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsLis
               <TableHead className="w-[30px]"></TableHead>
               <TableHead className="font-bold text-xs uppercase tracking-wider">Claim</TableHead>
               <TableHead className="w-[120px] font-bold text-xs uppercase tracking-wider">Type</TableHead>
-              <TableHead className="w-[200px] font-bold text-xs uppercase tracking-wider">Sources</TableHead>
+              <TableHead className="w-[280px] font-bold text-xs uppercase tracking-wider">Sources</TableHead>
               <TableHead className="w-[100px] text-right font-bold text-xs uppercase tracking-wider">Confidence</TableHead>
             </TableRow>
           </TableHeader>
@@ -259,13 +263,33 @@ export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsLis
                 const evidenceItems = claim.claim_evidence || [];
                 const evidenceCount = evidenceItems.length;
                 const confidenceLevel = getConfidenceLevel(claim.confidence ?? 0.5);
-                const sourceDocuments = Array.from(
-                  new Set(
-                    evidenceItems
-                      .map((e) => e.evidence?.document?.filename)
-                      .filter((f): f is string => Boolean(f))
-                  )
-                );
+                // Get unique source documents with their info
+                const sourceDocsMap = new Map<string, { filename: string; type: string; createdAt: string }>();
+                for (const e of evidenceItems) {
+                  const doc = e.evidence?.document;
+                  if (doc?.filename && doc.type) {
+                    const key = `${doc.type}-${doc.createdAt}`;
+                    if (!sourceDocsMap.has(key)) {
+                      sourceDocsMap.set(key, {
+                        filename: doc.filename,
+                        type: doc.type,
+                        createdAt: doc.createdAt || "",
+                      });
+                    }
+                  }
+                }
+                const sourceDocs = Array.from(sourceDocsMap.values());
+
+                // Format short source label: "Resume (12/30/25)"
+                const formatShortSource = (doc: { type: string; createdAt: string }) => {
+                  const typeLabel = doc.type === "resume" ? "Resume" : doc.type === "story" ? "Story" : doc.type;
+                  if (doc.createdAt) {
+                    const date = new Date(doc.createdAt);
+                    const shortDate = `${date.getMonth() + 1}/${date.getDate()}/${String(date.getFullYear()).slice(-2)}`;
+                    return `${typeLabel} (${shortDate})`;
+                  }
+                  return typeLabel;
+                };
 
                 return (
                   <>
@@ -309,10 +333,10 @@ export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsLis
                           <span className="font-medium text-foreground">
                             {evidenceCount} item{evidenceCount !== 1 ? "s" : ""}
                           </span>
-                          {sourceDocuments.length > 0 && (
-                            <span className="truncate max-w-[180px]" title={sourceDocuments.join(", ")}>
-                              {sourceDocuments[0]}
-                              {sourceDocuments.length > 1 && ` +${sourceDocuments.length - 1} more`}
+                          {sourceDocs.length > 0 && (
+                            <span className="truncate max-w-[200px]" title={sourceDocs.map(d => d.filename).join(", ")}>
+                              {formatShortSource(sourceDocs[0])}
+                              {sourceDocs.length > 1 && ` +${sourceDocs.length - 1}`}
                             </span>
                           )}
                         </div>

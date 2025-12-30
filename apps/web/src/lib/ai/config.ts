@@ -107,6 +107,12 @@ export function getModelConfig(operation: string): ModelConfig {
         model: getEnvString("EXTRACT_STORY_EVIDENCE_MODEL", "gpt-4o-mini"),
       };
 
+    case "summarize_story_title":
+      return {
+        provider: getEnvProvider("SUMMARIZE_STORY_TITLE_PROVIDER", "anthropic"),
+        model: getEnvString("SUMMARIZE_STORY_TITLE_MODEL", "claude-haiku-4-20250514"),
+      };
+
     default:
       // Fallback to gpt-4o-mini for unknown operations
       return {

@@ -248,15 +248,22 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
                 embedding: null,
                 source: null,
                 issues: node.issues,
-                claim_evidence: (node.claim_evidence || []).map(ce => ({
-                  strength: ce.strength,
-                  evidence: ce.evidence ? {
-                    text: ce.evidence.text,
-                    document: data?.documents.find(d => d.id === ce.evidence?.document_id)
-                      ? { filename: data.documents.find(d => d.id === ce.evidence?.document_id)?.name || null }
-                      : null
-                  } : null
-                }))
+                claim_evidence: (node.claim_evidence || []).map(ce => {
+                  const doc = ce.evidence?.document_id
+                    ? data?.documents.find(d => d.id === ce.evidence?.document_id)
+                    : null;
+                  return {
+                    strength: ce.strength,
+                    evidence: ce.evidence ? {
+                      text: ce.evidence.text,
+                      document: doc ? {
+                        filename: doc.name,
+                        type: doc.type,
+                        createdAt: doc.createdAt,
+                      } : null
+                    } : null
+                  };
+                })
               }))}
             />
           </div>
@@ -292,15 +299,22 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
                   embedding: null,
                   source: null,
                   issues: node.issues,
-                  claim_evidence: (node.claim_evidence || []).map(ce => ({
-                    strength: ce.strength,
-                    evidence: ce.evidence ? {
-                      text: ce.evidence.text,
-                      document: data?.documents.find(d => d.id === ce.evidence?.document_id)
-                        ? { filename: data.documents.find(d => d.id === ce.evidence?.document_id)?.name || null }
-                        : null
-                    } : null
-                  }))
+                  claim_evidence: (node.claim_evidence || []).map(ce => {
+                    const doc = ce.evidence?.document_id
+                      ? data?.documents.find(d => d.id === ce.evidence?.document_id)
+                      : null;
+                    return {
+                      strength: ce.strength,
+                      evidence: ce.evidence ? {
+                        text: ce.evidence.text,
+                        document: doc ? {
+                          filename: doc.name,
+                          type: doc.type,
+                          createdAt: doc.createdAt,
+                        } : null
+                      } : null
+                    };
+                  })
                 }))}
               />
             )}

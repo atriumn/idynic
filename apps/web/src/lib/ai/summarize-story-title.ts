@@ -21,15 +21,27 @@ export async function summarizeStoryTitle(
       messages: [
         {
           role: "system",
-          content:
-            "Generate a 3-6 word title for this professional story. Be specific and descriptive. No quotes. Examples: 'Building Idynic in 13 Days', 'Leading Platform Migration at Scale', 'Founding My First Startup'",
+          content: `You are a title generator. Your ONLY job is to output a short 3-6 word title.
+
+RULES:
+- Output ONLY the title, nothing else
+- 3-6 words maximum
+- No quotes, no punctuation, no explanation
+- Be specific and descriptive
+- Never copy text from the story verbatim
+
+Examples of good titles:
+- Building Idynic in 13 Days
+- Leading Platform Migration at Scale
+- Founding My First Startup
+- Scaling Engineering at Stripe`,
         },
         {
           role: "user",
-          content: truncatedText,
+          content: `Generate a title for this story:\n\n${truncatedText}`,
         },
       ],
-      maxTokens: 50,
+      maxTokens: 20,
     },
     {
       operation: "summarize_story_title",
@@ -43,6 +55,13 @@ export async function summarizeStoryTitle(
     return "Personal Story";
   }
 
-  // Clean up any quotes the model might add
-  return title.replace(/^["']|["']$/g, "").trim();
+  // Clean up any quotes and newlines the model might add
+  const cleaned = title.replace(/^["']|["']$/g, "").replace(/\n/g, " ").trim();
+
+  // If the response is too long or looks like content (not a title), fall back
+  if (cleaned.length > 60 || cleaned.includes("##") || cleaned.includes("*")) {
+    return "Personal Story";
+  }
+
+  return cleaned;
 }

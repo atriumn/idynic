@@ -1,7 +1,15 @@
-import { useState, useMemo, useCallback } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, Pressable, TextInput, RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useState, useMemo, useCallback } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  ActivityIndicator,
+  Pressable,
+  TextInput,
+  RefreshControl,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import {
   ChevronDown,
   ChevronUp,
@@ -18,8 +26,9 @@ import {
   Eye,
   Wand2,
   TrendingUp,
-} from 'lucide-react-native';
-import { EMPTY_STATE } from '@idynic/shared';
+  AlertTriangle,
+} from "lucide-react-native";
+import { EMPTY_STATE } from "@idynic/shared";
 import {
   useIdentityClaims,
   hasAnyClaims,
@@ -29,10 +38,10 @@ import {
   CLAIM_TYPE_COLORS,
   CLAIM_TYPE_LABELS,
   GroupedClaims,
-} from '../../hooks/use-identity-claims';
-import { useProfile } from '../../hooks/use-profile';
-import { Logo } from '../../components/logo';
-import { IdentityReflection } from '../../components/identity-reflection';
+} from "../../hooks/use-identity-claims";
+import { useProfile } from "../../hooks/use-profile";
+import { Logo } from "../../components/logo";
+import { IdentityReflection } from "../../components/identity-reflection";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CLAIM_TYPE_ICONS: Record<string, React.ComponentType<any>> = {
@@ -61,13 +70,32 @@ function ConfidenceBar({ confidence }: { confidence: number | null }) {
 }
 
 function EvidenceItem({ evidence }: { evidence: Evidence }) {
+  // Build short source label: "Resume (12/30/25)" or "Story (12/30/25)"
+  const getDocumentName = () => {
+    if (!evidence.document) {
+      return evidence.source_type || "Source";
+    }
+    const typeLabel =
+      evidence.document.type === "resume"
+        ? "Resume"
+        : evidence.document.type === "story"
+          ? "Story"
+          : evidence.document.type;
+    if (evidence.document.created_at) {
+      const date = new Date(evidence.document.created_at);
+      const shortDate = `${date.getMonth() + 1}/${date.getDate()}/${String(date.getFullYear()).slice(-2)}`;
+      return `${typeLabel} (${shortDate})`;
+    }
+    return typeLabel;
+  };
+
   return (
     <View className="flex-row items-start gap-2 mb-2">
       <FileText color="#64748b" size={14} />
       <View className="flex-1">
         <Text className="text-sm text-slate-300">{evidence.text}</Text>
         <Text className="text-xs text-slate-500 mt-0.5">
-          {evidence.source_type || 'Source'} • {evidence.evidence_type}
+          {getDocumentName()} • {evidence.evidence_type}
         </Text>
       </View>
     </View>
@@ -77,6 +105,7 @@ function EvidenceItem({ evidence }: { evidence: Evidence }) {
 function ClaimCard({ claim }: { claim: IdentityClaim }) {
   const [expanded, setExpanded] = useState(false);
   const colors = CLAIM_TYPE_COLORS[claim.type];
+  const hasIssues = claim.issues && claim.issues.length > 0;
 
   return (
     <Pressable
@@ -84,17 +113,20 @@ function ClaimCard({ claim }: { claim: IdentityClaim }) {
       className="mb-3 rounded-xl border overflow-hidden"
       style={{
         backgroundColor: colors.bgHex,
-        borderColor: colors.borderHex,
+        borderColor: hasIssues ? "#f59e0b" : colors.borderHex,
       }}
     >
       <View className="p-4">
         <View className="flex-row items-start justify-between mb-2">
-          <Text
-            className="text-base font-semibold flex-1 mr-2"
-            style={{ color: colors.textHex }}
-          >
-            {claim.label}
-          </Text>
+          <View className="flex-row items-center flex-1 mr-2 gap-1.5">
+            {hasIssues && <AlertTriangle color="#f59e0b" size={16} />}
+            <Text
+              className="text-base font-semibold flex-1"
+              style={{ color: colors.textHex }}
+            >
+              {claim.label}
+            </Text>
+          </View>
           {expanded ? (
             <ChevronUp color="#64748b" size={20} />
           ) : (
@@ -113,8 +145,30 @@ function ClaimCard({ claim }: { claim: IdentityClaim }) {
 
       {expanded && (
         <View className="px-4 pb-4 border-t border-slate-700/50 pt-3">
+          {/* Show issues if any */}
+          {hasIssues && (
+            <View className="mb-4 p-3 rounded-lg bg-amber-900/30 border border-amber-700/50">
+              <Text className="text-xs font-bold text-amber-400 uppercase mb-2">
+                Issues ({claim.issues.length})
+              </Text>
+              {claim.issues.map((issue) => (
+                <View
+                  key={issue.id}
+                  className="flex-row items-start gap-2 mb-1"
+                >
+                  <AlertTriangle color="#fbbf24" size={12} />
+                  <Text className="text-sm text-amber-200 flex-1">
+                    {issue.message}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+
           {claim.description && (
-            <Text className="text-sm text-slate-300 mb-4">{claim.description}</Text>
+            <Text className="text-sm text-slate-300 mb-4">
+              {claim.description}
+            </Text>
           )}
 
           {claim.evidence.length > 0 && (
@@ -129,7 +183,9 @@ function ClaimCard({ claim }: { claim: IdentityClaim }) {
           )}
 
           {claim.evidence.length === 0 && (
-            <Text className="text-sm text-slate-500 italic">No supporting evidence</Text>
+            <Text className="text-sm text-slate-500 italic">
+              No supporting evidence
+            </Text>
           )}
         </View>
       )}
@@ -168,7 +224,10 @@ function ClaimTypeSection({
             className="px-2 py-0.5 rounded-full"
             style={{ backgroundColor: colors.bgHex }}
           >
-            <Text className="text-xs font-bold" style={{ color: colors.textHex }}>
+            <Text
+              className="text-xs font-bold"
+              style={{ color: colors.textHex }}
+            >
               {claims.length}
             </Text>
           </View>
@@ -180,12 +239,19 @@ function ClaimTypeSection({
         )}
       </Pressable>
 
-      {!collapsed && claims.map((claim) => <ClaimCard key={claim.id} claim={claim} />)}
+      {!collapsed &&
+        claims.map((claim) => <ClaimCard key={claim.id} claim={claim} />)}
     </View>
   );
 }
 
-const CLAIM_TYPES: (keyof GroupedClaims)[] = ['skill', 'achievement', 'attribute', 'education', 'certification'];
+const CLAIM_TYPES: (keyof GroupedClaims)[] = [
+  "skill",
+  "achievement",
+  "attribute",
+  "education",
+  "certification",
+];
 
 function FilterChip({
   type,
@@ -208,24 +274,26 @@ function FilterChip({
       onPress={onPress}
       className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full mr-2 mb-2 border"
       style={{
-        backgroundColor: selected ? colors.bgHex : '#1e293b',
-        borderColor: selected ? colors.borderHex : '#334155',
+        backgroundColor: selected ? colors.bgHex : "#1e293b",
+        borderColor: selected ? colors.borderHex : "#334155",
       }}
     >
-      <Icon color={selected ? colors.icon : '#64748b'} size={14} />
+      <Icon color={selected ? colors.icon : "#64748b"} size={14} />
       <Text
         className="text-sm"
-        style={{ color: selected ? colors.textHex : '#94a3b8' }}
+        style={{ color: selected ? colors.textHex : "#94a3b8" }}
       >
         {CLAIM_TYPE_LABELS[type]}
       </Text>
       <View
         className="px-1.5 py-0.5 rounded-full"
-        style={{ backgroundColor: selected ? 'rgba(15, 23, 42, 0.3)' : '#334155' }}
+        style={{
+          backgroundColor: selected ? "rgba(15, 23, 42, 0.3)" : "#334155",
+        }}
       >
         <Text
           className="text-xs"
-          style={{ color: selected ? colors.textHex : '#94a3b8' }}
+          style={{ color: selected ? colors.textHex : "#94a3b8" }}
         >
           {count}
         </Text>
@@ -236,10 +304,18 @@ function FilterChip({
 
 export default function IdentityScreen() {
   const router = useRouter();
-  const { data: groupedClaims, isLoading, error, refetch, isRefetching } = useIdentityClaims();
+  const {
+    data: groupedClaims,
+    isLoading,
+    error,
+    refetch,
+    isRefetching,
+  } = useIdentityClaims();
   const { data: profile, isLoading: profileLoading } = useProfile();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTypes, setSelectedTypes] = useState<Set<keyof GroupedClaims>>(new Set(CLAIM_TYPES));
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTypes, setSelectedTypes] = useState<Set<keyof GroupedClaims>>(
+    new Set(CLAIM_TYPES),
+  );
 
   const onRefresh = useCallback(() => {
     refetch();
@@ -292,7 +368,10 @@ export default function IdentityScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-slate-900 justify-center items-center" edges={['bottom']}>
+      <SafeAreaView
+        className="flex-1 bg-slate-900 justify-center items-center"
+        edges={["bottom"]}
+      >
         <ActivityIndicator color="#14b8a6" size="large" />
       </SafeAreaView>
     );
@@ -300,7 +379,7 @@ export default function IdentityScreen() {
 
   if (error) {
     return (
-      <SafeAreaView className="flex-1 bg-slate-900 p-4" edges={['bottom']}>
+      <SafeAreaView className="flex-1 bg-slate-900 p-4" edges={["bottom"]}>
         <Text className="text-red-500">Failed to load identity</Text>
         <Text className="text-slate-400 mt-2 text-sm">{error.message}</Text>
       </SafeAreaView>
@@ -311,8 +390,11 @@ export default function IdentityScreen() {
     const featureIcons = [Eye, Wand2, TrendingUp];
 
     return (
-      <ScrollView className="flex-1 bg-slate-900" contentContainerStyle={{ padding: 24 }}>
-        <SafeAreaView edges={['bottom']}>
+      <ScrollView
+        className="flex-1 bg-slate-900"
+        contentContainerStyle={{ padding: 24 }}
+      >
+        <SafeAreaView edges={["bottom"]}>
           {/* Main CTA */}
           <View className="items-center mb-8">
             <View className="mb-6">
@@ -327,19 +409,23 @@ export default function IdentityScreen() {
 
             <View className="w-full">
               <Pressable
-                onPress={() => router.push('/upload-resume')}
+                onPress={() => router.push("/upload-resume")}
                 className="flex-row items-center justify-center gap-2 bg-slate-700 border border-slate-600 py-4 px-6 rounded-xl mb-3"
               >
                 <Upload color="#14b8a6" size={20} />
-                <Text className="text-white font-semibold text-base">{EMPTY_STATE.actions.resume.title}</Text>
+                <Text className="text-white font-semibold text-base">
+                  {EMPTY_STATE.actions.resume.title}
+                </Text>
               </Pressable>
 
               <Pressable
-                onPress={() => router.push('/add-story')}
+                onPress={() => router.push("/add-story")}
                 className="flex-row items-center justify-center gap-2 bg-slate-700 border border-slate-600 py-4 px-6 rounded-xl"
               >
                 <MessageSquarePlus color="#14b8a6" size={20} />
-                <Text className="text-white font-semibold text-base">{EMPTY_STATE.actions.story.title}</Text>
+                <Text className="text-white font-semibold text-base">
+                  {EMPTY_STATE.actions.story.title}
+                </Text>
               </Pressable>
             </View>
           </View>
@@ -349,17 +435,23 @@ export default function IdentityScreen() {
             {EMPTY_STATE.features.map((feature, i) => {
               const Icon = featureIcons[i];
               return (
-                <View key={feature.title} className="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-3">
+                <View
+                  key={feature.title}
+                  className="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-3"
+                >
                   <View className="flex-row items-center gap-2 mb-2">
                     <Icon color="#14b8a6" size={20} />
-                    <Text className="text-white font-semibold">{feature.title}</Text>
+                    <Text className="text-white font-semibold">
+                      {feature.title}
+                    </Text>
                   </View>
-                  <Text className="text-slate-400 text-sm">{feature.description}</Text>
+                  <Text className="text-slate-400 text-sm">
+                    {feature.description}
+                  </Text>
                 </View>
               );
             })}
           </View>
-
         </SafeAreaView>
       </ScrollView>
     );
@@ -367,12 +459,13 @@ export default function IdentityScreen() {
 
   const totalClaims = getTotalClaimCount(groupedClaims);
   const filteredTotal = getTotalClaimCount(filteredClaims ?? undefined);
-  const isFiltered = searchQuery.trim() || selectedTypes.size < CLAIM_TYPES.length;
+  const isFiltered =
+    searchQuery.trim() || selectedTypes.size < CLAIM_TYPES.length;
 
   return (
     <ScrollView
       className="flex-1"
-      style={{ backgroundColor: '#0f172a' }}
+      style={{ backgroundColor: "#0f172a" }}
       keyboardShouldPersistTaps="handled"
       refreshControl={
         <RefreshControl
@@ -392,12 +485,15 @@ export default function IdentityScreen() {
           <Text className="text-slate-400 mt-1">
             {isFiltered
               ? `${filteredTotal} of ${totalClaims} claims`
-              : `${totalClaims} claim${totalClaims !== 1 ? 's' : ''} extracted from your experience`}
+              : `${totalClaims} claim${totalClaims !== 1 ? "s" : ""} extracted from your experience`}
           </Text>
         </View>
 
         {/* Identity Reflection */}
-        <IdentityReflection data={profile?.identity ?? null} isLoading={profileLoading} />
+        <IdentityReflection
+          data={profile?.identity ?? null}
+          isLoading={profileLoading}
+        />
 
         {/* Search */}
         <View className="flex-row items-center bg-slate-800 rounded-xl px-3 mb-4">
@@ -410,7 +506,7 @@ export default function IdentityScreen() {
             className="flex-1 py-3 px-2 text-white"
           />
           {searchQuery ? (
-            <Pressable onPress={() => setSearchQuery('')}>
+            <Pressable onPress={() => setSearchQuery("")}>
               <X color="#64748b" size={18} />
             </Pressable>
           ) : null}
@@ -446,11 +542,26 @@ export default function IdentityScreen() {
           </View>
         ) : (
           <>
-            <ClaimTypeSection type="skill" claims={filteredClaims?.skill || []} />
-            <ClaimTypeSection type="achievement" claims={filteredClaims?.achievement || []} />
-            <ClaimTypeSection type="attribute" claims={filteredClaims?.attribute || []} />
-            <ClaimTypeSection type="education" claims={filteredClaims?.education || []} />
-            <ClaimTypeSection type="certification" claims={filteredClaims?.certification || []} />
+            <ClaimTypeSection
+              type="skill"
+              claims={filteredClaims?.skill || []}
+            />
+            <ClaimTypeSection
+              type="achievement"
+              claims={filteredClaims?.achievement || []}
+            />
+            <ClaimTypeSection
+              type="attribute"
+              claims={filteredClaims?.attribute || []}
+            />
+            <ClaimTypeSection
+              type="education"
+              claims={filteredClaims?.education || []}
+            />
+            <ClaimTypeSection
+              type="certification"
+              claims={filteredClaims?.certification || []}
+            />
           </>
         )}
       </View>
