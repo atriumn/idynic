@@ -99,10 +99,11 @@ describe('GET /api/identity/graph', () => {
     // Verify documents and documentClaimEdges are returned
     expect(data.documents).toHaveLength(1);
     expect(data.documents[0]).toMatchObject({
-      id: 'doc-1',
-      type: 'resume',
-      name: 'resume.pdf',
+      id: "doc-1",
+      type: "resume",
     });
+    // Name now includes date: "resume.pdf (1/1/2024)" or similar depending on locale
+    expect(data.documents[0].name).toMatch(/^resume\.pdf \(\d+\/\d+\/\d+\)$/);
     expect(data.documentClaimEdges).toHaveLength(2);
   });
 

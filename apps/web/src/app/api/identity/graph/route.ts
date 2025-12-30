@@ -117,12 +117,21 @@ export async function GET(): Promise<NextResponse<GraphResponse | { error: strin
     .select("id, type, filename, created_at")
     .eq("user_id", user.id);
 
-  const documentNodes: DocumentNode[] = (documents || []).map(d => ({
-    id: d.id,
-    type: d.type,
-    name: d.filename || `${d.type} - ${d.created_at ? new Date(d.created_at).toLocaleDateString() : 'Unknown'}`,
-    createdAt: d.created_at || new Date().toISOString(),
-  }));
+  const documentNodes: DocumentNode[] = (documents || []).map((d) => {
+    const dateStr = d.created_at
+      ? new Date(d.created_at).toLocaleDateString()
+      : "";
+    const baseName = d.filename || d.type;
+    // Include date for context: "Resume Name (12/30/2025)" or "Story Title (12/30/2025)"
+    const name = dateStr ? `${baseName} (${dateStr})` : baseName;
+
+    return {
+      id: d.id,
+      type: d.type,
+      name,
+      createdAt: d.created_at || new Date().toISOString(),
+    };
+  });
 
   // Build nodes with filtered active issues
   const nodes: GraphNode[] = claims.map(claim => {

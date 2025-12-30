@@ -1,6 +1,7 @@
 import { inngest } from "../client";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { extractStoryEvidence } from "@/lib/ai/extract-story-evidence";
+import { summarizeStoryTitle } from "@/lib/ai/summarize-story-title";
 import { generateEmbeddings } from "@/lib/ai/embeddings";
 import { synthesizeClaimsBatch } from "@/lib/ai/synthesize-claims-batch";
 import { reflectIdentity } from "@/lib/ai/reflect-identity";
@@ -90,14 +91,28 @@ export const processStory = inngest.createFunction(
       return items;
     });
 
-    // Step 3: Create document
+    // Step 3: Generate story title
+    const storyTitle = await step.run("generate-title", async () => {
+      try {
+        const title = await summarizeStoryTitle(text, { userId, jobId });
+        jobLog.info("Generated story title", { title });
+        return title;
+      } catch (err) {
+        jobLog.warn("Failed to generate title, using default", {
+          error: err instanceof Error ? err.message : String(err),
+        });
+        return "Personal Story";
+      }
+    });
+
+    // Step 4: Create document
     const document = await step.run("create-document", async () => {
       const { data: doc, error: docError } = await supabase
         .from("documents")
         .insert({
           user_id: userId,
           type: "story" as const,
-          filename: null,
+          filename: storyTitle,
           storage_path: null,
           raw_text: text,
           content_hash: contentHash,
@@ -110,7 +125,7 @@ export const processStory = inngest.createFunction(
         throw new Error(`Failed to create document: ${docError?.message}`);
       }
 
-      jobLog.info("Document created", { documentId: doc.id });
+      jobLog.info("Document created", { documentId: doc.id, title: storyTitle });
       return doc;
     });
 
@@ -133,7 +148,7 @@ export const processStory = inngest.createFunction(
       return { status: "completed", evidenceCount: 0 };
     }
 
-    // Step 4: Generate embeddings
+    // Step 5: Generate embeddings
     const embeddings = await step.run("generate-embeddings", async () => {
       await job.setPhase("embeddings");
       jobLog.info("Starting embeddings", { evidenceCount: evidenceItems.length });
@@ -144,7 +159,7 @@ export const processStory = inngest.createFunction(
       return embeddings;
     });
 
-    // Step 5: Store evidence
+    // Step 6: Store evidence
     const storedEvidence = await step.run("store-evidence", async () => {
       const evidenceToInsert = evidenceItems.map((item, i) => {
         let evidenceDate: string | null = null;
@@ -183,7 +198,7 @@ export const processStory = inngest.createFunction(
       return evidence;
     });
 
-    // Step 6: Synthesize claims
+    // Step 7: Synthesize claims
     const synthesisResult = await step.run("synthesize-claims", async () => {
       await job.setPhase("synthesis", "0/?");
       jobLog.info("Starting synthesis", { evidenceCount: storedEvidence.length });
@@ -224,13 +239,13 @@ export const processStory = inngest.createFunction(
       }
     });
 
-    // Step 7: Reflect on identity
+    // Step 8: Reflect on identity
     await step.run("reflect-identity", async () => {
       await job.setPhase("reflection");
       await reflectIdentity(supabase, userId, undefined, job);
     });
 
-    // Step 8: Run claim evaluation
+    // Step 9: Run claim evaluation
     await step.run("claim-eval", async () => {
       await job.setPhase("evaluation");
       try {
@@ -244,7 +259,7 @@ export const processStory = inngest.createFunction(
       }
     });
 
-    // Step 9: Complete job
+    // Step 10: Complete job
     await step.run("complete-job", async () => {
       await supabase.from("documents").update({ status: "completed" }).eq("id", document.id);
 
