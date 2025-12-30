@@ -3,7 +3,12 @@ import { getModelConfig } from "./config";
 
 export interface ExtractedEvidence {
   text: string;
-  type: "accomplishment" | "skill_listed" | "trait_indicator" | "education" | "certification";
+  type:
+    | "accomplishment"
+    | "skill_listed"
+    | "trait_indicator"
+    | "education"
+    | "certification";
   context: {
     role?: string;
     company?: string;
@@ -15,30 +20,51 @@ export interface ExtractedEvidence {
 
 const SYSTEM_PROMPT = `You are an evidence extractor. Extract discrete factual statements from personal stories and narratives. Return ONLY valid JSON.`;
 
-const USER_PROMPT = `Extract evidence from this professional story. Extract THREE types of items:
+const USER_PROMPT = `Extract discrete factual statements from this personal story. Each should be:
+- An accomplishment with context (what was achieved, where, when)
+- A skill/technology/tool that was USED (if they built with it, extract it)
+- A trait or value shown through behavior
+- An education or certification if mentioned
 
-1. ACCOMPLISHMENTS - What was achieved, with context
-2. SKILLS/TECHNOLOGIES - Every technology, tool, framework, or platform mentioned as USED (not just referenced)
-3. TRAITS - Personal qualities demonstrated through action
+For accomplishments, include company/role context if mentioned in the narrative.
+Example: "When I was at Google, I led a migration..." → context: {company: "Google"}
 
-For accomplishments, include company/role context if mentioned.
-
-EXAMPLE INPUT:
-"At Google, I built a real-time data pipeline using Kafka and Spark. The system processed 10M events/day. I stayed calm during a major outage."
-
-EXAMPLE OUTPUT:
+Return JSON array:
 [
-  {"text": "Built real-time data pipeline processing 10M events/day", "type": "accomplishment", "context": {"company": "Google"}},
-  {"text": "Kafka", "type": "skill_listed", "context": null},
-  {"text": "Spark", "type": "skill_listed", "context": null},
-  {"text": "Real-time data processing", "type": "skill_listed", "context": null},
-  {"text": "Stays calm under pressure", "type": "trait_indicator", "context": null}
+  {
+    "text": "Led migration of 500 microservices to Kubernetes",
+    "type": "accomplishment",
+    "context": {"role": "Staff Engineer", "company": "Google"}
+  },
+  {
+    "text": "Kubernetes",
+    "type": "skill_listed",
+    "context": null
+  },
+  {
+    "text": "Docker",
+    "type": "skill_listed",
+    "context": null
+  },
+  {
+    "text": "Stays calm under pressure",
+    "type": "trait_indicator",
+    "context": null
+  }
+]
+
+Example: "built with React, TypeScript, Supabase, and pgvector" should extract:
+[
+  {"text": "React", "type": "skill_listed", "context": null},
+  {"text": "TypeScript", "type": "skill_listed", "context": null},
+  {"text": "Supabase", "type": "skill_listed", "context": null},
+  {"text": "pgvector", "type": "skill_listed", "context": null}
 ]
 
 IMPORTANT:
-- Extract EVERY technology/tool/framework/platform mentioned as being used
-- Technologies embedded in sentences like "built with React and Supabase" → extract "React" AND "Supabase" as separate skill_listed items
-- Cloud services (AWS, Supabase, Vercel), databases (PostgreSQL, Redis), frameworks (Next.js, React Native) are all skills
+- Extract EVERY technology, framework, and tool mentioned - if they used it, it's evidence
+- When a sentence lists multiple technologies, extract EACH as a separate skill_listed item
+- Include context when the story mentions where/when something happened
 - Return ONLY valid JSON array, no markdown
 
 STORY TEXT:
@@ -46,7 +72,7 @@ STORY TEXT:
 
 export async function extractStoryEvidence(
   text: string,
-  options?: { userId?: string; jobId?: string }
+  options?: { userId?: string; jobId?: string },
 ): Promise<ExtractedEvidence[]> {
   const config = getModelConfig("extract_story_evidence");
   const response = await aiComplete(
@@ -63,7 +89,7 @@ export async function extractStoryEvidence(
       operation: "extract_story_evidence",
       userId: options?.userId,
       jobId: options?.jobId,
-    }
+    },
   );
 
   const content = response.content;
@@ -85,14 +111,23 @@ export async function extractStoryEvidence(
     }
 
     const MAX_TEXT_LENGTH = 5000;
-    return parsed.filter(item =>
-      item.text &&
-      typeof item.text === "string" &&
-      item.text.length > 0 &&
-      item.text.length <= MAX_TEXT_LENGTH &&
-      ["accomplishment", "skill_listed", "trait_indicator", "education", "certification"].includes(item.type)
+    return parsed.filter(
+      (item) =>
+        item.text &&
+        typeof item.text === "string" &&
+        item.text.length > 0 &&
+        item.text.length <= MAX_TEXT_LENGTH &&
+        [
+          "accomplishment",
+          "skill_listed",
+          "trait_indicator",
+          "education",
+          "certification",
+        ].includes(item.type),
     );
   } catch {
-    throw new Error(`Failed to parse evidence response: ${cleanedContent.slice(0, 200)}`);
+    throw new Error(
+      `Failed to parse evidence response: ${cleanedContent.slice(0, 200)}`,
+    );
   }
 }

@@ -7,6 +7,7 @@
     "dev:mobile": "pnpm --filter mobile start",
     "build": "pnpm --filter web build",
     "lint": "pnpm --filter web lint",
+    "typecheck": "pnpm --filter web exec tsc --noEmit",
     "prepare": "husky",
     "test": "pnpm -r --parallel test",
     "test:run": "pnpm -r test:run",

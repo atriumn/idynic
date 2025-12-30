@@ -34,10 +34,10 @@ if ! pnpm run typecheck 2>&1; then
   exit 2
 fi
 
-# Run tests
+# Run unit tests only (integration tests run in CI)
 echo ""
-echo "Running tests..."
-if ! pnpm run test 2>&1; then
+echo "Running unit tests..."
+if ! pnpm run test:run 2>&1; then
   echo ""
   echo "❌ Tests failed. Push blocked." >&2
   exit 2
