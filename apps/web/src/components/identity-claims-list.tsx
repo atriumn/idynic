@@ -30,7 +30,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Search, Filter, ChevronRight, FileText, AlertTriangle, X, Pencil, Trash2, Loader2, CheckCircle2 } from "lucide-react";
+import {
+  Search,
+  Filter,
+  ChevronRight,
+  FileText,
+  AlertTriangle,
+  X,
+  Pencil,
+  Trash2,
+  Loader2,
+  CheckCircle2,
+} from "lucide-react";
 import { useInvalidateGraph } from "@/lib/hooks/use-identity-graph";
 import { EditClaimModal } from "@/components/edit-claim-modal";
 import type { Database } from "@/lib/supabase/types";
@@ -69,11 +80,16 @@ interface IdentityClaimsListProps {
 }
 
 const CLAIM_TYPE_COLORS: Record<string, string> = {
-  skill: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800",
-  achievement: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800",
-  attribute: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800",
-  education: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-800",
-  certification: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300 border-teal-200 dark:border-teal-800",
+  skill:
+    "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800",
+  achievement:
+    "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800",
+  attribute:
+    "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800",
+  education:
+    "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-800",
+  certification:
+    "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300 border-teal-200 dark:border-teal-800",
 };
 
 const CONFIDENCE_COLORS: Record<string, string> = {
@@ -88,23 +104,30 @@ function getConfidenceLevel(confidence: number): "high" | "medium" | "low" {
   return "low";
 }
 
-export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsListProps) {
+export function IdentityClaimsList({
+  claims,
+  onClaimUpdated,
+}: IdentityClaimsListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [showIssuesOnly, setShowIssuesOnly] = useState(false);
   const [dismissingClaim, setDismissingClaim] = useState<string | null>(null);
   const [deletingClaim, setDeletingClaim] = useState<string | null>(null);
-  const [claimToDelete, setClaimToDelete] = useState<IdentityClaim | null>(null);
+  const [claimToDelete, setClaimToDelete] = useState<IdentityClaim | null>(
+    null,
+  );
   const [claimToEdit, setClaimToEdit] = useState<IdentityClaim | null>(null);
   const invalidateGraph = useInvalidateGraph();
 
   const allTypes = Array.from(new Set(claims.map((c) => c.type)));
-  const claimsWithIssues = claims.filter((c) => c.issues && c.issues.length > 0);
+  const claimsWithIssues = claims.filter(
+    (c) => c.issues && c.issues.length > 0,
+  );
 
   const toggleTypeFilter = (type: string) => {
     setTypeFilters((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
     );
   };
 
@@ -125,15 +148,15 @@ export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsLis
     setDismissingClaim(claimId);
     try {
       const response = await fetch(`/api/v1/claims/${claimId}/dismiss`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
       });
       if (response.ok) {
         invalidateGraph();
         onClaimUpdated?.();
       }
     } catch (error) {
-      console.error('Failed to dismiss issues:', error);
+      console.error("Failed to dismiss issues:", error);
     } finally {
       setDismissingClaim(null);
     }
@@ -144,14 +167,14 @@ export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsLis
     setDeletingClaim(claimToDelete.id);
     try {
       const response = await fetch(`/api/v1/claims/${claimToDelete.id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
       if (response.ok) {
         invalidateGraph();
         onClaimUpdated?.();
       }
     } catch (error) {
-      console.error('Failed to delete claim:', error);
+      console.error("Failed to delete claim:", error);
     } finally {
       setDeletingClaim(null);
       setClaimToDelete(null);
@@ -164,7 +187,8 @@ export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsLis
       claim.description?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType =
       typeFilters.length === 0 || typeFilters.includes(claim.type);
-    const matchesIssueFilter = !showIssuesOnly || (claim.issues && claim.issues.length > 0);
+    const matchesIssueFilter =
+      !showIssuesOnly || (claim.issues && claim.issues.length > 0);
     return matchesSearch && matchesType && matchesIssueFilter;
   });
 
@@ -191,7 +215,8 @@ export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsLis
               onClick={() => setShowIssuesOnly(!showIssuesOnly)}
             >
               <AlertTriangle className="h-3.5 w-3.5 mr-2" />
-              {claimsWithIssues.length} Issue{claimsWithIssues.length !== 1 ? "s" : ""}
+              {claimsWithIssues.length} Issue
+              {claimsWithIssues.length !== 1 ? "s" : ""}
             </Button>
           ) : claims.length > 0 ? (
             <div className="flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400 px-2">
@@ -244,16 +269,27 @@ export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsLis
           <TableHeader className="bg-muted/30">
             <TableRow className="hover:bg-transparent">
               <TableHead className="w-[30px]"></TableHead>
-              <TableHead className="font-bold text-xs uppercase tracking-wider">Claim</TableHead>
-              <TableHead className="w-[120px] font-bold text-xs uppercase tracking-wider">Type</TableHead>
-              <TableHead className="w-[280px] font-bold text-xs uppercase tracking-wider">Sources</TableHead>
-              <TableHead className="w-[100px] text-right font-bold text-xs uppercase tracking-wider">Confidence</TableHead>
+              <TableHead className="font-bold text-xs uppercase tracking-wider">
+                Claim
+              </TableHead>
+              <TableHead className="w-[100px] font-bold text-xs uppercase tracking-wider">
+                Type
+              </TableHead>
+              <TableHead className="w-[160px] font-bold text-xs uppercase tracking-wider">
+                Sources
+              </TableHead>
+              <TableHead className="w-[100px] text-right font-bold text-xs uppercase tracking-wider">
+                Confidence
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredClaims.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={5}
+                  className="h-24 text-center text-muted-foreground"
+                >
                   No claims found matching your criteria.
                 </TableCell>
               </TableRow>
@@ -262,9 +298,14 @@ export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsLis
                 const isExpanded = expandedRows.has(claim.id);
                 const evidenceItems = claim.claim_evidence || [];
                 const evidenceCount = evidenceItems.length;
-                const confidenceLevel = getConfidenceLevel(claim.confidence ?? 0.5);
+                const confidenceLevel = getConfidenceLevel(
+                  claim.confidence ?? 0.5,
+                );
                 // Get unique source documents with their info
-                const sourceDocsMap = new Map<string, { filename: string; type: string; createdAt: string }>();
+                const sourceDocsMap = new Map<
+                  string,
+                  { filename: string; type: string; createdAt: string }
+                >();
                 for (const e of evidenceItems) {
                   const doc = e.evidence?.document;
                   if (doc?.filename && doc.type) {
@@ -281,8 +322,16 @@ export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsLis
                 const sourceDocs = Array.from(sourceDocsMap.values());
 
                 // Format short source label: "Resume (12/30/25)"
-                const formatShortSource = (doc: { type: string; createdAt: string }) => {
-                  const typeLabel = doc.type === "resume" ? "Resume" : doc.type === "story" ? "Story" : doc.type;
+                const formatShortSource = (doc: {
+                  type: string;
+                  createdAt: string;
+                }) => {
+                  const typeLabel =
+                    doc.type === "resume"
+                      ? "Resume"
+                      : doc.type === "story"
+                        ? "Story"
+                        : doc.type;
                   if (doc.createdAt) {
                     const date = new Date(doc.createdAt);
                     const shortDate = `${date.getMonth() + 1}/${date.getDate()}/${String(date.getFullYear()).slice(-2)}`;
@@ -300,7 +349,9 @@ export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsLis
                     >
                       <TableCell className="py-2 pr-0">
                         {evidenceCount > 0 && (
-                          <div className={`transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}>
+                          <div
+                            className={`transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
+                          >
                             <ChevronRight className="h-4 w-4 text-muted-foreground" />
                           </div>
                         )}
@@ -334,9 +385,15 @@ export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsLis
                             {evidenceCount} item{evidenceCount !== 1 ? "s" : ""}
                           </span>
                           {sourceDocs.length > 0 && (
-                            <span className="truncate max-w-[200px]" title={sourceDocs.map(d => d.filename).join(", ")}>
+                            <span
+                              className="truncate max-w-[200px]"
+                              title={sourceDocs
+                                .map((d) => d.filename)
+                                .join(", ")}
+                            >
                               {formatShortSource(sourceDocs[0])}
-                              {sourceDocs.length > 1 && ` +${sourceDocs.length - 1}`}
+                              {sourceDocs.length > 1 &&
+                                ` +${sourceDocs.length - 1}`}
                             </span>
                           )}
                         </div>
@@ -352,101 +409,127 @@ export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsLis
                         </div>
                       </TableCell>
                     </TableRow>
-                    {isExpanded && (evidenceCount > 0 || (claim.issues && claim.issues.length > 0)) && (
-                      <TableRow className="bg-muted/10 hover:bg-muted/10 border-b">
-                        <TableCell colSpan={5} className="p-0">
-                          <div className="px-4 py-3 pl-12 space-y-3">
-                            {/* Issue Banner */}
-                            {claim.issues && claim.issues.length > 0 && (
-                              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
-                                <div className="flex items-start justify-between gap-4">
-                                  <div className="flex gap-2">
-                                    <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                                    <div className="space-y-1">
-                                      {claim.issues.map((issue) => (
-                                        <p key={issue.id} className="text-sm text-amber-800 dark:text-amber-200">
-                                          <span className="font-medium capitalize">{issue.issue_type.replace('_', ' ')}:</span>{' '}
-                                          {issue.message}
-                                        </p>
-                                      ))}
+                    {isExpanded &&
+                      (evidenceCount > 0 ||
+                        (claim.issues && claim.issues.length > 0)) && (
+                        <TableRow className="bg-muted/10 hover:bg-muted/10 border-b">
+                          <TableCell colSpan={5} className="p-0">
+                            <div className="px-4 py-3 pl-12 space-y-3">
+                              {/* Issue Banner */}
+                              {claim.issues && claim.issues.length > 0 && (
+                                <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                                  <div className="flex items-start justify-between gap-4">
+                                    <div className="flex gap-2">
+                                      <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                                      <div className="space-y-1">
+                                        {claim.issues.map((issue) => (
+                                          <p
+                                            key={issue.id}
+                                            className="text-sm text-amber-800 dark:text-amber-200"
+                                          >
+                                            <span className="font-medium capitalize">
+                                              {issue.issue_type.replace(
+                                                "_",
+                                                " ",
+                                              )}
+                                              :
+                                            </span>{" "}
+                                            {issue.message}
+                                          </p>
+                                        ))}
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-7 px-2 text-amber-700 hover:text-amber-800 hover:bg-amber-100 dark:text-amber-300 dark:hover:text-amber-200 dark:hover:bg-amber-900/50"
+                                        onClick={(e) =>
+                                          handleDismissIssues(claim.id, e)
+                                        }
+                                        disabled={dismissingClaim === claim.id}
+                                      >
+                                        {dismissingClaim === claim.id ? (
+                                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                        ) : (
+                                          <X className="h-3.5 w-3.5" />
+                                        )}
+                                        <span className="ml-1 text-xs">
+                                          Dismiss
+                                        </span>
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-7 px-2 text-amber-700 hover:text-amber-800 hover:bg-amber-100 dark:text-amber-300 dark:hover:text-amber-200 dark:hover:bg-amber-900/50"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setClaimToEdit(claim);
+                                        }}
+                                      >
+                                        <Pencil className="h-3.5 w-3.5" />
+                                        <span className="ml-1 text-xs">
+                                          Edit
+                                        </span>
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-7 px-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/50"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setClaimToDelete(claim);
+                                        }}
+                                        disabled={deletingClaim === claim.id}
+                                      >
+                                        {deletingClaim === claim.id ? (
+                                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                        ) : (
+                                          <Trash2 className="h-3.5 w-3.5" />
+                                        )}
+                                        <span className="ml-1 text-xs">
+                                          Delete
+                                        </span>
+                                      </Button>
                                     </div>
                                   </div>
-                                  <div className="flex items-center gap-1 shrink-0">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-7 px-2 text-amber-700 hover:text-amber-800 hover:bg-amber-100 dark:text-amber-300 dark:hover:text-amber-200 dark:hover:bg-amber-900/50"
-                                      onClick={(e) => handleDismissIssues(claim.id, e)}
-                                      disabled={dismissingClaim === claim.id}
-                                    >
-                                      {dismissingClaim === claim.id ? (
-                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                      ) : (
-                                        <X className="h-3.5 w-3.5" />
-                                      )}
-                                      <span className="ml-1 text-xs">Dismiss</span>
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-7 px-2 text-amber-700 hover:text-amber-800 hover:bg-amber-100 dark:text-amber-300 dark:hover:text-amber-200 dark:hover:bg-amber-900/50"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setClaimToEdit(claim);
-                                      }}
-                                    >
-                                      <Pencil className="h-3.5 w-3.5" />
-                                      <span className="ml-1 text-xs">Edit</span>
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-7 px-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/50"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setClaimToDelete(claim);
-                                      }}
-                                      disabled={deletingClaim === claim.id}
-                                    >
-                                      {deletingClaim === claim.id ? (
-                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                      ) : (
-                                        <Trash2 className="h-3.5 w-3.5" />
-                                      )}
-                                      <span className="ml-1 text-xs">Delete</span>
-                                    </Button>
-                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              )}
 
-                            {/* Evidence Items */}
-                            {evidenceItems.map((item, idx) => (
-                              <div key={idx} className="flex gap-3 text-sm group">
-                                <div className="mt-0.5 shrink-0 text-muted-foreground">
-                                  <FileText className="h-3.5 w-3.5" />
-                                </div>
-                                <div className="space-y-1">
-                                  <p className="text-muted-foreground leading-relaxed text-xs">
-                                    {item.evidence?.text}
-                                  </p>
-                                  <div className="flex items-center gap-2">
-                                    <Badge variant="outline" className="text-[10px] h-4 px-1">
-                                      {item.strength}
-                                    </Badge>
-                                    {item.evidence?.document?.filename && (
-                                      <span className="text-[10px] text-muted-foreground">
-                                        Source: {item.evidence.document.filename}
-                                      </span>
-                                    )}
+                              {/* Evidence Items */}
+                              {evidenceItems.map((item, idx) => (
+                                <div
+                                  key={idx}
+                                  className="flex gap-3 text-sm group"
+                                >
+                                  <div className="mt-0.5 shrink-0 text-muted-foreground">
+                                    <FileText className="h-3.5 w-3.5" />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <p className="text-muted-foreground leading-relaxed text-xs">
+                                      {item.evidence?.text}
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                      <Badge
+                                        variant="outline"
+                                        className="text-[10px] h-4 px-1"
+                                      >
+                                        {item.strength}
+                                      </Badge>
+                                      {item.evidence?.document?.filename && (
+                                        <span className="text-[10px] text-muted-foreground">
+                                          Source:{" "}
+                                          {item.evidence.document.filename}
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )}
+                              ))}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
                   </>
                 );
               })
@@ -456,12 +539,17 @@ export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsLis
       </div>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!claimToDelete} onOpenChange={(open) => !open && setClaimToDelete(null)}>
+      <AlertDialog
+        open={!!claimToDelete}
+        onOpenChange={(open) => !open && setClaimToDelete(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Claim</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{claimToDelete?.label}&quot;? This will also remove all associated evidence links and issues. This action cannot be undone.
+              Are you sure you want to delete &quot;{claimToDelete?.label}
+              &quot;? This will also remove all associated evidence links and
+              issues. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -476,7 +564,7 @@ export function IdentityClaimsList({ claims, onClaimUpdated }: IdentityClaimsLis
                   Deleting...
                 </>
               ) : (
-                'Delete'
+                "Delete"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

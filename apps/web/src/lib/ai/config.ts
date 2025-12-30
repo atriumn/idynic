@@ -12,7 +12,10 @@ import type { ModelConfig } from "./types";
 
 type ProviderType = "openai" | "google" | "anthropic";
 
-function getEnvProvider(envKey: string, defaultValue: ProviderType): ProviderType {
+function getEnvProvider(
+  envKey: string,
+  defaultValue: ProviderType,
+): ProviderType {
   const value = process.env[envKey];
   if (value === "openai" || value === "google" || value === "anthropic") {
     return value;
@@ -110,7 +113,10 @@ export function getModelConfig(operation: string): ModelConfig {
     case "summarize_story_title":
       return {
         provider: getEnvProvider("SUMMARIZE_STORY_TITLE_PROVIDER", "anthropic"),
-        model: getEnvString("SUMMARIZE_STORY_TITLE_MODEL", "claude-haiku-4-20250514"),
+        model: getEnvString(
+          "SUMMARIZE_STORY_TITLE_MODEL",
+          "claude-haiku-4-5-20251001",
+        ),
       };
 
     default:
