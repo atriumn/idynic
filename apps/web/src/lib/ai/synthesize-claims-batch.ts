@@ -71,6 +71,13 @@ Rules:
 4. Strength: "strong" = direct evidence, "medium" = related, "weak" = tangential
 5. Respect evidence type → claim type mapping shown in parentheses
 
+Description guidelines (IMPORTANT):
+- Skills: Describe WHAT it is, never proficiency level. No "Proficiency in", "Familiarity with", "Expert in"
+  Good: "Cloud infrastructure platform" for AWS, "JavaScript runtime" for Node.js
+  Bad: "Proficiency in AWS", "Familiarity with Node.js"
+- Achievements: What was accomplished and impact
+- Attributes: What the trait means in practice
+
 Return JSON array with EXACTLY ${evidenceItems.length} decisions, one per evidence item:
 [
   {
