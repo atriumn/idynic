@@ -2,7 +2,27 @@
 
 **Priority**: HIGH
 **Effort**: 2-3 days
-**Status**: Not Started
+**Status**: Done
+
+## Progress (Last reviewed: 2025-12-31)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Directory Structure | ✅ Complete | Integration test directories created |
+| Step 2: Vitest Integration Config | ✅ Complete | `vitest.integration.config.ts` added |
+| Step 3: Global Setup/Teardown | ✅ Complete | `global-setup.ts` handles Supabase lifecycle |
+| Step 4: Test Fixtures SQL | ✅ Complete | Fixtures for test data |
+| Step 5: Integration Test Utilities | ✅ Complete | `test-utils.ts` with user/client helpers |
+| Step 6: Auth Integration Tests | ✅ Complete | signup, login, token-refresh tests |
+| Step 7: RLS Policy Tests | ✅ Complete | `rls-policies.integration.test.ts` |
+| Step 8: Profile CRUD Tests | ✅ Complete | `profile-crud.integration.test.ts` |
+| Step 9: Document Tests | ✅ Complete | `document-crud.integration.test.ts` |
+| Step 10: Opportunity Tests | ✅ Complete | `opportunity-crud.integration.test.ts` |
+| Step 11: Package.json Scripts | ✅ Complete | `test:integration` script added (PR #38) |
+| Step 12: Update CI Workflow | ✅ Complete | CI runs integration tests (PR #38) |
+
+### Drift Notes
+Implementation matches plan. All integration tests are in place and running in CI.
 
 ## Overview
 

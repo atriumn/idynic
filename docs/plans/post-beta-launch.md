@@ -2,6 +2,23 @@
 
 > Created 2025-12-28 after completing beta launch checklist
 
+**Status:** In Progress
+
+## Progress (Last reviewed: 2025-12-31)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Delete My Account | ✅ Complete | Full data deletion endpoint implemented |
+| Export My Data | ✅ Complete | ZIP download with all user data |
+| Onboarding Prompts | ⏳ Not Started | |
+| Fix search_path warnings | ⏳ Not Started | 16 functions need migration |
+| Move vector extension | ⏳ Not Started | |
+| Set up Axiom logging | ⏳ Not Started | |
+| Document env vars | ⏳ Not Started | |
+
+### Drift Notes
+GDPR data management complete. Security hardening and onboarding prompts still pending.
+
 ## Data Management (GDPR)
 
 ### Delete My Account

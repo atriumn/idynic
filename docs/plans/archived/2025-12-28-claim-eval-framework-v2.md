@@ -2,6 +2,22 @@
 
 > Updated 2025-12-28 after brainstorming session. Replaces 2025-12-27-claim-eval-framework.md.
 
+**Status:** Done
+
+## Progress (Last reviewed: 2025-12-31)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Phase 1: Infrastructure | ✅ Complete | Migrations for `claim_issues` and `tailoring_eval_log` tables created |
+| Phase 2: Eval Logic | ✅ Complete | `rule-checks.ts`, `claim-grounding.ts`, `tailoring-grounding.ts` implemented |
+| Phase 3: Integration | ✅ Complete | Eval step integrated in `process-resume.ts` and `process-story.ts`, tailor route |
+| Phase 4: Claim Management API | ✅ Complete | PATCH/DELETE `/api/v1/claims/[id]`, POST `/api/v1/claims/[id]/dismiss` |
+| Phase 5: UI | ✅ Complete | Claims list shows issues with dismiss/edit/delete actions |
+
+### Drift Notes
+Implementation matches plan. Claim eval runs synchronously as part of resume/story processing.
+Tailoring eval runs synchronously in tailor API route before returning profile.
+
 ## Overview
 
 Two eval systems that catch quality issues before users see or share content:
