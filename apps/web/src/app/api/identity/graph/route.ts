@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 interface EvidenceDetail {
   id: string;
   text: string;
+  evidence_type: string;
   source_type: string;
   evidence_date: string | null;
   document_id: string | null;
@@ -62,10 +63,14 @@ interface GraphResponse {
   documentClaimEdges: { documentId: string; claimId: string }[];
 }
 
-export async function GET(): Promise<NextResponse<GraphResponse | { error: string }>> {
+export async function GET(): Promise<
+  NextResponse<GraphResponse | { error: string }>
+> {
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -73,7 +78,8 @@ export async function GET(): Promise<NextResponse<GraphResponse | { error: strin
   // Fetch claims with their evidence and active issues
   const { data: claims, error } = await supabase
     .from("identity_claims")
-    .select(`
+    .select(
+      `
       id,
       type,
       label,
@@ -85,6 +91,7 @@ export async function GET(): Promise<NextResponse<GraphResponse | { error: strin
         evidence:evidence_id(
           id,
           text,
+          evidence_type,
           source_type,
           evidence_date,
           document_id
@@ -99,16 +106,26 @@ export async function GET(): Promise<NextResponse<GraphResponse | { error: strin
         created_at,
         dismissed_at
       )
-    `)
+    `,
+    )
     .eq("user_id", user.id);
 
   if (error) {
     console.error("Graph query error:", error);
-    return NextResponse.json({ error: "Failed to fetch graph data" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch graph data" },
+      { status: 500 },
+    );
   }
 
   if (!claims || claims.length === 0) {
-    return NextResponse.json({ nodes: [], edges: [], evidence: [], documents: [], documentClaimEdges: [] });
+    return NextResponse.json({
+      nodes: [],
+      edges: [],
+      evidence: [],
+      documents: [],
+      documentClaimEdges: [],
+    });
   }
 
   // Fetch documents for this user
@@ -134,12 +151,17 @@ export async function GET(): Promise<NextResponse<GraphResponse | { error: strin
   });
 
   // Build nodes with filtered active issues
-  const nodes: GraphNode[] = claims.map(claim => {
+  const nodes: GraphNode[] = claims.map((claim) => {
     // Filter to only include non-dismissed issues
-    const allIssues = (claim as unknown as { claim_issues?: Array<ClaimIssue & { dismissed_at: string | null }> }).claim_issues || [];
+    const allIssues =
+      (
+        claim as unknown as {
+          claim_issues?: Array<ClaimIssue & { dismissed_at: string | null }>;
+        }
+      ).claim_issues || [];
     const activeIssues = allIssues
-      .filter(issue => issue.dismissed_at === null)
-      .map(issue => ({
+      .filter((issue) => issue.dismissed_at === null)
+      .map((issue) => ({
         id: issue.id,
         issue_type: issue.issue_type,
         severity: issue.severity,
@@ -166,7 +188,13 @@ export async function GET(): Promise<NextResponse<GraphResponse | { error: strin
   for (const claim of claims) {
     const documentIds = new Set<string>();
     for (const ce of claim.claim_evidence || []) {
-      const ev = ce.evidence as { id: string; text: string; source_type: string; evidence_date: string | null; document_id: string | null } | null;
+      const ev = ce.evidence as {
+        id: string;
+        text: string;
+        source_type: string;
+        evidence_date: string | null;
+        document_id: string | null;
+      } | null;
       if (ev) {
         if (ev.document_id) {
           documentIds.add(ev.document_id);
@@ -186,13 +214,13 @@ export async function GET(): Promise<NextResponse<GraphResponse | { error: strin
 
   // Build edges - connect claims from the same document
   const edges: GraphEdge[] = [];
-  const claimIds = claims.map(c => c.id);
+  const claimIds = claims.map((c) => c.id);
 
   for (let i = 0; i < claimIds.length; i++) {
     for (let j = i + 1; j < claimIds.length; j++) {
       const docs1 = claimToDocuments.get(claimIds[i]) || new Set();
       const docs2 = claimToDocuments.get(claimIds[j]) || new Set();
-      const sharedDocs = Array.from(docs1).filter(d => docs2.has(d));
+      const sharedDocs = Array.from(docs1).filter((d) => docs2.has(d));
 
       if (sharedDocs.length > 0) {
         edges.push({
@@ -207,13 +235,13 @@ export async function GET(): Promise<NextResponse<GraphResponse | { error: strin
   // Build document-to-claim edges for the bipartite constellation view
   const documentClaimEdges: { documentId: string; claimId: string }[] = [];
   claimToDocuments.forEach((docIds, claimId) => {
-    docIds.forEach(docId => {
+    docIds.forEach((docId) => {
       documentClaimEdges.push({ documentId: docId, claimId });
     });
   });
 
   // Debug logging
-  console.log('Graph API:', {
+  console.log("Graph API:", {
     claims: claims.length,
     nodes: nodes.length,
     edges: edges.length,

@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 interface EvidenceDetail {
   id: string;
   text: string;
+  evidence_type: string;
   source_type: string;
   evidence_date: string | null;
   document_id: string | null;

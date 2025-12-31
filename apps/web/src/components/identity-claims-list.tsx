@@ -48,6 +48,7 @@ import type { Database } from "@/lib/supabase/types";
 
 type EvidenceWithDocument = {
   text: string;
+  evidence_type: string | null;
   document: {
     filename: string | null;
     type: string | null;
@@ -516,6 +517,14 @@ export function IdentityClaimsList({
                                       >
                                         {item.strength}
                                       </Badge>
+                                      {item.evidence?.evidence_type && (
+                                        <Badge
+                                          variant="secondary"
+                                          className="text-[10px] h-4 px-1"
+                                        >
+                                          {item.evidence.evidence_type.replace("_", " ")}
+                                        </Badge>
+                                      )}
                                       {item.evidence?.document?.filename && (
                                         <span className="text-[10px] text-muted-foreground">
                                           Source:{" "}

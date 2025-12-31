@@ -256,6 +256,7 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
                     strength: ce.strength,
                     evidence: ce.evidence ? {
                       text: ce.evidence.text,
+                      evidence_type: ce.evidence.evidence_type,
                       document: doc ? {
                         filename: doc.name,
                         type: doc.type,
@@ -307,6 +308,7 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
                       strength: ce.strength,
                       evidence: ce.evidence ? {
                         text: ce.evidence.text,
+                        evidence_type: ce.evidence.evidence_type,
                         document: doc ? {
                           filename: doc.name,
                           type: doc.type,
