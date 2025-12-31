@@ -2,6 +2,18 @@
 
 > Created 2025-12-28 after completing beta launch checklist
 
+**Status:** In Progress
+
+## Progress (Last reviewed: 2025-12-31)
+
+| Section | Status | Notes |
+|---------|--------|-------|
+| Delete My Account | ✅ Complete | All GDPR deletion functionality implemented |
+| Export My Data | ✅ Complete | JSON + ZIP export working |
+| Security Hardening | ⏳ Not Started | search_path and vector schema migrations pending |
+| Onboarding Prompts | ⏳ Not Started | Shared logic for web+mobile not yet implemented |
+| Operational | ⏳ Not Started | Axiom logging and env var docs pending |
+
 ## Data Management (GDPR)
 
 ### Delete My Account

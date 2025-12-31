@@ -1,5 +1,7 @@
 # Claim Evaluation Framework
 
+**Status:** Superseded by 2025-12-28-claim-eval-framework-v2.md
+
 ## Overview
 
 Hybrid evaluation system to sanity-check AI-generated claims after extraction. Combines fast rule-based checks with sampled AI evaluation to catch duplicates, conflicts, hallucinations, and data quality issues.

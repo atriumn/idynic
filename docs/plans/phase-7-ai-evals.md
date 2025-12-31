@@ -2,7 +2,24 @@
 
 **Priority**: MEDIUM-HIGH
 **Effort**: 2-3 days
-**Status**: Not Started
+**Status:** Not Started
+
+## Progress (Last reviewed: 2025-12-31)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Eval Directory Structure | ⏳ Not Started | |
+| Step 2: Test Case Format | ⏳ Not Started | |
+| Step 3: Evaluation Script | ⏳ Not Started | |
+| Steps 4-11 | ⏳ Not Started | Blocked by earlier steps |
+
+### Prerequisites Status
+- [x] AI generation features working in production
+- [x] OpenAI/Anthropic API keys available
+- [ ] Phases 1-4 complete (Phase 1 done, others pending)
+
+### Notes
+Claim eval framework (different from AI quality evals) is in progress - see 2025-12-28-claim-eval-framework-v2.md
 
 ## Overview
 

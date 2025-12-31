@@ -2,6 +2,31 @@
 
 > Updated 2025-12-28 after brainstorming session. Replaces 2025-12-27-claim-eval-framework.md.
 
+**Status:** In Progress
+
+## Progress (Last reviewed: 2025-12-31)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Phase 1: Infrastructure | ✅ Complete | Anthropic provider added, eval operations configured |
+| Phase 2: Eval Logic | ✅ Complete | rule-checks.ts, claim-grounding.ts, run-claim-eval.ts all implemented |
+| Phase 3: Integration | ✅ Complete | Eval integrated into process-resume.ts and process-story.ts |
+| Phase 4: Claim Management API | ⏳ Not Started | PATCH/DELETE/dismiss endpoints not yet created |
+| Phase 5: UI | ⏳ Not Started | Issue banners and management UI not yet added |
+| Tailoring eval | ⏳ Not Started | tailoring-grounding.ts exists but not integrated into tailor flow |
+
+### Recent Progress (Dec 29-31)
+- AI-generated story titles implemented
+- Claim quality check added to eval system
+- Skill name preservation improved
+- Story evidence extraction enhanced
+- Model ID fixes (Claude Haiku)
+
+### Drift Notes
+- Implementation uses claim_evidence.strength field rather than claim_issues table
+- No migration for claim_issues table created yet
+- Eval results stored on claim_evidence rather than separate issues table
+
 ## Overview
 
 Two eval systems that catch quality issues before users see or share content:
