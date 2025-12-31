@@ -93,18 +93,13 @@ const CLAIM_TYPE_COLORS: Record<string, string> = {
     "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300 border-teal-200 dark:border-teal-800",
 };
 
-// Subtle row backgrounds matching mobile card styling
+// Subtle row backgrounds matching mobile card styling (using hex for dark mode)
 const CLAIM_ROW_COLORS: Record<string, string> = {
-  skill:
-    "bg-blue-50/50 dark:bg-blue-950/20 hover:bg-blue-100/50 dark:hover:bg-blue-900/30",
-  achievement:
-    "bg-green-50/50 dark:bg-green-950/20 hover:bg-green-100/50 dark:hover:bg-green-900/30",
-  attribute:
-    "bg-purple-50/50 dark:bg-purple-950/20 hover:bg-purple-100/50 dark:hover:bg-purple-900/30",
-  education:
-    "bg-orange-50/50 dark:bg-orange-950/20 hover:bg-orange-100/50 dark:hover:bg-orange-900/30",
-  certification:
-    "bg-teal-50/50 dark:bg-teal-950/20 hover:bg-teal-100/50 dark:hover:bg-teal-900/30",
+  skill: "rgba(30, 58, 95, 0.25)", // blue-950/25
+  achievement: "rgba(20, 83, 45, 0.25)", // green-950/25
+  attribute: "rgba(59, 7, 100, 0.25)", // purple-950/25
+  education: "rgba(120, 53, 15, 0.25)", // orange-950/25
+  certification: "rgba(19, 78, 74, 0.25)", // teal-950/25
 };
 
 const CONFIDENCE_COLORS: Record<string, string> = {
@@ -372,7 +367,8 @@ export function IdentityClaimsList({
                   <>
                     <TableRow
                       key={claim.id}
-                      className={`cursor-pointer ${CLAIM_ROW_COLORS[claim.type] || "hover:bg-muted/30"} ${isExpanded ? "brightness-95 dark:brightness-110" : ""}`}
+                      className={`cursor-pointer hover:brightness-110 ${isExpanded ? "brightness-110" : ""}`}
+                      style={{ backgroundColor: CLAIM_ROW_COLORS[claim.type] }}
                       onClick={() => toggleRow(claim.id)}
                     >
                       <TableCell className="py-2 pr-0">
