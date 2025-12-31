@@ -110,6 +110,18 @@ export const CLAIM_TYPE_LABELS: Record<string, string> = {
   certification: "Certifications",
 };
 
+// Evidence type colors aligned with claim type colors
+export const EVIDENCE_TYPE_COLORS: Record<
+  string,
+  { bgHex: string; textHex: string }
+> = {
+  skill_listed: { bgHex: "#1e3a5f", textHex: "#93c5fd" }, // blue like skill
+  accomplishment: { bgHex: "#14532d", textHex: "#86efac" }, // green like achievement
+  trait_indicator: { bgHex: "#3b0764", textHex: "#d8b4fe" }, // purple like attribute
+  education: { bgHex: "#78350f", textHex: "#fcd34d" }, // amber like education
+  certification: { bgHex: "#134e4a", textHex: "#5eead4" }, // teal like certification
+};
+
 async function fetchIdentityClaims(userId: string): Promise<GroupedClaims> {
   // Fetch claims with their evidence (including document info) and active issues
   const { data: claims, error } = await supabase

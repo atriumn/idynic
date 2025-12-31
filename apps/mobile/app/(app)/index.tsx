@@ -27,6 +27,7 @@ import {
   Wand2,
   TrendingUp,
   AlertTriangle,
+  CheckCircle2,
 } from "lucide-react-native";
 import { EMPTY_STATE } from "@idynic/shared";
 import {
@@ -37,6 +38,7 @@ import {
   Evidence,
   CLAIM_TYPE_COLORS,
   CLAIM_TYPE_LABELS,
+  EVIDENCE_TYPE_COLORS,
   GroupedClaims,
 } from "../../hooks/use-identity-claims";
 import { useProfile } from "../../hooks/use-profile";
@@ -89,14 +91,30 @@ function EvidenceItem({ evidence }: { evidence: Evidence }) {
     return typeLabel;
   };
 
+  const evidenceTypeColors = evidence.evidence_type
+    ? EVIDENCE_TYPE_COLORS[evidence.evidence_type]
+    : undefined;
+  const evidenceTypeLabel = evidence.evidence_type?.replace("_", " ") || "unknown";
+
   return (
     <View className="flex-row items-start gap-2 mb-2">
       <FileText color="#64748b" size={14} />
       <View className="flex-1">
         <Text className="text-sm text-slate-300">{evidence.text}</Text>
-        <Text className="text-xs text-slate-500 mt-0.5">
-          {getDocumentName()} • {evidence.evidence_type}
-        </Text>
+        <View className="flex-row items-center gap-2 mt-1">
+          <Text className="text-xs text-slate-500">{getDocumentName()}</Text>
+          <View
+            className="px-1.5 py-0.5 rounded"
+            style={{ backgroundColor: evidenceTypeColors?.bgHex || "#334155" }}
+          >
+            <Text
+              className="text-[10px]"
+              style={{ color: evidenceTypeColors?.textHex || "#94a3b8" }}
+            >
+              {evidenceTypeLabel}
+            </Text>
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -349,6 +367,14 @@ export default function IdentityScreen() {
     return filtered;
   }, [groupedClaims, searchQuery, selectedTypes]);
 
+  // Count claims with issues for "All verified" indicator
+  const claimsWithIssues = useMemo(() => {
+    if (!groupedClaims) return 0;
+    return Object.values(groupedClaims)
+      .flat()
+      .filter((claim) => claim.issues && claim.issues.length > 0).length;
+  }, [groupedClaims]);
+
   const toggleType = (type: keyof GroupedClaims) => {
     const newSelected = new Set(selectedTypes);
     if (newSelected.has(type)) {
@@ -482,11 +508,27 @@ export default function IdentityScreen() {
             <Logo size={32} />
             <Text className="text-2xl font-bold text-white">Your Identity</Text>
           </View>
-          <Text className="text-slate-400 mt-1">
-            {isFiltered
-              ? `${filteredTotal} of ${totalClaims} claims`
-              : `${totalClaims} claim${totalClaims !== 1 ? "s" : ""} extracted from your experience`}
-          </Text>
+          <View className="flex-row items-center justify-between mt-1">
+            <Text className="text-slate-400">
+              {isFiltered
+                ? `${filteredTotal} of ${totalClaims} claims`
+                : `${totalClaims} claim${totalClaims !== 1 ? "s" : ""} extracted from your experience`}
+            </Text>
+            {totalClaims > 0 &&
+              (claimsWithIssues > 0 ? (
+                <View className="flex-row items-center gap-1 px-2 py-1 rounded-full bg-amber-900/30">
+                  <AlertTriangle color="#fbbf24" size={14} />
+                  <Text className="text-xs text-amber-400">
+                    {claimsWithIssues} issue{claimsWithIssues !== 1 ? "s" : ""}
+                  </Text>
+                </View>
+              ) : (
+                <View className="flex-row items-center gap-1 px-2 py-1 rounded-full bg-green-900/30">
+                  <CheckCircle2 color="#4ade80" size={14} />
+                  <Text className="text-xs text-green-400">All verified</Text>
+                </View>
+              ))}
+          </View>
         </View>
 
         {/* Identity Reflection */}

@@ -30,6 +30,13 @@ jest.mock('../../hooks/use-identity-claims', () => ({
     education: 'Education',
     certification: 'Certifications',
   },
+  EVIDENCE_TYPE_COLORS: {
+    skill_listed: { bgHex: '#1e3a5f', textHex: '#93c5fd' },
+    accomplishment: { bgHex: '#14532d', textHex: '#86efac' },
+    trait_indicator: { bgHex: '#3b0764', textHex: '#d8b4fe' },
+    education: { bgHex: '#78350f', textHex: '#fcd34d' },
+    certification: { bgHex: '#134e4a', textHex: '#5eead4' },
+  },
 }));
 jest.mock('../../hooks/use-profile');
 
@@ -87,6 +94,8 @@ jest.mock('lucide-react-native', () => ({
   Eye: () => 'Eye',
   Wand2: () => 'Wand2',
   TrendingUp: () => 'TrendingUp',
+  AlertTriangle: () => 'AlertTriangle',
+  CheckCircle2: () => 'CheckCircle2',
 }));
 
 describe('IdentityScreen (Home)', () => {
