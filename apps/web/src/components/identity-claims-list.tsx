@@ -99,6 +99,19 @@ const CONFIDENCE_COLORS: Record<string, string> = {
   low: "bg-red-500",
 };
 
+const EVIDENCE_TYPE_COLORS: Record<string, string> = {
+  skill_listed:
+    "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300",
+  accomplishment:
+    "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300",
+  trait_indicator:
+    "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300",
+  education:
+    "bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300",
+  certification:
+    "bg-teal-50 text-teal-700 dark:bg-teal-900/20 dark:text-teal-300",
+};
+
 function getConfidenceLevel(confidence: number): "high" | "medium" | "low" {
   if (confidence >= 0.75) return "high";
   if (confidence >= 0.5) return "medium";
@@ -519,8 +532,8 @@ export function IdentityClaimsList({
                                       </Badge>
                                       {item.evidence?.evidence_type && (
                                         <Badge
-                                          variant="secondary"
-                                          className="text-[10px] h-4 px-1"
+                                          variant="outline"
+                                          className={`text-[10px] h-4 px-1 border-0 ${EVIDENCE_TYPE_COLORS[item.evidence.evidence_type] || ""}`}
                                         >
                                           {item.evidence.evidence_type.replace("_", " ")}
                                         </Badge>
