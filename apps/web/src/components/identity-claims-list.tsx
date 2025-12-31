@@ -93,6 +93,20 @@ const CLAIM_TYPE_COLORS: Record<string, string> = {
     "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300 border-teal-200 dark:border-teal-800",
 };
 
+// Subtle row backgrounds matching mobile card styling
+const CLAIM_ROW_COLORS: Record<string, string> = {
+  skill:
+    "bg-blue-50/50 dark:bg-blue-950/20 hover:bg-blue-100/50 dark:hover:bg-blue-900/30",
+  achievement:
+    "bg-green-50/50 dark:bg-green-950/20 hover:bg-green-100/50 dark:hover:bg-green-900/30",
+  attribute:
+    "bg-purple-50/50 dark:bg-purple-950/20 hover:bg-purple-100/50 dark:hover:bg-purple-900/30",
+  education:
+    "bg-orange-50/50 dark:bg-orange-950/20 hover:bg-orange-100/50 dark:hover:bg-orange-900/30",
+  certification:
+    "bg-teal-50/50 dark:bg-teal-950/20 hover:bg-teal-100/50 dark:hover:bg-teal-900/30",
+};
+
 const CONFIDENCE_COLORS: Record<string, string> = {
   high: "bg-green-500",
   medium: "bg-amber-500",
@@ -358,7 +372,7 @@ export function IdentityClaimsList({
                   <>
                     <TableRow
                       key={claim.id}
-                      className={`cursor-pointer hover:bg-muted/30 ${isExpanded ? "bg-muted/30" : ""}`}
+                      className={`cursor-pointer ${CLAIM_ROW_COLORS[claim.type] || "hover:bg-muted/30"} ${isExpanded ? "brightness-95 dark:brightness-110" : ""}`}
                       onClick={() => toggleRow(claim.id)}
                     >
                       <TableCell className="py-2 pr-0">
@@ -535,7 +549,10 @@ export function IdentityClaimsList({
                                           variant="outline"
                                           className={`text-[10px] h-4 px-1 border-0 ${EVIDENCE_TYPE_COLORS[item.evidence.evidence_type] || ""}`}
                                         >
-                                          {item.evidence.evidence_type.replace("_", " ")}
+                                          {item.evidence.evidence_type.replace(
+                                            "_",
+                                            " ",
+                                          )}
                                         </Badge>
                                       )}
                                       {item.evidence?.document?.filename && (
