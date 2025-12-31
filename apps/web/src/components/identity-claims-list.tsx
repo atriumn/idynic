@@ -93,19 +93,13 @@ const CLAIM_TYPE_COLORS: Record<string, string> = {
     "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300 border-teal-200 dark:border-teal-800",
 };
 
-// Subtle row backgrounds matching mobile card styling (using hex for dark mode)
-const CLAIM_ROW_COLORS: Record<string, string> = {
-  skill: "rgba(30, 58, 95, 0.25)", // blue-950/25
-  achievement: "rgba(20, 83, 45, 0.25)", // green-950/25
-  attribute: "rgba(59, 7, 100, 0.25)", // purple-950/25
-  education: "rgba(120, 53, 15, 0.25)", // orange-950/25
-  certification: "rgba(19, 78, 74, 0.25)", // teal-950/25
-};
-
-const CONFIDENCE_COLORS: Record<string, string> = {
-  high: "bg-green-500",
-  medium: "bg-amber-500",
-  low: "bg-red-500",
+// Card styling matching mobile (background + border colors)
+const CLAIM_ROW_STYLES: Record<string, { bg: string; border: string }> = {
+  skill: { bg: "rgba(30, 58, 95, 0.3)", border: "#1d4ed8" }, // blue
+  achievement: { bg: "rgba(20, 83, 45, 0.3)", border: "#16a34a" }, // green
+  attribute: { bg: "rgba(59, 7, 100, 0.3)", border: "#7c3aed" }, // purple
+  education: { bg: "rgba(120, 53, 15, 0.3)", border: "#ea580c" }, // orange
+  certification: { bg: "rgba(19, 78, 74, 0.3)", border: "#0d9488" }, // teal
 };
 
 const EVIDENCE_TYPE_COLORS: Record<string, string> = {
@@ -120,12 +114,6 @@ const EVIDENCE_TYPE_COLORS: Record<string, string> = {
   certification:
     "bg-teal-50 text-teal-700 dark:bg-teal-900/20 dark:text-teal-300",
 };
-
-function getConfidenceLevel(confidence: number): "high" | "medium" | "low" {
-  if (confidence >= 0.75) return "high";
-  if (confidence >= 0.5) return "medium";
-  return "low";
-}
 
 export function IdentityClaimsList({
   claims,
@@ -321,9 +309,6 @@ export function IdentityClaimsList({
                 const isExpanded = expandedRows.has(claim.id);
                 const evidenceItems = claim.claim_evidence || [];
                 const evidenceCount = evidenceItems.length;
-                const confidenceLevel = getConfidenceLevel(
-                  claim.confidence ?? 0.5,
-                );
                 // Get unique source documents with their info
                 const sourceDocsMap = new Map<
                   string,
@@ -368,7 +353,10 @@ export function IdentityClaimsList({
                     <TableRow
                       key={claim.id}
                       className={`cursor-pointer hover:brightness-110 ${isExpanded ? "brightness-110" : ""}`}
-                      style={{ backgroundColor: CLAIM_ROW_COLORS[claim.type] }}
+                      style={{
+                        backgroundColor: CLAIM_ROW_STYLES[claim.type]?.bg,
+                        borderLeft: `3px solid ${CLAIM_ROW_STYLES[claim.type]?.border || "#64748b"}`,
+                      }}
                       onClick={() => toggleRow(claim.id)}
                     >
                       <TableCell className="py-2 pr-0">
@@ -422,12 +410,17 @@ export function IdentityClaimsList({
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="py-2 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <div
-                            className={`w-2 h-2 rounded-full ${CONFIDENCE_COLORS[confidenceLevel]}`}
-                          />
-                          <span className="text-xs font-medium tabular-nums">
+                      <TableCell className="py-2">
+                        <div className="flex items-center gap-2 min-w-[100px]">
+                          <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-teal-500 rounded-full transition-all"
+                              style={{
+                                width: `${Math.round((claim.confidence ?? 0.5) * 100)}%`,
+                              }}
+                            />
+                          </div>
+                          <span className="text-xs font-medium tabular-nums text-muted-foreground w-8">
                             {Math.round((claim.confidence ?? 0.5) * 100)}%
                           </span>
                         </div>
