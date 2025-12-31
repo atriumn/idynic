@@ -274,9 +274,9 @@ export function IdentityClaimsList({
         </div>
       </div>
 
-      {/* Table */}
-      <div className="rounded-lg border bg-background overflow-hidden">
-        <Table>
+      {/* Claims List - Card style */}
+      <div className="rounded-lg bg-background">
+        <Table style={{ borderCollapse: "separate", borderSpacing: "0 8px" }}>
           <TableHeader className="bg-muted/30">
             <TableRow className="hover:bg-transparent">
               <TableHead className="w-[30px]"></TableHead>
@@ -355,7 +355,9 @@ export function IdentityClaimsList({
                       className={`cursor-pointer hover:brightness-110 ${isExpanded ? "brightness-110" : ""}`}
                       style={{
                         backgroundColor: CLAIM_ROW_STYLES[claim.type]?.bg,
-                        borderLeft: `3px solid ${CLAIM_ROW_STYLES[claim.type]?.border || "#64748b"}`,
+                        borderLeft: `4px solid ${CLAIM_ROW_STYLES[claim.type]?.border || "#64748b"}`,
+                        borderRadius: "8px",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
                       }}
                       onClick={() => toggleRow(claim.id)}
                     >
@@ -429,7 +431,15 @@ export function IdentityClaimsList({
                     {isExpanded &&
                       (evidenceCount > 0 ||
                         (claim.issues && claim.issues.length > 0)) && (
-                        <TableRow className="bg-muted/10 hover:bg-muted/10 border-b">
+                        <TableRow
+                          className="hover:bg-transparent"
+                          style={{
+                            backgroundColor: CLAIM_ROW_STYLES[claim.type]?.bg,
+                            borderLeft: `4px solid ${CLAIM_ROW_STYLES[claim.type]?.border || "#64748b"}`,
+                            borderRadius: "0 0 8px 8px",
+                            marginTop: "-8px",
+                          }}
+                        >
                           <TableCell colSpan={5} className="p-0">
                             <div className="px-4 py-3 pl-12 space-y-3">
                               {/* Issue Banner */}
