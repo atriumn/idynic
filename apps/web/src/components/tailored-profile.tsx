@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,6 +22,7 @@ import type { ResumeDocumentProps } from "@/components/resume-pdf";
 import { CompanyLogo } from "@/components/company-logo";
 import { EditableText } from "@/components/editable-text";
 import { RegenerateWarningDialog } from "@/components/regenerate-warning-dialog";
+import { OnboardingPrompt } from "@/components/onboarding-prompt";
 
 interface TalkingPoints {
   strengths: Array<{
@@ -152,6 +153,10 @@ export function TailoredProfile({
   const [copied, setCopied] = useState<string | null>(null);
   const [editedFields, setEditedFields] = useState<string[]>([]);
   const [showRegenerateWarning, setShowRegenerateWarning] = useState(false);
+  // Onboarding prompt state
+  const [showOpportunityAddedPrompt, setShowOpportunityAddedPrompt] = useState(false);
+  const [showProfileTailoredPrompt, setShowProfileTailoredPrompt] = useState(false);
+  const hadExistingProfile = useRef(false);
 
   // Fetch existing profile on mount
   useEffect(() => {
@@ -162,13 +167,20 @@ export function TailoredProfile({
           const data = await response.json();
           if (data.profile) {
             setProfile(data.profile);
+            hadExistingProfile.current = true;
             if (data.profile?.edited_fields) {
               setEditedFields(data.profile.edited_fields);
             }
+          } else {
+            // No existing profile - show onboarding prompt for opportunity added
+            setShowOpportunityAddedPrompt(true);
           }
           if (data.evaluation) {
             setEvaluation(data.evaluation);
           }
+        } else {
+          // No profile found - show onboarding prompt for opportunity added
+          setShowOpportunityAddedPrompt(true);
         }
       } catch {
         // Ignore fetch errors - will show generate button
@@ -189,6 +201,8 @@ export function TailoredProfile({
     setError(null);
     setEvaluation(null);
     setEvalWarningDismissed(false);
+    // Hide opportunity added prompt when generating
+    setShowOpportunityAddedPrompt(false);
 
     try {
       const response = await fetch("/api/generate-profile", {
@@ -204,6 +218,11 @@ export function TailoredProfile({
       const data = await response.json();
       setProfile(data.profile);
       setEditedFields([]);
+      // Show profile tailored prompt only if this was a new generation (not regenerate)
+      // and we didn't have an existing profile
+      if (!regenerate && !hadExistingProfile.current) {
+        setShowProfileTailoredPrompt(true);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -282,38 +301,58 @@ export function TailoredProfile({
     );
   }
 
+  // Handler for onboarding prompt actions
+  const handlePromptAction = (action: string) => {
+    if (action === "generate_tailored_profile") {
+      generateProfile();
+    }
+    // share_profile and download_pdf are handled by the prompt's default behavior
+    // or can be implemented here if needed
+  };
+
   if (!profile) {
     return (
-      <Card className="mb-6 border-primary/20 bg-gradient-to-br from-primary/5 to-background">
-        <CardContent className="py-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-center sm:text-left">
-              <h3 className="text-lg font-semibold mb-1">Ready to stand out?</h3>
-              <p className="text-muted-foreground">
-                Generate a tailored resume and talking points for this role.
-              </p>
+      <>
+        <Card className="mb-6 border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+          <CardContent className="py-8">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-center sm:text-left">
+                <h3 className="text-lg font-semibold mb-1">Ready to stand out?</h3>
+                <p className="text-muted-foreground">
+                  Generate a tailored resume and talking points for this role.
+                </p>
+              </div>
+              <Button
+                onClick={() => generateProfile()}
+                disabled={loading}
+                size="lg"
+                className="shrink-0"
+              >
+                {loading ? (
+                  <>
+                    <SpinnerGap className="mr-2 h-5 w-5 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkle className="mr-2 h-5 w-5" weight="fill" />
+                    Generate Tailored Profile
+                  </>
+                )}
+              </Button>
             </div>
-            <Button
-              onClick={() => generateProfile()}
-              disabled={loading}
-              size="lg"
-              className="shrink-0"
-            >
-              {loading ? (
-                <>
-                  <SpinnerGap className="mr-2 h-5 w-5 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkle className="mr-2 h-5 w-5" weight="fill" />
-                  Generate Tailored Profile
-                </>
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        {/* Onboarding prompt for opportunity added (when no profile exists) */}
+        {showOpportunityAddedPrompt && (
+          <OnboardingPrompt
+            promptKey="after_opportunity_added"
+            onAction={handlePromptAction}
+            onDismiss={() => setShowOpportunityAddedPrompt(false)}
+          />
+        )}
+      </>
     );
   }
 
@@ -884,6 +923,14 @@ export function TailoredProfile({
         editedFieldCount={editedFields.length}
         onConfirm={() => generateProfile(true)}
       />
+
+      {/* Onboarding prompt for profile tailored */}
+      {showProfileTailoredPrompt && (
+        <OnboardingPrompt
+          promptKey="after_profile_tailored"
+          onDismiss={() => setShowProfileTailoredPrompt(false)}
+        />
+      )}
     </div>
   );
 }

@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { useDocumentJob } from "@/lib/hooks/use-document-job";
 import { useInvalidateGraph } from "@/lib/hooks/use-identity-graph";
 import { RESUME_PHASES, PHASE_LABELS, type DocumentJobPhase } from "@idynic/shared/types";
+import { OnboardingPrompt } from "@/components/onboarding-prompt";
 
 export function UploadResumeModal() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export function UploadResumeModal() {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
+  const [showOnboardingPrompt, setShowOnboardingPrompt] = useState(false);
 
   const { job, displayMessages } = useDocumentJob(jobId);
 
@@ -38,6 +40,7 @@ export function UploadResumeModal() {
       invalidateGraph();
       setTimeout(() => {
         setOpen(false);
+        setShowOnboardingPrompt(true);
         router.refresh();
       }, 1000);
     }
@@ -125,13 +128,14 @@ export function UploadResumeModal() {
   const phaseIndex = currentPhase ? RESUME_PHASES.indexOf(currentPhase) : -1;
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Upload className="h-4 w-4 mr-2" />
-          Upload Resume
-        </Button>
-      </DialogTrigger>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm">
+            <Upload className="h-4 w-4 mr-2" />
+            Upload Resume
+          </Button>
+        </DialogTrigger>
       <DialogContent className="sm:max-w-[525px] border-2 shadow-lg">
         {!jobId ? (
           <>
@@ -250,6 +254,14 @@ export function UploadResumeModal() {
           </div>
         )}
       </DialogContent>
-    </Dialog>
+      </Dialog>
+
+      {showOnboardingPrompt && (
+        <OnboardingPrompt
+          promptKey="after_resume_upload"
+          onDismiss={() => setShowOnboardingPrompt(false)}
+        />
+      )}
+    </>
   );
 }
