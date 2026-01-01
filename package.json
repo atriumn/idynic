@@ -16,6 +16,7 @@
     "test:mobile": "pnpm --filter mobile test",
     "test:shared": "pnpm --filter @idynic/shared test",
     "test:mcp": "pnpm --filter @atriumn/idynic-mcp test",
+    "test:extension": "pnpm --filter chrome-extension test",
     "test:ui": "pnpm --filter web test:ui",
     "test:integration": "pnpm --filter web test:integration"
   },
