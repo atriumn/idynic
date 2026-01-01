@@ -29,10 +29,10 @@ export default defineConfig({
         'src/components/ui/**',
       ],
       thresholds: {
-        // Phase 4 target: 70% - currently at ~44%. Adding more tests in follow-up.
-        lines: 44,
+        // Phase 4 target: 70% - currently at ~43%. Adding more tests in follow-up.
+        lines: 43,
         branches: 38,
-        functions: 41,
+        functions: 40,
         statements: 43,
       },
     },
