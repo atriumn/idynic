@@ -26,8 +26,8 @@
 
 ## Security Hardening
 
-- [ ] Fix function `search_path` warnings (16 functions) - create migration to set `search_path = ''`
-- [ ] Move `vector` extension from public schema to `extensions` schema
+- [x] Fix function `search_path` on custom functions (migration: `fix_function_search_paths`)
+- [ ] ~~Move `vector` extension to `extensions` schema~~ - Deferred: low risk (pure math functions), high complexity (4 tables + indexes depend on it)
 
 ---
 
@@ -66,5 +66,5 @@ packages/shared/src/
 
 ## Operational
 
-- [ ] Set up Axiom logging - see `docs/plans/axiom-setup.md`
+- [x] Set up Axiom logging (completed, plan archived)
 - [ ] Document environment variables needed for deployment (for bus factor)
