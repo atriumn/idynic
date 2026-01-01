@@ -1,6 +1,25 @@
 # Claim & Tailoring Eval Framework v2
 
+**Status:** In Progress
+**Priority:** HIGH
+
 > Updated 2025-12-28 after brainstorming session. Replaces 2025-12-27-claim-eval-framework.md.
+
+## Progress (Last reviewed: 2026-01-01)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Phase 1: Infrastructure | ✅ Complete | Migration, Anthropic provider, config done |
+| Phase 2: Eval Logic | ✅ Complete | rule-checks.ts, claim-grounding.ts, tailoring-grounding.ts |
+| Phase 3: Integration | ✅ Complete | Added to process-resume, process-story |
+| Phase 4: Claim Management API | ✅ Complete | PATCH, DELETE, dismiss routes implemented |
+| Phase 5: UI | 🔄 In Progress | Claims list improvements ongoing |
+
+### Drift Notes
+- Claim eval now includes quality check (17b8bc15) and verified status tracking (337a2a81)
+- Evidence type badges added to claims list (59bae4cc, 6978f81d)
+- Progress bars and colored borders added to web claims list (2132b469, 08e188a8)
+- Mobile claims list also received UI improvements (f2dea044)
 
 ## Overview
 

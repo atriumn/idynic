@@ -1,8 +1,22 @@
 # Android Launch Plan
 
 **Date:** 2025-12-23
-**Status:** Approved
+**Status:** In Progress
 **Goal:** Get the existing Expo/React Native app running on Android and distributed via Google Play Store
+
+## Progress (Last reviewed: 2026-01-01)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1: Local Build & Smoke Test | ✅ Complete | Dev env verified 2025-12-26 |
+| Phase 2: Fix & Polish | 🔄 In Progress | Testing ongoing |
+| Phase 3: Internal Distribution (APK) | ⏳ Not Started | |
+| Phase 4: Google Play Internal Testing | ⏳ Blocked | DUNS number pending |
+| Phase 5: CI/CD Automation | ✅ Complete | build-android job added |
+| Phase 6: Production Release | ⏳ Blocked | Requires Phase 4 |
+
+### Drift Notes
+CI/CD automation (Phase 5) completed ahead of Phase 3/4 - this is fine as they're independent.
 
 ## Context
 

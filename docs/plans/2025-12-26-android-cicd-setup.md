@@ -3,6 +3,20 @@
 **Status:** In Progress (Blocked on DUNS number for Play Store account)
 **Date:** 2025-12-26
 
+## Progress (Last reviewed: 2026-01-01)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Release keystore created | ✅ Complete | Stored securely |
+| GitHub secrets configured | ✅ Complete | 4/5 secrets set |
+| GitHub Actions workflow | ✅ Complete | build-android job in mobile-deploy.yml |
+| Google Play Console setup | ⏳ Blocked | Waiting for DUNS number |
+| First manual upload | ⏳ Blocked | Requires Play Store account |
+| Auto-deploy to Play Store | ⏳ Blocked | Requires steps above |
+
+### Drift Notes
+None - status accurately reflected as blocked.
+
 ## Overview
 
 Setting up GitHub Actions workflow for Android builds and Play Store deployment, matching the existing iOS workflow pattern.

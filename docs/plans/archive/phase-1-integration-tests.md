@@ -2,7 +2,27 @@
 
 **Priority**: HIGH
 **Effort**: 2-3 days
-**Status**: Not Started
+**Status**: Done
+
+## Progress (Last reviewed: 2026-01-01)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Directory structure | ✅ Complete | All directories created |
+| Step 2: Vitest integration config | ✅ Complete | vitest.integration.config.ts exists |
+| Step 3: Global setup/teardown | ✅ Complete | global-setup.ts implemented |
+| Step 4: Test fixtures SQL | ✅ Complete | test-fixtures.sql exists |
+| Step 5: Integration test utilities | ✅ Complete | test-utils.ts implemented |
+| Step 6: Auth integration tests | ✅ Complete | signup, login, token-refresh tests |
+| Step 7: RLS policy tests | ✅ Complete | rls-policies.integration.test.ts |
+| Step 8: Profile CRUD tests | ✅ Complete | profile-crud.integration.test.ts |
+| Step 9: Document tests | ✅ Complete | document-crud.integration.test.ts |
+| Step 10: Opportunity tests | ✅ Complete | opportunity-crud.integration.test.ts |
+| Step 11: Package.json scripts | ✅ Complete | test:integration script added |
+| Step 12: CI workflow | ✅ Complete | Added to test.yml (PR #38) |
+
+### Drift Notes
+None - implementation matches plan.
 
 ## Overview
 

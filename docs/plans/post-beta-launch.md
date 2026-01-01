@@ -1,6 +1,21 @@
 # Post-Beta Launch Tasks
 
+**Status:** In Progress
+
 > Created 2025-12-28 after completing beta launch checklist
+
+## Progress (Last reviewed: 2026-01-01)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Delete My Account | ✅ Complete | All items done |
+| Export My Data | ✅ Complete | All items done |
+| Security Hardening | ⏳ Not Started | search_path, vector schema |
+| Onboarding Prompts | ⏳ Not Started | Shared logic for web + mobile |
+| Operational | ⏳ Not Started | Axiom, env vars documentation |
+
+### Drift Notes
+None - implementation matches plan.
 
 ## Data Management (GDPR)
 
