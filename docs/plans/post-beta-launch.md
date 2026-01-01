@@ -33,34 +33,15 @@
 
 ## Onboarding Prompts
 
+> See full design: [2026-01-01-onboarding-prompts-design.md](./2026-01-01-onboarding-prompts-design.md)
+
 Lightweight "next steps" prompts (not full wizard) - shared logic for web + mobile.
 
-### Architecture
-```
-packages/shared/src/
-├── content/
-│   └── onboarding.ts       # Prompt copy for each milestone
-└── hooks/
-    └── useOnboardingProgress.ts  # Milestone tracking logic
-```
-
-### Implementation
-- [ ] Create `packages/shared/src/content/onboarding.ts` with prompt copy
-- [ ] Create `packages/shared/src/hooks/useOnboardingProgress.ts`
-  - Track milestones: `resume_uploaded`, `story_added`, `opportunity_added`, `profile_tailored`
-  - Accept storage adapter (localStorage for web, AsyncStorage for mobile)
-- [ ] Web: Add OnboardingPrompt component using existing toast system
-- [ ] Mobile: Add OnboardingPrompt component (React Native toast or bottom sheet)
-- [ ] Wire up trigger points:
-  - After resume upload → "Explore your claims or add an opportunity"
-  - After story added → "Add more stories or upload a resume"
-  - After opportunity added → "Try tailoring to see your match"
-  - After profile tailored → "Share with a recruiter or download PDF"
-
-### UI Behavior
-- Prompts persist until dismissed (not auto-dismiss)
-- Include action button linking to suggested next step
-- Only show each prompt once per user (tracked via storage)
+### Implementation Checklist
+- [ ] Phase 1: Create shared foundation (`packages/shared/src/content/onboarding.ts`, `useOnboardingProgress` hook)
+- [ ] Phase 2: Web integration (storage adapter, OnboardingPrompt component, trigger points)
+- [ ] Phase 3: Mobile integration (AsyncStorage adapter, OnboardingPrompt component, trigger points)
+- [ ] Phase 4: Testing & polish
 
 ---
 
