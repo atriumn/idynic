@@ -92,28 +92,28 @@ describe('ResumeUpload', () => {
   })
 
   it('shows error for non-PDF files', async () => {
-    const user = userEvent.setup()
     render(<ResumeUpload />)
 
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
     const textFile = new File(['hello'], 'test.txt', { type: 'text/plain' })
 
-    await user.upload(fileInput, textFile)
+    // Use fireEvent.change since userEvent.upload may not work with hidden inputs
+    fireEvent.change(fileInput, { target: { files: [textFile] } })
 
     await waitFor(() => {
-      expect(screen.getByText('Please upload a PDF file')).toBeInTheDocument()
+      expect(screen.getByText(/please upload a pdf file/i)).toBeInTheDocument()
     })
   })
 
   it('shows error for files over 10MB', async () => {
-    const user = userEvent.setup()
     render(<ResumeUpload />)
 
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
     const largeFile = new File([''], 'large.pdf', { type: 'application/pdf' })
     Object.defineProperty(largeFile, 'size', { value: 11 * 1024 * 1024 })
 
-    await user.upload(fileInput, largeFile)
+    // Use fireEvent.change since userEvent.upload may not work with hidden inputs
+    fireEvent.change(fileInput, { target: { files: [largeFile] } })
 
     await waitFor(() => {
       expect(screen.getByText('File size must be less than 10MB')).toBeInTheDocument()
@@ -121,13 +121,13 @@ describe('ResumeUpload', () => {
   })
 
   it('uploads file and calls API', async () => {
-    const user = userEvent.setup()
     render(<ResumeUpload />)
 
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
     const pdfFile = new File(['pdf content'], 'resume.pdf', { type: 'application/pdf' })
 
-    await user.upload(fileInput, pdfFile)
+    // Use fireEvent.change since userEvent.upload may not work with hidden inputs
+    fireEvent.change(fileInput, { target: { files: [pdfFile] } })
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/process-resume', {
@@ -143,13 +143,13 @@ describe('ResumeUpload', () => {
       json: () => Promise.resolve({ message: 'Upload failed' }),
     })
 
-    const user = userEvent.setup()
     render(<ResumeUpload />)
 
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
     const pdfFile = new File(['pdf content'], 'resume.pdf', { type: 'application/pdf' })
 
-    await user.upload(fileInput, pdfFile)
+    // Use fireEvent.change since userEvent.upload may not work with hidden inputs
+    fireEvent.change(fileInput, { target: { files: [pdfFile] } })
 
     await waitFor(() => {
       expect(screen.getByText('Upload failed')).toBeInTheDocument()

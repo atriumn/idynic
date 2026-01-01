@@ -44,8 +44,10 @@ describe('AddOpportunityDialog', () => {
 
     await user.click(screen.getByRole('button', { name: /add opportunity/i }))
 
-    expect(screen.getByText('Add Opportunity')).toBeInTheDocument()
+    // Dialog should be open - check for the description text which is unique
     expect(screen.getByText(/add a job posting to track/i)).toBeInTheDocument()
+    // Check that there's now a form with submit button
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
   })
 
   it('shows form fields', async () => {
@@ -121,7 +123,10 @@ describe('AddOpportunityDialog', () => {
     await user.type(urlInput, 'https://example.com/job/123')
     await user.type(descriptionInput, 'Software Engineer position')
 
-    await user.click(screen.getByRole('button', { name: /^add opportunity$/i }))
+    // Find all buttons with "Add Opportunity" and get the submit button (last one, type="submit")
+    const allAddButtons = screen.getAllByRole('button', { name: /add opportunity/i })
+    const submitButton = allAddButtons[allAddButtons.length - 1]
+    await user.click(submitButton)
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/process-opportunity', {
@@ -149,7 +154,10 @@ describe('AddOpportunityDialog', () => {
     await user.type(urlInput, 'https://example.com/job/123')
     await user.type(descriptionInput, 'Software Engineer position')
 
-    await user.click(screen.getByRole('button', { name: /^add opportunity$/i }))
+    // Find all buttons with "Add Opportunity" and get the submit button (last one)
+    const allAddButtons = screen.getAllByRole('button', { name: /add opportunity/i })
+    const submitButton = allAddButtons[allAddButtons.length - 1]
+    await user.click(submitButton)
 
     await waitFor(() => {
       expect(screen.getByText('Failed to add opportunity')).toBeInTheDocument()

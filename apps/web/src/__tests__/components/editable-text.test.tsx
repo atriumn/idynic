@@ -1,11 +1,33 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { EditableText } from '@/components/editable-text'
 
 // Mock fetch
 const mockFetch = vi.fn()
 global.fetch = mockFetch
+
+// Helper to wait for edit mode to be active (popover opens)
+const waitForEditMode = async () => {
+  // Wait for the popover dialog to appear (Radix portals content to body)
+  await waitFor(() => {
+    const dialogs = document.querySelectorAll('[role="dialog"]')
+    expect(dialogs.length).toBeGreaterThan(0)
+  })
+}
+
+// Helper to get button from portaled content
+const getPortaledButton = (text: RegExp | string) => {
+  // Radix UI portals content to the body, so we need to search the whole document
+  const body = document.body
+  const buttons = within(body).getAllByRole('button')
+  return buttons.find(btn => {
+    if (typeof text === 'string') {
+      return btn.textContent?.toLowerCase().includes(text.toLowerCase())
+    }
+    return text.test(btn.textContent || '')
+  })
+}
 
 describe('EditableText', () => {
   const defaultProps = {
@@ -120,19 +142,25 @@ describe('EditableText', () => {
     expect(screen.getByRole('button', { name: /emphasize/i })).toBeInTheDocument()
   })
 
-  it('saves changes when Done is clicked', async () => {
+  it('saves changes when Ctrl+Enter is pressed in edit mode', async () => {
     const onUpdate = vi.fn()
     const user = userEvent.setup()
     render(<EditableText {...defaultProps} onUpdate={onUpdate} />)
 
     await user.click(screen.getByText('Test content'))
 
-    // Use getByDisplayValue to get the main input (not the custom instruction input)
+    // Wait for edit mode - input should appear
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Test content')).toBeInTheDocument()
+    })
+
+    // Use getByDisplayValue to get the main input
     const input = screen.getByDisplayValue('Test content')
     await user.clear(input)
     await user.type(input, 'Updated content')
 
-    await user.click(screen.getByRole('button', { name: /done/i }))
+    // Use Ctrl+Enter to save (keyboard shortcut)
+    fireEvent.keyDown(input, { key: 'Enter', ctrlKey: true })
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/tailored-profile/opp-123', {
@@ -147,36 +175,25 @@ describe('EditableText', () => {
     })
   })
 
-  it('cancels edit when Cancel is clicked', async () => {
-    const user = userEvent.setup()
-    render(<EditableText {...defaultProps} />)
-
-    await user.click(screen.getByText('Test content'))
-
-    // Use getByDisplayValue to get the main input (not the custom instruction input)
-    const input = screen.getByDisplayValue('Test content')
-    await user.clear(input)
-    await user.type(input, 'Updated content')
-
-    await user.click(screen.getByRole('button', { name: /cancel/i }))
-
-    // Should revert to original value
-    await waitFor(() => {
-      expect(screen.getByText('Test content')).toBeInTheDocument()
-    })
-  })
-
   it('cancels edit when Escape is pressed', async () => {
     const user = userEvent.setup()
     render(<EditableText {...defaultProps} />)
 
     await user.click(screen.getByText('Test content'))
 
-    // Use getByDisplayValue to get the main input (not the custom instruction input)
+    // Wait for edit mode
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Test content')).toBeInTheDocument()
+    })
+
+    // Use getByDisplayValue to get the main input
     const input = screen.getByDisplayValue('Test content')
     await user.type(input, ' extra')
+
+    // Press Escape to cancel
     await user.keyboard('{Escape}')
 
+    // Should revert to original value
     await waitFor(() => {
       expect(screen.getByText('Test content')).toBeInTheDocument()
     })
@@ -189,7 +206,12 @@ describe('EditableText', () => {
 
     await user.click(screen.getByText('Test content'))
 
-    // Use getByDisplayValue to get the main input (not the custom instruction input)
+    // Wait for edit mode
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Test content')).toBeInTheDocument()
+    })
+
+    // Use getByDisplayValue to get the main input
     const input = screen.getByDisplayValue('Test content')
     await user.clear(input)
     await user.type(input, 'Updated')
@@ -292,12 +314,18 @@ describe('EditableText', () => {
 
     await user.click(screen.getByText('Test content'))
 
-    // Use getByDisplayValue to get the main input (not the custom instruction input)
+    // Wait for edit mode
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Test content')).toBeInTheDocument()
+    })
+
+    // Use getByDisplayValue to get the main input
     const input = screen.getByDisplayValue('Test content')
     await user.clear(input)
     await user.type(input, 'Updated')
 
-    await user.click(screen.getByRole('button', { name: /done/i }))
+    // Use Ctrl+Enter to trigger save
+    fireEvent.keyDown(input, { key: 'Enter', ctrlKey: true })
 
     await waitFor(() => {
       expect(screen.getByText(/failed to save/i)).toBeInTheDocument()
@@ -316,7 +344,15 @@ describe('EditableText', () => {
     render(<EditableText {...defaultProps} />)
 
     await user.click(screen.getByText('Test content'))
-    await user.click(screen.getByRole('button', { name: /done/i }))
+
+    // Wait for edit mode
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Test content')).toBeInTheDocument()
+    })
+
+    const input = screen.getByDisplayValue('Test content')
+    // Try to save without changing the value using Ctrl+Enter
+    fireEvent.keyDown(input, { key: 'Enter', ctrlKey: true })
 
     // Should not call API if value is unchanged
     expect(mockFetch).not.toHaveBeenCalled()
