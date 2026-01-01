@@ -98,6 +98,87 @@ describe('findDuplicates', () => {
     const issues = findDuplicates(claims);
     expect(issues).toHaveLength(0);
   });
+
+  it('should not flag different founder claims as duplicates', () => {
+    const claims: ClaimForEval[] = [
+      { id: '1', type: 'achievement', label: 'Founded TechCorp', description: null, created_at: '2024-01-01' },
+      { id: '2', type: 'achievement', label: 'Founded StartupXYZ', description: null, created_at: '2024-01-02' },
+    ];
+
+    const issues = findDuplicates(claims);
+    expect(issues).toHaveLength(0);
+  });
+
+  it('should flag identical founder claims as duplicates', () => {
+    const claims: ClaimForEval[] = [
+      { id: '1', type: 'achievement', label: 'Founded TechCorp', description: null, created_at: '2024-01-01' },
+      { id: '2', type: 'achievement', label: 'Founded TechCorp', description: null, created_at: '2024-01-02' },
+    ];
+
+    const issues = findDuplicates(claims);
+    expect(issues).toHaveLength(1);
+  });
+
+  it('should not flag co-founder vs founder for different companies', () => {
+    const claims: ClaimForEval[] = [
+      { id: '1', type: 'achievement', label: 'Co-Founded StartupA', description: null, created_at: '2024-01-01' },
+      { id: '2', type: 'achievement', label: 'Founded StartupB', description: null, created_at: '2024-01-02' },
+    ];
+
+    const issues = findDuplicates(claims);
+    expect(issues).toHaveLength(0);
+  });
+
+  it('should not flag different AWS services as duplicates', () => {
+    const claims: ClaimForEval[] = [
+      { id: '1', type: 'skill', label: 'AWS Lambda', description: null, created_at: '2024-01-01' },
+      { id: '2', type: 'skill', label: 'AWS EC2', description: null, created_at: '2024-01-02' },
+    ];
+
+    const issues = findDuplicates(claims);
+    expect(issues).toHaveLength(0);
+  });
+
+  it('should flag identical AWS services as duplicates', () => {
+    const claims: ClaimForEval[] = [
+      { id: '1', type: 'skill', label: 'AWS Lambda', description: null, created_at: '2024-01-01' },
+      { id: '2', type: 'skill', label: 'AWS Lambda', description: null, created_at: '2024-01-02' },
+    ];
+
+    const issues = findDuplicates(claims);
+    expect(issues).toHaveLength(1);
+  });
+
+  it('should not flag short labels that are different as duplicates', () => {
+    const claims: ClaimForEval[] = [
+      { id: '1', type: 'skill', label: 'React', description: null, created_at: '2024-01-01' },
+      { id: '2', type: 'skill', label: 'React Native', description: null, created_at: '2024-01-02' },
+    ];
+
+    const issues = findDuplicates(claims);
+    expect(issues).toHaveLength(0);
+  });
+
+  it('should not compare claims of different types', () => {
+    const claims: ClaimForEval[] = [
+      { id: '1', type: 'skill', label: 'React Development', description: null, created_at: '2024-01-01' },
+      { id: '2', type: 'achievement', label: 'React Development', description: null, created_at: '2024-01-02' },
+    ];
+
+    const issues = findDuplicates(claims);
+    expect(issues).toHaveLength(0);
+  });
+
+  it('should handle claims with null created_at', () => {
+    const claims: ClaimForEval[] = [
+      { id: '1', type: 'skill', label: 'React', description: null, created_at: null },
+      { id: '2', type: 'skill', label: 'React', description: null, created_at: '2024-01-02' },
+    ];
+
+    const issues = findDuplicates(claims);
+    expect(issues).toHaveLength(1);
+    expect(issues[0].claimId).toBe('2'); // newer one is the duplicate
+  });
 });
 
 describe('findMissingFields', () => {
