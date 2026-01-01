@@ -311,3 +311,6 @@ export const CONTEXTUAL_HELP = {
 
 export type ContextualHelp = typeof CONTEXTUAL_HELP;
 export type ContextualHelpKey = keyof typeof CONTEXTUAL_HELP;
+
+// Onboarding prompts
+export * from "./onboarding";
