@@ -169,7 +169,10 @@ describe('AddOpportunityDialog', () => {
     render(<AddOpportunityDialog />)
 
     await user.click(screen.getByRole('button', { name: /add opportunity/i }))
-    expect(screen.getByText('Add Opportunity')).toBeInTheDocument()
+    // Dialog should be open - check for form elements
+    await waitFor(() => {
+      expect(screen.getByLabelText(/job url/i)).toBeInTheDocument()
+    })
 
     await user.click(screen.getByRole('button', { name: /cancel/i }))
 

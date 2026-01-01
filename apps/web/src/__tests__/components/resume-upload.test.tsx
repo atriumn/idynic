@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { ResumeUpload } from '@/components/resume-upload'
 import type { DocumentJob } from '@idynic/shared/types'
 
@@ -23,12 +22,16 @@ vi.mock('@tanstack/react-query', () => ({
   }),
 }))
 
-// Mock hooks
+// Mock hooks - default mock that returns no job
+const mockUseDocumentJob = vi.fn(() => ({
+  job: null,
+  isLoading: false,
+  error: null,
+  displayMessages: [],
+}))
+
 vi.mock('@/lib/hooks/use-document-job', () => ({
-  useDocumentJob: vi.fn(() => ({
-    job: null,
-    displayMessages: [],
-  })),
+  useDocumentJob: (...args: unknown[]) => mockUseDocumentJob(...args),
 }))
 
 // Mock shared types
@@ -69,7 +72,14 @@ function createMockJob(overrides: Partial<DocumentJob>): DocumentJob {
 
 describe('ResumeUpload', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
+    vi.resetAllMocks()
+    // Reset the mock to return no job (initial state)
+    mockUseDocumentJob.mockReturnValue({
+      job: null,
+      isLoading: false,
+      error: null,
+      displayMessages: [],
+    })
     mockFetch.mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ jobId: 'job-123' }),
@@ -157,8 +167,7 @@ describe('ResumeUpload', () => {
   })
 
   it('calls onUploadComplete callback when job completes', async () => {
-    const { useDocumentJob } = await import('@/lib/hooks/use-document-job')
-    vi.mocked(useDocumentJob).mockReturnValue({
+    mockUseDocumentJob.mockReturnValue({
       job: createMockJob({ status: 'completed' }),
       isLoading: false,
       error: null,
@@ -218,22 +227,14 @@ describe('ResumeUpload', () => {
 
   describe('processing state', () => {
     it('shows processing phases when job is processing', async () => {
-      const { useDocumentJob } = await import('@/lib/hooks/use-document-job')
-      vi.mocked(useDocumentJob).mockReturnValue({
+      mockUseDocumentJob.mockReturnValue({
         job: createMockJob({ status: 'processing', phase: 'synthesis' }),
         isLoading: false,
         error: null,
         displayMessages: [],
       })
 
-      // Need to trigger upload first to set jobId
-      const user = userEvent.setup()
       render(<ResumeUpload />)
-
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
-      const pdfFile = new File(['pdf content'], 'resume.pdf', { type: 'application/pdf' })
-
-      await user.upload(fileInput, pdfFile)
 
       await waitFor(() => {
         expect(screen.getByText('Extracting text from document')).toBeInTheDocument()
@@ -242,21 +243,14 @@ describe('ResumeUpload', () => {
     })
 
     it('shows completed phases with checkmarks', async () => {
-      const { useDocumentJob } = await import('@/lib/hooks/use-document-job')
-      vi.mocked(useDocumentJob).mockReturnValue({
+      mockUseDocumentJob.mockReturnValue({
         job: createMockJob({ status: 'processing', phase: 'embeddings' }),
         isLoading: false,
         error: null,
         displayMessages: [],
       })
 
-      const user = userEvent.setup()
       render(<ResumeUpload />)
-
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
-      const pdfFile = new File(['pdf content'], 'resume.pdf', { type: 'application/pdf' })
-
-      await user.upload(fileInput, pdfFile)
 
       await waitFor(() => {
         // Completed phases should show checkmarks (✓)
@@ -265,8 +259,7 @@ describe('ResumeUpload', () => {
     })
 
     it('shows display messages during processing', async () => {
-      const { useDocumentJob } = await import('@/lib/hooks/use-document-job')
-      vi.mocked(useDocumentJob).mockReturnValue({
+      mockUseDocumentJob.mockReturnValue({
         job: createMockJob({ status: 'processing', phase: 'synthesis' }),
         isLoading: false,
         error: null,
@@ -276,13 +269,7 @@ describe('ResumeUpload', () => {
         ],
       })
 
-      const user = userEvent.setup()
       render(<ResumeUpload />)
-
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
-      const pdfFile = new File(['pdf content'], 'resume.pdf', { type: 'application/pdf' })
-
-      await user.upload(fileInput, pdfFile)
 
       await waitFor(() => {
         expect(screen.getByText('Found React experience')).toBeInTheDocument()
@@ -291,21 +278,14 @@ describe('ResumeUpload', () => {
     })
 
     it('shows processing complete message', async () => {
-      const { useDocumentJob } = await import('@/lib/hooks/use-document-job')
-      vi.mocked(useDocumentJob).mockReturnValue({
+      mockUseDocumentJob.mockReturnValue({
         job: createMockJob({ status: 'completed' }),
         isLoading: false,
         error: null,
         displayMessages: [],
       })
 
-      const user = userEvent.setup()
       render(<ResumeUpload />)
-
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
-      const pdfFile = new File(['pdf content'], 'resume.pdf', { type: 'application/pdf' })
-
-      await user.upload(fileInput, pdfFile)
 
       await waitFor(() => {
         expect(screen.getByText('Processing complete!')).toBeInTheDocument()
@@ -313,8 +293,7 @@ describe('ResumeUpload', () => {
     })
 
     it('shows warning message if present', async () => {
-      const { useDocumentJob } = await import('@/lib/hooks/use-document-job')
-      vi.mocked(useDocumentJob).mockReturnValue({
+      mockUseDocumentJob.mockReturnValue({
         job: createMockJob({
           status: 'completed',
           warning: 'Some content could not be extracted',
@@ -324,13 +303,7 @@ describe('ResumeUpload', () => {
         displayMessages: [],
       })
 
-      const user = userEvent.setup()
       render(<ResumeUpload />)
-
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
-      const pdfFile = new File(['pdf content'], 'resume.pdf', { type: 'application/pdf' })
-
-      await user.upload(fileInput, pdfFile)
 
       await waitFor(() => {
         expect(screen.getByText('Some content could not be extracted')).toBeInTheDocument()
@@ -338,21 +311,14 @@ describe('ResumeUpload', () => {
     })
 
     it('shows batch progress when available', async () => {
-      const { useDocumentJob } = await import('@/lib/hooks/use-document-job')
-      vi.mocked(useDocumentJob).mockReturnValue({
+      mockUseDocumentJob.mockReturnValue({
         job: createMockJob({ status: 'processing', phase: 'extracting', progress: '2/5' }),
         isLoading: false,
         error: null,
         displayMessages: [],
       })
 
-      const user = userEvent.setup()
       render(<ResumeUpload />)
-
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
-      const pdfFile = new File(['pdf content'], 'resume.pdf', { type: 'application/pdf' })
-
-      await user.upload(fileInput, pdfFile)
 
       await waitFor(() => {
         expect(screen.getByText(/batch 2\/5/i)).toBeInTheDocument()
@@ -362,8 +328,7 @@ describe('ResumeUpload', () => {
 
   describe('error handling', () => {
     it('shows error from job failure', async () => {
-      const { useDocumentJob } = await import('@/lib/hooks/use-document-job')
-      vi.mocked(useDocumentJob).mockReturnValue({
+      mockUseDocumentJob.mockReturnValue({
         job: createMockJob({ status: 'failed', error: 'Document parsing failed' }),
         isLoading: false,
         error: null,
@@ -378,8 +343,7 @@ describe('ResumeUpload', () => {
     })
 
     it('shows generic error when job fails without message', async () => {
-      const { useDocumentJob } = await import('@/lib/hooks/use-document-job')
-      vi.mocked(useDocumentJob).mockReturnValue({
+      mockUseDocumentJob.mockReturnValue({
         job: createMockJob({ status: 'failed' }),
         isLoading: false,
         error: null,
