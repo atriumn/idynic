@@ -4,6 +4,19 @@
 **Effort**: 3-4 days
 **Status**: Not Started
 
+## Progress (Last reviewed: 2026-01-01)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Create E2E Supabase Project | ⏳ Not Started | Blocked: needs project creation |
+| Step 2-14: All remaining steps | ⏳ Not Started | |
+
+### Drift Notes
+- Phase 1 (integration tests) is complete and archived - prerequisite satisfied
+- No work has started on Playwright E2E setup
+
+---
+
 ## Overview
 
 Add Playwright E2E tests for critical web user journeys. Tests run against Vercel preview deployments using a dedicated Supabase test project. Includes both desktop and mobile web testing.

@@ -4,6 +4,19 @@
 **Effort**: 2-3 days
 **Status**: Not Started
 
+## Progress (Last reviewed: 2026-01-01)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1-11: All steps | ⏳ Not Started | Blocked on Phases 1-4 |
+
+### Drift Notes
+- No work has started
+- Claim eval framework was archived (see archived/2025-12-28-claim-eval-framework-v2.md)
+- PR #68 added tests for `lib/ai/eval/rule-checks.ts` - related work happening separately
+
+---
+
 ## Overview
 
 Create a weekly evaluation pipeline that tests AI-generated content (resumes, stories, opportunity matching) against quality benchmarks. E2E tests mock AI for speed; this catches quality regressions with real AI providers.

@@ -2,7 +2,32 @@
 
 **Priority**: HIGH
 **Effort**: 1-2 days
-**Status**: Not Started
+**Status**: In Progress
+
+## Progress (Last reviewed: 2026-01-01)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Install Test Dependencies | ✅ Complete | PR #65 |
+| Step 2: Create Jest Config | ✅ Complete | PR #65 - `jest.config.js` |
+| Step 3: Create Jest Setup File | ✅ Complete | PR #65 - `jest.setup.js` with Chrome API mocks |
+| Step 4: Create Test Directory Structure | ✅ Complete | `__tests__/{lib,popup,options}/` |
+| Step 5: Write Job Parser Tests | ⏳ Not Started | Content script parsing not yet tested |
+| Step 6: Write Page Detection Tests | ⏳ Not Started | |
+| Step 7: Write Background API Client Tests | ✅ Complete | PR #65 - `lib/api.test.js` |
+| Step 8: Write Message Handler Tests | ⏳ Not Started | |
+| Step 9: Write Storage Utility Tests | ⏳ Not Started | |
+| Step 10: Write Popup Component Tests | ✅ Complete | PR #65 - `popup/popup.test.js` |
+| Step 11: Add Package.json Scripts | ✅ Complete | test, test:watch, test:coverage |
+| Step 12: Update Root Package.json | ✅ Complete | pnpm test:extension works |
+| Step 13: Update CI Workflow | ✅ Complete | PR #65 - Chrome extension tests in CI |
+
+### Drift Notes
+- Implementation took a different approach: tests for lib/api, popup, and options instead of content-script job parsing
+- Coverage thresholds disabled due to eval()-based testing approach (noted in jest.config.js)
+- No TypeScript tests - Chrome extension is plain JavaScript
+
+---
 
 ## Overview
 
