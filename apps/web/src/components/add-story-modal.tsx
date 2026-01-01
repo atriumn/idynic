@@ -17,6 +17,7 @@ import { MessageSquare, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDocumentJob } from "@/lib/hooks/use-document-job";
 import { STORY_PHASES, PHASE_LABELS, type DocumentJobPhase, type JobSummary } from "@idynic/shared/types";
+import { OnboardingPrompt } from "@/components/onboarding-prompt";
 
 const MIN_LENGTH = 200;
 const MAX_LENGTH = 10000;
@@ -28,6 +29,7 @@ export function AddStoryModal() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
+  const [showOnboardingPrompt, setShowOnboardingPrompt] = useState(false);
 
   const { job, displayMessages } = useDocumentJob(jobId);
 
@@ -46,6 +48,7 @@ export function AddStoryModal() {
         // Small delay to show success state before closing
         setTimeout(() => {
           setOpen(false);
+          setShowOnboardingPrompt(true);
           setText("");
         }, 800);
       };
@@ -102,13 +105,14 @@ export function AddStoryModal() {
   const summary = job?.summary as JobSummary | null;
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <MessageSquare className="h-4 w-4 mr-2" />
-          Add Story
-        </Button>
-      </DialogTrigger>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm">
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Add Story
+          </Button>
+        </DialogTrigger>
       <DialogContent className="sm:max-w-[525px] border-2 shadow-lg">
         {!jobId ? (
           <>
@@ -233,6 +237,14 @@ export function AddStoryModal() {
           </div>
         )}
       </DialogContent>
-    </Dialog>
+      </Dialog>
+
+      {showOnboardingPrompt && (
+        <OnboardingPrompt
+          promptKey="after_story_added"
+          onDismiss={() => setShowOnboardingPrompt(false)}
+        />
+      )}
+    </>
   );
 }
