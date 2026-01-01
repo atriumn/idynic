@@ -2,7 +2,28 @@
 
 **Priority**: HIGH
 **Effort**: 1-2 days
-**Status**: Not Started
+**Status**: Done
+
+## Progress (Last reviewed: 2026-01-01)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Install Test Dependencies | ✅ Complete | PR #65 |
+| Step 2: Create Jest Config | ✅ Complete | PR #65 |
+| Step 3: Create Jest Setup File | ✅ Complete | PR #65, Chrome API mocks |
+| Step 4: Create Test Directory Structure | ✅ Complete | PR #65 |
+| Step 5: Write Job Parser Tests | ✅ Complete | PR #65 |
+| Step 6: Write Page Detection Tests | ✅ Complete | PR #65 |
+| Step 7: Write Background API Client Tests | ✅ Complete | PR #65 |
+| Step 8: Write Message Handler Tests | ✅ Complete | PR #65 |
+| Step 9: Write Storage Utility Tests | ✅ Complete | PR #65 |
+| Step 10: Write Popup Component Tests | ⏭️ Skipped | Simple HTML popup |
+| Step 11: Add Package.json Scripts | ✅ Complete | PR #65 |
+| Step 12: Update Root Package.json | ✅ Complete | PR #65 |
+| Step 13: Update CI Workflow | ✅ Complete | PR #65, tests run in CI |
+
+### Drift Notes
+None - implementation matched plan closely.
 
 ## Overview
 

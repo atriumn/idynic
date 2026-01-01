@@ -2,6 +2,17 @@
 
 > Created 2025-12-28 after completing beta launch checklist
 
+## Progress (Last reviewed: 2026-01-01)
+
+| Section | Status | Notes |
+|---------|--------|-------|
+| Delete My Account | ✅ Complete | Core functionality done |
+| Export My Data | ✅ Complete | ZIP download works |
+| Security Hardening | ✅ Complete | search_path fixed, vector extension deferred |
+| Onboarding Prompts | ⏳ Not Started | Design doc created |
+| Operational (Axiom) | ✅ Complete | Plan archived |
+| Operational (Env docs) | ⏳ Not Started | |
+
 ## Data Management (GDPR)
 
 ### Delete My Account
