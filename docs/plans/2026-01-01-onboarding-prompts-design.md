@@ -2,6 +2,18 @@
 
 > Created 2026-01-01 - Lightweight "next steps" prompts for new users
 
+**Status**: Design Complete - Implementation Not Started
+
+## Progress (Last reviewed: 2026-01-01)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Design Document | ✅ Complete | This document |
+| Phase 1: Shared Foundation | ⏳ Not Started | |
+| Phase 2: Web Integration | ⏳ Not Started | |
+| Phase 3: Mobile Integration | ⏳ Not Started | |
+| Phase 4: Testing & Polish | ⏳ Not Started | |
+
 ## Problem Statement
 
 New users complete an action (upload resume, add story, add opportunity) but don't know what to do next. The empty state guides them to start, but there's no guidance after each milestone to keep them progressing toward value (seeing a tailored profile).

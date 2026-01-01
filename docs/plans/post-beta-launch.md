@@ -2,6 +2,18 @@
 
 > Created 2025-12-28 after completing beta launch checklist
 
+## Progress (Last reviewed: 2026-01-01)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Delete My Account | ✅ Complete | |
+| Export My Data | ✅ Complete | |
+| Fix function search_path | ✅ Complete | |
+| Move vector extension | ❌ Deferred | Low risk, high complexity |
+| Onboarding Prompts | 🔄 In Progress | Design doc created, implementation not started |
+| Axiom logging | ✅ Complete | |
+| Document env vars | ⏳ Not Started | |
+
 ## Data Management (GDPR)
 
 ### Delete My Account
