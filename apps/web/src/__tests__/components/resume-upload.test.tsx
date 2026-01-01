@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ResumeUpload } from '@/components/resume-upload'
+import type { DocumentJob } from '@idynic/shared/types'
 
 // Mock fetch
 const mockFetch = vi.fn()
@@ -32,14 +33,39 @@ vi.mock('@/lib/hooks/use-document-job', () => ({
 
 // Mock shared types
 vi.mock('@idynic/shared/types', () => ({
-  RESUME_PHASES: ['extracting', 'analyzing', 'embedding', 'updating'],
+  RESUME_PHASES: ['extracting', 'synthesis', 'embeddings', 'evaluation'],
   PHASE_LABELS: {
     extracting: 'Extracting text from document',
-    analyzing: 'Analyzing content with AI',
-    embedding: 'Creating semantic embeddings',
-    updating: 'Updating your identity graph',
+    synthesis: 'Analyzing content with AI',
+    embeddings: 'Creating semantic embeddings',
+    evaluation: 'Updating your identity graph',
   },
 }))
+
+// Helper to create a partial mock job
+function createMockJob(overrides: Partial<DocumentJob>): DocumentJob {
+  return {
+    id: 'job-123',
+    user_id: 'user-123',
+    document_id: null,
+    opportunity_id: null,
+    job_type: 'resume',
+    filename: 'resume.pdf',
+    content_hash: null,
+    status: 'pending',
+    phase: null,
+    progress: null,
+    highlights: [],
+    error: null,
+    warning: null,
+    summary: null,
+    created_at: '2024-01-01T00:00:00Z',
+    started_at: null,
+    completed_at: null,
+    updated_at: '2024-01-01T00:00:00Z',
+    ...overrides,
+  }
+}
 
 describe('ResumeUpload', () => {
   beforeEach(() => {
@@ -133,7 +159,9 @@ describe('ResumeUpload', () => {
   it('calls onUploadComplete callback when job completes', async () => {
     const { useDocumentJob } = await import('@/lib/hooks/use-document-job')
     vi.mocked(useDocumentJob).mockReturnValue({
-      job: { status: 'completed', phase: null, progress: null, error: null, warning: null },
+      job: createMockJob({ status: 'completed' }),
+      isLoading: false,
+      error: null,
       displayMessages: [],
     })
 
@@ -192,7 +220,9 @@ describe('ResumeUpload', () => {
     it('shows processing phases when job is processing', async () => {
       const { useDocumentJob } = await import('@/lib/hooks/use-document-job')
       vi.mocked(useDocumentJob).mockReturnValue({
-        job: { status: 'processing', phase: 'analyzing', progress: null, error: null, warning: null },
+        job: createMockJob({ status: 'processing', phase: 'synthesis' }),
+        isLoading: false,
+        error: null,
         displayMessages: [],
       })
 
@@ -214,7 +244,9 @@ describe('ResumeUpload', () => {
     it('shows completed phases with checkmarks', async () => {
       const { useDocumentJob } = await import('@/lib/hooks/use-document-job')
       vi.mocked(useDocumentJob).mockReturnValue({
-        job: { status: 'processing', phase: 'embedding', progress: null, error: null, warning: null },
+        job: createMockJob({ status: 'processing', phase: 'embeddings' }),
+        isLoading: false,
+        error: null,
         displayMessages: [],
       })
 
@@ -235,10 +267,12 @@ describe('ResumeUpload', () => {
     it('shows display messages during processing', async () => {
       const { useDocumentJob } = await import('@/lib/hooks/use-document-job')
       vi.mocked(useDocumentJob).mockReturnValue({
-        job: { status: 'processing', phase: 'analyzing', progress: null, error: null, warning: null },
+        job: createMockJob({ status: 'processing', phase: 'synthesis' }),
+        isLoading: false,
+        error: null,
         displayMessages: [
-          { id: '1', text: 'Found React experience' },
-          { id: '2', text: 'Detected TypeScript skills' },
+          { id: 1, text: 'Found React experience' },
+          { id: 2, text: 'Detected TypeScript skills' },
         ],
       })
 
@@ -259,7 +293,9 @@ describe('ResumeUpload', () => {
     it('shows processing complete message', async () => {
       const { useDocumentJob } = await import('@/lib/hooks/use-document-job')
       vi.mocked(useDocumentJob).mockReturnValue({
-        job: { status: 'completed', phase: null, progress: null, error: null, warning: null },
+        job: createMockJob({ status: 'completed' }),
+        isLoading: false,
+        error: null,
         displayMessages: [],
       })
 
@@ -279,13 +315,12 @@ describe('ResumeUpload', () => {
     it('shows warning message if present', async () => {
       const { useDocumentJob } = await import('@/lib/hooks/use-document-job')
       vi.mocked(useDocumentJob).mockReturnValue({
-        job: {
+        job: createMockJob({
           status: 'completed',
-          phase: null,
-          progress: null,
-          error: null,
           warning: 'Some content could not be extracted',
-        },
+        }),
+        isLoading: false,
+        error: null,
         displayMessages: [],
       })
 
@@ -305,7 +340,9 @@ describe('ResumeUpload', () => {
     it('shows batch progress when available', async () => {
       const { useDocumentJob } = await import('@/lib/hooks/use-document-job')
       vi.mocked(useDocumentJob).mockReturnValue({
-        job: { status: 'processing', phase: 'extracting', progress: '2/5', error: null, warning: null },
+        job: createMockJob({ status: 'processing', phase: 'extracting', progress: '2/5' }),
+        isLoading: false,
+        error: null,
         displayMessages: [],
       })
 
@@ -327,7 +364,9 @@ describe('ResumeUpload', () => {
     it('shows error from job failure', async () => {
       const { useDocumentJob } = await import('@/lib/hooks/use-document-job')
       vi.mocked(useDocumentJob).mockReturnValue({
-        job: { status: 'failed', phase: null, progress: null, error: 'Document parsing failed', warning: null },
+        job: createMockJob({ status: 'failed', error: 'Document parsing failed' }),
+        isLoading: false,
+        error: null,
         displayMessages: [],
       })
 
@@ -341,7 +380,9 @@ describe('ResumeUpload', () => {
     it('shows generic error when job fails without message', async () => {
       const { useDocumentJob } = await import('@/lib/hooks/use-document-job')
       vi.mocked(useDocumentJob).mockReturnValue({
-        job: { status: 'failed', phase: null, progress: null, error: null, warning: null },
+        job: createMockJob({ status: 'failed' }),
+        isLoading: false,
+        error: null,
         displayMessages: [],
       })
 

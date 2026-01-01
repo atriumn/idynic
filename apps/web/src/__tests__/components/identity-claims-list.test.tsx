@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { IdentityClaimsList } from '@/components/identity-claims-list'
+import type { ComponentProps } from 'react'
 
 // Mock fetch
 const mockFetch = vi.fn()
@@ -34,14 +35,22 @@ vi.mock('@/lib/theme-colors', () => ({
   },
 }))
 
+// Extract the claims type from the component props
+type IdentityClaim = ComponentProps<typeof IdentityClaimsList>['claims'][number]
+
 describe('IdentityClaimsList', () => {
-  const mockClaims = [
+  const mockClaims: IdentityClaim[] = [
     {
       id: 'claim-1',
       label: 'React Development',
       type: 'skill',
       description: 'Expert in React and its ecosystem',
       confidence: 0.85,
+      user_id: 'user-1',
+      created_at: '2024-01-01',
+      updated_at: null,
+      embedding: null,
+      source: null,
       claim_evidence: [
         {
           strength: 'strong',
@@ -60,6 +69,11 @@ describe('IdentityClaimsList', () => {
       type: 'skill',
       description: 'Strong TypeScript skills',
       confidence: 0.75,
+      user_id: 'user-1',
+      created_at: '2024-01-01',
+      updated_at: null,
+      embedding: null,
+      source: null,
       claim_evidence: [],
       issues: [],
     },
@@ -69,6 +83,11 @@ describe('IdentityClaimsList', () => {
       type: 'achievement',
       description: 'Successfully led a cross-functional team',
       confidence: 0.9,
+      user_id: 'user-1',
+      created_at: '2024-01-01',
+      updated_at: null,
+      embedding: null,
+      source: null,
       claim_evidence: [],
       issues: [
         {
@@ -87,6 +106,11 @@ describe('IdentityClaimsList', () => {
       type: 'education',
       description: 'Stanford University',
       confidence: 0.95,
+      user_id: 'user-1',
+      created_at: '2024-01-01',
+      updated_at: null,
+      embedding: null,
+      source: null,
       claim_evidence: [],
       issues: [],
     },

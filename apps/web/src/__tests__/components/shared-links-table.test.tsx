@@ -284,10 +284,15 @@ describe('SharedLinksTable', () => {
   })
 
   it('navigates to opportunity when external link is clicked', async () => {
-    // Mock window.location.href
+    // Mock window.location.href using Object.defineProperty
     const originalLocation = window.location
-    delete (window as unknown as { location?: Location }).location
-    window.location = { ...originalLocation, href: '' } as Location
+    const mockLocation = { ...originalLocation, href: '' }
+
+    Object.defineProperty(window, 'location', {
+      value: mockLocation,
+      writable: true,
+      configurable: true,
+    })
 
     const user = userEvent.setup()
     render(<SharedLinksTable links={[activeLink]} />)
@@ -297,9 +302,13 @@ describe('SharedLinksTable', () => {
     const externalButton = buttons[buttons.length - 1]
     await user.click(externalButton)
 
-    expect(window.location.href).toBe('/opportunities/opp-1')
+    expect(mockLocation.href).toBe('/opportunities/opp-1')
 
     // Restore
-    window.location = originalLocation
+    Object.defineProperty(window, 'location', {
+      value: originalLocation,
+      writable: true,
+      configurable: true,
+    })
   })
 })

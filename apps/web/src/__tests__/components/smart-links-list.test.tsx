@@ -10,7 +10,7 @@ const mockLinks = [
   { url: 'https://greenhouse.io/jobs/789', label: null, type: 'greenhouse' as const },
   { url: 'https://lever.co/company/job', label: 'Lever', type: 'lever' as const },
   { url: 'https://workday.com/jobs/123', label: 'Workday', type: 'workday' as const },
-  { url: 'https://example.com/page', label: 'Generic link', type: 'other' as const },
+  { url: 'https://example.com/page', label: 'Generic link', type: 'link' as const },
 ]
 
 describe('SmartLinksList', () => {
@@ -72,7 +72,7 @@ describe('SmartLinksList', () => {
     })
 
     it('shows generic link icon for other links', () => {
-      const otherLink = mockLinks.find(l => l.type === 'other')!
+      const otherLink = mockLinks.find(l => l.type === 'link')!
       render(<SmartLinksList links={[otherLink]} onRemove={() => {}} />)
 
       const svg = document.querySelector('svg.text-muted-foreground')
@@ -84,7 +84,7 @@ describe('SmartLinksList', () => {
     const longUrlLink = {
       url: 'https://very-long-domain-name.com/this/is/a/very/long/path/that/should/be/truncated',
       label: null,
-      type: 'other' as const,
+      type: 'link' as const,
     }
     render(<SmartLinksList links={[longUrlLink]} onRemove={() => {}} />)
 
@@ -116,7 +116,7 @@ describe('SmartLinksList', () => {
     const simpleLink = {
       url: 'https://example.com',
       label: null,
-      type: 'other' as const,
+      type: 'link' as const,
     }
     render(<SmartLinksList links={[simpleLink]} onRemove={() => {}} />)
 
@@ -128,7 +128,7 @@ describe('SmartLinksList', () => {
     const badLink = {
       url: 'not-a-valid-url',
       label: null,
-      type: 'other' as const,
+      type: 'link' as const,
     }
     render(<SmartLinksList links={[badLink]} onRemove={() => {}} />)
 
