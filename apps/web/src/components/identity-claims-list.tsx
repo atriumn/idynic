@@ -73,16 +73,16 @@ interface IdentityClaimsListProps {
   onClaimUpdated?: () => void;
 }
 
-// Card styling matching mobile exactly
+// Card styling matching mobile exactly (same hex values)
 const CLAIM_CARD_STYLES: Record<
   string,
   { bg: string; border: string; text: string }
 > = {
-  skill: { bg: "#064e3b", border: "#047857", text: "#6ee7b7" },
-  achievement: { bg: "#713f12", border: "#a16207", text: "#fcd34d" },
-  attribute: { bg: "#1e3a8a", border: "#1d4ed8", text: "#93c5fd" },
-  education: { bg: "#581c87", border: "#7c3aed", text: "#c4b5fd" },
-  certification: { bg: "#881337", border: "#be123c", text: "#fda4af" },
+  skill: { bg: "#1e3a5f", border: "#1d4ed8", text: "#93c5fd" },
+  achievement: { bg: "#14532d", border: "#15803d", text: "#86efac" },
+  attribute: { bg: "#3b0764", border: "#7e22ce", text: "#d8b4fe" },
+  education: { bg: "#78350f", border: "#b45309", text: "#fcd34d" },
+  certification: { bg: "#134e4a", border: "#0f766e", text: "#5eead4" },
 };
 
 const EVIDENCE_TYPE_COLORS: Record<string, { bg: string; text: string }> = {
