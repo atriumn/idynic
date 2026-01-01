@@ -23,7 +23,13 @@ vi.mock('@tanstack/react-query', () => ({
 }))
 
 // Mock hooks - default mock that returns no job
-const mockUseDocumentJob = vi.fn(() => ({
+type DisplayMessage = { id: number; text: string }
+const mockUseDocumentJob = vi.fn<[], {
+  job: DocumentJob | null;
+  isLoading: boolean;
+  error: Error | null;
+  displayMessages: DisplayMessage[];
+}>(() => ({
   job: null,
   isLoading: false,
   error: null,
@@ -31,7 +37,7 @@ const mockUseDocumentJob = vi.fn(() => ({
 }))
 
 vi.mock('@/lib/hooks/use-document-job', () => ({
-  useDocumentJob: (...args: unknown[]) => mockUseDocumentJob(...args),
+  useDocumentJob: () => mockUseDocumentJob(),
 }))
 
 // Mock shared types
