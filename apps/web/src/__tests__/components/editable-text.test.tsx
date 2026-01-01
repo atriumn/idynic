@@ -1,33 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor, fireEvent, within } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { EditableText } from '@/components/editable-text'
 
 // Mock fetch
 const mockFetch = vi.fn()
 global.fetch = mockFetch
-
-// Helper to wait for edit mode to be active (popover opens)
-const waitForEditMode = async () => {
-  // Wait for the popover dialog to appear (Radix portals content to body)
-  await waitFor(() => {
-    const dialogs = document.querySelectorAll('[role="dialog"]')
-    expect(dialogs.length).toBeGreaterThan(0)
-  })
-}
-
-// Helper to get button from portaled content
-const getPortaledButton = (text: RegExp | string) => {
-  // Radix UI portals content to the body, so we need to search the whole document
-  const body = document.body
-  const buttons = within(body).getAllByRole('button')
-  return buttons.find(btn => {
-    if (typeof text === 'string') {
-      return btn.textContent?.toLowerCase().includes(text.toLowerCase())
-    }
-    return text.test(btn.textContent || '')
-  })
-}
 
 describe('EditableText', () => {
   const defaultProps = {
