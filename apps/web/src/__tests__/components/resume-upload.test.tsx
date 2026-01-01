@@ -183,6 +183,16 @@ describe('ResumeUpload', () => {
   })
 
   describe('drag and drop', () => {
+    beforeEach(() => {
+      // Ensure we're in the initial upload state (no job)
+      mockUseDocumentJob.mockReturnValue({
+        job: null,
+        isLoading: false,
+        error: null,
+        displayMessages: [],
+      })
+    })
+
     it('highlights on drag over', () => {
       render(<ResumeUpload />)
 

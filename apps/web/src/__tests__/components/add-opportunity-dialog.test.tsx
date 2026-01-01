@@ -200,7 +200,10 @@ describe('AddOpportunityDialog', () => {
     await user.type(urlInput, 'https://example.com/job/123')
     await user.type(descriptionInput, 'Software Engineer position')
 
-    await user.click(screen.getByRole('button', { name: /^add opportunity$/i }))
+    // Find all buttons with "Add Opportunity" and get the submit button (last one)
+    const allAddButtons = screen.getAllByRole('button', { name: /add opportunity/i })
+    const submitButton = allAddButtons[allAddButtons.length - 1]
+    await user.click(submitButton)
 
     expect(screen.getByText(/starting/i)).toBeInTheDocument()
   })
