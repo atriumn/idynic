@@ -179,15 +179,30 @@ describe('SharedLinksTable', () => {
       })
     })
 
+    it('copies link to clipboard', async () => {
+      const user = userEvent.setup()
+      render(<SharedLinksTable links={[activeLink]} />)
+
+      // Find copy button by looking for the lucide-copy icon
+      const copyButton = document.querySelector('button svg.lucide-copy')?.closest('button')
+      if (copyButton) {
+        await user.click(copyButton)
+      }
+
+      await waitFor(() => {
+        expect(mockWriteText).toHaveBeenCalledWith(expect.stringContaining('/shared/token-abc'))
+      })
+    })
+
     it('revokes link when revoke button is clicked', async () => {
       const user = userEvent.setup()
       render(<SharedLinksTable links={[activeLink]} />)
 
-      // Find and click revoke button (second button with icon)
-      const buttons = screen.getAllByRole('button')
-      // Revoke is typically the second action button
-      const revokeButton = buttons[2] // After expand and copy
-      await user.click(revokeButton)
+      // Find revoke button by looking for the lucide-link-2-off icon
+      const revokeButton = document.querySelector('button svg.lucide-link-2-off')?.closest('button')
+      if (revokeButton) {
+        await user.click(revokeButton)
+      }
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith('/api/shared-links/link-1', {
