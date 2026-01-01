@@ -58,6 +58,9 @@ jobs:
       - name: Run mobile tests
         run: pnpm --filter mobile test:coverage
 
+      - name: Run Chrome extension tests
+        run: pnpm --filter chrome-extension test:coverage
+
       - name: Comment PR with coverage (web)
         if: github.event_name == 'pull_request'
         uses: romeovs/lcov-reporter-action@v0.3.1
