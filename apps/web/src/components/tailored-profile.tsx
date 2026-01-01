@@ -256,7 +256,33 @@ export function TailoredProfile({
     }
   };
 
-  if (!profile && !loading) {
+  if (error) {
+    return (
+      <Card className="border-destructive">
+        <CardContent className="py-8 text-center">
+          <WarningCircle className="h-8 w-8 mx-auto mb-4 text-destructive" />
+          <p className="text-destructive mb-4">{error}</p>
+          <Button onClick={() => generateProfile()} variant="outline">
+            Try Again
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (loading) {
+    return (
+      <Card className="mb-6">
+        <CardContent className="py-12 text-center">
+          <SpinnerGap className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground">Analyzing your profile...</p>
+          <p className="text-sm text-muted-foreground mt-1">This may take 10-20 seconds</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!profile) {
     return (
       <Card className="mb-6 border-primary/20 bg-gradient-to-br from-primary/5 to-background">
         <CardContent className="py-8">
@@ -290,34 +316,6 @@ export function TailoredProfile({
       </Card>
     );
   }
-
-  if (loading) {
-    return (
-      <Card className="mb-6">
-        <CardContent className="py-12 text-center">
-          <SpinnerGap className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">Analyzing your profile...</p>
-          <p className="text-sm text-muted-foreground mt-1">This may take 10-20 seconds</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className="border-destructive">
-        <CardContent className="py-8 text-center">
-          <WarningCircle className="h-8 w-8 mx-auto mb-4 text-destructive" />
-          <p className="text-destructive mb-4">{error}</p>
-          <Button onClick={() => generateProfile()} variant="outline">
-            Try Again
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!profile) return null;
 
   const { talking_points, narrative, resume_data } = profile;
 
