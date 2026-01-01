@@ -41,15 +41,15 @@ jest.mock('react-native-svg', () => {
 
 // Mock expo-router
 jest.mock('expo-router', () => ({
-  useRouter: () => ({
+  useRouter: jest.fn(() => ({
     push: jest.fn(),
     replace: jest.fn(),
     back: jest.fn(),
     canGoBack: jest.fn(() => true),
-  }),
-  useLocalSearchParams: () => ({}),
-  usePathname: () => '/',
-  useSegments: () => [],
+  })),
+  useLocalSearchParams: jest.fn(() => ({})),
+  usePathname: jest.fn(() => '/'),
+  useSegments: jest.fn(() => []),
   Link: ({ children }) => children,
   Stack: {
     Screen: () => null,
