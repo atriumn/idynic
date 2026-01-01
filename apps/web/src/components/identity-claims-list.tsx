@@ -33,7 +33,8 @@ import {
 import {
   Search,
   Filter,
-  ChevronRight,
+  ChevronDown,
+  ChevronUp,
   FileText,
   AlertTriangle,
   X,
@@ -277,20 +278,14 @@ export function IdentityClaimsList({
       {/* Claims List - Card style */}
       <div className="rounded-lg bg-background">
         <Table style={{ borderCollapse: "separate", borderSpacing: "0 8px" }}>
-          <TableHeader className="bg-muted/30">
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="w-[30px]"></TableHead>
-              <TableHead className="font-bold text-xs uppercase tracking-wider">
+          <TableHeader className="bg-transparent">
+            <TableRow className="hover:bg-transparent border-0">
+              <TableHead className="w-[40px]"></TableHead>
+              <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
                 Claim
               </TableHead>
-              <TableHead className="w-[100px] font-bold text-xs uppercase tracking-wider">
-                Type
-              </TableHead>
-              <TableHead className="w-[160px] font-bold text-xs uppercase tracking-wider">
+              <TableHead className="w-[120px] font-bold text-xs uppercase tracking-wider text-muted-foreground">
                 Sources
-              </TableHead>
-              <TableHead className="w-[100px] text-right font-bold text-xs uppercase tracking-wider">
-                Confidence
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -298,7 +293,7 @@ export function IdentityClaimsList({
             {filteredClaims.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={3}
                   className="h-24 text-center text-muted-foreground"
                 >
                   No claims found matching your criteria.
@@ -355,52 +350,62 @@ export function IdentityClaimsList({
                       className={`cursor-pointer hover:brightness-110 ${isExpanded ? "brightness-110" : ""}`}
                       style={{
                         backgroundColor: CLAIM_ROW_STYLES[claim.type]?.bg,
+                        border: `1px solid ${CLAIM_ROW_STYLES[claim.type]?.border || "#64748b"}`,
                         borderLeft: `4px solid ${CLAIM_ROW_STYLES[claim.type]?.border || "#64748b"}`,
-                        borderRadius: "8px",
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                        borderRadius: "12px",
                       }}
                       onClick={() => toggleRow(claim.id)}
                     >
-                      <TableCell className="py-2 pr-0">
-                        {evidenceCount > 0 && (
-                          <div
-                            className={`transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
-                          >
-                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                          </div>
+                      <TableCell className="py-3 pl-3 pr-0 w-8">
+                        {isExpanded ? (
+                          <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="h-5 w-5 text-muted-foreground" />
                         )}
                       </TableCell>
                       <TableCell className="py-3 font-medium">
-                        <div className="flex flex-col">
+                        <div className="flex flex-col gap-2">
                           <div className="flex items-center gap-2">
-                            <span>{claim.label}</span>
                             {claim.issues && claim.issues.length > 0 && (
                               <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
                             )}
+                            <span className="font-semibold">{claim.label}</span>
+                            <Badge
+                              variant="outline"
+                              className={`capitalize font-medium text-[10px] px-2 py-0.5 border ${CLAIM_TYPE_COLORS[claim.type]}`}
+                            >
+                              {claim.type}
+                            </Badge>
                           </div>
-                          {claim.description && (
-                            <span className="text-xs text-muted-foreground font-normal line-clamp-1">
+                          {/* Progress bar - prominent like mobile */}
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden max-w-[200px]">
+                              <div
+                                className="h-full bg-teal-500 rounded-full transition-all"
+                                style={{
+                                  width: `${Math.round((claim.confidence ?? 0.5) * 100)}%`,
+                                }}
+                              />
+                            </div>
+                            <span className="text-xs font-medium tabular-nums text-muted-foreground">
+                              {Math.round((claim.confidence ?? 0.5) * 100)}%
+                            </span>
+                          </div>
+                          {claim.description && !isExpanded && (
+                            <span className="text-sm text-muted-foreground font-normal line-clamp-2">
                               {claim.description}
                             </span>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="py-2">
-                        <Badge
-                          variant="outline"
-                          className={`capitalize font-medium text-[10px] px-2 py-0.5 border ${CLAIM_TYPE_COLORS[claim.type]}`}
-                        >
-                          {claim.type}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="py-2 text-xs text-muted-foreground">
+                      <TableCell className="py-3 text-xs text-muted-foreground align-top">
                         <div className="flex flex-col gap-0.5">
                           <span className="font-medium text-foreground">
                             {evidenceCount} item{evidenceCount !== 1 ? "s" : ""}
                           </span>
                           {sourceDocs.length > 0 && (
                             <span
-                              className="truncate max-w-[200px]"
+                              className="truncate max-w-[150px]"
                               title={sourceDocs
                                 .map((d) => d.filename)
                                 .join(", ")}
@@ -410,21 +415,6 @@ export function IdentityClaimsList({
                                 ` +${sourceDocs.length - 1}`}
                             </span>
                           )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-2">
-                        <div className="flex items-center gap-2 min-w-[100px]">
-                          <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-teal-500 rounded-full transition-all"
-                              style={{
-                                width: `${Math.round((claim.confidence ?? 0.5) * 100)}%`,
-                              }}
-                            />
-                          </div>
-                          <span className="text-xs font-medium tabular-nums text-muted-foreground w-8">
-                            {Math.round((claim.confidence ?? 0.5) * 100)}%
-                          </span>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -440,7 +430,7 @@ export function IdentityClaimsList({
                             marginTop: "-8px",
                           }}
                         >
-                          <TableCell colSpan={5} className="p-0">
+                          <TableCell colSpan={3} className="p-0">
                             <div className="px-4 py-3 pl-12 space-y-3">
                               {/* Issue Banner */}
                               {claim.issues && claim.issues.length > 0 && (
