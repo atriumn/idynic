@@ -275,8 +275,9 @@ describe('ResumeUpload', () => {
       render(<ResumeUpload />)
 
       await waitFor(() => {
-        // Completed phases should show checkmarks (✓)
-        expect(screen.getByText('✓')).toBeInTheDocument()
+        // Completed phases should show checkmarks (✓) - there can be multiple
+        const checkmarks = screen.getAllByText('✓')
+        expect(checkmarks.length).toBeGreaterThan(0)
       })
     })
 
