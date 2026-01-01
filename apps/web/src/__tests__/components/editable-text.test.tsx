@@ -52,8 +52,9 @@ describe('EditableText', () => {
 
     await user.click(screen.getByText('Test content'))
 
-    // Should show input/textarea in edit mode
-    expect(screen.getByRole('textbox')).toBeInTheDocument()
+    // Should show input/textarea in edit mode (may have multiple textboxes including custom instruction)
+    const textboxes = screen.getAllByRole('textbox')
+    expect(textboxes.length).toBeGreaterThanOrEqual(1)
   })
 
   it('enters edit mode when pencil button is clicked', async () => {
@@ -62,7 +63,8 @@ describe('EditableText', () => {
 
     await user.click(screen.getByRole('button'))
 
-    expect(screen.getByRole('textbox')).toBeInTheDocument()
+    const textboxes = screen.getAllByRole('textbox')
+    expect(textboxes.length).toBeGreaterThanOrEqual(1)
   })
 
   it('shows input for single line content', async () => {
@@ -71,7 +73,8 @@ describe('EditableText', () => {
 
     await user.click(screen.getByText('Test content'))
 
-    const input = screen.getByRole('textbox')
+    // Get the main input (not the custom instruction input)
+    const input = screen.getByDisplayValue('Test content')
     expect(input.tagName.toLowerCase()).toBe('input')
   })
 
@@ -81,7 +84,8 @@ describe('EditableText', () => {
 
     await user.click(screen.getByText('Test content'))
 
-    const textarea = screen.getByRole('textbox')
+    // Get the main textarea (not the custom instruction input)
+    const textarea = screen.getByDisplayValue('Test content')
     expect(textarea.tagName.toLowerCase()).toBe('textarea')
   })
 
@@ -123,7 +127,8 @@ describe('EditableText', () => {
 
     await user.click(screen.getByText('Test content'))
 
-    const input = screen.getByRole('textbox')
+    // Use getByDisplayValue to get the main input (not the custom instruction input)
+    const input = screen.getByDisplayValue('Test content')
     await user.clear(input)
     await user.type(input, 'Updated content')
 
@@ -148,7 +153,8 @@ describe('EditableText', () => {
 
     await user.click(screen.getByText('Test content'))
 
-    const input = screen.getByRole('textbox')
+    // Use getByDisplayValue to get the main input (not the custom instruction input)
+    const input = screen.getByDisplayValue('Test content')
     await user.clear(input)
     await user.type(input, 'Updated content')
 
@@ -166,7 +172,8 @@ describe('EditableText', () => {
 
     await user.click(screen.getByText('Test content'))
 
-    const input = screen.getByRole('textbox')
+    // Use getByDisplayValue to get the main input (not the custom instruction input)
+    const input = screen.getByDisplayValue('Test content')
     await user.type(input, ' extra')
     await user.keyboard('{Escape}')
 
@@ -182,7 +189,8 @@ describe('EditableText', () => {
 
     await user.click(screen.getByText('Test content'))
 
-    const input = screen.getByRole('textbox')
+    // Use getByDisplayValue to get the main input (not the custom instruction input)
+    const input = screen.getByDisplayValue('Test content')
     await user.clear(input)
     await user.type(input, 'Updated')
 
@@ -284,7 +292,8 @@ describe('EditableText', () => {
 
     await user.click(screen.getByText('Test content'))
 
-    const input = screen.getByRole('textbox')
+    // Use getByDisplayValue to get the main input (not the custom instruction input)
+    const input = screen.getByDisplayValue('Test content')
     await user.clear(input)
     await user.type(input, 'Updated')
 
