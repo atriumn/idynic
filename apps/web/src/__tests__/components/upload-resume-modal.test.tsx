@@ -80,52 +80,64 @@ describe('UploadResumeModal', () => {
     expect(fileInput).toHaveAttribute('accept', '.pdf,application/pdf')
   })
 
-  it('shows error for non-PDF files', async () => {
+  it('shows error for non-PDF files via drag and drop', async () => {
     const user = userEvent.setup()
     render(<UploadResumeModal />)
 
     await user.click(screen.getByRole('button', { name: /upload resume/i }))
 
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+    const dropZone = screen.getByText(/drag and drop/i).closest('div')!
     const textFile = new File(['hello'], 'test.txt', { type: 'text/plain' })
 
-    await user.upload(fileInput, textFile)
+    // Simulate drag and drop (bypasses accept attribute filtering)
+    fireEvent.drop(dropZone, {
+      dataTransfer: {
+        files: [textFile],
+      },
+    })
 
     await waitFor(() => {
       expect(screen.getByText('Please upload a PDF file')).toBeInTheDocument()
     })
   })
 
-  it('shows error for files over 10MB', async () => {
+  it('shows error for files over 10MB via drag and drop', async () => {
     const user = userEvent.setup()
     render(<UploadResumeModal />)
 
     await user.click(screen.getByRole('button', { name: /upload resume/i }))
 
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+    const dropZone = screen.getByText(/drag and drop/i).closest('div')!
     // Create a mock large file (11MB)
-    const largeContent = new Array(11 * 1024 * 1024).fill('a').join('')
-    const largeFile = new File([largeContent], 'large.pdf', { type: 'application/pdf' })
-
+    const largeFile = new File(['x'], 'large.pdf', { type: 'application/pdf' })
     Object.defineProperty(largeFile, 'size', { value: 11 * 1024 * 1024 })
 
-    await user.upload(fileInput, largeFile)
+    // Simulate drag and drop
+    fireEvent.drop(dropZone, {
+      dataTransfer: {
+        files: [largeFile],
+      },
+    })
 
     await waitFor(() => {
       expect(screen.getByText('File size must be less than 10MB')).toBeInTheDocument()
     })
   })
 
-  it('uploads file and gets jobId', async () => {
+  it('uploads file and gets jobId via drag and drop', async () => {
     const user = userEvent.setup()
     render(<UploadResumeModal />)
 
     await user.click(screen.getByRole('button', { name: /upload resume/i }))
 
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+    const dropZone = screen.getByText(/drag and drop/i).closest('div')!
     const pdfFile = new File(['pdf content'], 'resume.pdf', { type: 'application/pdf' })
 
-    await user.upload(fileInput, pdfFile)
+    fireEvent.drop(dropZone, {
+      dataTransfer: {
+        files: [pdfFile],
+      },
+    })
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/process-resume', {
@@ -135,7 +147,7 @@ describe('UploadResumeModal', () => {
     })
   })
 
-  it('shows error on upload failure', async () => {
+  it('shows error on upload failure via drag and drop', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
       json: () => Promise.resolve({ error: 'Upload failed' }),
@@ -146,10 +158,14 @@ describe('UploadResumeModal', () => {
 
     await user.click(screen.getByRole('button', { name: /upload resume/i }))
 
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+    const dropZone = screen.getByText(/drag and drop/i).closest('div')!
     const pdfFile = new File(['pdf content'], 'resume.pdf', { type: 'application/pdf' })
 
-    await user.upload(fileInput, pdfFile)
+    fireEvent.drop(dropZone, {
+      dataTransfer: {
+        files: [pdfFile],
+      },
+    })
 
     await waitFor(() => {
       expect(screen.getByText('Upload failed')).toBeInTheDocument()
