@@ -141,8 +141,8 @@ describe('ShareLinkModal', () => {
       })
 
       // Check that share link input is present with the expected value
-      const input = screen.getByRole('textbox')
-      expect(input).toHaveValue(expect.stringContaining('/shared/abc123'))
+      const input = screen.getByRole('textbox') as HTMLInputElement
+      expect(input.value).toContain('/shared/abc123')
     })
 
     it('revokes link', async () => {
