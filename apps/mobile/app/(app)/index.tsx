@@ -66,7 +66,7 @@ function ConfidenceBar({ confidence }: { confidence: number | null }) {
           style={{ width: `${percentage}%` }}
         />
       </View>
-      <Text className="text-xs text-slate-500 w-8">{percentage}%</Text>
+      <Text className="text-xs text-slate-300 font-medium w-8">{percentage}%</Text>
     </View>
   );
 }

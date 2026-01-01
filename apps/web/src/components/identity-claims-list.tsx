@@ -311,7 +311,7 @@ export function IdentityClaimsList({
                         }}
                       />
                     </div>
-                    <span className="text-xs text-slate-500 w-8">
+                    <span className="text-xs text-slate-300 font-medium w-8">
                       {Math.round((claim.confidence ?? 0.5) * 100)}%
                     </span>
                   </div>
