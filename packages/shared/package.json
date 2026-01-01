@@ -15,14 +15,27 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage"
   },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
   "dependencies": {
     "zod": "^4.2.1"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.3.1",
+    "@types/react": "^19.2.7",
     "@typescript-eslint/eslint-plugin": "^8",
     "@typescript-eslint/parser": "^8",
     "@vitest/coverage-v8": "^2.1.8",
     "eslint": "^8",
+    "happy-dom": "^20.0.11",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "typescript": "^5",
     "vitest": "^2.1.8"
   }
