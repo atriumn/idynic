@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Pressable, Image, Linking, useWindowDimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -34,6 +34,7 @@ import {
 } from '../../../hooks/use-opportunity';
 import { getRequirements } from '../../../hooks/use-opportunities';
 import { useCreateSharedLink } from '../../../hooks/use-shared-links';
+import { OnboardingPrompt } from '../../../components/onboarding-prompt';
 
 /**
  * Render markdown bold (**text**) as styled Text elements
@@ -242,14 +243,66 @@ export default function OpportunityDetailScreen() {
   const { width } = useWindowDimensions();
   const [activeTab, setActiveTab] = useState<'tailored' | 'research'>('tailored');
   const [shareCopied, setShareCopied] = useState(false);
+  const [showOpportunityAddedPrompt, setShowOpportunityAddedPrompt] = useState(false);
+  const [showProfileTailoredPrompt, setShowProfileTailoredPrompt] = useState(false);
+
+  // Track if we've shown the opportunity added prompt for this session
+  const hasShownOpportunityPrompt = useRef(false);
+  // Track previous tailored profile state to detect when it becomes available
+  const hadTailoredProfile = useRef<boolean | null>(null);
 
   const { data: opportunity, isLoading, error } = useOpportunity(id || '');
   const { data: tailoredProfile, isLoading: tailoredLoading } = useTailoredProfile(id || '');
   const generateProfile = useGenerateTailoredProfile(id || '');
   const createSharedLink = useCreateSharedLink();
 
+  // Show "after_opportunity_added" prompt when landing on an opportunity without a tailored profile
+  useEffect(() => {
+    if (
+      !isLoading &&
+      !tailoredLoading &&
+      opportunity &&
+      !tailoredProfile &&
+      !hasShownOpportunityPrompt.current
+    ) {
+      hasShownOpportunityPrompt.current = true;
+      setShowOpportunityAddedPrompt(true);
+    }
+  }, [isLoading, tailoredLoading, opportunity, tailoredProfile]);
+
+  // Show "after_profile_tailored" prompt when a tailored profile is newly generated
+  useEffect(() => {
+    // Only trigger when we go from no profile to having a profile
+    if (
+      hadTailoredProfile.current === false &&
+      tailoredProfile?.resume_data
+    ) {
+      setShowProfileTailoredPrompt(true);
+    }
+    // Update ref with current state (after initial load)
+    if (!tailoredLoading) {
+      hadTailoredProfile.current = !!tailoredProfile?.resume_data;
+    }
+  }, [tailoredProfile, tailoredLoading]);
+
   const handleGenerateProfile = () => {
     generateProfile.mutate({});
+  };
+
+  const handleOpportunityAddedAction = (action: string) => {
+    if (action === 'generate_tailored_profile') {
+      handleGenerateProfile();
+    }
+  };
+
+  const handleProfileTailoredAction = (action: string) => {
+    if (action === 'share_profile') {
+      handleShare();
+    } else if (action === 'download_pdf') {
+      // PDF download is not supported in mobile yet
+      // Could open share link or show a message
+      handleShare();
+    }
   };
 
   const handleShare = async () => {
@@ -602,6 +655,22 @@ export default function OpportunityDetailScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Onboarding prompts */}
+      {showOpportunityAddedPrompt && !tailoredProfile && (
+        <OnboardingPrompt
+          promptKey="after_opportunity_added"
+          onAction={handleOpportunityAddedAction}
+          onDismiss={() => setShowOpportunityAddedPrompt(false)}
+        />
+      )}
+      {showProfileTailoredPrompt && tailoredProfile && (
+        <OnboardingPrompt
+          promptKey="after_profile_tailored"
+          onAction={handleProfileTailoredAction}
+          onDismiss={() => setShowProfileTailoredPrompt(false)}
+        />
+      )}
     </SafeAreaView>
   );
 }
