@@ -2,7 +2,19 @@
 
 **Priority**: HIGH
 **Effort**: 1-2 days
-**Status**: Not Started
+**Status**: Done
+
+## Progress (Last reviewed: 2026-01-01)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1-4: Setup | ✅ Complete | PR #65 |
+| Step 5-10: Tests | ✅ Complete | 49 tests added |
+| Step 11-13: CI | ✅ Complete | Tests run in CI |
+
+### Drift Notes
+Implemented with Vitest instead of Jest (matching repo's existing test infrastructure).
+Added 49 tests across 3 test suites: API Client (17), Popup (16), Options (16).
 
 ## Overview
 

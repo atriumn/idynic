@@ -451,20 +451,31 @@ const handleComplete = () => {
 
 ---
 
+## Progress (Last reviewed: 2026-01-01)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Phase 1: Shared Foundation | ✅ Complete | PR #79 |
+| Phase 2: Web Integration | ✅ Complete | PR #82 |
+| Phase 3: Mobile Integration | ⏳ Not Started | |
+| Phase 4: Testing & Polish | ⏳ Not Started | |
+
+---
+
 ## Implementation Plan
 
 ### Phase 1: Shared Foundation
-- [ ] Create `packages/shared/src/content/onboarding.ts` with prompt copy
-- [ ] Create `packages/shared/src/hooks/useOnboardingProgress.ts` with storage adapter pattern
-- [ ] Export from `packages/shared/src/index.ts`
+- [x] Create `packages/shared/src/content/onboarding.ts` with prompt copy
+- [x] Create `packages/shared/src/hooks/useOnboardingProgress.ts` with storage adapter pattern
+- [x] Export from `packages/shared/src/index.ts`
 
 ### Phase 2: Web Integration
-- [ ] Create `apps/web/src/lib/storage-adapter.ts`
-- [ ] Create `apps/web/src/components/onboarding-prompt.tsx`
-- [ ] Wire up trigger points:
-  - [ ] upload-resume-modal.tsx
-  - [ ] add-story-modal.tsx
-  - [ ] opportunities/[id]/page.tsx (for tailoring prompts)
+- [x] Create `apps/web/src/lib/storage-adapter.ts`
+- [x] Create `apps/web/src/components/onboarding-prompt.tsx`
+- [x] Wire up trigger points:
+  - [x] upload-resume-modal.tsx
+  - [x] add-story-modal.tsx
+  - [x] opportunities/[id]/page.tsx (for tailoring prompts)
 
 ### Phase 3: Mobile Integration
 - [ ] Create `apps/mobile/lib/storage-adapter.ts` with AsyncStorage
