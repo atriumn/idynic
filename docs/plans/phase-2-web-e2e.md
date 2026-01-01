@@ -4,6 +4,30 @@
 **Effort**: 3-4 days
 **Status**: Not Started
 
+## Progress (Last reviewed: 2026-01-01)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Create E2E Supabase Project | ⏳ Not Started | |
+| Step 2: Install Playwright | ⏳ Not Started | |
+| Step 3: Create Playwright Config | ⏳ Not Started | |
+| Step 4: Create E2E Directory Structure | ⏳ Not Started | |
+| Step 5: Create Test Data Seeding Utilities | ⏳ Not Started | |
+| Step 6: Create Global Setup | ⏳ Not Started | |
+| Step 7: Create Auth E2E Tests | ⏳ Not Started | |
+| Step 8: Create Profile E2E Tests | ⏳ Not Started | |
+| Step 9: Create Document E2E Tests | ⏳ Not Started | |
+| Step 10: Create Opportunity E2E Tests | ⏳ Not Started | |
+| Step 11: Create Mobile Web Tests | ⏳ Not Started | |
+| Step 12: Add Package.json Scripts | ⏳ Not Started | |
+| Step 13: Create E2E CI Workflow | ⏳ Not Started | |
+| Step 14: Test Full CI Flow | ⏳ Not Started | |
+
+### Related Progress
+- Phase 1 (Integration Tests): ✅ Complete - PR #38
+- Phase 3 (Chrome Extension Tests): ✅ Complete - PR #65
+- Web unit test coverage now at 50%+ (PRs #68, #70)
+
 ## Overview
 
 Add Playwright E2E tests for critical web user journeys. Tests run against Vercel preview deployments using a dedicated Supabase test project. Includes both desktop and mobile web testing.
