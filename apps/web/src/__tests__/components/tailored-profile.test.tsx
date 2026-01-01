@@ -56,6 +56,11 @@ vi.mock('@/components/regenerate-warning-dialog', () => ({
     ) : null,
 }))
 
+// Mock onboarding-prompt to avoid shared package React hook issues in tests
+vi.mock('@/components/onboarding-prompt', () => ({
+  OnboardingPrompt: () => null,
+}))
+
 describe('TailoredProfile', () => {
   const mockProfile = {
     talking_points: {
