@@ -1,17 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +15,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Search,
-  Filter,
   ChevronDown,
   ChevronUp,
   FileText,
@@ -34,9 +24,16 @@ import {
   Trash2,
   Loader2,
   CheckCircle2,
+  Sparkles,
+  Award,
+  Lightbulb,
+  GraduationCap,
+  BadgeCheck,
+  type LucideIcon,
 } from "lucide-react";
 import { useInvalidateGraph } from "@/lib/hooks/use-identity-graph";
 import { EditClaimModal } from "@/components/edit-claim-modal";
+import { getClaimTypeStyle, CLAIM_TYPE_LABELS } from "@/lib/theme-colors";
 import type { Database } from "@/lib/supabase/types";
 
 type EvidenceWithDocument = {
@@ -73,32 +70,102 @@ interface IdentityClaimsListProps {
   onClaimUpdated?: () => void;
 }
 
-// Card styling matching mobile exactly (same hex values)
-const CLAIM_CARD_STYLES: Record<
-  string,
-  { bg: string; border: string; text: string }
-> = {
-  skill: { bg: "#1e3a5f", border: "#1d4ed8", text: "#93c5fd" },
-  achievement: { bg: "#14532d", border: "#15803d", text: "#86efac" },
-  attribute: { bg: "#3b0764", border: "#7e22ce", text: "#d8b4fe" },
-  education: { bg: "#78350f", border: "#b45309", text: "#fcd34d" },
-  certification: { bg: "#134e4a", border: "#0f766e", text: "#5eead4" },
+// Claim type icons matching mobile
+const CLAIM_TYPE_ICONS: Record<string, LucideIcon> = {
+  skill: Sparkles,
+  achievement: Award,
+  attribute: Lightbulb,
+  education: GraduationCap,
+  certification: BadgeCheck,
 };
 
+const CLAIM_TYPES = [
+  "skill",
+  "achievement",
+  "attribute",
+  "education",
+  "certification",
+] as const;
+
+// Evidence type colors (still use direct hex for consistency in expanded view)
 const EVIDENCE_TYPE_COLORS: Record<string, { bg: string; text: string }> = {
-  skill_listed: { bg: "#1e3a5f", text: "#93c5fd" },
-  accomplishment: { bg: "#14532d", text: "#86efac" },
-  trait_indicator: { bg: "#3b0764", text: "#d8b4fe" },
-  education: { bg: "#78350f", text: "#fcd34d" },
-  certification: { bg: "#134e4a", text: "#5eead4" },
+  skill_listed: { bg: "var(--claim-skill-bg)", text: "var(--claim-skill-text)" },
+  accomplishment: {
+    bg: "var(--claim-achievement-bg)",
+    text: "var(--claim-achievement-text)",
+  },
+  trait_indicator: {
+    bg: "var(--claim-attribute-bg)",
+    text: "var(--claim-attribute-text)",
+  },
+  education: {
+    bg: "var(--claim-education-bg)",
+    text: "var(--claim-education-text)",
+  },
+  certification: {
+    bg: "var(--claim-certification-bg)",
+    text: "var(--claim-certification-text)",
+  },
 };
+
+// ClaimTypeChip component matching mobile's FilterChip
+function ClaimTypeChip({
+  type,
+  count,
+  selected,
+  onToggle,
+}: {
+  type: string;
+  count: number;
+  selected: boolean;
+  onToggle: () => void;
+}) {
+  const Icon = CLAIM_TYPE_ICONS[type] || Sparkles;
+  const style = getClaimTypeStyle(type);
+  const label = CLAIM_TYPE_LABELS[type] || type;
+
+  if (count === 0) return null;
+
+  return (
+    <button
+      onClick={onToggle}
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all hover:brightness-110"
+      style={
+        selected
+          ? {
+              backgroundColor: style.bg,
+              borderColor: style.border,
+              color: style.text,
+            }
+          : {
+              backgroundColor: "var(--muted)",
+              borderColor: "var(--border)",
+              color: "var(--muted-foreground)",
+            }
+      }
+    >
+      <Icon className="h-3.5 w-3.5" />
+      <span className="text-sm">{label}</span>
+      <span
+        className="text-xs px-1.5 py-0.5 rounded-full"
+        style={{
+          backgroundColor: selected ? "rgba(0,0,0,0.15)" : "var(--background)",
+        }}
+      >
+        {count}
+      </span>
+    </button>
+  );
+}
 
 export function IdentityClaimsList({
   claims,
   onClaimUpdated,
 }: IdentityClaimsListProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [typeFilters, setTypeFilters] = useState<string[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<Set<string>>(
+    new Set(CLAIM_TYPES),
+  );
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [showIssuesOnly, setShowIssuesOnly] = useState(false);
   const [dismissingClaim, setDismissingClaim] = useState<string | null>(null);
@@ -109,15 +176,33 @@ export function IdentityClaimsList({
   const [claimToEdit, setClaimToEdit] = useState<IdentityClaim | null>(null);
   const invalidateGraph = useInvalidateGraph();
 
-  const allTypes = Array.from(new Set(claims.map((c) => c.type)));
+  // Count claims by type
+  const claimCountByType: Record<string, number> = {};
+  for (const type of CLAIM_TYPES) {
+    claimCountByType[type] = claims.filter((c) => c.type === type).length;
+  }
+
   const claimsWithIssues = claims.filter(
     (c) => c.issues && c.issues.length > 0,
   );
 
   const toggleTypeFilter = (type: string) => {
-    setTypeFilters((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
-    );
+    setSelectedTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(type)) {
+        // Don't allow deselecting all
+        if (next.size > 1) {
+          next.delete(type);
+        }
+      } else {
+        next.add(type);
+      }
+      return next;
+    });
+  };
+
+  const selectAllTypes = () => {
+    setSelectedTypes(new Set(CLAIM_TYPES));
   };
 
   const toggleRow = (id: string) => {
@@ -174,8 +259,7 @@ export function IdentityClaimsList({
     const matchesSearch =
       claim.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
       claim.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType =
-      typeFilters.length === 0 || typeFilters.includes(claim.type);
+    const matchesType = selectedTypes.has(claim.type);
     const matchesIssueFilter =
       !showIssuesOnly || (claim.issues && claim.issues.length > 0);
     return matchesSearch && matchesType && matchesIssueFilter;
@@ -183,72 +267,64 @@ export function IdentityClaimsList({
 
   return (
     <div className="space-y-4">
-      {/* Controls */}
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-muted/30 p-2 rounded-lg border border-muted/50">
-        <div className="relative w-full sm:w-80">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search claims..."
-            className="pl-9 h-9 bg-background border-muted/50"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search claims..."
+          className="pl-10 h-10 bg-card border-border"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery("")}
+            className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
 
-        <div className="flex items-center gap-2">
+      {/* Type Filters - Chip row like mobile */}
+      <div className="flex flex-wrap gap-2 items-center">
+        {CLAIM_TYPES.map((type) => (
+          <ClaimTypeChip
+            key={type}
+            type={type}
+            count={claimCountByType[type]}
+            selected={selectedTypes.has(type)}
+            onToggle={() => toggleTypeFilter(type)}
+          />
+        ))}
+        {selectedTypes.size < CLAIM_TYPES.length && (
+          <button
+            onClick={selectAllTypes}
+            className="px-3 py-1.5 rounded-full text-sm text-muted-foreground bg-muted border border-border hover:bg-muted/80"
+          >
+            Show All
+          </button>
+        )}
+
+        {/* Issues / Verified badge */}
+        <div className="ml-auto">
           {claimsWithIssues.length > 0 ? (
             <Button
               variant={showIssuesOnly ? "default" : "outline"}
               size="sm"
-              className={`h-9 ${showIssuesOnly ? "bg-amber-600 hover:bg-amber-700" : "border-amber-500/50 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30"}`}
+              className={`h-8 ${showIssuesOnly ? "bg-amber-600 hover:bg-amber-700" : "border-amber-500/50 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30"}`}
               onClick={() => setShowIssuesOnly(!showIssuesOnly)}
             >
-              <AlertTriangle className="h-3.5 w-3.5 mr-2" />
-              {claimsWithIssues.length} Issue
+              <AlertTriangle className="h-3.5 w-3.5 mr-1.5" />
+              {claimsWithIssues.length} issue
               {claimsWithIssues.length !== 1 ? "s" : ""}
             </Button>
           ) : claims.length > 0 ? (
-            <div className="flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400 px-2">
+            <div className="flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400 px-2 py-1 rounded-full bg-green-500/10">
               <CheckCircle2 className="h-4 w-4" />
               <span>All verified</span>
             </div>
           ) : null}
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 border-dashed">
-                <Filter className="h-3.5 w-3.5 mr-2" />
-                Type
-                {typeFilters.length > 0 && (
-                  <Badge
-                    variant="secondary"
-                    className="ml-2 h-5 px-1.5 rounded-sm text-[10px]"
-                  >
-                    {typeFilters.length}
-                  </Badge>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[180px]">
-              <DropdownMenuItem
-                onClick={() => setTypeFilters([])}
-                className="justify-center text-xs text-muted-foreground"
-              >
-                Clear filters
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              {allTypes.map((type) => (
-                <DropdownMenuCheckboxItem
-                  key={type}
-                  checked={typeFilters.includes(type)}
-                  onCheckedChange={() => toggleTypeFilter(type)}
-                  className="capitalize"
-                >
-                  {type}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </div>
 
@@ -263,11 +339,7 @@ export function IdentityClaimsList({
             const isExpanded = expandedRows.has(claim.id);
             const evidenceItems = claim.claim_evidence || [];
             const evidenceCount = evidenceItems.length;
-            const styles = CLAIM_CARD_STYLES[claim.type] || {
-              bg: "#1e293b",
-              border: "#475569",
-              text: "#94a3b8",
-            };
+            const styles = getClaimTypeStyle(claim.type);
             const hasIssues = claim.issues && claim.issues.length > 0;
 
             return (
@@ -295,15 +367,15 @@ export function IdentityClaimsList({
                       </span>
                     </div>
                     {isExpanded ? (
-                      <ChevronUp className="h-5 w-5 text-slate-400" />
+                      <ChevronUp className="h-5 w-5 text-muted-foreground" />
                     ) : (
-                      <ChevronDown className="h-5 w-5 text-slate-400" />
+                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
                     )}
                   </div>
 
                   {/* Progress Bar - Full width like mobile */}
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                    <div className="flex-1 h-1.5 bg-black/20 dark:bg-slate-700 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-teal-500 rounded-full"
                         style={{
@@ -311,14 +383,17 @@ export function IdentityClaimsList({
                         }}
                       />
                     </div>
-                    <span className="text-xs text-slate-300 font-medium w-8">
+                    <span
+                      className="text-xs font-medium w-8"
+                      style={{ color: styles.text }}
+                    >
                       {Math.round((claim.confidence ?? 0.5) * 100)}%
                     </span>
                   </div>
 
                   {/* Description (only when not expanded) */}
                   {claim.description && !isExpanded && (
-                    <p className="text-sm text-slate-400 line-clamp-2">
+                    <p className="text-sm text-muted-foreground line-clamp-2">
                       {claim.description}
                     </p>
                   )}
@@ -397,7 +472,7 @@ export function IdentityClaimsList({
 
                     {/* Description */}
                     {claim.description && (
-                      <p className="text-sm text-slate-300 mb-4">
+                      <p className="text-sm text-foreground/80 mb-4">
                         {claim.description}
                       </p>
                     )}
@@ -405,7 +480,7 @@ export function IdentityClaimsList({
                     {/* Evidence */}
                     {evidenceCount > 0 && (
                       <div>
-                        <div className="text-xs font-bold text-slate-500 uppercase mb-2">
+                        <div className="text-xs font-bold text-muted-foreground uppercase mb-2">
                           Supporting Evidence ({evidenceCount})
                         </div>
                         {evidenceItems.map((item, idx) => {
@@ -417,14 +492,14 @@ export function IdentityClaimsList({
                               key={idx}
                               className="flex items-start gap-2 mb-3"
                             >
-                              <FileText className="h-3.5 w-3.5 text-slate-500 mt-0.5 shrink-0" />
+                              <FileText className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
                               <div className="flex-1">
-                                <p className="text-sm text-slate-300">
+                                <p className="text-sm text-foreground/80">
                                   {item.evidence?.text}
                                 </p>
                                 <div className="flex items-center gap-2 mt-1">
                                   {item.evidence?.document && (
-                                    <span className="text-xs text-slate-500">
+                                    <span className="text-xs text-muted-foreground">
                                       {item.evidence.document.type === "resume"
                                         ? "Resume"
                                         : item.evidence.document.type ===
@@ -438,8 +513,10 @@ export function IdentityClaimsList({
                                       className="text-[10px] px-1.5 py-0.5 rounded"
                                       style={{
                                         backgroundColor:
-                                          evColors?.bg || "#334155",
-                                        color: evColors?.text || "#94a3b8",
+                                          evColors?.bg || "var(--muted)",
+                                        color:
+                                          evColors?.text ||
+                                          "var(--muted-foreground)",
                                       }}
                                     >
                                       {item.evidence.evidence_type.replace(

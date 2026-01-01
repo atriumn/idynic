@@ -37,6 +37,55 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+
+    /* Archetype colors - light mode (slightly muted for light backgrounds) */
+    --archetype-builder-bg: #fef3c7;
+    --archetype-builder-text: #92400e;
+    --archetype-builder-border: #f59e0b;
+    --archetype-optimizer-bg: #d1fae5;
+    --archetype-optimizer-text: #065f46;
+    --archetype-optimizer-border: #10b981;
+    --archetype-connector-bg: #e0f2fe;
+    --archetype-connector-text: #075985;
+    --archetype-connector-border: #0ea5e9;
+    --archetype-guide-bg: #ede9fe;
+    --archetype-guide-text: #5b21b6;
+    --archetype-guide-border: #8b5cf6;
+    --archetype-stabilizer-bg: #f1f5f9;
+    --archetype-stabilizer-text: #334155;
+    --archetype-stabilizer-border: #94a3b8;
+    --archetype-specialist-bg: #ffe4e6;
+    --archetype-specialist-text: #9f1239;
+    --archetype-specialist-border: #f43f5e;
+    --archetype-strategist-bg: #e0e7ff;
+    --archetype-strategist-text: #3730a3;
+    --archetype-strategist-border: #6366f1;
+    --archetype-advocate-bg: #ffedd5;
+    --archetype-advocate-text: #9a3412;
+    --archetype-advocate-border: #f97316;
+    --archetype-investigator-bg: #cffafe;
+    --archetype-investigator-text: #155e75;
+    --archetype-investigator-border: #06b6d4;
+    --archetype-performer-bg: #fae8ff;
+    --archetype-performer-text: #86198f;
+    --archetype-performer-border: #d946ef;
+
+    /* Claim type colors - light mode */
+    --claim-skill-bg: #dbeafe;
+    --claim-skill-border: #3b82f6;
+    --claim-skill-text: #1e40af;
+    --claim-achievement-bg: #dcfce7;
+    --claim-achievement-border: #22c55e;
+    --claim-achievement-text: #166534;
+    --claim-attribute-bg: #f3e8ff;
+    --claim-attribute-border: #a855f7;
+    --claim-attribute-text: #6b21a8;
+    --claim-education-bg: #fef3c7;
+    --claim-education-border: #f59e0b;
+    --claim-education-text: #92400e;
+    --claim-certification-bg: #ccfbf1;
+    --claim-certification-border: #14b8a6;
+    --claim-certification-text: #115e59;
   }
   .dark {
     /* Slate-blue dark theme matching mobile app */
@@ -64,6 +113,55 @@
     --chart-3: 262 83% 58%;           /* violet */
     --chart-4: 43 74% 66%;            /* amber */
     --chart-5: 12 76% 61%;            /* orange */
+
+    /* Archetype colors - dark mode (matching mobile exactly) */
+    --archetype-builder-bg: #fef3c7;
+    --archetype-builder-text: #92400e;
+    --archetype-builder-border: #fcd34d;
+    --archetype-optimizer-bg: #d1fae5;
+    --archetype-optimizer-text: #065f46;
+    --archetype-optimizer-border: #6ee7b7;
+    --archetype-connector-bg: #e0f2fe;
+    --archetype-connector-text: #075985;
+    --archetype-connector-border: #7dd3fc;
+    --archetype-guide-bg: #ede9fe;
+    --archetype-guide-text: #5b21b6;
+    --archetype-guide-border: #c4b5fd;
+    --archetype-stabilizer-bg: #f1f5f9;
+    --archetype-stabilizer-text: #334155;
+    --archetype-stabilizer-border: #cbd5e1;
+    --archetype-specialist-bg: #ffe4e6;
+    --archetype-specialist-text: #9f1239;
+    --archetype-specialist-border: #fda4af;
+    --archetype-strategist-bg: #e0e7ff;
+    --archetype-strategist-text: #3730a3;
+    --archetype-strategist-border: #a5b4fc;
+    --archetype-advocate-bg: #ffedd5;
+    --archetype-advocate-text: #9a3412;
+    --archetype-advocate-border: #fdba74;
+    --archetype-investigator-bg: #cffafe;
+    --archetype-investigator-text: #155e75;
+    --archetype-investigator-border: #67e8f9;
+    --archetype-performer-bg: #fae8ff;
+    --archetype-performer-text: #86198f;
+    --archetype-performer-border: #f0abfc;
+
+    /* Claim type colors - dark mode (matching mobile exactly) */
+    --claim-skill-bg: #1e3a5f;
+    --claim-skill-border: #1d4ed8;
+    --claim-skill-text: #93c5fd;
+    --claim-achievement-bg: #14532d;
+    --claim-achievement-border: #15803d;
+    --claim-achievement-text: #86efac;
+    --claim-attribute-bg: #3b0764;
+    --claim-attribute-border: #7e22ce;
+    --claim-attribute-text: #d8b4fe;
+    --claim-education-bg: #78350f;
+    --claim-education-border: #b45309;
+    --claim-education-text: #fcd34d;
+    --claim-certification-bg: #134e4a;
+    --claim-certification-border: #0f766e;
+    --claim-certification-text: #5eead4;
   }
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { FileText, LayoutGrid, Network, Sun, Sparkles, List as ListIcon, Loader2, Eye, Wand2, TrendingUp, HelpCircle } from "lucide-react";
+import { FileText, LayoutGrid, Network, Sun, Sparkles, List as ListIcon, Loader2, Eye, Wand2, TrendingUp, HelpCircle, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { IdentityConstellation } from "@/components/identity-constellation";
 import { EvidenceConstellation } from "@/components/evidence-constellation";
 import { ConfidenceSunburst } from "@/components/confidence-sunburst";
@@ -103,6 +103,7 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
   }, []);
 
   const claimCount = data?.nodes.length ?? 0;
+  const claimsWithIssues = data?.nodes.filter(n => n.issues && n.issues.length > 0).length ?? 0;
   const showEmptyState = !hasAnyClaims && claimCount === 0;
 
   // Show loading while checking beta access
@@ -128,6 +129,19 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
             <h1 className="text-2xl font-bold">Your Identity</h1>
             {claimCount > 0 && (
               <Badge variant="secondary">{claimCount} claims</Badge>
+            )}
+            {claimCount > 0 && (
+              claimsWithIssues > 0 ? (
+                <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  <span className="text-xs font-medium">{claimsWithIssues} issue{claimsWithIssues !== 1 ? 's' : ''}</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  <span className="text-xs font-medium">All verified</span>
+                </div>
+              )
             )}
           </div>
           <div className="flex items-center gap-4">
