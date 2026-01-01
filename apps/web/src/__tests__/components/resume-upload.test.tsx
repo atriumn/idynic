@@ -22,15 +22,20 @@ vi.mock('@tanstack/react-query', () => ({
   }),
 }))
 
-// Mock hooks - default mock that returns no job
-type DisplayMessage = { id: number; text: string }
-type MockJobReturn = {
-  job: DocumentJob | null;
-  isLoading: boolean;
-  error: Error | null;
-  displayMessages: DisplayMessage[];
+// Mock hooks - define return type properly
+interface DisplayMessage {
+  id: string | number
+  text: string
 }
-const mockUseDocumentJob = vi.fn<() => MockJobReturn>(() => ({
+
+interface MockUseDocumentJobResult {
+  job: DocumentJob | null
+  isLoading: boolean
+  error: Error | null
+  displayMessages: DisplayMessage[]
+}
+
+const mockUseDocumentJob = vi.fn<() => MockUseDocumentJobResult>(() => ({
   job: null,
   isLoading: false,
   error: null,
