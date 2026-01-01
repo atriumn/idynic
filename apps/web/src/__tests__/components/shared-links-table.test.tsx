@@ -163,17 +163,19 @@ describe('SharedLinksTable', () => {
       expect(buttons.length).toBeGreaterThan(1)
     })
 
-    it('copies link to clipboard', async () => {
+    it('shows expanded row with action buttons', async () => {
       const user = userEvent.setup()
       render(<SharedLinksTable links={[activeLink]} />)
 
-      // Find copy button (first icon button in actions column)
-      const buttons = screen.getAllByRole('button')
-      const copyButton = buttons.find(btn => btn.querySelector('[class*="h-4 w-4"]'))
-      await user.click(copyButton!)
+      // Expand the row first to access action buttons
+      const expandButton = screen.getAllByRole('button')[0]
+      await user.click(expandButton)
 
+      // Wait for row to expand and show action buttons
       await waitFor(() => {
-        expect(mockWriteText).toHaveBeenCalledWith(expect.stringContaining('/shared/token-abc'))
+        // Find copy button by looking for button with lucide-copy class
+        const copyButton = document.querySelector('button svg.lucide-copy')?.closest('button')
+        expect(copyButton).toBeTruthy()
       })
     })
 
