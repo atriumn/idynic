@@ -55,7 +55,7 @@ describe('UploadResumeModal', () => {
 
     await user.click(screen.getByRole('button', { name: /upload resume/i }))
 
-    expect(screen.getByText('Upload Resume')).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.getByText(/upload your resume to extract skills/i)).toBeInTheDocument()
   })
 
@@ -161,7 +161,7 @@ describe('UploadResumeModal', () => {
     render(<UploadResumeModal />)
 
     await user.click(screen.getByRole('button', { name: /upload resume/i }))
-    expect(screen.getByText('Upload Resume')).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /cancel/i }))
 
