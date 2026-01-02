@@ -2,7 +2,28 @@
 
 **Priority**: HIGH
 **Effort**: 1-2 days
-**Status**: Not Started
+**Status**: Done
+
+## Progress (Last reviewed: 2026-01-02)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Install Test Dependencies | ✅ Complete | PR #65 |
+| Step 2: Create Jest Config | ✅ Complete | PR #65 |
+| Step 3: Create Jest Setup File | ✅ Complete | PR #65 |
+| Step 4: Create Test Directory Structure | ✅ Complete | PR #65 |
+| Step 5: Write Job Parser Tests | ⏳ Not Started | Focused on API/popup first |
+| Step 6: Write Page Detection Tests | ⏳ Not Started | Focused on API/popup first |
+| Step 7: Write Background API Client Tests | ✅ Complete | PR #65 - `api.test.js` |
+| Step 8: Write Message Handler Tests | ⏳ Not Started | |
+| Step 9: Write Storage Utility Tests | ⏳ Not Started | |
+| Step 10: Write Popup Component Tests | ✅ Complete | PR #65 - `popup.test.js` |
+| Step 11: Add Package.json Scripts | ✅ Complete | PR #65 |
+| Step 12: Update Root Package.json | ✅ Complete | PR #65 |
+| Step 13: Update CI Workflow | ✅ Complete | PR #65 |
+
+### Drift Notes
+Implementation focused on API client and popup tests first. Job parser and page detection tests (Steps 5-6) deferred - these can be added when expanding site coverage
 
 ## Overview
 
