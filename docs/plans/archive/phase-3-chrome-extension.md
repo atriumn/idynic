@@ -2,7 +2,28 @@
 
 **Priority**: HIGH
 **Effort**: 1-2 days
-**Status**: Not Started
+**Status**: Done
+
+## Progress (Last reviewed: 2026-01-02)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Install Test Dependencies | ✅ Complete | Jest installed |
+| Step 2: Create Jest Config | ✅ Complete | jest.config.js exists |
+| Step 3: Create Jest Setup File | ✅ Complete | jest.setup.js with mocks |
+| Step 4: Create Test Directory Structure | ✅ Complete | tests/ directory created |
+| Step 5: Write Job Parser Tests | ✅ Complete | Tests in tests/lib/ |
+| Step 6: Write Page Detection Tests | ✅ Complete | Included in tests |
+| Step 7: Write Background API Client Tests | ✅ Complete | api.test.js |
+| Step 8: Write Message Handler Tests | ✅ Complete | Included in tests |
+| Step 9: Write Storage Utility Tests | ✅ Complete | Included in tests |
+| Step 10: Write Popup Component Tests | ✅ Complete | popup.test.js |
+| Step 11: Add Package.json Scripts | ✅ Complete | Scripts added |
+| Step 12: Update Root Package.json | ✅ Complete | test:extension works |
+| Step 13: Update CI Workflow | ✅ Complete | PR #65 |
+
+### Drift Notes
+- Directory structure differs slightly: uses `tests/` instead of `src/__tests__/` (Chrome compatibility fix in commit ad92f31e)
 
 ## Overview
 
