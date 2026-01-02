@@ -2,13 +2,13 @@
 module.exports = {
   testEnvironment: 'jsdom',
   roots: ['<rootDir>'],
-  testMatch: ['**/__tests__/**/*.test.js'],
+  testMatch: ['**/tests/**/*.test.js'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   collectCoverageFrom: [
     'lib/**/*.js',
     'popup/**/*.js',
     'options/**/*.js',
-    '!**/__tests__/**',
+    '!**/tests/**',
     '!**/node_modules/**',
   ],
   // NOTE: Coverage thresholds are disabled because Jest can't accurately track

@@ -65,7 +65,8 @@ export function OnboardingPrompt({
     if (prompt.primaryAction.action) {
       onAction?.(prompt.primaryAction.action);
     } else if (prompt.primaryAction.route) {
-      router.push(prompt.primaryAction.route as `/${string}`);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      router.push(prompt.primaryAction.route as any);
     }
     dismissPrompt(promptKey);
   };
@@ -74,7 +75,8 @@ export function OnboardingPrompt({
     if (prompt.secondaryAction?.action) {
       onAction?.(prompt.secondaryAction.action);
     } else if (prompt.secondaryAction?.route) {
-      router.push(prompt.secondaryAction.route as `/${string}`);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      router.push(prompt.secondaryAction.route as any);
     }
     dismissPrompt(promptKey);
   };

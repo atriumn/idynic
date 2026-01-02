@@ -8,5 +8,23 @@
   "parserOptions": {
     "ecmaVersion": "latest"
   },
-  "rules": {}
+  "rules": {},
+  "overrides": [
+    {
+      "files": ["jest.config.js", "jest.setup.js"],
+      "env": {
+        "node": true
+      }
+    },
+    {
+      "files": ["tests/**/*.js"],
+      "env": {
+        "jest": true,
+        "node": true
+      },
+      "rules": {
+        "no-unused-vars": "warn"
+      }
+    }
+  ]
 }
