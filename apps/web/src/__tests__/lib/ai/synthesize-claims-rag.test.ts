@@ -1,17 +1,19 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Hoist mocks to ensure they're available during import
-const { mockChatCreate, mockEmbeddingsCreate, mockRpc, mockFrom } = vi.hoisted(() => {
-  return {
-    mockChatCreate: vi.fn(),
-    mockEmbeddingsCreate: vi.fn(),
-    mockRpc: vi.fn(),
-    mockFrom: vi.fn(),
-  };
-});
+const { mockChatCreate, mockEmbeddingsCreate, mockRpc, mockFrom } = vi.hoisted(
+  () => {
+    return {
+      mockChatCreate: vi.fn(),
+      mockEmbeddingsCreate: vi.fn(),
+      mockRpc: vi.fn(),
+      mockFrom: vi.fn(),
+    };
+  },
+);
 
 // Mock OpenAI
-vi.mock('openai', () => {
+vi.mock("openai", () => {
   return {
     default: class MockOpenAI {
       chat = {
@@ -26,9 +28,9 @@ vi.mock('openai', () => {
   };
 });
 
-import { synthesizeClaimsBatch } from '@/lib/ai/synthesize-claims-batch';
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '@/lib/supabase/types';
+import { synthesizeClaimsBatch } from "@/lib/ai/synthesize-claims-batch";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/types";
 
 // Create mock Supabase client
 const mockSupabase = {
@@ -39,66 +41,72 @@ const mockSupabase = {
 interface EvidenceItem {
   id: string;
   text: string;
-  type: 'accomplishment' | 'skill_listed' | 'trait_indicator' | 'education' | 'certification';
+  type:
+    | "accomplishment"
+    | "skill_listed"
+    | "trait_indicator"
+    | "education"
+    | "certification";
   embedding: number[];
 }
 
-describe('synthesizeClaimsBatch with RAG', () => {
+describe("synthesizeClaimsBatch with RAG", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
     // Default embedding mock
     mockEmbeddingsCreate.mockResolvedValue({
-      object: 'list',
+      object: "list",
       data: [{ embedding: new Array(1536).fill(0.1), index: 0 }],
-      model: 'text-embedding-3-small',
+      model: "text-embedding-3-small",
       usage: { prompt_tokens: 10, total_tokens: 10 },
     });
 
     // Default mock for from().select() chain
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'identity_claims') {
+      if (table === "identity_claims") {
         return {
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
               single: vi.fn().mockResolvedValue({
-                data: { type: 'skill' },
-                error: null
+                data: { type: "skill" },
+                error: null,
+              }),
+              in: vi.fn().mockResolvedValue({
+                data: [],
+                error: null,
               }),
             }),
             in: vi.fn().mockResolvedValue({
-              data: [
-                {
-                  id: 'claim-1',
-                  type: 'skill',
-                  claim_evidence: [
-                    { strength: 'medium', evidence: { source_type: 'resume', evidence_date: null } }
-                  ]
-                }
-              ],
-              error: null
+              data: [],
+              error: null,
             }),
           }),
           insert: vi.fn().mockReturnValue({
             select: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({ data: { id: 'new-claim-id' }, error: null }),
+              single: vi
+                .fn()
+                .mockResolvedValue({
+                  data: { id: "new-claim-id" },
+                  error: null,
+                }),
             }),
           }),
           update: vi.fn().mockReturnValue({
             eq: vi.fn().mockResolvedValue({ error: null }),
           }),
         };
-      } else if (table === 'claim_evidence') {
+      } else if (table === "claim_evidence") {
         return {
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockResolvedValue({
               data: [
                 {
-                  strength: 'medium',
-                  evidence: { source_type: 'resume', evidence_date: null }
-                }
+                  strength: "medium",
+                  evidence: { source_type: "resume", evidence_date: null },
+                },
               ],
-              error: null
+              error: null,
             }),
           }),
           insert: vi.fn().mockResolvedValue({ error: null }),
@@ -115,14 +123,14 @@ describe('synthesizeClaimsBatch with RAG', () => {
     });
   });
 
-  it('should call RAG retrieval for each batch instead of loading all claims', async () => {
+  it("should call RAG retrieval for each batch instead of loading all claims", async () => {
     // Setup RAG to return relevant claims
     mockRpc.mockResolvedValue({
       data: [
         {
-          id: 'existing-claim',
-          type: 'skill',
-          label: 'React',
+          id: "existing-claim",
+          type: "skill",
+          label: "React",
           description: null,
           confidence: 0.8,
           similarity: 0.7,
@@ -137,7 +145,12 @@ describe('synthesizeClaimsBatch with RAG', () => {
         {
           message: {
             content: JSON.stringify([
-              { evidence_id: 'ev1', match: 'React', strength: 'strong', new_claim: null },
+              {
+                evidence_id: "ev1",
+                match: "React",
+                strength: "strong",
+                new_claim: null,
+              },
             ]),
           },
         },
@@ -146,25 +159,25 @@ describe('synthesizeClaimsBatch with RAG', () => {
 
     const evidence: EvidenceItem[] = [
       {
-        id: 'ev1',
-        text: 'Built React components',
-        type: 'skill_listed' as const,
+        id: "ev1",
+        text: "Built React components",
+        type: "skill_listed" as const,
         embedding: new Array(1536).fill(0.1),
       },
     ];
 
-    await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
+    await synthesizeClaimsBatch(mockSupabase, "user-123", evidence);
 
     // Verify RAG was called (not full table load)
-    expect(mockRpc).toHaveBeenCalledWith('find_relevant_claims_for_synthesis', {
+    expect(mockRpc).toHaveBeenCalledWith("find_relevant_claims_for_synthesis", {
       query_embedding: expect.any(Array),
-      p_user_id: 'user-123',
+      p_user_id: "user-123",
       similarity_threshold: 0.5,
       max_claims: 25,
     });
   });
 
-  it('should handle new users with no existing claims', async () => {
+  it("should handle new users with no existing claims", async () => {
     // RAG returns empty (new user)
     mockRpc.mockResolvedValue({ data: [], error: null });
 
@@ -175,10 +188,14 @@ describe('synthesizeClaimsBatch with RAG', () => {
           message: {
             content: JSON.stringify([
               {
-                evidence_id: 'ev1',
+                evidence_id: "ev1",
                 match: null,
-                strength: 'strong',
-                new_claim: { type: 'skill', label: 'Python', description: 'Programming language' },
+                strength: "strong",
+                new_claim: {
+                  type: "skill",
+                  label: "Python",
+                  description: "Programming language",
+                },
               },
             ]),
           },
@@ -188,17 +205,29 @@ describe('synthesizeClaimsBatch with RAG', () => {
 
     // Mock successful claim creation (batch insert returns array)
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'identity_claims') {
+      if (table === "identity_claims") {
         return {
           insert: vi.fn().mockReturnValue({
             select: vi.fn().mockResolvedValue({
-              data: [{ id: 'new-claim-id', label: 'Python', type: 'skill', description: 'Programming language' }],
+              data: [
+                {
+                  id: "new-claim-id",
+                  label: "Python",
+                  type: "skill",
+                  description: "Programming language",
+                },
+              ],
               error: null,
+            }),
+          }),
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              in: vi.fn().mockResolvedValue({ data: [], error: null }),
             }),
           }),
         };
       }
-      if (table === 'claim_evidence') {
+      if (table === "claim_evidence") {
         return {
           insert: vi.fn().mockResolvedValue({ error: null }),
           upsert: vi.fn().mockResolvedValue({ error: null }),
@@ -213,25 +242,32 @@ describe('synthesizeClaimsBatch with RAG', () => {
 
     const evidence: EvidenceItem[] = [
       {
-        id: 'ev1',
-        text: 'Python',
-        type: 'skill_listed' as const,
+        id: "ev1",
+        text: "Python",
+        type: "skill_listed" as const,
         embedding: new Array(1536).fill(0.1),
       },
     ];
 
-    const result = await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
+    const result = await synthesizeClaimsBatch(
+      mockSupabase,
+      "user-123",
+      evidence,
+    );
 
     expect(result.claimsCreated).toBe(1);
-    expect(mockRpc).toHaveBeenCalledWith('find_relevant_claims_for_synthesis', expect.any(Object));
+    expect(mockRpc).toHaveBeenCalledWith(
+      "find_relevant_claims_for_synthesis",
+      expect.any(Object),
+    );
   });
 
-  it('should call RAG for each batch when processing multiple batches', async () => {
+  it("should call RAG for each batch when processing multiple batches", async () => {
     // Create 15 evidence items (should create 2 batches with BATCH_SIZE=10)
     const evidence: EvidenceItem[] = Array.from({ length: 15 }, (_, i) => ({
       id: `ev${i}`,
       text: `Skill ${i}`,
-      type: 'skill_listed' as const,
+      type: "skill_listed" as const,
       embedding: new Array(1536).fill(0.1 + i * 0.01),
     }));
 
@@ -239,9 +275,9 @@ describe('synthesizeClaimsBatch with RAG', () => {
     mockRpc.mockResolvedValue({
       data: [
         {
-          id: 'claim-1',
-          type: 'skill',
-          label: 'React',
+          id: "claim-1",
+          type: "skill",
+          label: "React",
           description: null,
           confidence: 0.8,
           similarity: 0.7,
@@ -258,17 +294,17 @@ describe('synthesizeClaimsBatch with RAG', () => {
             content: JSON.stringify(
               Array.from({ length: 10 }, (_, i) => ({
                 evidence_id: `ev${i}`,
-                match: 'React',
-                strength: 'strong',
+                match: "React",
+                strength: "strong",
                 new_claim: null,
-              }))
+              })),
             ),
           },
         },
       ],
     });
 
-    await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
+    await synthesizeClaimsBatch(mockSupabase, "user-123", evidence);
 
     // RAG should be called once per batch (2 times for 15 items)
     // First batch: 10 items, Second batch: 5 items
@@ -277,12 +313,12 @@ describe('synthesizeClaimsBatch with RAG', () => {
     expect(mockRpc.mock.calls.length).toBeGreaterThan(1);
   });
 
-  it('should merge RAG results with locally created claims across batches', async () => {
+  it("should merge RAG results with locally created claims across batches", async () => {
     // Create 11 evidence items (2 batches)
     const evidence: EvidenceItem[] = Array.from({ length: 11 }, (_, i) => ({
       id: `ev${i}`,
       text: `Skill ${i}`,
-      type: 'skill_listed' as const,
+      type: "skill_listed" as const,
       embedding: new Array(1536).fill(0.1 + i * 0.01),
     }));
 
@@ -311,15 +347,19 @@ describe('synthesizeClaimsBatch with RAG', () => {
               message: {
                 content: JSON.stringify([
                   {
-                    evidence_id: 'ev0',
+                    evidence_id: "ev0",
                     match: null,
-                    strength: 'strong',
-                    new_claim: { type: 'skill', label: 'TypeScript', description: 'Language' },
+                    strength: "strong",
+                    new_claim: {
+                      type: "skill",
+                      label: "TypeScript",
+                      description: "Language",
+                    },
                   },
                   ...Array.from({ length: 9 }, (_, i) => ({
                     evidence_id: `ev${i + 1}`,
-                    match: 'TypeScript',
-                    strength: 'strong',
+                    match: "TypeScript",
+                    strength: "strong",
                     new_claim: null,
                   })),
                 ]),
@@ -335,9 +375,9 @@ describe('synthesizeClaimsBatch with RAG', () => {
               message: {
                 content: JSON.stringify([
                   {
-                    evidence_id: 'ev10',
-                    match: 'TypeScript',
-                    strength: 'strong',
+                    evidence_id: "ev10",
+                    match: "TypeScript",
+                    strength: "strong",
                     new_claim: null,
                   },
                 ]),
@@ -350,23 +390,34 @@ describe('synthesizeClaimsBatch with RAG', () => {
 
     // Mock claim creation
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'identity_claims') {
+      if (table === "identity_claims") {
         return {
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
               single: vi.fn().mockResolvedValue({
-                data: { type: 'skill' },
-                error: null
+                data: { type: "skill" },
+                error: null,
+              }),
+              in: vi.fn().mockResolvedValue({
+                data: [],
+                error: null,
               }),
             }),
             in: vi.fn().mockResolvedValue({
-              data: [{ id: 'local-claim-id', type: 'skill', claim_evidence: [{ strength: 'medium', evidence: { source_type: 'resume', evidence_date: null } }] }],
+              data: [],
               error: null,
             }),
           }),
           insert: vi.fn().mockReturnValue({
             select: vi.fn().mockResolvedValue({
-              data: [{ id: 'local-claim-id', label: 'TypeScript', type: 'skill', description: 'Language' }],
+              data: [
+                {
+                  id: "local-claim-id",
+                  label: "TypeScript",
+                  type: "skill",
+                  description: "Language",
+                },
+              ],
               error: null,
             }),
           }),
@@ -375,7 +426,7 @@ describe('synthesizeClaimsBatch with RAG', () => {
           }),
         };
       }
-      if (table === 'claim_evidence') {
+      if (table === "claim_evidence") {
         return {
           upsert: vi.fn().mockResolvedValue({ error: null }),
           insert: vi.fn().mockResolvedValue({ error: null }),
@@ -383,9 +434,9 @@ describe('synthesizeClaimsBatch with RAG', () => {
             eq: vi.fn().mockResolvedValue({
               data: [
                 {
-                  strength: 'medium',
-                  evidence: { source_type: 'resume', evidence_date: null }
-                }
+                  strength: "medium",
+                  evidence: { source_type: "resume", evidence_date: null },
+                },
               ],
               error: null,
             }),
@@ -399,7 +450,11 @@ describe('synthesizeClaimsBatch with RAG', () => {
       };
     });
 
-    const result = await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
+    const result = await synthesizeClaimsBatch(
+      mockSupabase,
+      "user-123",
+      evidence,
+    );
 
     // With parallel processing, all batches run simultaneously
     // Duplicate claims are deduped, so we create 1 claim
@@ -409,20 +464,23 @@ describe('synthesizeClaimsBatch with RAG', () => {
     expect(result.claimsUpdated).toBeGreaterThanOrEqual(0);
   });
 
-  it('should handle RAG errors gracefully and continue processing', async () => {
+  it("should handle RAG errors gracefully and continue processing", async () => {
     // RAG fails for first evidence, succeeds for second
     let rpcCallCount = 0;
     mockRpc.mockImplementation(() => {
       rpcCallCount++;
       if (rpcCallCount === 1) {
-        return Promise.resolve({ data: null, error: { message: 'Database error' } });
+        return Promise.resolve({
+          data: null,
+          error: { message: "Database error" },
+        });
       }
       return Promise.resolve({
         data: [
           {
-            id: 'claim-1',
-            type: 'skill',
-            label: 'React',
+            id: "claim-1",
+            type: "skill",
+            label: "React",
             description: null,
             confidence: 0.8,
             similarity: 0.7,
@@ -437,8 +495,18 @@ describe('synthesizeClaimsBatch with RAG', () => {
         {
           message: {
             content: JSON.stringify([
-              { evidence_id: 'ev1', match: null, strength: 'strong', new_claim: null },
-              { evidence_id: 'ev2', match: 'React', strength: 'strong', new_claim: null },
+              {
+                evidence_id: "ev1",
+                match: null,
+                strength: "strong",
+                new_claim: null,
+              },
+              {
+                evidence_id: "ev2",
+                match: "React",
+                strength: "strong",
+                new_claim: null,
+              },
             ]),
           },
         },
@@ -447,34 +515,38 @@ describe('synthesizeClaimsBatch with RAG', () => {
 
     const evidence: EvidenceItem[] = [
       {
-        id: 'ev1',
-        text: 'Skill 1',
-        type: 'skill_listed' as const,
+        id: "ev1",
+        text: "Skill 1",
+        type: "skill_listed" as const,
         embedding: new Array(1536).fill(0.1),
       },
       {
-        id: 'ev2',
-        text: 'Skill 2',
-        type: 'skill_listed' as const,
+        id: "ev2",
+        text: "Skill 2",
+        type: "skill_listed" as const,
         embedding: new Array(1536).fill(0.2),
       },
     ];
 
     // Should not throw, should continue processing
-    const result = await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
+    const result = await synthesizeClaimsBatch(
+      mockSupabase,
+      "user-123",
+      evidence,
+    );
 
     expect(result).toBeDefined();
   });
 
-  it('should deduplicate claims returned by RAG across multiple evidence items in same batch', async () => {
+  it("should deduplicate claims returned by RAG across multiple evidence items in same batch", async () => {
     // Same claim returned for multiple evidence items - should only appear once in context
     mockRpc.mockResolvedValue({
       data: [
         {
-          id: 'claim-1',
-          type: 'skill',
-          label: 'React',
-          description: 'JavaScript library',
+          id: "claim-1",
+          type: "skill",
+          label: "React",
+          description: "JavaScript library",
           confidence: 0.8,
           similarity: 0.75,
         },
@@ -487,8 +559,18 @@ describe('synthesizeClaimsBatch with RAG', () => {
         {
           message: {
             content: JSON.stringify([
-              { evidence_id: 'ev1', match: 'React', strength: 'strong', new_claim: null },
-              { evidence_id: 'ev2', match: 'React', strength: 'strong', new_claim: null },
+              {
+                evidence_id: "ev1",
+                match: "React",
+                strength: "strong",
+                new_claim: null,
+              },
+              {
+                evidence_id: "ev2",
+                match: "React",
+                strength: "strong",
+                new_claim: null,
+              },
             ]),
           },
         },
@@ -497,32 +579,32 @@ describe('synthesizeClaimsBatch with RAG', () => {
 
     const evidence: EvidenceItem[] = [
       {
-        id: 'ev1',
-        text: 'React hooks',
-        type: 'skill_listed' as const,
+        id: "ev1",
+        text: "React hooks",
+        type: "skill_listed" as const,
         embedding: new Array(1536).fill(0.1),
       },
       {
-        id: 'ev2',
-        text: 'React components',
-        type: 'skill_listed' as const,
+        id: "ev2",
+        text: "React components",
+        type: "skill_listed" as const,
         embedding: new Array(1536).fill(0.15),
       },
     ];
 
-    await synthesizeClaimsBatch(mockSupabase, 'user-123', evidence);
+    await synthesizeClaimsBatch(mockSupabase, "user-123", evidence);
 
     // Verify LLM was called with deduplicated claims in prompt
     expect(mockChatCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         messages: expect.arrayContaining([
           expect.objectContaining({
-            role: 'user',
+            role: "user",
             // Should only mention React once in EXISTING CLAIMS section
-            content: expect.stringContaining('React'),
+            content: expect.stringContaining("React"),
           }),
         ]),
-      })
+      }),
     );
 
     // RPC should be called once per evidence item

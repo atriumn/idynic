@@ -89,7 +89,10 @@ const CLAIM_TYPES = [
 
 // Evidence type colors (still use direct hex for consistency in expanded view)
 const EVIDENCE_TYPE_COLORS: Record<string, { bg: string; text: string }> = {
-  skill_listed: { bg: "var(--claim-skill-bg)", text: "var(--claim-skill-text)" },
+  skill_listed: {
+    bg: "var(--claim-skill-bg)",
+    text: "var(--claim-skill-text)",
+  },
   accomplishment: {
     bg: "var(--claim-achievement-bg)",
     text: "var(--claim-achievement-text)",
@@ -390,6 +393,25 @@ export function IdentityClaimsList({
                       {Math.round((claim.confidence ?? 0.5) * 100)}%
                     </span>
                   </div>
+
+                  {/* Meta row: evidence count + issue flag */}
+                  {!isExpanded && (
+                    <div className="flex items-center gap-3 mb-2">
+                      {evidenceCount > 0 && (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <FileText className="h-3 w-3" />
+                          {evidenceCount} source{evidenceCount !== 1 ? "s" : ""}
+                        </span>
+                      )}
+                      {hasIssues && (
+                        <span className="text-xs text-amber-500 flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3" />
+                          {claim.issues!.length} issue
+                          {claim.issues!.length !== 1 ? "s" : ""}
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   {/* Description (only when not expanded) */}
                   {claim.description && !isExpanded && (

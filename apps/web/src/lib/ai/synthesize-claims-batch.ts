@@ -309,12 +309,10 @@ export async function synthesizeClaimsBatch(
       }),
     );
 
-    await supabase
-      .from("claim_evidence")
-      .upsert(linksToInsert, {
-        onConflict: "claim_id,evidence_id",
-        ignoreDuplicates: true,
-      });
+    await supabase.from("claim_evidence").upsert(linksToInsert, {
+      onConflict: "claim_id,evidence_id",
+      ignoreDuplicates: true,
+    });
 
     for (const link of evidenceLinksToUpsert) {
       onClaimUpdate?.({ action: "matched", label: link.label });
@@ -326,62 +324,115 @@ export async function synthesizeClaimsBatch(
   const newClaimsArray = Array.from(newClaimsByLabel.values());
   if (newClaimsArray.length > 0) {
     const labels = newClaimsArray.map((c) => c.decision.new_claim!.label);
-    const embeddings = await generateEmbeddings(labels);
 
-    const claimsToInsert = newClaimsArray.map((item, i) => {
-      const initialEvidence: EvidenceInput[] = [
-        {
-          strength: item.decision.strength as StrengthLevel,
-          sourceType: (item.evidence.sourceType || "resume") as SourceType,
-          evidenceDate: item.evidence.evidenceDate || null,
-          claimType: item.decision.new_claim!.type as ClaimType,
-        },
-      ];
-
-      return {
-        user_id: userId,
-        type: item.decision.new_claim!.type,
-        label: item.decision.new_claim!.label,
-        description: item.decision.new_claim!.description,
-        confidence: calculateClaimConfidence(initialEvidence),
-        embedding: embeddings[i] as unknown as string,
-      };
-    });
-
-    const { data: insertedClaims, error } = await supabase
+    // Check for existing claims by exact label match (RAG may have missed them)
+    const { data: existingByLabel } = await supabase
       .from("identity_claims")
-      .insert(claimsToInsert)
-      .select();
+      .select("id, label")
+      .eq("user_id", userId)
+      .in("label", labels);
 
-    if (error) {
-      console.error("[synthesis] Failed to batch insert claims:", error);
-    }
+    const existingLabelMap = new Map(
+      (existingByLabel || []).map((c) => [c.label, c.id]),
+    );
 
-    if (insertedClaims && !error) {
-      // Build label -> claim_id map
-      const labelToClaimId = new Map<string, string>();
-      for (const claim of insertedClaims) {
-        labelToClaimId.set(claim.label, claim.id);
-        onClaimUpdate?.({ action: "created", label: claim.label });
-        claimsCreated++;
-      }
+    // Filter out claims that already exist (link evidence instead)
+    const trulyNewClaims = newClaimsArray.filter(
+      (item) => !existingLabelMap.has(item.decision.new_claim!.label),
+    );
+    const alreadyExistingClaims = newClaimsArray.filter((item) =>
+      existingLabelMap.has(item.decision.new_claim!.label),
+    );
 
-      // Link ALL evidence to their claims (not just the first one per label)
-      const evidenceLinks = pendingEvidenceLinks
-        .filter((link) => labelToClaimId.has(link.label))
+    // Link evidence to existing claims that were missed by RAG
+    if (alreadyExistingClaims.length > 0) {
+      const linksForExisting = pendingEvidenceLinks
+        .filter((link) => existingLabelMap.has(link.label))
         .map((link) => ({
-          claim_id: labelToClaimId.get(link.label)!,
+          claim_id: existingLabelMap.get(link.label)!,
           evidence_id: link.evidence_id,
           strength: link.strength,
         }));
 
-      if (evidenceLinks.length > 0) {
-        await supabase
-          .from("claim_evidence")
-          .upsert(evidenceLinks, {
+      if (linksForExisting.length > 0) {
+        await supabase.from("claim_evidence").upsert(linksForExisting, {
+          onConflict: "claim_id,evidence_id",
+          ignoreDuplicates: true,
+        });
+
+        for (const item of alreadyExistingClaims) {
+          onClaimUpdate?.({
+            action: "matched",
+            label: item.decision.new_claim!.label,
+          });
+          claimsUpdated++;
+          claimIdsToRecalc.add(
+            existingLabelMap.get(item.decision.new_claim!.label)!,
+          );
+        }
+      }
+    }
+
+    // Only generate embeddings and insert for truly new claims
+    if (trulyNewClaims.length > 0) {
+      const trulyNewLabels = trulyNewClaims.map(
+        (c) => c.decision.new_claim!.label,
+      );
+      const embeddings = await generateEmbeddings(trulyNewLabels);
+
+      const claimsToInsert = trulyNewClaims.map((item, i) => {
+        const initialEvidence: EvidenceInput[] = [
+          {
+            strength: item.decision.strength as StrengthLevel,
+            sourceType: (item.evidence.sourceType || "resume") as SourceType,
+            evidenceDate: item.evidence.evidenceDate || null,
+            claimType: item.decision.new_claim!.type as ClaimType,
+          },
+        ];
+
+        return {
+          user_id: userId,
+          type: item.decision.new_claim!.type,
+          label: item.decision.new_claim!.label,
+          description: item.decision.new_claim!.description,
+          confidence: calculateClaimConfidence(initialEvidence),
+          embedding: embeddings[i] as unknown as string,
+        };
+      });
+
+      const { data: insertedClaims, error } = await supabase
+        .from("identity_claims")
+        .insert(claimsToInsert)
+        .select();
+
+      if (error) {
+        console.error("[synthesis] Failed to batch insert claims:", error);
+      }
+
+      if (insertedClaims && !error) {
+        // Build label -> claim_id map
+        const labelToClaimId = new Map<string, string>();
+        for (const claim of insertedClaims) {
+          labelToClaimId.set(claim.label, claim.id);
+          onClaimUpdate?.({ action: "created", label: claim.label });
+          claimsCreated++;
+        }
+
+        // Link ALL evidence to their claims (not just the first one per label)
+        const evidenceLinks = pendingEvidenceLinks
+          .filter((link) => labelToClaimId.has(link.label))
+          .map((link) => ({
+            claim_id: labelToClaimId.get(link.label)!,
+            evidence_id: link.evidence_id,
+            strength: link.strength,
+          }));
+
+        if (evidenceLinks.length > 0) {
+          await supabase.from("claim_evidence").upsert(evidenceLinks, {
             onConflict: "claim_id,evidence_id",
             ignoreDuplicates: true,
           });
+        }
       }
     }
   }
