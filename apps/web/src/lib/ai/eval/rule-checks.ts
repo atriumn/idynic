@@ -4,8 +4,14 @@
  * - Required field validation
  */
 
-export type IssueType = 'duplicate' | 'missing_field' | 'not_grounded' | 'low_quality' | 'unevaluated' | 'other';
-export type IssueSeverity = 'error' | 'warning';
+export type IssueType =
+  | "duplicate"
+  | "missing_field"
+  | "not_grounded"
+  | "low_quality"
+  | "unevaluated"
+  | "other";
+export type IssueSeverity = "error" | "warning";
 
 export interface ClaimIssue {
   claimId: string;
@@ -22,9 +28,34 @@ export interface ClaimForEval {
   description: string | null;
   created_at: string | null;
   evidenceCount?: number;
+  embedding?: number[] | null;
 }
 
 const DUPLICATE_THRESHOLD = 0.92; // Higher threshold to reduce false positives
+const SEMANTIC_DUPLICATE_THRESHOLD = 0.78; // Embedding cosine similarity - lower to catch conceptually similar claims
+
+/**
+ * Cosine similarity between two embedding vectors
+ * Returns a value between -1 and 1, where 1 is identical
+ */
+export function cosineSimilarity(a: number[], b: number[]): number {
+  if (a.length !== b.length || a.length === 0) return 0;
+
+  let dotProduct = 0;
+  let normA = 0;
+  let normB = 0;
+
+  for (let i = 0; i < a.length; i++) {
+    dotProduct += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+
+  const denominator = Math.sqrt(normA) * Math.sqrt(normB);
+  if (denominator === 0) return 0;
+
+  return dotProduct / denominator;
+}
 
 /**
  * Jaro-Winkler similarity algorithm
@@ -66,7 +97,11 @@ export function jaroWinklerSimilarity(s1: string, s2: string): number {
     k++;
   }
 
-  const jaro = (matches / s1.length + matches / s2.length + (matches - transpositions / 2) / matches) / 3;
+  const jaro =
+    (matches / s1.length +
+      matches / s2.length +
+      (matches - transpositions / 2) / matches) /
+    3;
 
   // Winkler modification: boost for common prefix
   let prefix = 0;
@@ -82,13 +117,16 @@ export function jaroWinklerSimilarity(s1: string, s2: string): number {
  * Check if two claims should be excluded from duplicate comparison
  * Returns true if they are semantically distinct despite high string similarity
  */
-function shouldExcludeFromDuplicateCheck(label1: string, label2: string): boolean {
+function shouldExcludeFromDuplicateCheck(
+  label1: string,
+  label2: string,
+): boolean {
   // Pattern: "Founded X" / "Co-Founded X" - ventures are distinct by company name
   const founderPattern = /^(co-)?found(ed|er|ing)/i;
   if (founderPattern.test(label1) && founderPattern.test(label2)) {
     // Both are founder claims - only duplicate if company names match
-    const company1 = label1.replace(founderPattern, '').trim();
-    const company2 = label2.replace(founderPattern, '').trim();
+    const company1 = label1.replace(founderPattern, "").trim();
+    const company2 = label2.replace(founderPattern, "").trim();
     return company1.toLowerCase() !== company2.toLowerCase();
   }
 
@@ -96,8 +134,8 @@ function shouldExcludeFromDuplicateCheck(label1: string, label2: string): boolea
   const awsPattern = /^aws\s+/i;
   if (awsPattern.test(label1) && awsPattern.test(label2)) {
     // Only duplicate if the service name is the same
-    const service1 = label1.replace(awsPattern, '').trim().toLowerCase();
-    const service2 = label2.replace(awsPattern, '').trim().toLowerCase();
+    const service1 = label1.replace(awsPattern, "").trim().toLowerCase();
+    const service2 = label2.replace(awsPattern, "").trim().toLowerCase();
     return service1 !== service2;
   }
 
@@ -112,8 +150,8 @@ function shouldExcludeFromDuplicateCheck(label1: string, label2: string): boolea
 }
 
 /**
- * Check for duplicate claims based on label similarity
- * Uses type-awareness and semantic rules to reduce false positives
+ * Check for duplicate claims based on label similarity AND semantic similarity
+ * Uses type-awareness, string similarity, and embedding cosine similarity
  */
 export function findDuplicates(claims: ClaimForEval[]): ClaimIssue[] {
   const issues: ClaimIssue[] = [];
@@ -136,23 +174,38 @@ export function findDuplicates(claims: ClaimForEval[]): ClaimIssue[] {
         continue;
       }
 
-      const similarity = jaroWinklerSimilarity(label1, label2);
+      // Check string similarity first
+      const stringSimilarity = jaroWinklerSimilarity(label1, label2);
+      let isDuplicate = stringSimilarity >= DUPLICATE_THRESHOLD;
 
-      if (similarity >= DUPLICATE_THRESHOLD) {
+      // If not caught by string similarity, check semantic similarity via embeddings
+      const embedding1 = claims[i].embedding;
+      const embedding2 = claims[j].embedding;
+      if (
+        !isDuplicate &&
+        embedding1 &&
+        embedding2 &&
+        Array.isArray(embedding1) &&
+        Array.isArray(embedding2)
+      ) {
+        const semanticSimilarity = cosineSimilarity(embedding1, embedding2);
+        isDuplicate = semanticSimilarity >= SEMANTIC_DUPLICATE_THRESHOLD;
+      }
+
+      if (isDuplicate) {
         // Determine which is the duplicate (newer one)
         const created1 = claims[i].created_at;
         const created2 = claims[j].created_at;
         const date1 = created1 ? new Date(created1) : new Date(0);
         const date2 = created2 ? new Date(created2) : new Date(0);
 
-        const [duplicate, original] = date1 > date2
-          ? [claims[i], claims[j]]
-          : [claims[j], claims[i]];
+        const [duplicate, original] =
+          date1 > date2 ? [claims[i], claims[j]] : [claims[j], claims[i]];
 
         issues.push({
           claimId: duplicate.id,
-          type: 'duplicate',
-          severity: 'warning',
+          type: "duplicate",
+          severity: "warning",
           message: `Possible duplicate of "${original.label}"`,
           relatedClaimId: original.id,
         });
@@ -175,18 +228,18 @@ export function findMissingFields(claims: ClaimForEval[]): ClaimIssue[] {
     if (!claim.type) {
       issues.push({
         claimId: claim.id,
-        type: 'missing_field',
-        severity: 'error',
-        message: 'Claim is missing a type (skill, achievement, or attribute)',
+        type: "missing_field",
+        severity: "error",
+        message: "Claim is missing a type (skill, achievement, or attribute)",
       });
     }
 
     if (!claim.label || claim.label.trim().length === 0) {
       issues.push({
         claimId: claim.id,
-        type: 'missing_field',
-        severity: 'error',
-        message: 'Claim is missing a label',
+        type: "missing_field",
+        severity: "error",
+        message: "Claim is missing a label",
       });
     }
   }
@@ -210,7 +263,7 @@ export function runRuleChecks(claims: ClaimForEval[]): ClaimIssue[] {
  */
 export function sampleClaimsForEval(
   claims: ClaimForEval[],
-  maxCount: number = 5
+  maxCount: number = 5,
 ): ClaimForEval[] {
   if (claims.length <= maxCount) {
     return claims;

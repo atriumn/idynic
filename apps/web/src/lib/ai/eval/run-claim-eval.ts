@@ -3,15 +3,18 @@
  * Runs rule checks and AI grounding checks, then stores issues
  */
 
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '@/lib/supabase/types';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/types";
 import {
   runRuleChecks,
   sampleClaimsForEval,
   type ClaimForEval,
   type ClaimIssue,
-} from './rule-checks';
-import { runClaimGroundingEval, type ClaimWithEvidence } from './claim-grounding';
+} from "./rule-checks";
+import {
+  runClaimGroundingEval,
+  type ClaimWithEvidence,
+} from "./claim-grounding";
 
 export interface ClaimEvalResult {
   issuesFound: number;
@@ -33,36 +36,41 @@ export async function runClaimEval(
   options?: {
     maxClaimsForAiEval?: number;
     jobId?: string;
-  }
+  },
 ): Promise<ClaimEvalResult> {
   const maxClaimsForAiEval = options?.maxClaimsForAiEval ?? 10;
 
-  // Fetch all claims for the user
+  // Fetch all claims for the user (including embeddings for semantic duplicate detection)
   const { data: claims, error: claimsError } = await supabase
-    .from('identity_claims')
-    .select(`
+    .from("identity_claims")
+    .select(
+      `
       id,
       type,
       label,
       description,
       created_at,
+      embedding,
       claim_evidence(count)
-    `)
-    .eq('user_id', userId);
+    `,
+    )
+    .eq("user_id", userId);
 
   if (claimsError || !claims) {
-    console.error('[run-claim-eval] Failed to fetch claims:', claimsError);
+    console.error("[run-claim-eval] Failed to fetch claims:", claimsError);
     return { issuesFound: 0, issuesStored: 0, costCents: 0 };
   }
 
   // Transform claims for eval
-  const claimsForEval: ClaimForEval[] = claims.map(c => ({
+  const claimsForEval: ClaimForEval[] = claims.map((c) => ({
     id: c.id,
     type: c.type,
     label: c.label,
     description: c.description,
     created_at: c.created_at,
-    evidenceCount: (c.claim_evidence as unknown as { count: number }[])?.[0]?.count ?? 0,
+    evidenceCount:
+      (c.claim_evidence as unknown as { count: number }[])?.[0]?.count ?? 0,
+    embedding: c.embedding as number[] | null,
   }));
 
   // Run rule-based checks
@@ -76,11 +84,12 @@ export async function runClaimEval(
   let costCents = 0;
 
   if (sampledClaims.length > 0) {
-    const sampledIds = sampledClaims.map(c => c.id);
+    const sampledIds = sampledClaims.map((c) => c.id);
 
     const { data: claimsWithEvidence, error: evidenceError } = await supabase
-      .from('identity_claims')
-      .select(`
+      .from("identity_claims")
+      .select(
+        `
         id,
         label,
         description,
@@ -88,31 +97,52 @@ export async function runClaimEval(
           strength,
           evidence(text)
         )
-      `)
-      .in('id', sampledIds);
+      `,
+      )
+      .in("id", sampledIds);
 
     if (evidenceError) {
-      console.error('[run-claim-eval] Failed to fetch evidence:', evidenceError);
+      console.error(
+        "[run-claim-eval] Failed to fetch evidence:",
+        evidenceError,
+      );
     }
 
     if (claimsWithEvidence && claimsWithEvidence.length > 0) {
       // Transform to ClaimWithEvidence format
-      const claimsForGrounding: ClaimWithEvidence[] = claimsWithEvidence.map(c => ({
-        id: c.id,
-        label: c.label,
-        description: c.description,
-        evidence: ((c.claim_evidence as unknown as Array<{ strength: string; evidence: { text: string } | null }>) || [])
-          .filter((ce): ce is { strength: string; evidence: { text: string } } => ce?.evidence != null)
-          .map(ce => ({
-            text: ce.evidence.text,
-            strength: ce.strength,
-          })),
-      }));
+      const claimsForGrounding: ClaimWithEvidence[] = claimsWithEvidence.map(
+        (c) => ({
+          id: c.id,
+          label: c.label,
+          description: c.description,
+          evidence: (
+            (c.claim_evidence as unknown as Array<{
+              strength: string;
+              evidence: { text: string } | null;
+            }>) || []
+          )
+            .filter(
+              (ce): ce is { strength: string; evidence: { text: string } } =>
+                ce?.evidence != null,
+            )
+            .map((ce) => ({
+              text: ce.evidence.text,
+              strength: ce.strength,
+            })),
+        }),
+      );
 
-      console.log('[run-claim-eval] Sending to Claude:', claimsForGrounding.length, 'claims');
+      console.log(
+        "[run-claim-eval] Sending to Claude:",
+        claimsForGrounding.length,
+        "claims",
+      );
 
       // Run AI grounding check
-      const groundingResult = await runClaimGroundingEval(claimsForGrounding, { userId, jobId: options?.jobId });
+      const groundingResult = await runClaimGroundingEval(claimsForGrounding, {
+        userId,
+        jobId: options?.jobId,
+      });
       aiIssues = groundingResult.issues;
       costCents = groundingResult.costCents;
     }
@@ -126,7 +156,7 @@ export async function runClaimEval(
   }
 
   // Store issues in claim_issues table
-  const issuesToInsert = allIssues.map(issue => ({
+  const issuesToInsert = allIssues.map((issue) => ({
     claim_id: issue.claimId,
     document_id: documentId,
     issue_type: issue.type,
@@ -136,11 +166,11 @@ export async function runClaimEval(
   }));
 
   const { error: insertError } = await supabase
-    .from('claim_issues')
+    .from("claim_issues")
     .insert(issuesToInsert);
 
   if (insertError) {
-    console.error('[run-claim-eval] Failed to store issues:', insertError);
+    console.error("[run-claim-eval] Failed to store issues:", insertError);
     return { issuesFound: allIssues.length, issuesStored: 0, costCents };
   }
 
