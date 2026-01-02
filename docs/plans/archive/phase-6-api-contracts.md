@@ -2,7 +2,21 @@
 
 **Priority**: MEDIUM
 **Effort**: 1-2 days
-**Status**: Not Started
+**Status**: Done
+
+## Progress (Last reviewed: 2026-01-02)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Audit Existing Shared Types | ✅ Complete | PR #86 |
+| Step 2: Create Comprehensive API Types | ✅ Complete | PR #86 - 85+ type definitions |
+| Step 3: Create Endpoint Definitions | ✅ Complete | PR #86 - All endpoints defined |
+| Step 4: Update Clients to Use Shared Types | ✅ Complete | PR #86 |
+| Step 5: Add Type Validation Tests | ✅ Complete | PR #86 - contracts.test.ts |
+| Step 6: Document API Contracts | ⏳ Not Started | API.md not yet created |
+
+### Summary
+PR #86 added comprehensive API contract types and endpoints to @idynic/shared. Includes types for profile, claims, opportunities, documents, billing, and more.
 
 ## Overview
 

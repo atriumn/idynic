@@ -33,15 +33,15 @@
 
 ## Onboarding Prompts
 
-> See full design: [2026-01-01-onboarding-prompts-design.md](./2026-01-01-onboarding-prompts-design.md)
+> See full design: [2026-01-01-onboarding-prompts-design.md](./archive/2026-01-01-onboarding-prompts-design.md)
 
 Lightweight "next steps" prompts (not full wizard) - shared logic for web + mobile.
 
 ### Implementation Checklist
-- [ ] Phase 1: Create shared foundation (`packages/shared/src/content/onboarding.ts`, `useOnboardingProgress` hook)
-- [ ] Phase 2: Web integration (storage adapter, OnboardingPrompt component, trigger points)
-- [ ] Phase 3: Mobile integration (AsyncStorage adapter, OnboardingPrompt component, trigger points)
-- [ ] Phase 4: Testing & polish
+- [x] Phase 1: Create shared foundation (`packages/shared/src/content/onboarding.ts`, `useOnboardingProgress` hook) - PR #79
+- [x] Phase 2: Web integration (storage adapter, OnboardingPrompt component, trigger points) - PR #82
+- [x] Phase 3: Mobile integration (AsyncStorage adapter, OnboardingPrompt component, trigger points) - PR #84
+- [x] Phase 4: Testing & polish - PRs #82, #84
 
 ---
 
