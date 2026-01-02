@@ -23,7 +23,7 @@ beforeEach(() => {
 describe('IdynicApi', () => {
   describe('getApiBase', () => {
     it('returns the API base URL', () => {
-      expect(window.IdynicApi.getApiBase()).toBe('http://localhost:3000');
+      expect(window.IdynicApi.getApiBase()).toBe('https://idynic.com');
     });
   });
 
@@ -74,7 +74,7 @@ describe('IdynicApi', () => {
 
       expect(result).toEqual({ valid: true, user_id: 'user-123' });
       expect(global.fetch).toHaveBeenCalledWith(
-        'http://localhost:3000/api/v1/auth/verify',
+        'https://idynic.com/api/v1/auth/verify',
         expect.objectContaining({
           method: 'GET',
           headers: { Authorization: 'Bearer idn_validkey' },
@@ -147,7 +147,7 @@ describe('IdynicApi', () => {
         data: { id: 'opp-123', title: 'Software Engineer', company: 'Acme Corp' },
       });
       expect(global.fetch).toHaveBeenCalledWith(
-        'http://localhost:3000/api/v1/opportunities',
+        'https://idynic.com/api/v1/opportunities',
         expect.objectContaining({
           method: 'POST',
           headers: {
