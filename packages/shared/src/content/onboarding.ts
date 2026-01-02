@@ -43,11 +43,13 @@ export const ONBOARDING_PROMPTS = {
       "Your claims are getting stronger. Add more stories to boost confidence, or upload a resume for more evidence.",
     primaryAction: {
       label: "Add Another Story",
-      route: "/add-story",
+      route: null,
+      action: "add_story",
     },
     secondaryAction: {
       label: "Upload Resume",
-      route: "/upload-resume",
+      route: null,
+      action: "upload_resume",
     },
   },
   after_opportunity_added: {

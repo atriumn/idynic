@@ -50,11 +50,13 @@ describe("ONBOARDING_PROMPTS", () => {
       expect(prompt.secondaryAction).toBeDefined();
     });
 
-    it("has correct actions", () => {
+    it("has action-based actions (modals, not routes)", () => {
       expect(prompt.primaryAction.label).toBe("Add Another Story");
-      expect(prompt.primaryAction.route).toBe("/add-story");
+      expect(prompt.primaryAction.route).toBeNull();
+      expect(prompt.primaryAction.action).toBe("add_story");
       expect(prompt.secondaryAction?.label).toBe("Upload Resume");
-      expect(prompt.secondaryAction?.route).toBe("/upload-resume");
+      expect(prompt.secondaryAction?.route).toBeNull();
+      expect(prompt.secondaryAction?.action).toBe("upload_resume");
     });
   });
 

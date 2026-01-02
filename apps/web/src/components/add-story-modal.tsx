@@ -243,6 +243,16 @@ export function AddStoryModal() {
         <OnboardingPrompt
           promptKey="after_story_added"
           onDismiss={() => setShowOnboardingPrompt(false)}
+          onAction={(action) => {
+            if (action === "add_story") {
+              setShowOnboardingPrompt(false);
+              setOpen(true);
+            } else if (action === "upload_resume") {
+              setShowOnboardingPrompt(false);
+              // Navigate to identity page where upload resume modal is available
+              window.location.href = "/identity";
+            }
+          }}
         />
       )}
     </>
