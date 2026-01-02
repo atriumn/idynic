@@ -4,15 +4,9 @@
   "version": "1.0.0",
   "description": "Save jobs to Idynic with one click",
 
-  "permissions": [
-    "activeTab",
-    "storage"
-  ],
+  "permissions": ["activeTab", "storage"],
 
-  "host_permissions": [
-    "https://idynic.com/*",
-    "http://localhost:3000/*"
-  ],
+  "host_permissions": ["https://idynic.com/*"],
 
   "action": {
     "default_popup": "popup/popup.html",

@@ -1,22 +1,22 @@
 // chrome-extension/lib/api.js
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const API_BASE_PROD = 'https://idynic.com';
-const API_BASE_DEV = 'http://localhost:3000';
+const API_BASE_PROD = "https://idynic.com";
+// eslint-disable-next-line no-unused-vars
+const API_BASE_DEV = "http://localhost:3000"; // Keep for local development
 
 /**
  * Get the API base URL (dev or prod)
  * Toggle this for local development vs production
  */
 function getApiBase() {
-  return API_BASE_DEV; // Switch to API_BASE_PROD for production
+  return API_BASE_PROD;
 }
 
 /**
  * Get stored API key from chrome.storage
  */
 async function getApiKey() {
-  const result = await chrome.storage.local.get('apiKey');
+  const result = await chrome.storage.local.get("apiKey");
   return result.apiKey || null;
 }
 
@@ -31,7 +31,7 @@ async function saveApiKey(apiKey) {
  * Clear stored API key
  */
 async function clearApiKey() {
-  await chrome.storage.local.remove('apiKey');
+  await chrome.storage.local.remove("apiKey");
 }
 
 /**
@@ -41,9 +41,9 @@ async function clearApiKey() {
 async function verifyApiKey(apiKey) {
   try {
     const response = await fetch(`${getApiBase()}/api/v1/auth/verify`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
     });
 
@@ -53,12 +53,12 @@ async function verifyApiKey(apiKey) {
     }
 
     if (response.status === 401) {
-      return { valid: false, error: 'Invalid API key' };
+      return { valid: false, error: "Invalid API key" };
     }
 
-    return { valid: false, error: 'Connection error' };
+    return { valid: false, error: "Connection error" };
   } catch {
-    return { valid: false, error: 'Network error - check your connection' };
+    return { valid: false, error: "Network error - check your connection" };
   }
 }
 
@@ -72,7 +72,10 @@ async function saveOpportunity(url, description = null) {
   const apiKey = await getApiKey();
 
   if (!apiKey) {
-    return { success: false, error: { code: 'no_api_key', message: 'API key not configured' } };
+    return {
+      success: false,
+      error: { code: "no_api_key", message: "API key not configured" },
+    };
   }
 
   try {
@@ -82,10 +85,10 @@ async function saveOpportunity(url, description = null) {
     }
 
     const response = await fetch(`${getApiBase()}/api/v1/opportunities`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify(body),
     });
@@ -100,22 +103,37 @@ async function saveOpportunity(url, description = null) {
     if (response.status === 409) {
       return {
         success: false,
-        error: { code: 'duplicate', message: 'Already saved' },
+        error: { code: "duplicate", message: "Already saved" },
         existing: data.data?.existing,
       };
     }
 
     if (response.status === 401) {
-      return { success: false, error: { code: 'unauthorized', message: 'API key invalid' } };
+      return {
+        success: false,
+        error: { code: "unauthorized", message: "API key invalid" },
+      };
     }
 
-    if (response.status === 400 && data.error?.code === 'scraping_failed') {
-      return { success: false, error: { code: 'scraping_failed', message: data.error.message } };
+    if (response.status === 400 && data.error?.code === "scraping_failed") {
+      return {
+        success: false,
+        error: { code: "scraping_failed", message: data.error.message },
+      };
     }
 
-    return { success: false, error: { code: 'unknown', message: data.error?.message || 'Unknown error' } };
+    return {
+      success: false,
+      error: {
+        code: "unknown",
+        message: data.error?.message || "Unknown error",
+      },
+    };
   } catch {
-    return { success: false, error: { code: 'network', message: 'Network error - try again' } };
+    return {
+      success: false,
+      error: { code: "network", message: "Network error - try again" },
+    };
   }
 }
 

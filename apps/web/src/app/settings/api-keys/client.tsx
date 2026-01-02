@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -19,10 +19,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { createApiKey, revokeApiKey, type ApiKeyListItem } from './actions';
-import { Copy, Key, Trash2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+} from "@/components/ui/table";
+import { createApiKey, revokeApiKey, type ApiKeyListItem } from "./actions";
+import { Check, Copy, Key, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface Props {
   initialKeys: ApiKeyListItem[];
@@ -31,9 +31,10 @@ interface Props {
 export function ApiKeysClient({ initialKeys }: Props) {
   const [keys, setKeys] = useState(initialKeys);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [newKeyName, setNewKeyName] = useState('');
+  const [newKeyName, setNewKeyName] = useState("");
   const [newKey, setNewKey] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
   const handleCreate = async () => {
@@ -43,7 +44,7 @@ export function ApiKeysClient({ initialKeys }: Props) {
     try {
       const result = await createApiKey(newKeyName);
       setNewKey(result.key);
-      setKeys(prev => [
+      setKeys((prev) => [
         {
           id: result.id,
           name: newKeyName,
@@ -54,12 +55,12 @@ export function ApiKeysClient({ initialKeys }: Props) {
         },
         ...prev,
       ]);
-      setNewKeyName('');
+      setNewKeyName("");
     } catch {
       toast({
-        title: 'Error',
-        description: 'Failed to create API key',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to create API key",
+        variant: "destructive",
       });
     } finally {
       setIsCreating(false);
@@ -69,47 +70,48 @@ export function ApiKeysClient({ initialKeys }: Props) {
   const handleRevoke = async (keyId: string) => {
     try {
       await revokeApiKey(keyId);
-      setKeys(prev => prev.filter(k => k.id !== keyId));
+      setKeys((prev) => prev.filter((k) => k.id !== keyId));
       toast({
-        title: 'Key revoked',
-        description: 'The API key has been revoked',
+        title: "Key revoked",
+        description: "The API key has been revoked",
       });
     } catch {
       toast({
-        title: 'Error',
-        description: 'Failed to revoke API key',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to revoke API key",
+        variant: "destructive",
       });
     }
   };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({
-      title: 'Copied',
-      description: 'API key copied to clipboard',
-    });
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const formatDate = (date: string | null) => {
-    if (!date) return 'Never';
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
+    if (!date) return "Never";
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
   return (
     <div>
       <div className="mb-6">
-        <Dialog open={isCreateOpen} onOpenChange={(open) => {
-          setIsCreateOpen(open);
-          if (!open) {
-            setNewKey(null);
-            setNewKeyName('');
-          }
-        }}>
+        <Dialog
+          open={isCreateOpen}
+          onOpenChange={(open) => {
+            setIsCreateOpen(open);
+            if (!open) {
+              setNewKey(null);
+              setNewKeyName("");
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button>
               <Key className="mr-2 h-4 w-4" />
@@ -119,12 +121,12 @@ export function ApiKeysClient({ initialKeys }: Props) {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {newKey ? 'API Key Created' : 'Create API Key'}
+                {newKey ? "API Key Created" : "Create API Key"}
               </DialogTitle>
               <DialogDescription>
                 {newKey
-                  ? 'Copy this key now. You won\'t be able to see it again.'
-                  : 'Give your API key a name to help you remember what it\'s for.'}
+                  ? "Copy this key now. You won't be able to see it again."
+                  : "Give your API key a name to help you remember what it's for."}
               </DialogDescription>
             </DialogHeader>
 
@@ -136,8 +138,13 @@ export function ApiKeysClient({ initialKeys }: Props) {
                     variant="ghost"
                     size="icon"
                     onClick={() => copyToClipboard(newKey)}
+                    className="shrink-0"
                   >
-                    <Copy className="h-4 w-4" />
+                    {copied ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
                 <DialogFooter>
@@ -150,14 +157,14 @@ export function ApiKeysClient({ initialKeys }: Props) {
                   placeholder="e.g., Claude Desktop, Personal MCP"
                   value={newKeyName}
                   onChange={(e) => setNewKeyName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+                  onKeyDown={(e) => e.key === "Enter" && handleCreate()}
                 />
                 <DialogFooter>
                   <Button
                     onClick={handleCreate}
                     disabled={!newKeyName.trim() || isCreating}
                   >
-                    {isCreating ? 'Creating...' : 'Create Key'}
+                    {isCreating ? "Creating..." : "Create Key"}
                   </Button>
                 </DialogFooter>
               </div>
@@ -215,7 +222,7 @@ export function ApiKeysClient({ initialKeys }: Props) {
           Add the key to your Claude Desktop configuration:
         </p>
         <pre className="text-xs bg-background p-3 rounded overflow-x-auto">
-{`{
+          {`{
   "mcpServers": {
     "idynic": {
       "command": "npx",
