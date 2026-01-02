@@ -35,10 +35,10 @@ export default defineConfig({
       ],
       thresholds: {
         // Phase 4 target: 70% - currently at ~43%. Adding more tests in follow-up.
-        lines: 42,
+        lines: 43,
         branches: 38,
         functions: 39,
-        statements: 42,
+        statements: 43,
       },
     },
     testTimeout: 10000,
