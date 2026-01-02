@@ -16,6 +16,8 @@ import {
   Newspaper,
   Lightbulb,
   Info,
+  Check,
+  X,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import Image from "next/image";
@@ -242,6 +244,79 @@ export default async function OpportunityDetailPage({
             </Card>
           </section>
 
+          {/* Requirement Matches */}
+          {matchResult.requirementMatches.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <h2 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Requirements</h2>
+                <div className="h-px flex-1 bg-muted" />
+              </div>
+              <Card className="border-none shadow-none bg-muted/30">
+                <CardContent className="pt-4 space-y-4">
+                  {/* Must Have */}
+                  {matchResult.requirementMatches.filter(m => m.requirement.category === 'mustHave').length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">Required</h3>
+                      <ul className="space-y-2">
+                        {matchResult.requirementMatches
+                          .filter(m => m.requirement.category === 'mustHave')
+                          .map((rm, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-sm">
+                              {rm.bestMatch ? (
+                                <Check className="h-4 w-4 text-green-500 mt-0.5 shrink-0" weight="bold" />
+                              ) : (
+                                <X className="h-4 w-4 text-red-500 mt-0.5 shrink-0" weight="bold" />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <span className={rm.bestMatch ? "text-foreground" : "text-muted-foreground"}>
+                                  {rm.requirement.text}
+                                </span>
+                                {rm.bestMatch && (
+                                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                                    ↳ {rm.bestMatch.label}
+                                  </p>
+                                )}
+                              </div>
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Nice to Have */}
+                  {matchResult.requirementMatches.filter(m => m.requirement.category === 'niceToHave').length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">Nice to Have</h3>
+                      <ul className="space-y-2">
+                        {matchResult.requirementMatches
+                          .filter(m => m.requirement.category === 'niceToHave')
+                          .map((rm, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-sm">
+                              {rm.bestMatch ? (
+                                <Check className="h-4 w-4 text-green-500 mt-0.5 shrink-0" weight="bold" />
+                              ) : (
+                                <X className="h-4 w-4 text-muted-foreground/50 mt-0.5 shrink-0" weight="bold" />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <span className={rm.bestMatch ? "text-foreground" : "text-muted-foreground"}>
+                                  {rm.requirement.text}
+                                </span>
+                                {rm.bestMatch && (
+                                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                                    ↳ {rm.bestMatch.label}
+                                  </p>
+                                )}
+                              </div>
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </section>
+          )}
+
           <section>
             <div className="flex items-center gap-2 mb-4">
               <h2 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Notes</h2>
@@ -253,7 +328,7 @@ export default async function OpportunityDetailPage({
 
         {/* Main Content Area */}
         <div className="lg:col-span-8">
-          <Tabs defaultValue="tailoring" className="w-full">
+          <Tabs defaultValue="research" className="w-full">
             <TabsList className="w-full grid grid-cols-2 mb-8 bg-muted/30 p-1.5 h-12 rounded-xl">
               <TabsTrigger value="tailoring" className="h-full text-xs font-bold uppercase tracking-wider rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
                 Tailored Application
