@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,6 +50,7 @@ type EvidenceWithDocument = {
   text: string;
   evidence_type: string | null;
   document: {
+    id: string;
     filename: string | null;
     type: string | null;
     createdAt: string | null;
@@ -567,15 +569,26 @@ export function IdentityClaimsList({
                               /\s*\(\d{1,2}\/\d{1,2}\/\d{4}\)\s*$/,
                               "",
                             );
-                            return (
+                            const badgeContent = (
                               <Badge
-                                key={idx}
                                 variant="outline"
-                                className="text-xs font-normal gap-1 bg-background/50"
+                                className={`text-xs font-normal gap-1 bg-background/50 ${doc?.id ? "cursor-pointer hover:bg-background/80 transition-colors" : ""}`}
                               >
                                 <Icon className="h-3 w-3" />
                                 {nameWithoutDate}
                               </Badge>
+                            );
+
+                            return doc?.id ? (
+                              <Link
+                                key={idx}
+                                href={`/documents/${doc.id}`}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {badgeContent}
+                              </Link>
+                            ) : (
+                              <span key={idx}>{badgeContent}</span>
                             );
                           })}
                         </div>

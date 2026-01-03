@@ -78,6 +78,7 @@ describe("IdentityClaimsList", () => {
             text: "Built multiple React applications",
             evidence_type: "skill_listed",
             document: {
+              id: "doc-1",
               filename: "resume.pdf",
               type: "resume",
               createdAt: "2024-01-01",
@@ -541,6 +542,7 @@ describe("IdentityClaimsList", () => {
             text: "Built multiple React applications",
             evidence_type: "skill_listed",
             document: {
+              id: "doc-2",
               filename: "resume.pdf",
               type: "resume",
               createdAt: "2024-01-01",

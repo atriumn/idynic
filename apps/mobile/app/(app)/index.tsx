@@ -74,6 +74,7 @@ function ConfidenceBar({ confidence }: { confidence: number | null }) {
 }
 
 function EvidenceBadge({ evidence }: { evidence: Evidence }) {
+  const router = useRouter();
   const isStory = evidence.document?.type === "story";
   const Icon = isStory ? BookOpen : FileText;
 
@@ -94,12 +95,28 @@ function EvidenceBadge({ evidence }: { evidence: Evidence }) {
         : evidence.document.type || "Document";
   };
 
-  return (
+  const handlePress = () => {
+    if (evidence.document?.id) {
+      router.push(`/documents/${evidence.document.id}`);
+    }
+  };
+
+  const badgeContent = (
     <View className="flex-row items-center gap-1 px-2 py-1 rounded-md border border-slate-600 bg-slate-800/50 mr-1.5 mb-1.5">
       <Icon color="#64748b" size={12} />
       <Text className="text-xs text-slate-300">{getDocumentName()}</Text>
     </View>
   );
+
+  if (evidence.document?.id) {
+    return (
+      <Pressable onPress={handlePress}>
+        {badgeContent}
+      </Pressable>
+    );
+  }
+
+  return badgeContent;
 }
 
 function ClaimCard({ claim }: { claim: IdentityClaim }) {
