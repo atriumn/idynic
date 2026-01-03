@@ -10,7 +10,6 @@ import {
   ArrowLeft,
   Loader2,
   Trash2,
-  Calendar,
   Sparkles,
   Award,
   Lightbulb,
@@ -182,24 +181,26 @@ function EvidenceCard({ evidence }: { evidence: DocumentEvidence }) {
     EVIDENCE_TYPE_LABELS[evidence.evidence_type] || evidence.evidence_type;
 
   return (
-    <div className={`p-4 rounded-lg border ${style.bg} ${style.border}`}>
-      <div className="flex items-start gap-3">
-        <div className={`mt-0.5 ${style.text}`}>
-          <Icon className="h-4 w-4" />
+    <div className={`px-3 py-2 rounded-md border ${style.bg} ${style.border}`}>
+      <div className="flex items-start gap-2">
+        <div className={`mt-0.5 ${style.text} shrink-0`}>
+          <Icon className="h-3.5 w-3.5" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant="outline" className={`text-xs ${style.text}`}>
+          <div className="flex items-center gap-1.5 mb-1">
+            <Badge
+              variant="outline"
+              className={`text-[10px] px-1.5 py-0 h-4 ${style.text}`}
+            >
               {typeLabel}
             </Badge>
             {evidence.evidence_date && (
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
+              <span className="text-[10px] text-muted-foreground">
                 {formatDate(evidence.evidence_date)}
               </span>
             )}
           </div>
-          <p className="text-sm">{evidence.text}</p>
+          <p className="text-xs leading-relaxed">{evidence.text}</p>
         </div>
       </div>
     </div>
@@ -306,10 +307,10 @@ export function DocumentDetailClient({
       </div>
 
       {/* Main content */}
-      <div className="container mx-auto px-4 py-8 max-w-5xl flex-1">
-        <div className="grid gap-8 lg:grid-cols-2">
-          {/* Document Content */}
-          <div>
+      <div className="container mx-auto px-4 py-8 max-w-6xl flex-1">
+        <div className="grid gap-6 lg:grid-cols-5">
+          {/* Document Content - takes 3 of 5 columns */}
+          <div className="lg:col-span-3">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <FileText className="h-5 w-5 text-muted-foreground" />
               Content
@@ -331,8 +332,8 @@ export function DocumentDetailClient({
             </div>
           </div>
 
-          {/* Evidence Section */}
-          <div>
+          {/* Evidence Section - takes 2 of 5 columns */}
+          <div className="lg:col-span-2">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-muted-foreground" />
               What We Learned
@@ -343,7 +344,7 @@ export function DocumentDetailClient({
               )}
             </h2>
             {document.evidence.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {document.evidence.map((ev) => (
                   <EvidenceCard key={ev.id} evidence={ev} />
                 ))}
