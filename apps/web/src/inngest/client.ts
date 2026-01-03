@@ -33,4 +33,12 @@ export type Events = {
       description: string | null;
     };
   };
+  "tailor/process": {
+    data: {
+      jobId: string;
+      userId: string;
+      opportunityId: string;
+      regenerate: boolean;
+    };
+  };
 };

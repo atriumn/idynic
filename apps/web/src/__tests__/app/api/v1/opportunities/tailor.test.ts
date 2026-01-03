@@ -5,9 +5,8 @@ import type { NextResponse } from 'next/server'
 // Create mocks
 const mockSupabaseFrom = vi.fn()
 const mockValidateApiKey = vi.fn()
-const mockGenerateProfile = vi.fn()
 const mockCheckTailoredProfileLimit = vi.fn()
-const mockIncrementTailoredProfileCount = vi.fn()
+const mockInngestSend = vi.fn()
 
 // Mock Supabase service role client
 vi.mock('@/lib/supabase/service-role', () => ({
@@ -22,15 +21,16 @@ vi.mock('@/lib/api/auth', () => ({
   isAuthError: (result: unknown) => result instanceof Response
 }))
 
-// Mock profile generation
-vi.mock('@/lib/ai/generate-profile-api', () => ({
-  generateProfileWithClient: (...args: unknown[]) => mockGenerateProfile(...args)
-}))
-
 // Mock billing/check-usage
 vi.mock('@/lib/billing/check-usage', () => ({
   checkTailoredProfileLimit: (...args: unknown[]) => mockCheckTailoredProfileLimit(...args),
-  incrementTailoredProfileCount: (...args: unknown[]) => mockIncrementTailoredProfileCount(...args)
+}))
+
+// Mock Inngest
+vi.mock('@/inngest', () => ({
+  inngest: {
+    send: (...args: unknown[]) => mockInngestSend(...args),
+  },
 }))
 
 // Mock response helpers
@@ -93,45 +93,173 @@ const mockOpportunity = {
   company: 'Tech Corp'
 }
 
-const mockProfileResult = {
-  profile: {
-    id: 'profile-123',
-    narrative: 'I am excited to apply for the Senior Engineer role...',
-    resume_data: {
-      contact: { name: 'John Doe', email: 'john@example.com' },
-      experience: [],
-      skills: []
-    },
-    created_at: '2024-01-01T00:00:00Z'
+const mockCachedProfile = {
+  id: 'profile-123',
+  narrative: 'I am excited to apply for the Senior Engineer role...',
+  resume_data: {
+    contact: { name: 'John Doe', email: 'john@example.com' },
+    experience: [],
+    skills: []
   },
-  cached: false
+  created_at: '2024-01-01T00:00:00Z'
+}
+
+const mockJob = {
+  id: 'job-123',
+  user_id: 'user-123',
+  job_type: 'tailor',
+  opportunity_id: 'opp-123',
+  status: 'pending'
 }
 
 describe('Tailor API Route', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockValidateApiKey.mockResolvedValue({ userId: 'user-123' })
-    mockGenerateProfile.mockResolvedValue(mockProfileResult)
     // Default: allow usage
     mockCheckTailoredProfileLimit.mockResolvedValue({ allowed: true })
-    mockIncrementTailoredProfileCount.mockResolvedValue(undefined)
+    mockInngestSend.mockResolvedValue(undefined)
   })
 
   describe('POST /api/v1/opportunities/[id]/tailor', () => {
-    it('generates tailored profile successfully', async () => {
-      mockSupabaseFrom.mockImplementation((table: string) => ({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue(
-                table === 'opportunities'
-                  ? { data: mockOpportunity, error: null }
-                  : { data: null, error: null } // No cached profile
-              )
+    it('returns job_id for async processing when no cached profile exists', async () => {
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === 'opportunities') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: mockOpportunity, error: null })
+                })
+              })
             })
-          })
-        })
-      }))
+          }
+        }
+        if (table === 'tailored_profiles') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: null, error: null })
+                })
+              })
+            })
+          }
+        }
+        if (table === 'document_jobs') {
+          return {
+            insert: vi.fn().mockReturnValue({
+              select: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({ data: mockJob, error: null })
+              })
+            })
+          }
+        }
+        return {}
+      })
+
+      const { POST } = await import('@/app/api/v1/opportunities/[id]/tailor/route')
+      const request = createMockRequest('/api/v1/opportunities/opp-123/tailor', {
+        headers: { 'Authorization': 'Bearer idn_test123' }
+      })
+
+      const response = await POST(request, { params: Promise.resolve({ id: 'opp-123' }) }) as NextResponse
+      const body = await parseJsonResponse<{
+        success: boolean
+        data: {
+          job_id: string
+          status: string
+          message: string
+        }
+      }>(response)
+
+      expect(response.status).toBe(200)
+      expect(body.success).toBe(true)
+      expect(body.data.job_id).toBe('job-123')
+      expect(body.data.status).toBe('processing')
+      expect(body.data.message).toBe('Tailoring in progress')
+    })
+
+    it('triggers Inngest event with correct data', async () => {
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === 'opportunities') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: mockOpportunity, error: null })
+                })
+              })
+            })
+          }
+        }
+        if (table === 'tailored_profiles') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: null, error: null })
+                })
+              })
+            })
+          }
+        }
+        if (table === 'document_jobs') {
+          return {
+            insert: vi.fn().mockReturnValue({
+              select: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({ data: mockJob, error: null })
+              })
+            })
+          }
+        }
+        return {}
+      })
+
+      const { POST } = await import('@/app/api/v1/opportunities/[id]/tailor/route')
+      const request = createMockRequest('/api/v1/opportunities/opp-123/tailor', {
+        headers: { 'Authorization': 'Bearer idn_test123' }
+      })
+
+      await POST(request, { params: Promise.resolve({ id: 'opp-123' }) })
+
+      expect(mockInngestSend).toHaveBeenCalledWith({
+        name: 'tailor/process',
+        data: {
+          jobId: 'job-123',
+          userId: 'user-123',
+          opportunityId: 'opp-123',
+          regenerate: false,
+        },
+      })
+    })
+
+    it('returns cached profile immediately when available (sync)', async () => {
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === 'opportunities') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: mockOpportunity, error: null })
+                })
+              })
+            })
+          }
+        }
+        if (table === 'tailored_profiles') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: mockCachedProfile, error: null })
+                })
+              })
+            })
+          }
+        }
+        return {}
+      })
 
       const { POST } = await import('@/app/api/v1/opportunities/[id]/tailor/route')
       const request = createMockRequest('/api/v1/opportunities/opp-123/tailor', {
@@ -155,88 +283,46 @@ describe('Tailor API Route', () => {
       expect(body.success).toBe(true)
       expect(body.data.id).toBe('profile-123')
       expect(body.data.narrative).toContain('Senior Engineer')
-      expect(body.data.cached).toBe(false)
-    })
-
-    it('returns opportunity info in response', async () => {
-      mockSupabaseFrom.mockImplementation((table: string) => ({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue(
-                table === 'opportunities'
-                  ? { data: mockOpportunity, error: null }
-                  : { data: null, error: null }
-              )
-            })
-          })
-        })
-      }))
-
-      const { POST } = await import('@/app/api/v1/opportunities/[id]/tailor/route')
-      const request = createMockRequest('/api/v1/opportunities/opp-123/tailor', {
-        headers: { 'Authorization': 'Bearer idn_test123' }
-      })
-
-      const response = await POST(request, { params: Promise.resolve({ id: 'opp-123' }) }) as NextResponse
-      const body = await parseJsonResponse<{
-        success: boolean
-        data: { opportunity: { id: string; title: string; company: string } }
-      }>(response)
-
-      expect(body.data.opportunity.id).toBe('opp-123')
-      expect(body.data.opportunity.title).toBe('Senior Engineer')
-      expect(body.data.opportunity.company).toBe('Tech Corp')
-    })
-
-    it('returns cached profile when available', async () => {
-      mockGenerateProfile.mockResolvedValue({
-        ...mockProfileResult,
-        cached: true
-      })
-
-      mockSupabaseFrom.mockImplementation((table: string) => ({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue(
-                table === 'opportunities'
-                  ? { data: mockOpportunity, error: null }
-                  : { data: { id: 'existing-profile' }, error: null } // Has cached profile
-              )
-            })
-          })
-        })
-      }))
-
-      const { POST } = await import('@/app/api/v1/opportunities/[id]/tailor/route')
-      const request = createMockRequest('/api/v1/opportunities/opp-123/tailor', {
-        headers: { 'Authorization': 'Bearer idn_test123' }
-      })
-
-      const response = await POST(request, { params: Promise.resolve({ id: 'opp-123' }) }) as NextResponse
-      const body = await parseJsonResponse<{
-        success: boolean
-        data: { cached: boolean }
-      }>(response)
-
       expect(body.data.cached).toBe(true)
+      // Inngest should NOT be triggered for cached profile
+      expect(mockInngestSend).not.toHaveBeenCalled()
     })
 
-    it('regenerates profile when regenerate flag is true', async () => {
-      mockSupabaseFrom.mockImplementation((table: string) => ({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue(
-                table === 'opportunities'
-                  ? { data: mockOpportunity, error: null }
-                  : { data: null, error: null }
-              )
+    it('triggers async processing when regenerate flag is true even with cached profile', async () => {
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === 'opportunities') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: mockOpportunity, error: null })
+                })
+              })
             })
-          })
-        })
-      }))
+          }
+        }
+        if (table === 'tailored_profiles') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: mockCachedProfile, error: null })
+                })
+              })
+            })
+          }
+        }
+        if (table === 'document_jobs') {
+          return {
+            insert: vi.fn().mockReturnValue({
+              select: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({ data: mockJob, error: null })
+              })
+            })
+          }
+        }
+        return {}
+      })
 
       const { POST } = await import('@/app/api/v1/opportunities/[id]/tailor/route')
       const request = createMockRequest('/api/v1/opportunities/opp-123/tailor', {
@@ -244,60 +330,61 @@ describe('Tailor API Route', () => {
         body: { regenerate: true }
       })
 
-      await POST(request, { params: Promise.resolve({ id: 'opp-123' }) })
+      const response = await POST(request, { params: Promise.resolve({ id: 'opp-123' }) }) as NextResponse
+      const body = await parseJsonResponse<{
+        success: boolean
+        data: {
+          job_id: string
+          status: string
+        }
+      }>(response)
 
-      expect(mockGenerateProfile).toHaveBeenCalledWith(
-        expect.anything(), // supabase client
-        'opp-123',
-        'user-123',
-        true // regenerate flag
-      )
-    })
-
-    it('uses regenerate=false by default', async () => {
-      mockSupabaseFrom.mockImplementation((table: string) => ({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue(
-                table === 'opportunities'
-                  ? { data: mockOpportunity, error: null }
-                  : { data: null, error: null }
-              )
-            })
-          })
-        })
-      }))
-
-      const { POST } = await import('@/app/api/v1/opportunities/[id]/tailor/route')
-      const request = createMockRequest('/api/v1/opportunities/opp-123/tailor', {
-        headers: { 'Authorization': 'Bearer idn_test123' }
+      expect(body.success).toBe(true)
+      expect(body.data.job_id).toBe('job-123')
+      expect(body.data.status).toBe('processing')
+      expect(mockInngestSend).toHaveBeenCalledWith({
+        name: 'tailor/process',
+        data: expect.objectContaining({
+          regenerate: true,
+        }),
       })
-
-      await POST(request, { params: Promise.resolve({ id: 'opp-123' }) })
-
-      expect(mockGenerateProfile).toHaveBeenCalledWith(
-        expect.anything(),
-        'opp-123',
-        'user-123',
-        false // regenerate flag
-      )
     })
 
-    it('handles empty request body gracefully', async () => {
-      mockSupabaseFrom.mockImplementation((table: string) => ({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue(
-                table === 'opportunities'
-                  ? { data: mockOpportunity, error: null }
-                  : { data: null, error: null }
-              )
+    it('handles empty request body gracefully (defaults to regenerate=false)', async () => {
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === 'opportunities') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: mockOpportunity, error: null })
+                })
+              })
             })
-          })
-        })
-      }))
+          }
+        }
+        if (table === 'tailored_profiles') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: null, error: null })
+                })
+              })
+            })
+          }
+        }
+        if (table === 'document_jobs') {
+          return {
+            insert: vi.fn().mockReturnValue({
+              select: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({ data: mockJob, error: null })
+              })
+            })
+          }
+        }
+        return {}
+      })
 
       const { POST } = await import('@/app/api/v1/opportunities/[id]/tailor/route')
 
@@ -329,15 +416,11 @@ describe('Tailor API Route', () => {
     })
 
     it('returns 404 when opportunity not found', async () => {
-      mockSupabaseFrom.mockImplementation((table: string) => ({
+      mockSupabaseFrom.mockImplementation(() => ({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue(
-                table === 'opportunities'
-                  ? { data: null, error: { message: 'Not found' } }
-                  : { data: null, error: null }
-              )
+              single: vi.fn().mockResolvedValue({ data: null, error: { message: 'Not found' } })
             })
           })
         })
@@ -355,22 +438,86 @@ describe('Tailor API Route', () => {
       expect(body.error.code).toBe('not_found')
     })
 
-    it('returns 500 when profile generation fails', async () => {
-      mockGenerateProfile.mockRejectedValue(new Error('AI generation failed'))
+    it('returns 403 when billing limit is reached', async () => {
+      mockCheckTailoredProfileLimit.mockResolvedValue({
+        allowed: false,
+        reason: 'Monthly limit reached'
+      })
 
-      mockSupabaseFrom.mockImplementation((table: string) => ({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue(
-                table === 'opportunities'
-                  ? { data: mockOpportunity, error: null }
-                  : { data: null, error: null }
-              )
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === 'opportunities') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: mockOpportunity, error: null })
+                })
+              })
             })
-          })
-        })
-      }))
+          }
+        }
+        if (table === 'tailored_profiles') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: null, error: null })
+                })
+              })
+            })
+          }
+        }
+        return {}
+      })
+
+      const { POST } = await import('@/app/api/v1/opportunities/[id]/tailor/route')
+      const request = createMockRequest('/api/v1/opportunities/opp-123/tailor', {
+        headers: { 'Authorization': 'Bearer idn_test123' }
+      })
+
+      const response = await POST(request, { params: Promise.resolve({ id: 'opp-123' }) }) as NextResponse
+      const body = await parseJsonResponse<{ success: boolean; error: { code: string; message: string } }>(response)
+
+      expect(response.status).toBe(403)
+      expect(body.error.code).toBe('limit_reached')
+      expect(body.error.message).toBe('Monthly limit reached')
+    })
+
+    it('returns 500 when job creation fails', async () => {
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === 'opportunities') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: mockOpportunity, error: null })
+                })
+              })
+            })
+          }
+        }
+        if (table === 'tailored_profiles') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: null, error: null })
+                })
+              })
+            })
+          }
+        }
+        if (table === 'document_jobs') {
+          return {
+            insert: vi.fn().mockReturnValue({
+              select: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({ data: null, error: { message: 'DB error' } })
+              })
+            })
+          }
+        }
+        return {}
+      })
 
       const { POST } = await import('@/app/api/v1/opportunities/[id]/tailor/route')
       const request = createMockRequest('/api/v1/opportunities/opp-123/tailor', {
@@ -381,23 +528,35 @@ describe('Tailor API Route', () => {
       const body = await parseJsonResponse<{ success: boolean; error: { code: string } }>(response)
 
       expect(response.status).toBe(500)
-      expect(body.error.code).toBe('processing_failed')
+      expect(body.error.code).toBe('server_error')
     })
 
-    it('includes resume_data in response', async () => {
-      mockSupabaseFrom.mockImplementation((table: string) => ({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue(
-                table === 'opportunities'
-                  ? { data: mockOpportunity, error: null }
-                  : { data: null, error: null }
-              )
+    it('includes opportunity info in cached response', async () => {
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === 'opportunities') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: mockOpportunity, error: null })
+                })
+              })
             })
-          })
-        })
-      }))
+          }
+        }
+        if (table === 'tailored_profiles') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: mockCachedProfile, error: null })
+                })
+              })
+            })
+          }
+        }
+        return {}
+      })
 
       const { POST } = await import('@/app/api/v1/opportunities/[id]/tailor/route')
       const request = createMockRequest('/api/v1/opportunities/opp-123/tailor', {
@@ -407,11 +566,12 @@ describe('Tailor API Route', () => {
       const response = await POST(request, { params: Promise.resolve({ id: 'opp-123' }) }) as NextResponse
       const body = await parseJsonResponse<{
         success: boolean
-        data: { resume_data: { contact: { name: string } } }
+        data: { opportunity: { id: string; title: string; company: string } }
       }>(response)
 
-      expect(body.data.resume_data).toBeDefined()
-      expect(body.data.resume_data.contact.name).toBe('John Doe')
+      expect(body.data.opportunity.id).toBe('opp-123')
+      expect(body.data.opportunity.title).toBe('Senior Engineer')
+      expect(body.data.opportunity.company).toBe('Tech Corp')
     })
   })
 })

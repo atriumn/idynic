@@ -2,9 +2,10 @@ import { NextRequest } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { validateApiKey, isAuthError } from '@/lib/api/auth';
 import { apiSuccess, apiError } from '@/lib/api/response';
+import { checkTailoredProfileLimit } from '@/lib/billing/check-usage';
+import { inngest } from '@/inngest';
 import OpenAI from 'openai';
 import { generateEmbedding } from '@/lib/ai/embeddings';
-import { generateProfileWithClient } from '@/lib/ai/generate-profile-api';
 import type { Json } from '@/lib/supabase/types';
 
 const openai = new OpenAI();
@@ -42,6 +43,16 @@ export async function POST(request: NextRequest) {
 
     if (!description) {
       return apiError('validation_error', 'description is required', 400);
+    }
+
+    // Check billing limit before processing
+    const usageCheck = await checkTailoredProfileLimit(supabase, userId);
+    if (!usageCheck.allowed) {
+      return apiError(
+        'limit_reached',
+        usageCheck.reason || 'Tailored profile limit reached',
+        403,
+      );
     }
 
     // Step 1: Extract opportunity details
@@ -104,20 +115,49 @@ export async function POST(request: NextRequest) {
       return apiError('server_error', 'Failed to save opportunity', 500);
     }
 
-    // Step 3: Generate tailored profile
-    const profileResult = await generateProfileWithClient(supabase, opportunity.id, userId);
+    // Step 3: Create job record for tailoring
+    const { data: job, error: jobError } = await supabase
+      .from('document_jobs')
+      .insert({
+        user_id: userId,
+        job_type: 'tailor',
+        opportunity_id: opportunity.id,
+        status: 'pending',
+      })
+      .select()
+      .single();
 
+    if (jobError || !job) {
+      console.error('[add-and-tailor] Job creation error:', jobError);
+      return apiError('server_error', 'Failed to create processing job', 500);
+    }
+
+    // Step 4: Trigger Inngest for async processing
+    await inngest.send({
+      name: 'tailor/process',
+      data: {
+        jobId: job.id,
+        userId,
+        opportunityId: opportunity.id,
+        regenerate: false,
+      },
+    });
+
+    console.log('[add-and-tailor] Opportunity created and tailor job triggered:', {
+      opportunityId: opportunity.id,
+      jobId: job.id,
+    });
+
+    // Return opportunity and job ID for polling (async)
     return apiSuccess({
       opportunity: {
         id: opportunity.id,
         title: opportunity.title,
         company: opportunity.company,
       },
-      profile: {
-        id: profileResult.profile.id,
-        narrative: profileResult.profile.narrative,
-        resume_data: profileResult.profile.resume_data,
-      },
+      job_id: job.id,
+      status: 'processing',
+      message: 'Opportunity saved. Tailoring in progress.',
     });
   } catch (err) {
     console.error('Add-and-tailor error:', err);
