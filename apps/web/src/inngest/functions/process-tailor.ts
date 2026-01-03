@@ -83,7 +83,7 @@ export const processTailor = inngest.createFunction(
 
       const points = await generateTalkingPoints(opportunityId, userId, supabase);
 
-      await job.addHighlight(`Found ${points.length} talking points`, "found");
+      await job.addHighlight(`Found ${points.strengths.length} talking points`, "found");
       return points;
     });
 
