@@ -2,7 +2,20 @@
 
 **Priority**: HIGH
 **Effort**: 1-2 days
-**Status**: Not Started
+**Status**: Done
+
+## Progress (Last reviewed: 2026-01-03)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Install Test Dependencies | ✅ Complete | |
+| Step 2: Create Jest Config | ✅ Complete | |
+| Step 3: Create Jest Setup File | ✅ Complete | |
+| Step 4: Create Test Directory Structure | ✅ Complete | |
+| Step 5-10: Write Tests | ✅ Complete | PR #65 |
+| Step 11-13: Package.json & CI | ✅ Complete | |
+
+Chrome extension unit tests added in PR #65: `test: add Chrome extension unit tests`
 
 ## Overview
 

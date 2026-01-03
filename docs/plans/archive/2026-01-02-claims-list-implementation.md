@@ -4,6 +4,20 @@
 
 **Goal:** Replace card-based claims list with compact sortable table featuring lollipop confidence visualization.
 
+**Status:** Done
+
+## Progress (Last reviewed: 2026-01-03)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Task 1: Create Lollipop UI Component | ✅ Complete | Component + tests |
+| Task 2: Add Sortable Column Header | ✅ Complete | Component + tests |
+| Task 3: Rewrite Claims List | ✅ Complete | Table layout with sorting |
+| Task 4: Update Tests | ✅ Complete | Sorting and dedup tests |
+| Task 5: Final Verification | ✅ Complete | All tests pass |
+
+All 5 tasks completed. Plan archived alongside redesign plan.
+
 **Architecture:** Rewrite `identity-claims-list.tsx` to use a table layout with clickable rows that expand inline. Add a reusable `Lollipop` component for confidence visualization. Use Jaro-Winkler similarity (already in codebase) to avoid showing redundant descriptions.
 
 **Tech Stack:** React, TypeScript, Tailwind CSS, Vitest
