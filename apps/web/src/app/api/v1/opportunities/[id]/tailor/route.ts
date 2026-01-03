@@ -2,10 +2,8 @@ import { NextRequest } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { validateApiKey, isAuthError } from '@/lib/api/auth';
 import { apiSuccess, ApiErrors, apiError } from '@/lib/api/response';
-import { generateProfileWithClient } from '@/lib/ai/generate-profile-api';
-import { checkTailoredProfileLimit, incrementTailoredProfileCount } from '@/lib/billing/check-usage';
-import { evaluateTailoredProfile, getUserClaimsForEval } from '@/lib/ai/eval';
-import type { TablesInsert, Json } from '@/lib/supabase/types';
+import { checkTailoredProfileLimit } from '@/lib/billing/check-usage';
+import { inngest } from '@/inngest';
 
 export async function POST(
   request: NextRequest,
@@ -17,7 +15,7 @@ export async function POST(
   }
 
   const { userId } = authResult;
-  const { id } = await params;
+  const { id: opportunityId } = await params;
   const supabase = createServiceRoleClient();
 
   // Parse optional regenerate flag
@@ -33,7 +31,7 @@ export async function POST(
   const { data: opportunity, error } = await supabase
     .from('opportunities')
     .select('id, title, company')
-    .eq('id', id)
+    .eq('id', opportunityId)
     .eq('user_id', userId)
     .single();
 
@@ -41,89 +39,76 @@ export async function POST(
     return ApiErrors.notFound('Opportunity');
   }
 
-  // Check if a cached profile already exists
-  const { data: existingProfile } = await supabase
-    .from('tailored_profiles')
-    .select('id')
-    .eq('opportunity_id', id)
-    .eq('user_id', userId)
+  // Check for cached profile (unless regenerating)
+  if (!regenerate) {
+    const { data: existingProfile } = await supabase
+      .from('tailored_profiles')
+      .select('id, narrative, resume_data, created_at')
+      .eq('opportunity_id', opportunityId)
+      .eq('user_id', userId)
+      .single();
+
+    if (existingProfile) {
+      // Return cached profile immediately (sync)
+      return apiSuccess({
+        id: existingProfile.id,
+        opportunity: {
+          id: opportunity.id,
+          title: opportunity.title,
+          company: opportunity.company,
+        },
+        narrative: existingProfile.narrative,
+        resume_data: existingProfile.resume_data,
+        cached: true,
+        created_at: existingProfile.created_at,
+      });
+    }
+  }
+
+  // Check billing limit before creating job
+  const usageCheck = await checkTailoredProfileLimit(supabase, userId);
+  if (!usageCheck.allowed) {
+    return apiError(
+      'limit_reached',
+      usageCheck.reason || 'Tailored profile limit reached',
+      403,
+    );
+  }
+
+  // Create job record
+  const { data: job, error: jobError } = await supabase
+    .from('document_jobs')
+    .insert({
+      user_id: userId,
+      job_type: 'tailor',
+      opportunity_id: opportunityId,
+      status: 'pending',
+    })
+    .select()
     .single();
 
-  const hasCachedProfile = !!existingProfile;
-
-  // Check tailored profile limit if we might need to generate a new one
-  // Allow if: cached profile exists and not forcing regenerate
-  if (!hasCachedProfile || regenerate) {
-    const usageCheck = await checkTailoredProfileLimit(supabase, userId);
-    if (!usageCheck.allowed) {
-      return apiError(
-        'limit_reached',
-        usageCheck.reason || 'Tailored profile limit reached',
-        403,
-      );
-    }
+  if (jobError || !job) {
+    console.error('[tailor] Job creation error:', jobError);
+    return apiError('server_error', 'Failed to create processing job', 500);
   }
 
-  try {
-    const result = await generateProfileWithClient(supabase, id, userId, regenerate);
+  // Trigger Inngest for async processing
+  await inngest.send({
+    name: 'tailor/process',
+    data: {
+      jobId: job.id,
+      userId,
+      opportunityId,
+      regenerate,
+    },
+  });
 
-    // If we generated a new profile (not cached), increment the count and run eval
-    let evalResult = null;
-    if (!result.cached) {
-      await incrementTailoredProfileCount(supabase, userId);
+  console.log('[tailor] Job created and Inngest triggered:', job.id);
 
-      // Run tailoring evaluation
-      try {
-        const userClaims = await getUserClaimsForEval(supabase, userId);
-        const evaluation = await evaluateTailoredProfile({
-          tailoredProfileId: result.profile.id,
-          userId,
-          narrative: result.profile.narrative,
-          resumeData: result.profile.resume_data,
-          userClaims,
-        });
-
-        // Store eval result in tailoring_eval_log
-        const evalLogEntry: TablesInsert<'tailoring_eval_log'> = {
-          tailored_profile_id: result.profile.id,
-          user_id: userId,
-          passed: evaluation.passed,
-          grounding_passed: evaluation.grounding.passed,
-          hallucinations: evaluation.grounding.hallucinations as unknown as Json,
-          missed_opportunities: evaluation.utilization.missed as unknown as Json,
-          gaps: evaluation.gaps as unknown as Json,
-          eval_model: evaluation.model,
-          eval_cost_cents: evaluation.costCents,
-        };
-        await supabase.from('tailoring_eval_log').insert(evalLogEntry);
-
-        evalResult = {
-          passed: evaluation.passed,
-          hallucinations: evaluation.grounding.hallucinations,
-          missedOpportunities: evaluation.utilization.missed,
-          gaps: evaluation.gaps,
-        };
-      } catch (evalErr) {
-        console.error('Tailoring eval error:', evalErr);
-        // Continue without eval - don't fail the request
-      }
-    }
-
-    return apiSuccess({
-      id: result.profile.id,
-      opportunity: {
-        id: opportunity.id,
-        title: opportunity.title,
-        company: opportunity.company,
-      },
-      narrative: result.profile.narrative,
-      resume_data: result.profile.resume_data,
-      cached: result.cached,
-      created_at: result.profile.created_at,
-      evaluation: evalResult,
-    });
-  } catch (err) {
-    console.error('Profile generation error:', err);
-    return apiError('processing_failed', 'Failed to generate tailored profile', 500);
-  }
+  // Return job ID for polling (async)
+  return apiSuccess({
+    job_id: job.id,
+    status: 'processing',
+    message: 'Tailoring in progress',
+  });
 }

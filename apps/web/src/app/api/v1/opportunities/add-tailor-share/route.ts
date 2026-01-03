@@ -2,10 +2,10 @@ import { NextRequest } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { validateApiKey, isAuthError } from '@/lib/api/auth';
 import { apiSuccess, apiError } from '@/lib/api/response';
+import { checkTailoredProfileLimit } from '@/lib/billing/check-usage';
+import { inngest } from '@/inngest';
 import OpenAI from 'openai';
 import { generateEmbedding } from '@/lib/ai/embeddings';
-import { generateProfileWithClient } from '@/lib/ai/generate-profile-api';
-import { randomBytes } from 'crypto';
 import type { Json } from '@/lib/supabase/types';
 
 const openai = new OpenAI();
@@ -28,10 +28,6 @@ const EXTRACTION_PROMPT = `Extract job details from this job posting. Return ONL
 JOB DESCRIPTION:
 `;
 
-function generateToken(): string {
-  return randomBytes(16).toString('hex');
-}
-
 export async function POST(request: NextRequest) {
   const authResult = await validateApiKey(request);
   if (isAuthError(authResult)) {
@@ -43,10 +39,20 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { url, description, expires_in_days = 30 } = body;
+    const { url, description } = body;
 
     if (!description) {
       return apiError('validation_error', 'description is required', 400);
+    }
+
+    // Check billing limit before processing
+    const usageCheck = await checkTailoredProfileLimit(supabase, userId);
+    if (!usageCheck.allowed) {
+      return apiError(
+        'limit_reached',
+        usageCheck.reason || 'Tailored profile limit reached',
+        403,
+      );
     }
 
     // Step 1: Extract opportunity details
@@ -84,6 +90,7 @@ export async function POST(request: NextRequest) {
       responsibilities: extracted.responsibilities,
     };
 
+    // Generate embedding
     const reqTexts = extracted.mustHave.slice(0, 5).map(r => r.text).join('. ');
     const embeddingText = `${extracted.title} at ${extracted.company || 'Unknown'}. ${reqTexts}`;
     const embedding = await generateEmbedding(embeddingText);
@@ -108,49 +115,51 @@ export async function POST(request: NextRequest) {
       return apiError('server_error', 'Failed to save opportunity', 500);
     }
 
-    // Step 3: Generate tailored profile
-    const profileResult = await generateProfileWithClient(supabase, opportunity.id, userId);
-
-    // Step 4: Create share link
-    const expiresAt = new Date();
-    if (expires_in_days > 0) {
-      expiresAt.setDate(expiresAt.getDate() + expires_in_days);
-    } else {
-      expiresAt.setFullYear(expiresAt.getFullYear() + 10);
-    }
-
-    const token = generateToken();
-    const { data: shareLink, error: linkError } = await supabase
-      .from('shared_links')
+    // Step 3: Create job record for tailoring
+    const { data: job, error: jobError } = await supabase
+      .from('document_jobs')
       .insert({
-        tailored_profile_id: profileResult.profile.id,
         user_id: userId,
-        token,
-        expires_at: expiresAt.toISOString(),
+        job_type: 'tailor',
+        opportunity_id: opportunity.id,
+        status: 'pending',
       })
       .select()
       .single();
 
-    if (linkError) {
-      console.error('Failed to create share link:', linkError);
-      // Don't fail the whole request - opportunity and profile were created
+    if (jobError || !job) {
+      console.error('[add-tailor-share] Job creation error:', jobError);
+      return apiError('server_error', 'Failed to create processing job', 500);
     }
 
+    // Step 4: Trigger Inngest for async processing
+    await inngest.send({
+      name: 'tailor/process',
+      data: {
+        jobId: job.id,
+        userId,
+        opportunityId: opportunity.id,
+        regenerate: false,
+      },
+    });
+
+    console.log('[add-tailor-share] Opportunity created and tailor job triggered:', {
+      opportunityId: opportunity.id,
+      jobId: job.id,
+    });
+
+    // Return opportunity and job ID for polling (async)
+    // Note: Share link creation must happen after job completes via a separate endpoint
+    // or the client can create the share link after polling for completion
     return apiSuccess({
       opportunity: {
         id: opportunity.id,
         title: opportunity.title,
         company: opportunity.company,
       },
-      profile: {
-        id: profileResult.profile.id,
-        narrative: profileResult.profile.narrative,
-      },
-      share_link: shareLink ? {
-        token: shareLink.token,
-        url: `${process.env.NEXT_PUBLIC_APP_URL || ''}/shared/${token}`,
-        expires_at: shareLink.expires_at,
-      } : null,
+      job_id: job.id,
+      status: 'processing',
+      message: 'Opportunity saved. Tailoring in progress. Create share link after completion.',
     });
   } catch (err) {
     console.error('Add-tailor-share error:', err);

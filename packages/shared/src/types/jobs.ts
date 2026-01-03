@@ -13,9 +13,12 @@ export type DocumentJobPhase =
   | 'reflection'
   | 'evaluation'
   | 'enriching'
-  | 'researching';
+  | 'researching'
+  | 'analyzing'
+  | 'generating'
+  | 'evaluating';
 
-export type DocumentJobType = 'resume' | 'story' | 'opportunity';
+export type DocumentJobType = 'resume' | 'story' | 'opportunity' | 'tailor';
 
 export interface JobHighlight {
   text: string;
@@ -62,6 +65,9 @@ export const PHASE_LABELS: Record<DocumentJobPhase, string> = {
   evaluation: 'Evaluating claims',
   enriching: 'Enriching job data',
   researching: 'Researching company',
+  analyzing: 'Analyzing opportunity',
+  generating: 'Generating profile',
+  evaluating: 'Evaluating quality',
 };
 
 /** Ordered phases for resume processing */
@@ -90,6 +96,13 @@ export const OPPORTUNITY_PHASES: DocumentJobPhase[] = [
   'extracting',
   'embeddings',
   'researching',
+];
+
+/** Ordered phases for tailor processing */
+export const TAILOR_PHASES: DocumentJobPhase[] = [
+  'analyzing',
+  'generating',
+  'evaluating',
 ];
 
 /**
@@ -149,6 +162,24 @@ export const TICKER_MESSAGES: Record<DocumentJobPhase, string[]> = {
     'researching company...',
     'gathering insights...',
     'analyzing market position...',
+  ],
+  analyzing: [
+    'analyzing opportunity requirements...',
+    'matching your experience to the role...',
+    'identifying key talking points...',
+    'finding relevant achievements...',
+  ],
+  generating: [
+    'crafting your narrative...',
+    'tailoring your experience...',
+    'highlighting relevant skills...',
+    'optimizing for this role...',
+  ],
+  evaluating: [
+    'running quality checks...',
+    'verifying claims are grounded...',
+    'checking for completeness...',
+    'finalizing your profile...',
   ],
 };
 
