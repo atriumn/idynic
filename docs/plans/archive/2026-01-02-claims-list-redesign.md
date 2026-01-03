@@ -1,7 +1,21 @@
 # Claims List Redesign: Compact Table with Lollipop Confidence
 
 **Date:** 2026-01-02
-**Status:** Approved for Implementation
+**Status:** Done
+
+## Progress (Last reviewed: 2026-01-03)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Lollipop Component | ✅ Complete | `apps/web/src/components/ui/lollipop.tsx` |
+| Task 2: Sortable Header | ✅ Complete | `apps/web/src/components/ui/sortable-header.tsx` |
+| Task 3: Rewrite Claims List | ✅ Complete | Commits 72f3fbfe, 66d89658 |
+| Task 4: Update Tests | ✅ Complete | Commit 5ec3f1b7, 22556232 |
+| Task 5: Evidence Display Polish | ✅ Complete | Badges for sources (766b985a, b24305a5) |
+
+### Drift Notes
+- Evidence display evolved from run-on list to badge-style display (766b985a)
+- Mobile updated to match web evidence display (b24305a5)
 
 ## Problem Statement
 
@@ -136,12 +150,12 @@ const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
 ## Acceptance Criteria
 
-- [ ] Collapsed rows are ~40px height with full label text (wrapping allowed)
-- [ ] Lollipop chart displays confidence with percentage
-- [ ] Columns are sortable by label, confidence, sources
-- [ ] Expanded view shows evidence with source type + evidence type
-- [ ] Description only shown when not duplicate of evidence (Jaro-Winkler < 0.85)
-- [ ] Issues panel and action buttons work as before
-- [ ] Search and type filters work as before
-- [ ] All existing tests pass or are updated
-- [ ] No text truncation anywhere
+- [x] Collapsed rows are ~40px height with full label text (wrapping allowed)
+- [x] Lollipop chart displays confidence with percentage
+- [x] Columns are sortable by label, confidence, sources
+- [x] Expanded view shows evidence with source type + evidence type
+- [x] Description only shown when not duplicate of evidence (Jaro-Winkler < 0.85)
+- [x] Issues panel and action buttons work as before
+- [x] Search and type filters work as before
+- [x] All existing tests pass or are updated
+- [x] No text truncation anywhere
