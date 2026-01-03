@@ -1,7 +1,25 @@
 # Claims List Redesign: Compact Table with Lollipop Confidence
 
 **Date:** 2026-01-02
-**Status:** Approved for Implementation
+**Status:** Done
+
+## Progress (Last reviewed: 2026-01-03)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Lollipop UI Component | ✅ Complete | `ui/lollipop.tsx` with tests |
+| Sortable Column Header | ✅ Complete | `ui/sortable-header.tsx` with tests |
+| Claims List Rewrite | ✅ Complete | Compact table layout with sorting |
+| Description Deduplication | ✅ Complete | Uses jaroWinklerSimilarity |
+| Tests Updated | ✅ Complete | Sorting and dedup tests added |
+
+### Implementation Files
+- `apps/web/src/components/ui/lollipop.tsx`
+- `apps/web/src/components/ui/sortable-header.tsx`
+- `apps/web/src/components/identity-claims-list.tsx`
+- `apps/web/src/__tests__/components/ui/lollipop.test.tsx`
+- `apps/web/src/__tests__/components/ui/sortable-header.test.tsx`
+- `apps/web/src/__tests__/components/identity-claims-list.test.tsx`
 
 ## Problem Statement
 

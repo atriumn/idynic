@@ -2,7 +2,20 @@
 
 **Priority**: MEDIUM
 **Effort**: 1-2 days
-**Status**: Not Started
+**Status**: Done
+
+## Progress (Last reviewed: 2026-01-03)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Audit Existing Shared Types | ✅ Complete | |
+| Step 2: Create Comprehensive API Types | ✅ Complete | PR #86 |
+| Step 3: Create Endpoint Definitions | ✅ Complete | PR #86 |
+| Step 4: Update Clients to Use Shared Types | ✅ Complete | |
+| Step 5: Add Type Validation Tests | ✅ Complete | |
+| Step 6: Document API Contracts | ✅ Complete | |
+
+API contract types and endpoints added in PR #86: `feat(shared): add API contract types and endpoints for Phase 6`
 
 ## Overview
 

@@ -2,7 +2,23 @@
 
 **Priority**: MEDIUM
 **Effort**: 1-2 days
-**Status**: Not Started
+**Status**: Done
+
+## Progress (Last reviewed: 2026-01-03)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Create Integration Test Directory | ✅ Complete | |
+| Step 2: Create Vitest Integration Config | ✅ Complete | |
+| Step 3: Create Test Utilities | ✅ Complete | |
+| Step 4: Write Tool Execution Tests | ✅ Complete | PR #88 |
+| Step 5: Write Auth Flow Tests | ✅ Complete | PR #88 |
+| Step 6: Write Error Handling Tests | ✅ Complete | PR #88 |
+| Step 7: Write Mock Claude Integration Tests | ✅ Complete | PR #88 |
+| Step 8: Add Package.json Scripts | ✅ Complete | |
+| Step 9: Update CI Workflow | ✅ Complete | |
+
+All integration tests added in PR #88: `test(mcp-server): add Phase 5 integration tests`
 
 ## Overview
 
