@@ -320,7 +320,7 @@ export function DocumentDetailClient({
                 <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-foreground prose-headings:font-semibold prose-h2:text-base prose-h2:mt-6 prose-h2:mb-3 prose-h2:border-b prose-h2:border-border prose-h2:pb-2 prose-p:text-foreground/90 prose-li:text-foreground/90 prose-strong:text-foreground prose-em:text-muted-foreground">
                   <ReactMarkdown>
                     {isStory
-                      ? document.raw_text
+                      ? document.raw_text.replace(/\n/g, "\n\n")
                       : formatResumeAsMarkdown(document.raw_text)}
                   </ReactMarkdown>
                 </div>
@@ -344,10 +344,39 @@ export function DocumentDetailClient({
               )}
             </h2>
             {document.evidence.length > 0 ? (
-              <div className="space-y-2">
-                {document.evidence.map((ev) => (
-                  <EvidenceCard key={ev.id} evidence={ev} />
-                ))}
+              <div className="space-y-4">
+                {/* Skills as tag cloud */}
+                {document.evidence.filter(
+                  (e) => e.evidence_type === "skill_listed",
+                ).length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <Sparkles className="h-3.5 w-3.5 text-teal-400" />
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Skills
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {document.evidence
+                        .filter((e) => e.evidence_type === "skill_listed")
+                        .map((ev) => (
+                          <Badge
+                            key={ev.id}
+                            variant="outline"
+                            className="text-[11px] px-2 py-0.5 bg-teal-500/10 border-teal-500/30 text-teal-400"
+                          >
+                            {ev.text}
+                          </Badge>
+                        ))}
+                    </div>
+                  </div>
+                )}
+                {/* Accomplishments and traits as cards */}
+                {document.evidence
+                  .filter((e) => e.evidence_type !== "skill_listed")
+                  .map((ev) => (
+                    <EvidenceCard key={ev.id} evidence={ev} />
+                  ))}
               </div>
             ) : (
               <div className="border rounded-lg p-8 text-center bg-muted/20">
