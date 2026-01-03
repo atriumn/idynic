@@ -2,7 +2,21 @@
 
 **Priority**: HIGH
 **Effort**: 1-2 days
-**Status**: Not Started
+**Status:** Done
+
+## Progress (Last reviewed: 2026-01-03)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Install Test Dependencies | ✅ Complete | |
+| Step 2: Create Jest Config | ✅ Complete | |
+| Step 3: Create Jest Setup | ✅ Complete | |
+| Step 4: Directory Structure | ✅ Complete | `chrome-extension/tests/` |
+| Step 5-10: Write Tests | ✅ Complete | api.test.js, popup.test.js, options.test.js |
+| Step 11-13: CI Integration | ✅ Complete | |
+
+### Drift Notes
+- Tests located in `chrome-extension/tests/` (renamed from `__tests__` for Chrome compatibility - commit ad92f31e)
 
 ## Overview
 

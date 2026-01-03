@@ -2,7 +2,22 @@
 
 **Priority**: MEDIUM
 **Effort**: 1-2 days
-**Status**: Not Started
+**Status:** Done
+
+## Progress (Last reviewed: 2026-01-03)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Audit Existing Types | ✅ Complete | |
+| Step 2: Create API Types | ✅ Complete | `packages/shared/src/api/types.ts` |
+| Step 3: Create Endpoints | ✅ Complete | `packages/shared/src/api/endpoints.ts` |
+| Step 4: Update Clients | ✅ Complete | |
+| Step 5: Add Validation Tests | ✅ Complete | `packages/shared/src/api/contracts.test.ts` |
+| Step 6: Documentation | ✅ Complete | |
+
+### Drift Notes
+- Implementation followed plan closely
+- PR #86 added API contract types
 
 ## Overview
 
