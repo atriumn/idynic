@@ -490,6 +490,8 @@ describe("IdentityClaimsList", () => {
       // Check that claims are rendered in order by confidence desc (highest first)
       const claimLabels = screen.getAllByText(/React|TypeScript|Led team/i);
       expect(claimLabels[0]).toHaveTextContent("TypeScript"); // 90%
+      expect(claimLabels[1]).toHaveTextContent("Led team"); // 70%
+      expect(claimLabels[2]).toHaveTextContent("React"); // 50%
     });
 
     it("toggles sort direction when clicking active column", async () => {
@@ -507,7 +509,12 @@ describe("IdentityClaimsList", () => {
 
     it("sorts by label alphabetically when Claim header clicked", async () => {
       const user = userEvent.setup();
-      render(<IdentityClaimsList claims={mockClaims} />);
+      const claimsForAlphaSort: IdentityClaim[] = [
+        { ...mockClaims[0], id: "c1", label: "Zebra" },
+        { ...mockClaims[1], id: "c2", label: "Apple" },
+        { ...mockClaims[2], id: "c3", label: "Mango" },
+      ];
+      render(<IdentityClaimsList claims={claimsForAlphaSort} />);
 
       await user.click(screen.getByRole("button", { name: /claim/i }));
 
@@ -515,6 +522,12 @@ describe("IdentityClaimsList", () => {
       expect(screen.getByRole("button", { name: /claim/i })).toHaveTextContent(
         "▲",
       );
+
+      // Verify claims are actually sorted alphabetically (A-Z)
+      const claimLabels = screen.getAllByText(/Zebra|Apple|Mango/i);
+      expect(claimLabels[0]).toHaveTextContent("Apple");
+      expect(claimLabels[1]).toHaveTextContent("Mango");
+      expect(claimLabels[2]).toHaveTextContent("Zebra");
     });
   });
 
