@@ -240,11 +240,10 @@ describe("IdentityClaimsList", () => {
     // Click on the React claim card
     await user.click(screen.getByText("React Development"));
 
-    // Should show expanded content with evidence sources (compact format)
+    // Should show expanded content with evidence sources as badges
     await waitFor(() => {
-      expect(screen.getByText(/supporting evidence \(1\)/i)).toBeInTheDocument();
-      // Evidence now shows source name + date, not full text
-      expect(screen.getByText(/resume/i)).toBeInTheDocument();
+      // Evidence shows as badge with document name (resume.pdf without date)
+      expect(screen.getByText("resume.pdf")).toBeInTheDocument();
     });
   });
 
@@ -554,11 +553,8 @@ describe("IdentityClaimsList", () => {
 
     await user.click(screen.getByText("React Development"));
 
-    // Evidence section shows compact format with document filename (already formatted)
-    const evidenceSection =
-      screen.getByText(/supporting evidence/i).parentElement;
-    // Filename is used directly from the graph API (already formatted with name + date)
-    expect(evidenceSection).toHaveTextContent("resume.pdf");
+    // Evidence section shows sources as badges (badge shows document name)
+    expect(screen.getByText("resume.pdf")).toBeInTheDocument();
 
     // Description should NOT appear since it matches evidence text (Jaro-Winkler >= 0.85)
     expect(

@@ -28,8 +28,11 @@ import {
   Lightbulb,
   GraduationCap,
   BadgeCheck,
+  FileText,
+  BookOpen,
   type LucideIcon,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useInvalidateGraph } from "@/lib/hooks/use-identity-graph";
 import { EditClaimModal } from "@/components/edit-claim-modal";
 import { getClaimTypeStyle, CLAIM_TYPE_LABELS } from "@/lib/theme-colors";
@@ -547,19 +550,35 @@ export function IdentityClaimsList({
                       </p>
                     )}
 
-                    {/* Evidence - compact list of source names with dates */}
+                    {/* Evidence - badges for each source */}
                     {evidenceCount > 0 && (
-                      <div className="text-sm text-muted-foreground">
-                        <span className="font-medium">
-                          Supporting evidence ({evidenceCount}):
-                        </span>{" "}
-                        {evidenceItems
-                          .map((item) => {
+                      <div className="space-y-2">
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                          Sources
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {evidenceItems.map((item, idx) => {
                             const doc = item.evidence?.document;
-                            // filename is already formatted as "Name (date)" from the graph API
-                            return doc?.filename || "Document";
-                          })
-                          .join(", ")}
+                            const isStory = doc?.type === "story";
+                            const Icon = isStory ? BookOpen : FileText;
+                            // Extract just the name without the date for cleaner badges
+                            const filename = doc?.filename || "Document";
+                            const nameWithoutDate = filename.replace(
+                              /\s*\(\d{1,2}\/\d{1,2}\/\d{4}\)\s*$/,
+                              "",
+                            );
+                            return (
+                              <Badge
+                                key={idx}
+                                variant="outline"
+                                className="text-xs font-normal gap-1 bg-background/50"
+                              >
+                                <Icon className="h-3 w-3" />
+                                {nameWithoutDate}
+                              </Badge>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
                   </div>
