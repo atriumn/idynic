@@ -2,7 +2,23 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { FileText, LayoutGrid, Network, Sun, Sparkles, List as ListIcon, Loader2, Eye, Wand2, TrendingUp, HelpCircle, AlertTriangle, CheckCircle2, FolderOpen } from "lucide-react";
+import Image from "next/image";
+import {
+  LayoutGrid,
+  Network,
+  Sun,
+  Sparkles,
+  List as ListIcon,
+  Loader2,
+  Eye,
+  Wand2,
+  TrendingUp,
+  HelpCircle,
+  AlertTriangle,
+  CheckCircle2,
+  FolderOpen,
+  Cuboid,
+} from "lucide-react";
 import { IdentityConstellation } from "@/components/identity-constellation";
 import { EvidenceConstellation } from "@/components/evidence-constellation";
 import { ConfidenceSunburst } from "@/components/confidence-sunburst";
@@ -24,7 +40,7 @@ import { EMPTY_STATE } from "@idynic/shared";
 function parseBold(text: string): React.ReactNode {
   const parts = text.split(/\*\*(.+?)\*\*/g);
   return parts.map((part, i) =>
-    i % 2 === 1 ? <strong key={i}>{part}</strong> : part
+    i % 2 === 1 ? <strong key={i}>{part}</strong> : part,
   );
 }
 
@@ -41,7 +57,8 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [viewType, setViewType] = useState<ViewType>("list");
   const { data } = useIdentityGraph();
-  const { data: reflectionData, isLoading: reflectionLoading } = useIdentityReflection();
+  const { data: reflectionData, isLoading: reflectionLoading } =
+    useIdentityReflection();
   const betaCodeConsumed = useRef(false);
 
   // Beta access state
@@ -50,7 +67,9 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
 
   const checkBetaAccess = useCallback(async () => {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     if (!user) {
       setBetaAccessLoading(false);
@@ -76,7 +95,9 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
         if (code) {
           betaCodeConsumed.current = true;
           const supabase = createClient();
-          const { data: { user } } = await supabase.auth.getUser();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
 
           if (user) {
             await supabase.rpc("consume_beta_code", {
@@ -104,7 +125,8 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
   }, []);
 
   const claimCount = data?.nodes.length ?? 0;
-  const claimsWithIssues = data?.nodes.filter(n => n.issues && n.issues.length > 0).length ?? 0;
+  const claimsWithIssues =
+    data?.nodes.filter((n) => n.issues && n.issues.length > 0).length ?? 0;
   const showEmptyState = !hasAnyClaims && claimCount === 0;
 
   // Show loading while checking beta access
@@ -127,23 +149,27 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
       <div className="border-b bg-background">
         <div className="container mx-auto px-4 py-4 max-w-5xl flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold">Your Identity</h1>
+            <h1 className="text-2xl font-bold">Master Record</h1>
             {claimCount > 0 && (
-              <Badge variant="secondary">{claimCount} claims</Badge>
+              <Badge variant="secondary" className="gap-1">
+                <Cuboid className="w-3 h-3" />
+                {claimCount} blocks
+              </Badge>
             )}
-            {claimCount > 0 && (
-              claimsWithIssues > 0 ? (
+            {claimCount > 0 &&
+              (claimsWithIssues > 0 ? (
                 <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
                   <AlertTriangle className="h-3.5 w-3.5" />
-                  <span className="text-xs font-medium">{claimsWithIssues} issue{claimsWithIssues !== 1 ? 's' : ''}</span>
+                  <span className="text-xs font-medium">
+                    {claimsWithIssues} issue{claimsWithIssues !== 1 ? "s" : ""}
+                  </span>
                 </div>
               ) : (
                 <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400">
                   <CheckCircle2 className="h-3.5 w-3.5" />
                   <span className="text-xs font-medium">All verified</span>
                 </div>
-              )
-            )}
+              ))}
           </div>
           <div className="flex items-center gap-4">
             {/* View toggle */}
@@ -161,7 +187,7 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
                   variant={viewType === "treemap" ? "secondary" : "ghost"}
                   size="sm"
                   onClick={() => setViewType("treemap")}
-                  title="Treemap - Claims grouped by type"
+                  title="Treemap - Evidence grouped by type"
                 >
                   <LayoutGrid className="h-4 w-4" />
                 </Button>
@@ -169,7 +195,7 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
                   variant={viewType === "radial" ? "secondary" : "ghost"}
                   size="sm"
                   onClick={() => setViewType("radial")}
-                  title="Radial - Documents and claims"
+                  title="Radial - Documents and evidence"
                 >
                   <Network className="h-4 w-4" />
                 </Button>
@@ -207,17 +233,30 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
       <div className="container mx-auto px-4 py-8 max-w-5xl flex-1">
         {/* Identity Reflection Hero */}
         {!showEmptyState && (
-          <IdentityReflection data={reflectionData ?? null} isLoading={reflectionLoading} />
+          <IdentityReflection
+            data={reflectionData ?? null}
+            isLoading={reflectionLoading}
+          />
         )}
 
         {showEmptyState ? (
           <div className="mt-8 space-y-8">
             {/* Main CTA */}
             <div className="flex flex-col items-center justify-center text-center px-4 py-12 border rounded-lg border-dashed bg-muted/10">
-              <FileText className="h-16 w-16 text-muted-foreground/50 mb-6" />
-              <h2 className="text-xl font-semibold mb-2">{EMPTY_STATE.title}</h2>
-              <p className="text-muted-foreground mb-6 max-w-md">
-                {EMPTY_STATE.subtitle}
+              <div className="relative h-40 w-64 mb-8 rounded-lg overflow-hidden border bg-slate-950 shadow-md">
+                <Image
+                  src="/images/how-it-works-1.png"
+                  alt="Master Record construction"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <h2 className="text-2xl font-bold mb-2">
+                Start building your Master Record
+              </h2>
+              <p className="text-muted-foreground mb-8 max-w-md">
+                Upload your resume, reviews, or project docs to extract your
+                first <strong>Evidence Blocks</strong>.
               </p>
               <div className="flex gap-3">
                 <UploadResumeModal />
@@ -231,12 +270,17 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
                 const icons = [Eye, Wand2, TrendingUp];
                 const Icon = icons[i];
                 return (
-                  <div key={feature.title} className="p-4 rounded-lg border bg-card">
+                  <div
+                    key={feature.title}
+                    className="p-4 rounded-lg border bg-card"
+                  >
                     <div className="flex items-center gap-2 mb-2">
                       <Icon className="h-5 w-5 text-primary" />
                       <h3 className="font-medium">{feature.title}</h3>
                     </div>
-                    <p className="text-sm text-muted-foreground">{feature.description}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {feature.description}
+                    </p>
                   </div>
                 );
               })}
@@ -252,7 +296,9 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
                 {Object.values(EMPTY_STATE.help).map((item) => (
                   <div key={item.title}>
                     <h4 className="text-sm font-medium mb-1">{item.title}</h4>
-                    <p className="text-sm text-muted-foreground">{parseBold(item.content)}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {parseBold(item.content)}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -260,8 +306,8 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
           </div>
         ) : isMobile ? (
           <div className="py-4">
-             <IdentityClaimsList
-              claims={(data?.nodes || []).map(node => ({
+            <IdentityClaimsList
+              claims={(data?.nodes || []).map((node) => ({
                 ...node,
                 created_at: "",
                 updated_at: "",
@@ -269,29 +315,41 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
                 embedding: null,
                 source: null,
                 issues: node.issues,
-                claim_evidence: (node.claim_evidence || []).map(ce => {
+                claim_evidence: (node.claim_evidence || []).map((ce) => {
                   const doc = ce.evidence?.document_id
-                    ? data?.documents.find(d => d.id === ce.evidence?.document_id)
+                    ? data?.documents.find(
+                        (d) => d.id === ce.evidence?.document_id,
+                      )
                     : null;
                   return {
                     strength: ce.strength,
-                    evidence: ce.evidence ? {
-                      text: ce.evidence.text,
-                      evidence_type: ce.evidence.evidence_type,
-                      document: doc ? {
-                        id: doc.id,
-                        filename: doc.name,
-                        type: doc.type,
-                        createdAt: doc.createdAt,
-                      } : null
-                    } : null
+                    evidence: ce.evidence
+                      ? {
+                          text: ce.evidence.text,
+                          evidence_type: ce.evidence.evidence_type,
+                          document: doc
+                            ? {
+                                id: doc.id,
+                                filename: doc.name,
+                                type: doc.type,
+                                createdAt: doc.createdAt,
+                              }
+                            : null,
+                        }
+                      : null,
                   };
-                })
+                }),
               }))}
             />
           </div>
         ) : (
-          <div className={viewType === "list" ? "" : "h-[600px] border rounded-xl bg-background shadow-sm overflow-hidden"}>
+          <div
+            className={
+              viewType === "list"
+                ? ""
+                : "h-[600px] border rounded-xl bg-background shadow-sm overflow-hidden"
+            }
+          >
             {viewType === "treemap" ? (
               <IdentityConstellation
                 onSelectClaim={setSelectedClaimId}
@@ -314,7 +372,7 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
               />
             ) : (
               <IdentityClaimsList
-                claims={(data?.nodes || []).map(node => ({
+                claims={(data?.nodes || []).map((node) => ({
                   ...node,
                   created_at: "",
                   updated_at: "",
@@ -322,24 +380,30 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
                   embedding: null,
                   source: null,
                   issues: node.issues,
-                  claim_evidence: (node.claim_evidence || []).map(ce => {
+                  claim_evidence: (node.claim_evidence || []).map((ce) => {
                     const doc = ce.evidence?.document_id
-                      ? data?.documents.find(d => d.id === ce.evidence?.document_id)
+                      ? data?.documents.find(
+                          (d) => d.id === ce.evidence?.document_id,
+                        )
                       : null;
                     return {
                       strength: ce.strength,
-                      evidence: ce.evidence ? {
-                        text: ce.evidence.text,
-                        evidence_type: ce.evidence.evidence_type,
-                        document: doc ? {
-                          id: doc.id,
-                          filename: doc.name,
-                          type: doc.type,
-                          createdAt: doc.createdAt,
-                        } : null
-                      } : null
+                      evidence: ce.evidence
+                        ? {
+                            text: ce.evidence.text,
+                            evidence_type: ce.evidence.evidence_type,
+                            document: doc
+                              ? {
+                                  id: doc.id,
+                                  filename: doc.name,
+                                  type: doc.type,
+                                  createdAt: doc.createdAt,
+                                }
+                              : null,
+                          }
+                        : null,
                     };
-                  })
+                  }),
                 }))}
               />
             )}

@@ -1,12 +1,6 @@
 import Link from "next/link";
-import {
-  BookOpen,
-  Code,
-  Rocket,
-  ShieldCheck,
-  Layout,
-  Cuboid,
-} from "lucide-react";
+import Image from "next/image";
+import { BookOpen, Code, Rocket, ShieldCheck, Layout } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function StudentsPage() {
@@ -73,14 +67,13 @@ export default function StudentsPage() {
               </div>
             </div>
           </div>
-          <div className="relative aspect-square bg-slate-100 dark:bg-slate-800 rounded-2xl border flex items-center justify-center overflow-hidden">
-            {/* Visual: Illustration of a Syllabus being broken into glowing cubes */}
-            <div className="text-center space-y-4 p-8">
-              <Cuboid className="h-20 w-20 text-primary/40 mx-auto" />
-              <p className="text-sm text-muted-foreground font-mono">
-                [Visual: Coursework Deconstruction Animation]
-              </p>
-            </div>
+          <div className="relative aspect-square bg-slate-950 rounded-2xl border overflow-hidden group shadow-lg">
+            <Image
+              src="/images/student-hero.png"
+              alt="Turning student coursework into professional evidence blocks"
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
           </div>
         </div>
 

@@ -24,13 +24,13 @@ import {
   Trash2,
   Loader2,
   CheckCircle2,
-  Sparkles,
   Award,
   Lightbulb,
   GraduationCap,
   BadgeCheck,
   FileText,
   BookOpen,
+  Cuboid,
   type LucideIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -83,7 +83,7 @@ interface IdentityClaimsListProps {
 
 // Claim type icons matching mobile
 const CLAIM_TYPE_ICONS: Record<string, LucideIcon> = {
-  skill: Sparkles,
+  skill: Cuboid,
   achievement: Award,
   attribute: Lightbulb,
   education: GraduationCap,
@@ -124,7 +124,7 @@ function ClaimTypeChip({
   selected: boolean;
   onToggle: () => void;
 }) {
-  const Icon = CLAIM_TYPE_ICONS[type] || Sparkles;
+  const Icon = CLAIM_TYPE_ICONS[type] || Cuboid;
   const style = getClaimTypeStyle(type);
   const label = CLAIM_TYPE_LABELS[type] || type;
 
@@ -314,8 +314,8 @@ export function IdentityClaimsList({
       <div className="relative">
         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search claims..."
-          className="pl-10 h-10 bg-card border-border"
+          placeholder="Search evidence..."
+          className="pl-10 h-10 bg-slate-950 border-slate-800 font-mono text-sm placeholder:text-muted-foreground/50"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -372,10 +372,10 @@ export function IdentityClaimsList({
       </div>
 
       {/* Column Headers */}
-      <div className="flex items-center gap-4 px-3 py-2 border-b border-border">
+      <div className="flex items-center gap-4 px-3 py-2 border-b border-border text-xs uppercase tracking-wider font-semibold text-muted-foreground">
         <div className="w-6" /> {/* Type icon spacer */}
         <SortableHeader
-          label="Claim"
+          label="Block"
           field="label"
           currentField={sortField}
           direction={sortDirection}
@@ -402,10 +402,10 @@ export function IdentityClaimsList({
       </div>
 
       {/* Claims List */}
-      <div className="space-y-1">
+      <div className="space-y-2 pt-2">
         {filteredAndSortedClaims.length === 0 ? (
-          <div className="h-24 flex items-center justify-center text-muted-foreground">
-            No claims found matching your criteria.
+          <div className="h-24 flex items-center justify-center text-muted-foreground border rounded-lg border-dashed">
+            No evidence found matching your criteria.
           </div>
         ) : (
           filteredAndSortedClaims.map((claim) => {
@@ -414,7 +414,7 @@ export function IdentityClaimsList({
             const evidenceCount = evidenceItems.length;
             const styles = getClaimTypeStyle(claim.type);
             const hasIssues = claim.issues && claim.issues.length > 0;
-            const TypeIcon = CLAIM_TYPE_ICONS[claim.type] || Sparkles;
+            const TypeIcon = CLAIM_TYPE_ICONS[claim.type] || Cuboid;
             const evidenceTexts = evidenceItems
               .map((item) => item.evidence?.text)
               .filter((text): text is string => !!text);
@@ -426,15 +426,16 @@ export function IdentityClaimsList({
             return (
               <div
                 key={claim.id}
-                className="rounded-lg overflow-hidden cursor-pointer transition-all hover:brightness-105"
+                className="rounded-lg overflow-hidden cursor-pointer transition-all hover:brightness-105 shadow-sm border-b border-r border-slate-800/50"
                 style={{
                   backgroundColor: styles.bg,
                   border: `1px solid ${hasIssues ? "#f59e0b" : styles.border}`,
+                  borderLeft: `4px solid ${styles.border}`,
                 }}
                 onClick={() => toggleRow(claim.id)}
               >
                 {/* Collapsed Row */}
-                <div className="flex items-center gap-4 px-3 py-2">
+                <div className="flex items-center gap-4 px-3 py-3">
                   {/* Type icon */}
                   <div className="w-6 flex justify-center">
                     <TypeIcon
@@ -444,7 +445,7 @@ export function IdentityClaimsList({
                   </div>
 
                   {/* Label */}
-                  <span className="flex-1 text-sm font-medium truncate">
+                  <span className="flex-1 text-sm font-bold tracking-tight truncate">
                     {claim.label}
                   </span>
 
@@ -457,7 +458,7 @@ export function IdentityClaimsList({
 
                   {/* Sources badge */}
                   <div className="w-16 text-center">
-                    <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                    <span className="text-xs font-mono text-muted-foreground bg-background/50 px-2 py-0.5 rounded border border-border/50">
                       {evidenceCount}
                     </span>
                   </div>
@@ -477,8 +478,8 @@ export function IdentityClaimsList({
                 {/* Expanded Content */}
                 {isExpanded && (
                   <div
-                    className="px-4 pb-4 pt-3"
-                    style={{ borderTop: "1px solid var(--border)" }}
+                    className="px-4 pb-4 pt-3 bg-black/5"
+                    style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}
                   >
                     {/* Issues */}
                     {hasIssues && (
@@ -547,7 +548,7 @@ export function IdentityClaimsList({
 
                     {/* Description - only show if different from evidence */}
                     {showDescription && (
-                      <p className="text-sm text-foreground/80 mb-4">
+                      <p className="text-sm text-foreground/80 mb-4 leading-relaxed italic">
                         {claim.description}
                       </p>
                     )}
@@ -555,8 +556,8 @@ export function IdentityClaimsList({
                     {/* Evidence - badges for each source */}
                     {evidenceCount > 0 && (
                       <div className="space-y-2">
-                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                          Sources
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                          Linked Evidence
                         </span>
                         <div className="flex flex-wrap gap-1.5">
                           {evidenceItems.map((item, idx) => {
@@ -572,7 +573,7 @@ export function IdentityClaimsList({
                             const badgeContent = (
                               <Badge
                                 variant="outline"
-                                className={`text-xs font-normal gap-1 bg-background/50 ${doc?.id ? "cursor-pointer hover:bg-background/80 transition-colors" : ""}`}
+                                className={`text-xs font-normal gap-1 bg-background/50 border-slate-200 dark:border-slate-800 ${doc?.id ? "cursor-pointer hover:bg-background/80 transition-colors" : ""}`}
                               >
                                 <Icon className="h-3 w-3" />
                                 {nameWithoutDate}
@@ -609,7 +610,7 @@ export function IdentityClaimsList({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Claim</AlertDialogTitle>
+            <AlertDialogTitle>Delete Evidence Block</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete &quot;{claimToDelete?.label}
               &quot;? This will also remove all associated evidence links and

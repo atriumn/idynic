@@ -152,7 +152,7 @@ describe("IdentityClaimsList", () => {
   it("renders search input", () => {
     render(<IdentityClaimsList claims={mockClaims} />);
 
-    expect(screen.getByPlaceholderText(/search claims/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/search evidence/i)).toBeInTheDocument();
   });
 
   it("renders claim type filter chips", () => {
@@ -176,7 +176,7 @@ describe("IdentityClaimsList", () => {
     const user = userEvent.setup();
     render(<IdentityClaimsList claims={mockClaims} />);
 
-    const searchInput = screen.getByPlaceholderText(/search claims/i);
+    const searchInput = screen.getByPlaceholderText(/search evidence/i);
     await user.type(searchInput, "React");
 
     expect(screen.getByText("React Development")).toBeInTheDocument();
@@ -370,7 +370,7 @@ describe("IdentityClaimsList", () => {
       await user.click(screen.getByRole("button", { name: /delete/i }));
 
       await waitFor(() => {
-        expect(screen.getByText("Delete Claim")).toBeInTheDocument();
+        expect(screen.getByText("Delete Evidence Block")).toBeInTheDocument();
         expect(screen.getByText(/are you sure/i)).toBeInTheDocument();
       });
     });
@@ -410,7 +410,9 @@ describe("IdentityClaimsList", () => {
       await user.click(screen.getByRole("button", { name: /cancel/i }));
 
       await waitFor(() => {
-        expect(screen.queryByText("Delete Claim")).not.toBeInTheDocument();
+        expect(
+          screen.queryByText("Delete Evidence Block"),
+        ).not.toBeInTheDocument();
       });
 
       expect(mockFetch).not.toHaveBeenCalled();
@@ -421,7 +423,7 @@ describe("IdentityClaimsList", () => {
     const user = userEvent.setup();
     render(<IdentityClaimsList claims={mockClaims} />);
 
-    const searchInput = screen.getByPlaceholderText(/search claims/i);
+    const searchInput = screen.getByPlaceholderText(/search evidence/i);
     await user.type(searchInput, "React");
 
     expect(screen.queryByText("TypeScript")).not.toBeInTheDocument();
@@ -439,11 +441,11 @@ describe("IdentityClaimsList", () => {
     const user = userEvent.setup();
     render(<IdentityClaimsList claims={mockClaims} />);
 
-    const searchInput = screen.getByPlaceholderText(/search claims/i);
+    const searchInput = screen.getByPlaceholderText(/search evidence/i);
     await user.type(searchInput, "nonexistent");
 
     await waitFor(() => {
-      expect(screen.getByText(/no claims found/i)).toBeInTheDocument();
+      expect(screen.getByText(/no evidence found/i)).toBeInTheDocument();
     });
   });
 
@@ -506,7 +508,7 @@ describe("IdentityClaimsList", () => {
       expect(confidenceHeader).toHaveTextContent("▲"); // now asc
     });
 
-    it("sorts by label alphabetically when Claim header clicked", async () => {
+    it("sorts by label alphabetically when Block header clicked", async () => {
       const user = userEvent.setup();
       const claimsForAlphaSort: IdentityClaim[] = [
         { ...mockClaims[0], id: "c1", label: "Zebra" },
@@ -515,10 +517,10 @@ describe("IdentityClaimsList", () => {
       ];
       render(<IdentityClaimsList claims={claimsForAlphaSort} />);
 
-      await user.click(screen.getByRole("button", { name: /claim/i }));
+      await user.click(screen.getByRole("button", { name: /block/i }));
 
-      // Should now show ▲ on Claim header (alpha sort defaults to asc)
-      expect(screen.getByRole("button", { name: /claim/i })).toHaveTextContent(
+      // Should now show ▲ on Block header (alpha sort defaults to asc)
+      expect(screen.getByRole("button", { name: /block/i })).toHaveTextContent(
         "▲",
       );
 

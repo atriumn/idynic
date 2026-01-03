@@ -195,7 +195,7 @@ describe("IdentityPageClient", () => {
       render(<IdentityPageClient hasAnyClaims={true} />);
 
       await waitFor(() => {
-        expect(screen.getByText("Your Identity")).toBeInTheDocument();
+        expect(screen.getByText("Master Record")).toBeInTheDocument();
       });
     });
   });
@@ -205,8 +205,8 @@ describe("IdentityPageClient", () => {
       render(<IdentityPageClient hasAnyClaims={true} />);
 
       await waitFor(() => {
-        expect(screen.getByText("Your Identity")).toBeInTheDocument();
-        expect(screen.getByText("2 claims")).toBeInTheDocument();
+        expect(screen.getByText("Master Record")).toBeInTheDocument();
+        expect(screen.getByText("2 blocks")).toBeInTheDocument();
       });
     });
 
@@ -228,12 +228,11 @@ describe("IdentityPageClient", () => {
       });
     });
 
-    it("shows upload resume and add story buttons", async () => {
+    it("shows My Documents link in header", async () => {
       render(<IdentityPageClient hasAnyClaims={true} />);
 
       await waitFor(() => {
-        expect(screen.getByTestId("upload-resume-modal")).toBeInTheDocument();
-        expect(screen.getByTestId("add-story-modal")).toBeInTheDocument();
+        expect(screen.getByText("My Documents")).toBeInTheDocument();
       });
     });
 
@@ -267,17 +266,16 @@ describe("IdentityPageClient", () => {
 
       await waitFor(() => {
         // The header should show with claims from the mock
-        expect(screen.getByText("Your Identity")).toBeInTheDocument();
+        expect(screen.getByText("Master Record")).toBeInTheDocument();
       });
     });
 
-    it("shows upload buttons in header", async () => {
+    it("shows My Documents link in header when claims exist from hook", async () => {
       render(<IdentityPageClient hasAnyClaims={false} />);
 
       await waitFor(() => {
-        // Should have upload/add buttons in the header
-        const uploadButtons = screen.getAllByTestId("upload-resume-modal");
-        expect(uploadButtons.length).toBeGreaterThanOrEqual(1);
+        // Should have My Documents link in header when hook returns claims
+        expect(screen.getByText("My Documents")).toBeInTheDocument();
       });
     });
   });

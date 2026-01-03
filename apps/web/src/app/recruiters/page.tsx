@@ -1,5 +1,6 @@
 import { RecruiterWaitlistForm } from "@/components/recruiter-waitlist-form";
 import { Briefcase, FileCheck, Users, Zap } from "lucide-react";
+import Image from "next/image";
 
 export default function RecruitersPage() {
   return (
@@ -22,15 +23,13 @@ export default function RecruitersPage() {
                </div>
             </div>
           </div>
-          <div className="relative h-[400px] bg-slate-200 dark:bg-slate-800 rounded-xl flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-700">
-            <div className="text-center space-y-4 p-8">
-               <div className="w-24 h-24 bg-blue-100 dark:bg-blue-900/30 rounded-full mx-auto flex items-center justify-center text-blue-600 dark:text-blue-400">
-                  <Briefcase className="w-12 h-12" />
-               </div>
-               <p className="text-sm text-muted-foreground font-mono">
-                 [Visual: Job posting dashboard with incoming tailored applications]
-               </p>
-            </div>
+          <div className="relative h-[400px] rounded-xl overflow-hidden border shadow-sm group bg-slate-950">
+            <Image
+              src="/images/recruiter-hero.png"
+              alt="Recruiter dashboard filtering candidates by evidence"
+              fill
+              className="object-cover"
+            />
           </div>
         </div>
       </section>

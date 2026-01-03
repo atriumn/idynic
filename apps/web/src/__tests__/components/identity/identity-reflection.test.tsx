@@ -30,7 +30,7 @@ describe("IdentityReflection", () => {
   it("renders loading state", () => {
     render(<IdentityReflection data={null} isLoading={true} />);
     expect(
-      screen.getByText("Synthesizing your profile..."),
+      screen.getByText("Synthesizing your Master Record..."),
     ).toBeInTheDocument();
   });
 
@@ -69,7 +69,7 @@ describe("IdentityReflection", () => {
 
   it("renders job matches", () => {
     render(<IdentityReflection data={mockData} />);
-    expect(screen.getByText("Best fit roles:")).toBeInTheDocument();
+    expect(screen.getByText("Best Fit Roles")).toBeInTheDocument();
     expect(screen.getByText(/Staff Engineer/)).toBeInTheDocument();
   });
 
@@ -117,6 +117,6 @@ describe("IdentityReflection", () => {
       identity_matches: [],
     };
     render(<IdentityReflection data={dataWithEmptyMatches} />);
-    expect(screen.queryByText("Best fit roles:")).not.toBeInTheDocument();
+    expect(screen.queryByText("Best Fit Roles")).not.toBeInTheDocument();
   });
 });

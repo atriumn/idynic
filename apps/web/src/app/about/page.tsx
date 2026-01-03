@@ -1,84 +1,23 @@
 import Link from "next/link";
-import { Layers, Fingerprint, Sparkles } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 export default function AboutPage() {
   return (
     <div className="flex flex-col min-h-[calc(100vh-3.5rem)] py-20 px-4">
       <div className="container mx-auto max-w-4xl space-y-24">
-        {/* Hero */}
-        <div className="text-center space-y-6">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-            Own Your Career Story
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Idynic brings your scattered career history into one place—and puts
-            it to work for you.
-          </p>
-        </div>
+        {/* ... Hero and Problem sections ... */}
 
-        {/* The Problem */}
-        <div className="space-y-8">
-          <h2 className="text-sm font-medium uppercase tracking-wider text-muted-foreground text-center">
-            The reality of job searching
-          </h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="space-y-3">
-              <h3 className="font-semibold text-lg">Scattered identity</h3>
-              <p className="text-muted-foreground">
-                Your career lives in fragments—old resumes, LinkedIn updates,
-                performance reviews, half-remembered project wins. When
-                opportunity knocks, you&apos;re scrambling to piece it together.
-              </p>
-            </div>
-            <div className="space-y-3">
-              <h3 className="font-semibold text-lg">Application fatigue</h3>
-              <p className="text-muted-foreground">
-                Every job wants a tailored pitch. So you rewrite, reformat, and
-                second-guess yourself—over and over. It&apos;s exhausting, and
-                it shouldn&apos;t be this hard.
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* The Solution ... */}
 
-        {/* The Solution */}
-        <div className="space-y-12">
-          <h2 className="text-sm font-medium uppercase tracking-wider text-muted-foreground text-center">
-            How Idynic helps
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center space-y-4">
-              <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Layers className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="font-semibold text-lg">Capture everything</h3>
-              <p className="text-muted-foreground text-sm">
-                Upload resumes, write stories, add project docs. Idynic extracts
-                and organizes your career evidence automatically.
-              </p>
-            </div>
-            <div className="text-center space-y-4">
-              <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Fingerprint className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="font-semibold text-lg">Build your identity</h3>
-              <p className="text-muted-foreground text-sm">
-                Your skills, impact, and experience connect into a unified
-                career identity—one source of truth you control.
-              </p>
-            </div>
-            <div className="text-center space-y-4">
-              <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Sparkles className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="font-semibold text-lg">Tailor in seconds</h3>
-              <p className="text-muted-foreground text-sm">
-                Paste a job description. Get a customized profile with talking
-                points matched to what they&apos;re looking for.
-              </p>
-            </div>
-          </div>
+        {/* Lifestyle Image Section */}
+        <div className="relative h-[300px] md:h-[450px] w-full rounded-2xl overflow-hidden border shadow-xl">
+          <Image
+            src="/images/lifestyle-desktop.png"
+            alt="Productive professional using Idynic in a bright, modern office"
+            fill
+            className="object-cover"
+          />
         </div>
 
         {/* The Vision */}

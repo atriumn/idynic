@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Shield, Lock, Eye, FileCheck, TrendingDown, Info } from "lucide-react";
 import {
   Table,
@@ -144,6 +145,14 @@ export default function TrustPage() {
             </div>
 
             <div className="bg-background rounded-xl border p-6">
+              <div className="relative h-64 w-full mb-8 rounded-lg overflow-hidden border bg-slate-950">
+                <Image
+                  src="/images/recency-decay.png"
+                  alt="Visualization of skill decay over time"
+                  fill
+                  className="object-cover"
+                />
+              </div>
               <h4 className="font-semibold mb-6 flex items-center gap-2">
                 <Info className="w-4 h-4 text-primary" />
                 See it in action
