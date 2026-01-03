@@ -5,10 +5,11 @@ import {
   ArrowRight,
   Briefcase,
   Check,
+  Cuboid,
+  Database,
   FileText,
   Shield,
   Smartphone,
-  Sparkle,
   Target,
   Users,
   Zap,
@@ -43,23 +44,23 @@ export default async function Home() {
 
         <div className="container mx-auto px-4 text-center space-y-8">
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl md:text-7xl max-w-4xl mx-auto">
-            Your career as infrastructure.
+            Your career is your most valuable asset.
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            From scattered docs to coherent identity. Build once, use everywhere—job applications, performance reviews, LinkedIn posts, speaker bios.
+            Stop managing it like a folder of old files. Build a verified Master Record of your achievements, then assemble tailored applications in seconds.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
             <Button asChild size="lg" className="h-12 px-8 text-base shadow-lg shadow-primary/20">
               <Link href="/login">
-                Start building
+                Start Building
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="h-12 px-8 text-base">
-              <Link href="/recruiters">
-                For recruiters
+              <Link href="/trust">
+                How it works
               </Link>
             </Button>
           </div>
@@ -74,29 +75,29 @@ export default async function Home() {
       <section className="py-24 px-4 bg-background">
         <div className="container max-w-6xl mx-auto space-y-24">
 
-            {/* Step 1: Upload */}
+            {/* Step 1: Extract */}
             <div className="grid md:grid-cols-2 gap-12 items-center">
                 <div className="space-y-6">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">1</div>
-                        <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Upload</span>
+                        <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Deconstruct</span>
                     </div>
-                    <h2 className="text-3xl font-bold">Drop in what you have.</h2>
+                    <h2 className="text-3xl font-bold">Turn documents into data.</h2>
                     <p className="text-lg text-muted-foreground">
-                        Resumes, project docs, performance reviews—or just write freely about what you&apos;ve done. Our AI structures and connects it. You&apos;re still responsible for what you claim, same as any resume.
+                        Don&apos;t just upload files. Idynic extracts every individual skill, project, and achievement into atomic <strong>Evidence Blocks</strong>. Your history becomes a database, not a document.
                     </p>
                     <ul className="space-y-3 pt-2">
                         <li className="flex items-center gap-3">
                             <CheckIcon />
-                            <span>Upload documents or write stories directly</span>
+                            <span>Upload resumes, reviews, and project specs</span>
                         </li>
                         <li className="flex items-center gap-3">
                             <CheckIcon />
-                            <span>AI extracts and organizes—you verify</span>
+                            <span>AI identifies key skills and metrics</span>
                         </li>
                         <li className="flex items-center gap-3">
                             <CheckIcon />
-                            <span>Private until you choose to share</span>
+                            <span>Broken down into reusable blocks</span>
                         </li>
                     </ul>
                 </div>
@@ -106,61 +107,66 @@ export default async function Home() {
                 </div>
             </div>
 
-            {/* Step 2: Structure */}
+            {/* Step 2: Master Record */}
             <div className="grid md:grid-cols-2 gap-12 items-center">
                 <div className="order-2 md:order-1 relative aspect-square md:aspect-video rounded-xl bg-slate-100 dark:bg-slate-800 border shadow-sm flex items-center justify-center overflow-hidden group">
                     <div className="absolute inset-0 bg-gradient-to-tr from-green-500/10 to-blue-500/10 group-hover:opacity-75 transition-opacity"></div>
-                    <Sparkle className="h-16 w-16 text-muted-foreground/30" />
+                    <Database className="h-16 w-16 text-muted-foreground/30" />
                 </div>
                 <div className="order-1 md:order-2 space-y-6">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">2</div>
-                        <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Structure</span>
+                        <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Verify</span>
                     </div>
-                    <h2 className="text-3xl font-bold">See what you&apos;ve actually built.</h2>
+                    <h2 className="text-3xl font-bold">Build your Master Record.</h2>
                     <p className="text-lg text-muted-foreground">
-                        Your career becomes a graph of connected claims—skills, achievements, and experience—each backed by evidence. Confidence scores show what&apos;s proven vs. what&apos;s asserted.
+                        Every Evidence Block is linked to its source. See exactly what you can prove. <strong>Confidence Scores</strong> separate hard facts from fuzzy memories, decaying older skills over time.
                     </p>
                     <ul className="space-y-3 pt-2">
                         <li className="flex items-center gap-3">
                             <CheckIcon />
-                            <span>Claims linked to source documents</span>
+                            <span>One unified source of truth</span>
                         </li>
                         <li className="flex items-center gap-3">
                             <CheckIcon />
-                            <span>Connections between related skills</span>
+                            <span>Evidence linked to original docs</span>
                         </li>
                         <li className="flex items-center gap-3">
                             <CheckIcon />
-                            <span>Refine and add detail anytime</span>
+                            <span>Algorithmic confidence scoring</span>
                         </li>
                     </ul>
+                    <div className="pt-2">
+                      <Link href="/trust" className="text-primary text-sm font-medium hover:underline flex items-center gap-1">
+                        See how our scoring works <ArrowRight className="w-3 h-3" />
+                      </Link>
+                    </div>
                 </div>
             </div>
 
-            {/* Step 3: Share */}
+            {/* Step 3: Assemble */}
             <div className="grid md:grid-cols-2 gap-12 items-center">
                 <div className="space-y-6">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">3</div>
-                        <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Share</span>
+                        <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Assemble</span>
                     </div>
-                    <h2 className="text-3xl font-bold">Use it everywhere.</h2>
+                    <h2 className="text-3xl font-bold">Targeted profiles, instantly.</h2>
                     <p className="text-lg text-muted-foreground">
-                        Generate tailored outputs for any context. A job application? Shareable profile link. Performance review? Pull your accomplishments. Speaker bio? Conference-ready in seconds.
+                        Paste a job description. We pick the exact Evidence Blocks that match the role and assemble them into a persuasive, evidence-backed profile. No hallucination—just your best facts, reordered for impact.
                     </p>
                     <ul className="space-y-3 pt-2">
                         <li className="flex items-center gap-3">
                             <CheckIcon />
-                            <span>Tailored profiles for job opportunities</span>
+                            <span>Tailored to specific job requirements</span>
                         </li>
                         <li className="flex items-center gap-3">
                             <CheckIcon />
-                            <span>Evidence ready for reviews and negotiations</span>
+                            <span>Generates talking points for interviews</span>
                         </li>
                         <li className="flex items-center gap-3">
                             <CheckIcon />
-                            <span>Bios, intros, and posts on demand</span>
+                            <span>Share as a link or export to PDF</span>
                         </li>
                     </ul>
                 </div>
@@ -179,43 +185,62 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Student Callout */}
+      <section className="py-12 px-4 bg-background border-y">
+        <div className="container mx-auto max-w-4xl">
+          <div className="bg-primary/5 border border-primary/10 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="space-y-2 text-center md:text-left">
+              <h3 className="text-xl font-bold">Building your career from scratch?</h3>
+              <p className="text-muted-foreground">
+                Turn your coursework and projects into professional Evidence Blocks.
+              </p>
+            </div>
+            <Button asChild variant="outline" className="shrink-0">
+              <Link href="/students">
+                For Students <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* What makes this different */}
       <section className="py-24 px-4 bg-background">
           <div className="container mx-auto max-w-6xl">
               <div className="text-center max-w-2xl mx-auto mb-16">
                   <h2 className="text-3xl font-bold mb-4">Not another resume tool.</h2>
-                  <p className="text-muted-foreground text-lg">We&apos;re building infrastructure for professional identity.</p>
+                  <p className="text-muted-foreground text-lg">We&apos;re building the operating system for your professional identity.</p>
               </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
                   <FeatureCard
-                    icon={<Sparkle className="w-6 h-6" />}
-                    title="Evidence, not assertions"
-                    description="Every claim links back to the document that proves it. Confidence scores show what's solid."
+                    icon={<Cuboid className="w-6 h-6" />}
+                    title="Evidence Blocks"
+                    description="Your experience is stored as atomic, reusable blocks—not flat text."
                   />
                   <FeatureCard
                     icon={<Target className="w-6 h-6" />}
-                    title="Structure, not summaries"
-                    description="Your career as queryable data. Find the right experience for any opportunity instantly."
+                    title="Instant Assembly"
+                    description="Construct the perfect profile for any opportunity in seconds."
                   />
                   <FeatureCard
                     icon={<Users className="w-6 h-6" />}
-                    title="Share context, not files"
-                    description="Generate tailored views with tracking. Know when they're viewed."
+                    title="Context Aware"
+                    description="Present different sides of your experience to different audiences."
                   />
                   <FeatureCard
                     icon={<Shield className="w-6 h-6" />}
-                    title="Your data, your control"
-                    description="Private by default. Revoke access anytime. We don't sell to recruiters."
+                    title="Verified Truth"
+                    description="Confidence scores show what's solid. Recency decay keeps it honest."
                   />
                   <FeatureCard
                     icon={<Zap className="w-6 h-6" />}
-                    title="Add depth over time"
-                    description="New project? New role? Add it. Your identity grows with your career."
+                    title="Grow Your Asset"
+                    description="New project? Add it to the pile. Your Master Record grows with you."
                   />
                   <FeatureCard
                     icon={<Briefcase className="w-6 h-6" />}
-                    title="Works with what you have"
-                    description="Start with a resume. Add stories, reviews, project docs. We synthesize it all."
+                    title="Import Anything"
+                    description="Resumes, reviews, specs. If it's text, we can turn it into data."
                   />
               </div>
           </div>
@@ -231,7 +256,7 @@ export default async function Home() {
               </div>
               <h2 className="text-3xl font-bold">Take Idynic on the go.</h2>
               <p className="text-lg text-muted-foreground">
-                Track opportunities, view your identity graph, and share tailored profiles—all from your phone.
+                Capture wins as they happen. Add Evidence Blocks from your phone immediately after a meeting or launch.
               </p>
               <div className="flex flex-wrap gap-3 pt-2">
                 <Link
@@ -277,16 +302,16 @@ export default async function Home() {
       {/* Final CTA */}
       <section className="px-4 py-24 bg-background">
         <div className="max-w-4xl mx-auto text-center space-y-8 bg-gradient-to-b from-background to-muted/50 rounded-3xl p-8 md:p-16 border">
-          <h2 className="text-3xl md:text-4xl font-bold">Your career is always evolving. Your identity should too.</h2>
+          <h2 className="text-3xl md:text-4xl font-bold">Start building your Master Record.</h2>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Start with what you have. Add as you grow. Use it whenever you need it.
+            Your career is too important to leave in a folder of old PDFs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="text-lg h-12 px-8">
-                <Link href="/login">Get started free</Link>
+                <Link href="/login">Get Started Free</Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="text-lg h-12 px-8 bg-background">
-                <Link href="/pricing">See pricing</Link>
+                <Link href="/pricing">View Plans</Link>
             </Button>
           </div>
         </div>

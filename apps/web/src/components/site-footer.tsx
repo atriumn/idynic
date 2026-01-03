@@ -67,6 +67,11 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/students" className="hover:text-foreground">
+                  For Students
+                </Link>
+              </li>
+              <li>
                 <Link href="/login" className="hover:text-foreground">
                   Login
                 </Link>
@@ -93,6 +98,11 @@ export function SiteFooter() {
               <li>
                 <Link href="/about" className="hover:text-foreground">
                   About
+                </Link>
+              </li>
+              <li>
+                <Link href="/trust" className="hover:text-foreground">
+                  Trust & Safety
                 </Link>
               </li>
               <li>
