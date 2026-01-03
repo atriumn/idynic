@@ -19,6 +19,7 @@ import {
   BadgeCheck,
   Sparkles,
   FileText,
+  BookOpen,
   Search,
   X,
   Upload,
@@ -38,7 +39,6 @@ import {
   Evidence,
   CLAIM_TYPE_COLORS,
   CLAIM_TYPE_LABELS,
-  EVIDENCE_TYPE_COLORS,
   GroupedClaims,
 } from "../../hooks/use-identity-claims";
 import { useProfile } from "../../hooks/use-profile";
@@ -66,56 +66,38 @@ function ConfidenceBar({ confidence }: { confidence: number | null }) {
           style={{ width: `${percentage}%` }}
         />
       </View>
-      <Text className="text-xs text-slate-300 font-medium w-8">{percentage}%</Text>
+      <Text className="text-xs text-slate-300 font-medium w-8">
+        {percentage}%
+      </Text>
     </View>
   );
 }
 
-function EvidenceItem({ evidence }: { evidence: Evidence }) {
-  // Build short source label: "Resume (12/30/25)" or "Story (12/30/25)"
+function EvidenceBadge({ evidence }: { evidence: Evidence }) {
+  const isStory = evidence.document?.type === "story";
+  const Icon = isStory ? BookOpen : FileText;
+
+  // Get document name - use filename if available, otherwise type label
   const getDocumentName = () => {
     if (!evidence.document) {
       return evidence.source_type || "Source";
     }
-    const typeLabel =
-      evidence.document.type === "resume"
-        ? "Resume"
-        : evidence.document.type === "story"
-          ? "Story"
-          : evidence.document.type;
-    if (evidence.document.created_at) {
-      const date = new Date(evidence.document.created_at);
-      const shortDate = `${date.getMonth() + 1}/${date.getDate()}/${String(date.getFullYear()).slice(-2)}`;
-      return `${typeLabel} (${shortDate})`;
+    // If we have a filename (like AI-generated story titles), use it
+    if (evidence.document.filename) {
+      return evidence.document.filename;
     }
-    return typeLabel;
+    // Otherwise use type label
+    return evidence.document.type === "resume"
+      ? "Resume"
+      : evidence.document.type === "story"
+        ? "Story"
+        : evidence.document.type || "Document";
   };
 
-  const evidenceTypeColors = evidence.evidence_type
-    ? EVIDENCE_TYPE_COLORS[evidence.evidence_type]
-    : undefined;
-  const evidenceTypeLabel = evidence.evidence_type?.replace("_", " ") || "unknown";
-
   return (
-    <View className="flex-row items-start gap-2 mb-2">
-      <FileText color="#64748b" size={14} />
-      <View className="flex-1">
-        <Text className="text-sm text-slate-300">{evidence.text}</Text>
-        <View className="flex-row items-center gap-2 mt-1">
-          <Text className="text-xs text-slate-500">{getDocumentName()}</Text>
-          <View
-            className="px-1.5 py-0.5 rounded"
-            style={{ backgroundColor: evidenceTypeColors?.bgHex || "#334155" }}
-          >
-            <Text
-              className="text-[10px]"
-              style={{ color: evidenceTypeColors?.textHex || "#94a3b8" }}
-            >
-              {evidenceTypeLabel}
-            </Text>
-          </View>
-        </View>
-      </View>
+    <View className="flex-row items-center gap-1 px-2 py-1 rounded-md border border-slate-600 bg-slate-800/50 mr-1.5 mb-1.5">
+      <Icon color="#64748b" size={12} />
+      <Text className="text-xs text-slate-300">{getDocumentName()}</Text>
     </View>
   );
 }
@@ -192,11 +174,13 @@ function ClaimCard({ claim }: { claim: IdentityClaim }) {
           {claim.evidence.length > 0 && (
             <View>
               <Text className="text-xs font-bold text-slate-500 uppercase mb-2">
-                Supporting Evidence ({claim.evidence.length})
+                Sources
               </Text>
-              {claim.evidence.map((ev) => (
-                <EvidenceItem key={ev.id} evidence={ev} />
-              ))}
+              <View className="flex-row flex-wrap">
+                {claim.evidence.map((ev) => (
+                  <EvidenceBadge key={ev.id} evidence={ev} />
+                ))}
+              </View>
             </View>
           )}
 
