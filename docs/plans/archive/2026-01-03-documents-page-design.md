@@ -1,5 +1,20 @@
 # Documents Page Design
 
+**Status:** Done
+
+## Progress (Last reviewed: 2026-01-03)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Documents list page | ✅ Complete | PR #95 |
+| Documents detail page | ✅ Complete | PR #95 |
+| Clickable source badges | ✅ Complete | PR #95 |
+| Mobile documents screens | ✅ Complete | PR #95 |
+| API endpoints | ✅ Complete | PR #95 |
+
+### Notes
+Merged in PR #95 (2026-01-03). Ready to archive.
+
 ## Overview
 
 A simple documents page that lets users view all their uploaded documents (resumes and stories) and see what evidence was extracted from each one.

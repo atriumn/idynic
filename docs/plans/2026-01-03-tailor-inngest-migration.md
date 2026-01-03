@@ -1,5 +1,20 @@
 # Migrate Tailoring Profile to Inngest
 
+**Status:** Not Started
+
+## Progress (Last reviewed: 2026-01-03)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Database migration | ⏳ Not Started | |
+| Inngest event type | ⏳ Not Started | |
+| Process tailor function | ⏳ Not Started | |
+| Refactor API endpoints | ⏳ Not Started | |
+| Client migration | ⏳ Not Started | |
+
+### Notes
+Design document created. Implementation plan at `2026-01-03-tailor-inngest-implementation.md`.
+
 ## Overview
 
 Migrate the tailoring profile endpoint from synchronous processing to async background processing via Inngest, matching the pattern used by resume, story, and opportunity processing.

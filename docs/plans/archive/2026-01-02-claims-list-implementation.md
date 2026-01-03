@@ -8,6 +8,21 @@
 
 **Tech Stack:** React, TypeScript, Tailwind CSS, Vitest
 
+**Status:** Done
+
+## Progress (Last reviewed: 2026-01-03)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Task 1: Lollipop UI Component | ✅ Complete | `9db115b5` |
+| Task 2: Sortable Column Header | ✅ Complete | `cd1b2685` |
+| Task 3: Rewrite Claims List | ✅ Complete | `72f3fbfe` |
+| Task 4: Update Tests | ✅ Complete | `5ec3f1b7` |
+| Task 5: Final Cleanup | ✅ Complete | Tests passing |
+
+### Notes
+All tasks completed. Ready to archive.
+
 ---
 
 ## Task 1: Create Lollipop UI Component
