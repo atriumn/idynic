@@ -241,12 +241,24 @@ describe("IdentityClaimsList", () => {
     });
   });
 
-  it("shows claim description in collapsed state", () => {
+  it("shows description in expanded state when different from evidence", async () => {
+    const user = userEvent.setup();
     render(<IdentityClaimsList claims={mockClaims} />);
 
+    // Description should not be visible in collapsed state
     expect(
-      screen.getByText("Expert in React and its ecosystem"),
-    ).toBeInTheDocument();
+      screen.queryByText("Expert in React and its ecosystem"),
+    ).not.toBeInTheDocument();
+
+    // Expand the claim
+    await user.click(screen.getByText("React Development"));
+
+    // Description should be visible in expanded state (since it's different from evidence)
+    await waitFor(() => {
+      expect(
+        screen.getByText("Expert in React and its ecosystem"),
+      ).toBeInTheDocument();
+    });
   });
 
   it("shows confidence percentage", () => {

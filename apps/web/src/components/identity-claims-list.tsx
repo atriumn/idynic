@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +34,13 @@ import {
 import { useInvalidateGraph } from "@/lib/hooks/use-identity-graph";
 import { EditClaimModal } from "@/components/edit-claim-modal";
 import { getClaimTypeStyle, CLAIM_TYPE_LABELS } from "@/lib/theme-colors";
+import { Lollipop } from "@/components/ui/lollipop";
+import {
+  SortableHeader,
+  type SortField,
+  type SortDirection,
+} from "@/components/ui/sortable-header";
+import { jaroWinklerSimilarity } from "@/lib/ai/eval/rule-checks";
 import type { Database } from "@/lib/supabase/types";
 
 type EvidenceWithDocument = {
@@ -87,29 +94,19 @@ const CLAIM_TYPES = [
   "certification",
 ] as const;
 
-// Evidence type colors (still use direct hex for consistency in expanded view)
-const EVIDENCE_TYPE_COLORS: Record<string, { bg: string; text: string }> = {
-  skill_listed: {
-    bg: "var(--claim-skill-bg)",
-    text: "var(--claim-skill-text)",
-  },
-  accomplishment: {
-    bg: "var(--claim-achievement-bg)",
-    text: "var(--claim-achievement-text)",
-  },
-  trait_indicator: {
-    bg: "var(--claim-attribute-bg)",
-    text: "var(--claim-attribute-text)",
-  },
-  education: {
-    bg: "var(--claim-education-bg)",
-    text: "var(--claim-education-text)",
-  },
-  certification: {
-    bg: "var(--claim-certification-bg)",
-    text: "var(--claim-certification-text)",
-  },
-};
+function shouldShowDescription(
+  description: string | null,
+  evidenceTexts: string[],
+): boolean {
+  if (!description) return false;
+  const normalizedDesc = description.toLowerCase().trim();
+  if (normalizedDesc.length === 0) return false;
+
+  return !evidenceTexts.some((text) => {
+    const normalizedEvidence = text.toLowerCase().trim();
+    return jaroWinklerSimilarity(normalizedDesc, normalizedEvidence) >= 0.85;
+  });
+}
 
 // ClaimTypeChip component matching mobile's FilterChip
 function ClaimTypeChip({
@@ -177,7 +174,18 @@ export function IdentityClaimsList({
     null,
   );
   const [claimToEdit, setClaimToEdit] = useState<IdentityClaim | null>(null);
+  const [sortField, setSortField] = useState<SortField>("confidence");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const invalidateGraph = useInvalidateGraph();
+
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDirection(field === "label" ? "asc" : "desc");
+    }
+  };
 
   // Count claims by type
   const claimCountByType: Record<string, number> = {};
@@ -258,15 +266,43 @@ export function IdentityClaimsList({
     }
   };
 
-  const filteredClaims = claims.filter((claim) => {
-    const matchesSearch =
-      claim.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      claim.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = selectedTypes.has(claim.type);
-    const matchesIssueFilter =
-      !showIssuesOnly || (claim.issues && claim.issues.length > 0);
-    return matchesSearch && matchesType && matchesIssueFilter;
-  });
+  const filteredAndSortedClaims = useMemo(() => {
+    const result = claims.filter((claim) => {
+      const matchesSearch =
+        claim.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        claim.description?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesType = selectedTypes.has(claim.type);
+      const matchesIssueFilter =
+        !showIssuesOnly || (claim.issues && claim.issues.length > 0);
+      return matchesSearch && matchesType && matchesIssueFilter;
+    });
+
+    result.sort((a, b) => {
+      let cmp = 0;
+      switch (sortField) {
+        case "label":
+          cmp = a.label.localeCompare(b.label);
+          break;
+        case "confidence":
+          cmp = (a.confidence ?? 0.5) - (b.confidence ?? 0.5);
+          break;
+        case "sources":
+          cmp =
+            (a.claim_evidence?.length ?? 0) - (b.claim_evidence?.length ?? 0);
+          break;
+      }
+      return sortDirection === "asc" ? cmp : -cmp;
+    });
+
+    return result;
+  }, [
+    claims,
+    searchQuery,
+    selectedTypes,
+    showIssuesOnly,
+    sortField,
+    sortDirection,
+  ]);
 
   return (
     <div className="space-y-4">
@@ -331,101 +367,113 @@ export function IdentityClaimsList({
         </div>
       </div>
 
-      {/* Claims List - Card style like mobile */}
-      <div className="space-y-3">
-        {filteredClaims.length === 0 ? (
+      {/* Column Headers */}
+      <div className="flex items-center gap-4 px-3 py-2 border-b border-border">
+        <div className="w-6" /> {/* Type icon spacer */}
+        <SortableHeader
+          label="Claim"
+          field="label"
+          currentField={sortField}
+          direction={sortDirection}
+          onSort={handleSort}
+          className="flex-1"
+        />
+        <SortableHeader
+          label="Confidence"
+          field="confidence"
+          currentField={sortField}
+          direction={sortDirection}
+          onSort={handleSort}
+          className="w-32"
+        />
+        <SortableHeader
+          label="Sources"
+          field="sources"
+          currentField={sortField}
+          direction={sortDirection}
+          onSort={handleSort}
+          className="w-16 text-center"
+        />
+        <div className="w-6" /> {/* Issue icon spacer */}
+      </div>
+
+      {/* Claims List */}
+      <div className="space-y-1">
+        {filteredAndSortedClaims.length === 0 ? (
           <div className="h-24 flex items-center justify-center text-muted-foreground">
             No claims found matching your criteria.
           </div>
         ) : (
-          filteredClaims.map((claim) => {
+          filteredAndSortedClaims.map((claim) => {
             const isExpanded = expandedRows.has(claim.id);
             const evidenceItems = claim.claim_evidence || [];
             const evidenceCount = evidenceItems.length;
             const styles = getClaimTypeStyle(claim.type);
             const hasIssues = claim.issues && claim.issues.length > 0;
+            const TypeIcon = CLAIM_TYPE_ICONS[claim.type] || Sparkles;
+            const evidenceTexts = evidenceItems
+              .map((item) => item.evidence?.text)
+              .filter((text): text is string => !!text);
+            const showDescription = shouldShowDescription(
+              claim.description,
+              evidenceTexts,
+            );
 
             return (
               <div
                 key={claim.id}
-                className="rounded-xl overflow-hidden cursor-pointer transition-all hover:brightness-110"
+                className="rounded-lg overflow-hidden cursor-pointer transition-all hover:bg-muted/50"
                 style={{
-                  backgroundColor: styles.bg,
-                  border: `1px solid ${hasIssues ? "#f59e0b" : styles.border}`,
+                  border: `1px solid ${hasIssues ? "#f59e0b" : "var(--border)"}`,
                 }}
                 onClick={() => toggleRow(claim.id)}
               >
-                {/* Card Header */}
-                <div className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2 flex-1 mr-2">
-                      {hasIssues && (
-                        <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
-                      )}
-                      <span
-                        className="text-base font-semibold"
-                        style={{ color: styles.text }}
-                      >
-                        {claim.label}
-                      </span>
-                    </div>
-                    {isExpanded ? (
-                      <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                    )}
+                {/* Collapsed Row */}
+                <div className="flex items-center gap-4 px-3 py-2">
+                  {/* Type icon */}
+                  <div className="w-6 flex justify-center">
+                    <TypeIcon
+                      className="h-4 w-4"
+                      style={{ color: styles.text }}
+                    />
                   </div>
 
-                  {/* Progress Bar - Full width like mobile */}
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="flex-1 h-1.5 bg-black/20 dark:bg-slate-700 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-teal-500 rounded-full"
-                        style={{
-                          width: `${Math.round((claim.confidence ?? 0.5) * 100)}%`,
-                        }}
-                      />
-                    </div>
-                    <span
-                      className="text-xs font-medium w-8"
-                      style={{ color: styles.text }}
-                    >
-                      {Math.round((claim.confidence ?? 0.5) * 100)}%
+                  {/* Label */}
+                  <span className="flex-1 text-sm font-medium truncate">
+                    {claim.label}
+                  </span>
+
+                  {/* Confidence Lollipop */}
+                  <div className="w-32">
+                    <Lollipop
+                      value={Math.round((claim.confidence ?? 0.5) * 100)}
+                    />
+                  </div>
+
+                  {/* Sources badge */}
+                  <div className="w-16 text-center">
+                    <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                      {evidenceCount}
                     </span>
                   </div>
 
-                  {/* Meta row: evidence count + issue flag */}
-                  {!isExpanded && (
-                    <div className="flex items-center gap-3 mb-2">
-                      {evidenceCount > 0 && (
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <FileText className="h-3 w-3" />
-                          {evidenceCount} source{evidenceCount !== 1 ? "s" : ""}
-                        </span>
-                      )}
-                      {hasIssues && (
-                        <span className="text-xs text-amber-500 flex items-center gap-1">
-                          <AlertTriangle className="h-3 w-3" />
-                          {claim.issues!.length} issue
-                          {claim.issues!.length !== 1 ? "s" : ""}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Description (only when not expanded) */}
-                  {claim.description && !isExpanded && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {claim.description}
-                    </p>
-                  )}
+                  {/* Issue/chevron icon */}
+                  <div className="w-6 flex justify-center">
+                    {hasIssues ? (
+                      <AlertTriangle className="h-4 w-4 text-amber-500" />
+                    ) : isExpanded ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
                 </div>
 
                 {/* Expanded Content */}
                 {isExpanded && (
                   <div
                     className="px-4 pb-4 pt-3"
-                    style={{ borderTop: "1px solid rgba(100, 116, 139, 0.3)" }}
+                    style={{ borderTop: "1px solid var(--border)" }}
                   >
                     {/* Issues */}
                     {hasIssues && (
@@ -492,8 +540,8 @@ export function IdentityClaimsList({
                       </div>
                     )}
 
-                    {/* Description */}
-                    {claim.description && (
+                    {/* Description - only show if different from evidence */}
+                    {showDescription && (
                       <p className="text-sm text-foreground/80 mb-4">
                         {claim.description}
                       </p>
@@ -506,49 +554,34 @@ export function IdentityClaimsList({
                           Supporting Evidence ({evidenceCount})
                         </div>
                         {evidenceItems.map((item, idx) => {
-                          const evColors = item.evidence?.evidence_type
-                            ? EVIDENCE_TYPE_COLORS[item.evidence.evidence_type]
-                            : undefined;
+                          const docType = item.evidence?.document?.type;
+                          const sourceLabel =
+                            docType === "resume"
+                              ? "Resume"
+                              : docType === "story"
+                                ? "Story"
+                                : docType || "Document";
+                          const evidenceType = item.evidence?.evidence_type;
+
                           return (
-                            <div
-                              key={idx}
-                              className="flex items-start gap-2 mb-3"
-                            >
-                              <FileText className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
-                              <div className="flex-1">
-                                <p className="text-sm text-foreground/80">
-                                  {item.evidence?.text}
-                                </p>
-                                <div className="flex items-center gap-2 mt-1">
-                                  {item.evidence?.document && (
-                                    <span className="text-xs text-muted-foreground">
-                                      {item.evidence.document.type === "resume"
-                                        ? "Resume"
-                                        : item.evidence.document.type ===
-                                            "story"
-                                          ? "Story"
-                                          : item.evidence.document.type}
+                            <div key={idx} className="mb-3">
+                              {/* Line 1: Source type + evidence type */}
+                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                                <FileText className="h-3 w-3" />
+                                <span>{sourceLabel}</span>
+                                {evidenceType && (
+                                  <>
+                                    <span>•</span>
+                                    <span>
+                                      {evidenceType.replace(/_/g, " ")}
                                     </span>
-                                  )}
-                                  {item.evidence?.evidence_type && (
-                                    <span
-                                      className="text-[10px] px-1.5 py-0.5 rounded"
-                                      style={{
-                                        backgroundColor:
-                                          evColors?.bg || "var(--muted)",
-                                        color:
-                                          evColors?.text ||
-                                          "var(--muted-foreground)",
-                                      }}
-                                    >
-                                      {item.evidence.evidence_type.replace(
-                                        "_",
-                                        " ",
-                                      )}
-                                    </span>
-                                  )}
-                                </div>
+                                  </>
+                                )}
                               </div>
+                              {/* Line 2: Evidence text */}
+                              <p className="text-sm text-foreground/80 pl-5">
+                                {item.evidence?.text}
+                              </p>
                             </div>
                           );
                         })}
