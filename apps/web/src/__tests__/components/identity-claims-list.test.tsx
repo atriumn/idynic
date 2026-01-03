@@ -554,12 +554,11 @@ describe("IdentityClaimsList", () => {
 
     await user.click(screen.getByText("React Development"));
 
-    // Evidence section shows compact format with source name and date, not full text
+    // Evidence section shows compact format with document filename (already formatted)
     const evidenceSection =
       screen.getByText(/supporting evidence/i).parentElement;
-    expect(evidenceSection).toHaveTextContent("resume");
-    // Date is formatted as M/D/YY (may vary by timezone, so just check for date pattern)
-    expect(evidenceSection?.textContent).toMatch(/\d{1,2}\/\d{1,2}\/\d{2}/);
+    // Filename is used directly from the graph API (already formatted with name + date)
+    expect(evidenceSection).toHaveTextContent("resume.pdf");
 
     // Description should NOT appear since it matches evidence text (Jaro-Winkler >= 0.85)
     expect(

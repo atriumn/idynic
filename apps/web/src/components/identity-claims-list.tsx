@@ -556,21 +556,8 @@ export function IdentityClaimsList({
                         {evidenceItems
                           .map((item) => {
                             const doc = item.evidence?.document;
-                            const filename = doc?.filename || "Document";
-                            // Format filename nicely - remove extension, use as-is
-                            const name = filename.replace(/\.[^/.]+$/, "");
-                            // Format date as M/D/YY
-                            const dateStr = doc?.createdAt
-                              ? new Date(doc.createdAt).toLocaleDateString(
-                                  "en-US",
-                                  {
-                                    month: "numeric",
-                                    day: "numeric",
-                                    year: "2-digit",
-                                  },
-                                )
-                              : "";
-                            return dateStr ? `${name} ${dateStr}` : name;
+                            // filename is already formatted as "Name (date)" from the graph API
+                            return doc?.filename || "Document";
                           })
                           .join(", ")}
                       </div>
