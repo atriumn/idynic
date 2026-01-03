@@ -11,8 +11,10 @@ import {
   type SourceType,
   type StrengthLevel,
 } from "./confidence-scoring";
+import { cosineSimilarity } from "./eval/rule-checks";
 
 const BATCH_SIZE = 10;
+const SEMANTIC_DEDUPE_THRESHOLD = 0.82; // Higher threshold for pre-insertion dedup
 
 interface EvidenceItem {
   id: string;
@@ -380,7 +382,54 @@ export async function synthesizeClaimsBatch(
       );
       const embeddings = await generateEmbeddings(trulyNewLabels);
 
-      const claimsToInsert = trulyNewClaims.map((item, i) => {
+      // Semantic deduplication: group similar new claims by embedding similarity
+      const labelToCanonical = new Map<string, string>(); // maps each label to its canonical label
+      const canonicalClaims: Array<{
+        item: (typeof trulyNewClaims)[0];
+        embedding: number[];
+        index: number;
+      }> = [];
+
+      for (let i = 0; i < trulyNewClaims.length; i++) {
+        const item = trulyNewClaims[i];
+        const embedding = embeddings[i];
+        const label = item.decision.new_claim!.label;
+
+        // Check if this claim is similar to any existing canonical claim
+        let foundCanonical = false;
+        for (const canonical of canonicalClaims) {
+          const similarity = cosineSimilarity(embedding, canonical.embedding);
+          if (similarity >= SEMANTIC_DEDUPE_THRESHOLD) {
+            // Map this label to the canonical label
+            labelToCanonical.set(
+              label,
+              canonical.item.decision.new_claim!.label,
+            );
+            foundCanonical = true;
+            console.log(
+              `[synthesis] Deduped "${label}" -> "${canonical.item.decision.new_claim!.label}" (similarity: ${similarity.toFixed(3)})`,
+            );
+            break;
+          }
+        }
+
+        if (!foundCanonical) {
+          // This is a new canonical claim
+          labelToCanonical.set(label, label);
+          canonicalClaims.push({ item, embedding, index: i });
+        }
+      }
+
+      // Update pending evidence links to use canonical labels
+      for (const link of pendingEvidenceLinks) {
+        const canonical = labelToCanonical.get(link.label);
+        if (canonical && canonical !== link.label) {
+          link.label = canonical;
+        }
+      }
+
+      // Only insert canonical claims
+      const claimsToInsert = canonicalClaims.map(({ item, embedding }) => {
         const initialEvidence: EvidenceInput[] = [
           {
             strength: item.decision.strength as StrengthLevel,
@@ -396,7 +445,7 @@ export async function synthesizeClaimsBatch(
           label: item.decision.new_claim!.label,
           description: item.decision.new_claim!.description,
           confidence: calculateClaimConfidence(initialEvidence),
-          embedding: embeddings[i] as unknown as string,
+          embedding: embedding as unknown as string,
         };
       });
 
