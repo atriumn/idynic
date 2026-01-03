@@ -17,7 +17,6 @@ import {
   Search,
   ChevronDown,
   ChevronUp,
-  FileText,
   AlertTriangle,
   X,
   Pencil,
@@ -419,16 +418,6 @@ export function IdentityClaimsList({
               evidenceTexts,
             );
 
-            // Filter out evidence items where text just repeats the claim label
-            const meaningfulEvidence = evidenceItems.filter((item) => {
-              const text = item.evidence?.text?.toLowerCase().trim() || "";
-              const label = claim.label.toLowerCase().trim();
-              // Skip if evidence text is essentially just the claim label
-              if (text.length < 3) return false;
-              if (jaroWinklerSimilarity(text, label) >= 0.85) return false;
-              return true;
-            });
-
             return (
               <div
                 key={claim.id}
@@ -558,44 +547,32 @@ export function IdentityClaimsList({
                       </p>
                     )}
 
-                    {/* Evidence - only show meaningful evidence (not just label repeats) */}
-                    {meaningfulEvidence.length > 0 && (
-                      <div>
-                        <div className="text-xs font-bold text-muted-foreground uppercase mb-2">
-                          Supporting Evidence ({meaningfulEvidence.length})
-                        </div>
-                        {meaningfulEvidence.map((item, idx) => {
-                          const docType = item.evidence?.document?.type;
-                          const sourceLabel =
-                            docType === "resume"
-                              ? "Resume"
-                              : docType === "story"
-                                ? "Story"
-                                : docType || "Document";
-                          const evidenceType = item.evidence?.evidence_type;
-
-                          return (
-                            <div key={idx} className="mb-3">
-                              {/* Line 1: Source type + evidence type */}
-                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                                <FileText className="h-3 w-3" />
-                                <span>{sourceLabel}</span>
-                                {evidenceType && (
-                                  <>
-                                    <span>•</span>
-                                    <span>
-                                      {evidenceType.replace(/_/g, " ")}
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-                              {/* Line 2: Evidence text */}
-                              <p className="text-sm text-foreground/80 pl-5">
-                                {item.evidence?.text}
-                              </p>
-                            </div>
-                          );
-                        })}
+                    {/* Evidence - compact list of source names with dates */}
+                    {evidenceCount > 0 && (
+                      <div className="text-sm text-muted-foreground">
+                        <span className="font-medium">
+                          Supporting evidence ({evidenceCount}):
+                        </span>{" "}
+                        {evidenceItems
+                          .map((item) => {
+                            const doc = item.evidence?.document;
+                            const filename = doc?.filename || "Document";
+                            // Format filename nicely - remove extension, use as-is
+                            const name = filename.replace(/\.[^/.]+$/, "");
+                            // Format date as M/D/YY
+                            const dateStr = doc?.createdAt
+                              ? new Date(doc.createdAt).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "numeric",
+                                    day: "numeric",
+                                    year: "2-digit",
+                                  },
+                                )
+                              : "";
+                            return dateStr ? `${name} ${dateStr}` : name;
+                          })
+                          .join(", ")}
                       </div>
                     )}
                   </div>

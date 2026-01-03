@@ -240,12 +240,11 @@ describe("IdentityClaimsList", () => {
     // Click on the React claim card
     await user.click(screen.getByText("React Development"));
 
-    // Should show expanded content with evidence
+    // Should show expanded content with evidence sources (compact format)
     await waitFor(() => {
-      expect(screen.getByText(/supporting evidence/i)).toBeInTheDocument();
-      expect(
-        screen.getByText(/built multiple react applications/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/supporting evidence \(1\)/i)).toBeInTheDocument();
+      // Evidence now shows source name + date, not full text
+      expect(screen.getByText(/resume/i)).toBeInTheDocument();
     });
   });
 
@@ -555,15 +554,16 @@ describe("IdentityClaimsList", () => {
 
     await user.click(screen.getByText("React Development"));
 
-    // Evidence text should appear in the evidence section
+    // Evidence section shows compact format with source name and date, not full text
     const evidenceSection =
       screen.getByText(/supporting evidence/i).parentElement;
-    expect(evidenceSection).toHaveTextContent(
-      "Built multiple React applications",
-    );
+    expect(evidenceSection).toHaveTextContent("resume");
+    // Date is formatted as M/D/YY (may vary by timezone, so just check for date pattern)
+    expect(evidenceSection?.textContent).toMatch(/\d{1,2}\/\d{1,2}\/\d{2}/);
 
-    // But there should only be ONE instance of this text (not duplicate from description)
-    const matches = screen.getAllByText(/Built multiple React applications/i);
-    expect(matches).toHaveLength(1);
+    // Description should NOT appear since it matches evidence text (Jaro-Winkler >= 0.85)
+    expect(
+      screen.queryByText("Built multiple React applications"),
+    ).not.toBeInTheDocument();
   });
 });
