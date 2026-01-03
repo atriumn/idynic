@@ -317,7 +317,7 @@ export function DocumentDetailClient({
             </h2>
             <div className="border rounded-lg p-4 bg-muted/20 max-h-[600px] overflow-y-auto">
               {document.raw_text ? (
-                <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-foreground prose-headings:font-semibold prose-h2:text-sm prose-h2:uppercase prose-h2:tracking-wide prose-h2:mt-8 prose-h2:mb-4 prose-h2:pt-4 prose-h2:border-t prose-h2:border-border prose-p:text-foreground/90 prose-p:my-3 prose-li:text-foreground/90 prose-ul:my-2 prose-strong:text-foreground prose-em:text-muted-foreground [&>p:first-child]:mt-0">
+                <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-semibold prose-h2:text-sm prose-h2:uppercase prose-h2:tracking-wide prose-h2:mt-6 prose-h2:mb-3 prose-h2:pt-4 prose-h2:border-t prose-h2:border-border/50 prose-p:my-2 prose-ul:my-2 prose-li:my-0">
                   <ReactMarkdown>
                     {isStory
                       ? document.raw_text.replace(/\n/g, "\n\n")
