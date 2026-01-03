@@ -419,12 +419,23 @@ export function IdentityClaimsList({
               evidenceTexts,
             );
 
+            // Filter out evidence items where text just repeats the claim label
+            const meaningfulEvidence = evidenceItems.filter((item) => {
+              const text = item.evidence?.text?.toLowerCase().trim() || "";
+              const label = claim.label.toLowerCase().trim();
+              // Skip if evidence text is essentially just the claim label
+              if (text.length < 3) return false;
+              if (jaroWinklerSimilarity(text, label) >= 0.85) return false;
+              return true;
+            });
+
             return (
               <div
                 key={claim.id}
-                className="rounded-lg overflow-hidden cursor-pointer transition-all hover:bg-muted/50"
+                className="rounded-lg overflow-hidden cursor-pointer transition-all hover:brightness-105"
                 style={{
-                  border: `1px solid ${hasIssues ? "#f59e0b" : "var(--border)"}`,
+                  backgroundColor: styles.bg,
+                  border: `1px solid ${hasIssues ? "#f59e0b" : styles.border}`,
                 }}
                 onClick={() => toggleRow(claim.id)}
               >
@@ -547,13 +558,13 @@ export function IdentityClaimsList({
                       </p>
                     )}
 
-                    {/* Evidence */}
-                    {evidenceCount > 0 && (
+                    {/* Evidence - only show meaningful evidence (not just label repeats) */}
+                    {meaningfulEvidence.length > 0 && (
                       <div>
                         <div className="text-xs font-bold text-muted-foreground uppercase mb-2">
-                          Supporting Evidence ({evidenceCount})
+                          Supporting Evidence ({meaningfulEvidence.length})
                         </div>
-                        {evidenceItems.map((item, idx) => {
+                        {meaningfulEvidence.map((item, idx) => {
                           const docType = item.evidence?.document?.type;
                           const sourceLabel =
                             docType === "resume"
