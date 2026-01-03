@@ -2,7 +2,36 @@
 
 **Priority**: HIGH
 **Effort**: 1-2 days
-**Status**: Not Started
+**Status**: Done
+
+## Progress (Last reviewed: 2026-01-01)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1: Install Test Dependencies | ✅ Complete | PR #65 |
+| Step 2: Create Jest Config | ✅ Complete | PR #65 |
+| Step 3: Create Jest Setup File | ✅ Complete | PR #65 |
+| Step 4: Create Test Directory Structure | ✅ Complete | PR #65 |
+| Step 5: Write Job Parser Tests | ⏭️ Skipped | Extension doesn't have job parsing yet |
+| Step 6: Write Page Detection Tests | ⏭️ Skipped | Extension doesn't have page detection yet |
+| Step 7: Write Background API Client Tests | ✅ Complete | 17 tests in `api.test.js` |
+| Step 8: Write Message Handler Tests | ⏭️ Skipped | Covered by popup/options tests |
+| Step 9: Write Storage Utility Tests | ✅ Complete | Covered in api.test.js |
+| Step 10: Write Popup Component Tests | ✅ Complete | 16 tests in `popup.test.js` |
+| Step 11: Add Package.json Scripts | ✅ Complete | PR #65 |
+| Step 12: Update Root Package.json | ✅ Complete | PR #65 |
+| Step 13: Update CI Workflow | ✅ Complete | PR #65 |
+
+### Final Results
+- **49 tests passing** across 3 test suites
+- API client, popup, and options page fully tested
+- CI workflow updated to run extension tests
+
+### Notes
+Some steps were skipped (job parsing, page detection, message handler) because:
+1. Extension doesn't yet implement these features
+2. Coverage was achieved through more comprehensive popup/options tests
+3. API client tests cover the critical path
 
 ## Overview
 

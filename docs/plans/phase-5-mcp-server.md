@@ -4,6 +4,17 @@
 **Effort**: 1-2 days
 **Status**: Not Started
 
+## Progress (Last reviewed: 2026-01-01)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 1-9 | ⏳ Not Started | Blocked by Phase 1 completion |
+
+### Prerequisites Status
+- [x] Phase 1 complete (integration test patterns established) - Archived
+- [ ] E2E Supabase project exists
+- [x] MCP server builds (`pnpm --filter @idynic/mcp-server build`)
+
 ## Overview
 
 Expand MCP server test coverage beyond tool definitions. Add integration tests that execute tools against real Supabase, and mock Claude client tests for error handling.
