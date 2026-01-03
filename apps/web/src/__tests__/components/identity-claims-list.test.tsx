@@ -45,6 +45,14 @@ vi.mock("@/lib/theme-colors", () => ({
   },
 }));
 
+// Mock jaroWinklerSimilarity for description deduplication tests
+vi.mock("@/lib/ai/eval/rule-checks", () => ({
+  jaroWinklerSimilarity: (a: string, b: string) => {
+    // Simple mock: return 1.0 if strings are equal (case-insensitive), 0 otherwise
+    return a.toLowerCase() === b.toLowerCase() ? 1.0 : 0.5;
+  },
+}));
+
 // Extract the claims type from the component props
 type IdentityClaim = ComponentProps<
   typeof IdentityClaimsList
@@ -468,5 +476,81 @@ describe("IdentityClaimsList", () => {
     await waitFor(() => {
       expect(screen.queryByText("Show All")).not.toBeInTheDocument();
     });
+  });
+
+  describe("sorting", () => {
+    it("sorts by confidence desc by default", () => {
+      const claimsWithDifferentConfidence: IdentityClaim[] = [
+        { ...mockClaims[0], confidence: 0.5, id: "c1", label: "React" },
+        { ...mockClaims[1], confidence: 0.9, id: "c2", label: "TypeScript" },
+        { ...mockClaims[2], confidence: 0.7, id: "c3", label: "Led team" },
+      ];
+      render(<IdentityClaimsList claims={claimsWithDifferentConfidence} />);
+
+      // Check that claims are rendered in order by confidence desc (highest first)
+      const claimLabels = screen.getAllByText(/React|TypeScript|Led team/i);
+      expect(claimLabels[0]).toHaveTextContent("TypeScript"); // 90%
+    });
+
+    it("toggles sort direction when clicking active column", async () => {
+      const user = userEvent.setup();
+      render(<IdentityClaimsList claims={mockClaims} />);
+
+      const confidenceHeader = screen.getByRole("button", {
+        name: /confidence/i,
+      });
+      expect(confidenceHeader).toHaveTextContent("▼"); // desc by default
+
+      await user.click(confidenceHeader);
+      expect(confidenceHeader).toHaveTextContent("▲"); // now asc
+    });
+
+    it("sorts by label alphabetically when Claim header clicked", async () => {
+      const user = userEvent.setup();
+      render(<IdentityClaimsList claims={mockClaims} />);
+
+      await user.click(screen.getByRole("button", { name: /claim/i }));
+
+      // Should now show ▲ on Claim header (alpha sort defaults to asc)
+      expect(screen.getByRole("button", { name: /claim/i })).toHaveTextContent(
+        "▲",
+      );
+    });
+  });
+
+  it("hides description when it matches evidence text", async () => {
+    const user = userEvent.setup();
+    const claimWithDuplicateDesc: IdentityClaim = {
+      ...mockClaims[0],
+      description: "Built multiple React applications", // same as evidence
+      claim_evidence: [
+        {
+          strength: "strong",
+          evidence: {
+            text: "Built multiple React applications",
+            evidence_type: "skill_listed",
+            document: {
+              filename: "resume.pdf",
+              type: "resume",
+              createdAt: "2024-01-01",
+            },
+          },
+        },
+      ],
+    };
+    render(<IdentityClaimsList claims={[claimWithDuplicateDesc]} />);
+
+    await user.click(screen.getByText("React Development"));
+
+    // Evidence text should appear in the evidence section
+    const evidenceSection =
+      screen.getByText(/supporting evidence/i).parentElement;
+    expect(evidenceSection).toHaveTextContent(
+      "Built multiple React applications",
+    );
+
+    // But there should only be ONE instance of this text (not duplicate from description)
+    const matches = screen.getAllByText(/Built multiple React applications/i);
+    expect(matches).toHaveLength(1);
   });
 });
