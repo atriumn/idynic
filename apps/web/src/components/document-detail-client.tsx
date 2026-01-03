@@ -50,55 +50,91 @@ function getDocumentDisplayName(filename: string | null, type: string): string {
 /**
  * Convert plain text resume to markdown for better display.
  * Detects section headers, bullet points, and job entries.
+ * Adds proper spacing for readability.
  */
 function formatResumeAsMarkdown(text: string): string {
   const lines = text.split("\n");
   const result: string[] = [];
+  let lastLineType: "header" | "job" | "date" | "bullet" | "text" | "empty" =
+    "empty";
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
 
     if (!trimmed) {
-      result.push("");
+      if (lastLineType !== "empty") {
+        result.push("");
+        lastLineType = "empty";
+      }
       continue;
     }
 
     // Detect section headers (ALL CAPS, typically short lines)
-    if (
+    const isHeader =
       /^[A-Z][A-Z\s&]+$/.test(trimmed) &&
       trimmed.length > 3 &&
-      trimmed.length < 40
-    ) {
+      trimmed.length < 40;
+
+    if (isHeader) {
+      // Add extra spacing before headers
+      if (lastLineType !== "empty") {
+        result.push("");
+      }
       result.push(`## ${trimmed}`);
+      result.push(""); // Space after header
+      lastLineType = "header";
       continue;
     }
 
-    // Detect job title lines (Company name followed by title on next line, or "Title | Company")
-    // Format: "Company Name" followed by "Job Title" and "Date Range"
-    if (
-      i + 1 < lines.length &&
-      /^\d{4}\s*[-–]\s*(Present|\d{4})$/.test(lines[i + 1]?.trim() || "")
-    ) {
-      // This line is likely a job title, next line is date
-      result.push(`**${trimmed}**`);
-      continue;
-    }
+    // Detect company/role lines - look for patterns like "Company Name" or "Title"
+    // followed by a date range nearby
+    const nextLine = lines[i + 1]?.trim() || "";
+    const lineAfterNext = lines[i + 2]?.trim() || "";
+    const hasDateNearby =
+      /^\d{4}\s*[-–]\s*(Present|\d{4})/.test(nextLine) ||
+      /^\d{4}\s*[-–]\s*(Present|\d{4})/.test(lineAfterNext) ||
+      /\d{4}\s*[-–]\s*(Present|\d{4})/.test(trimmed);
 
-    // Detect date ranges on their own line
+    // Detect standalone date ranges
     if (/^\d{4}\s*[-–]\s*(Present|\d{4})$/.test(trimmed)) {
       result.push(`*${trimmed}*`);
+      result.push(""); // Space after date
+      lastLineType = "date";
+      continue;
+    }
+
+    // Detect job entry (company or title before a date)
+    if (
+      hasDateNearby &&
+      !trimmed.startsWith("●") &&
+      !trimmed.startsWith("•") &&
+      !trimmed.startsWith("-") &&
+      trimmed.length < 80
+    ) {
+      // Add spacing before job entries
+      if (lastLineType === "bullet" || lastLineType === "text") {
+        result.push("");
+      }
+      result.push(`**${trimmed}**`);
+      lastLineType = "job";
       continue;
     }
 
     // Convert bullet points (●, •, -, *, ○) to markdown bullets
     if (/^[●•\-\*○]\s+/.test(trimmed)) {
       result.push(`- ${trimmed.replace(/^[●•\-\*○]\s+/, "")}`);
+      lastLineType = "bullet";
       continue;
     }
 
-    // Regular line
+    // Regular text line
+    // Add spacing if transitioning from bullets to text
+    if (lastLineType === "bullet" && !trimmed.match(/^[●•\-\*○]/)) {
+      result.push("");
+    }
     result.push(trimmed);
+    lastLineType = "text";
   }
 
   return result.join("\n");
