@@ -111,6 +111,21 @@ export default function AppLayout() {
           headerShown: false,
         }}
       />
+      <Tabs.Screen
+        name="documents"
+        options={{
+          href: null,
+          title: 'My Documents',
+          headerShown: true,
+        }}
+      />
+      <Tabs.Screen
+        name="documents/[id]"
+        options={{
+          href: null,
+          headerShown: false,
+        }}
+      />
     </Tabs>
   );
 }

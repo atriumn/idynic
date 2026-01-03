@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { FileText, LayoutGrid, Network, Sun, Sparkles, List as ListIcon, Loader2, Eye, Wand2, TrendingUp, HelpCircle, AlertTriangle, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
+import { FileText, LayoutGrid, Network, Sun, Sparkles, List as ListIcon, Loader2, Eye, Wand2, TrendingUp, HelpCircle, AlertTriangle, CheckCircle2, FolderOpen } from "lucide-react";
 import { IdentityConstellation } from "@/components/identity-constellation";
 import { EvidenceConstellation } from "@/components/evidence-constellation";
 import { ConfidenceSunburst } from "@/components/confidence-sunburst";
@@ -190,6 +191,12 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
                 </Button>
               </div>
             )}
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/documents">
+                <FolderOpen className="h-4 w-4 mr-2" />
+                My Documents
+              </Link>
+            </Button>
             <UploadResumeModal />
             <AddStoryModal />
           </div>
@@ -272,6 +279,7 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
                       text: ce.evidence.text,
                       evidence_type: ce.evidence.evidence_type,
                       document: doc ? {
+                        id: doc.id,
                         filename: doc.name,
                         type: doc.type,
                         createdAt: doc.createdAt,
@@ -324,6 +332,7 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
                         text: ce.evidence.text,
                         evidence_type: ce.evidence.evidence_type,
                         document: doc ? {
+                          id: doc.id,
                           filename: doc.name,
                           type: doc.type,
                           createdAt: doc.createdAt,
