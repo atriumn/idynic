@@ -4,8 +4,27 @@
 
 Deploy the Idynic Job Saver Chrome extension to the Google Chrome Web Store for public distribution.
 
-**Current state:** Extension is functional, tested locally
+**Current state:** Extension prepared for store submission (commit 5e2deb72)
 **Target:** Published in Chrome Web Store, discoverable by users
+**Status:** In Progress
+
+## Progress (Last reviewed: 2026-01-02)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Remove localhost from manifest | ✅ Complete | commit 889f6ae7 |
+| Verify API base URL | ✅ Complete | Production URL set |
+| Update version number | ✅ Complete | |
+| Create icons | ✅ Complete | All icon sizes exist |
+| Create screenshots | ⏳ Not Started | Needed for store listing |
+| Privacy policy | 🔄 In Progress | Verify published |
+| Developer account setup | ⏳ Not Started | $5 fee required |
+| Store listing info | ⏳ Not Started | Draft ready in plan |
+| Package and submit | ⏳ Not Started | |
+
+### Drift Notes
+- Tests moved to `tests/` directory for Chrome compatibility (commit ad92f31e)
+- Copy animation added for better UX (commit 5e2deb72)
 
 ---
 
