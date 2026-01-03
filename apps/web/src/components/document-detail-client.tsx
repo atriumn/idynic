@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 import {
   FileText,
   BookOpen,
@@ -38,15 +39,69 @@ function formatDate(dateString: string | null): string {
   });
 }
 
-function getDocumentDisplayName(
-  filename: string | null,
-  type: string
-): string {
+function getDocumentDisplayName(filename: string | null, type: string): string {
   if (filename) {
     // Remove date suffix pattern like "(12/25/2024)"
     return filename.replace(/\s*\(\d{1,2}\/\d{1,2}\/\d{4}\)\s*$/, "");
   }
   return type === "resume" ? "Resume" : "Story";
+}
+
+/**
+ * Convert plain text resume to markdown for better display.
+ * Detects section headers, bullet points, and job entries.
+ */
+function formatResumeAsMarkdown(text: string): string {
+  const lines = text.split("\n");
+  const result: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      result.push("");
+      continue;
+    }
+
+    // Detect section headers (ALL CAPS, typically short lines)
+    if (
+      /^[A-Z][A-Z\s&]+$/.test(trimmed) &&
+      trimmed.length > 3 &&
+      trimmed.length < 40
+    ) {
+      result.push(`## ${trimmed}`);
+      continue;
+    }
+
+    // Detect job title lines (Company name followed by title on next line, or "Title | Company")
+    // Format: "Company Name" followed by "Job Title" and "Date Range"
+    if (
+      i + 1 < lines.length &&
+      /^\d{4}\s*[-–]\s*(Present|\d{4})$/.test(lines[i + 1]?.trim() || "")
+    ) {
+      // This line is likely a job title, next line is date
+      result.push(`**${trimmed}**`);
+      continue;
+    }
+
+    // Detect date ranges on their own line
+    if (/^\d{4}\s*[-–]\s*(Present|\d{4})$/.test(trimmed)) {
+      result.push(`*${trimmed}*`);
+      continue;
+    }
+
+    // Convert bullet points (●, •, -, *, ○) to markdown bullets
+    if (/^[●•\-\*○]\s+/.test(trimmed)) {
+      result.push(`- ${trimmed.replace(/^[●•\-\*○]\s+/, "")}`);
+      continue;
+    }
+
+    // Regular line
+    result.push(trimmed);
+  }
+
+  return result.join("\n");
 }
 
 const EVIDENCE_TYPE_STYLES: Record<
@@ -119,7 +174,9 @@ interface DocumentDetailClientProps {
   documentId: string;
 }
 
-export function DocumentDetailClient({ documentId }: DocumentDetailClientProps) {
+export function DocumentDetailClient({
+  documentId,
+}: DocumentDetailClientProps) {
   const router = useRouter();
   const { data: document, isLoading, error } = useDocument(documentId);
   const deleteDocumentMutation = useDeleteDocument();
@@ -221,12 +278,14 @@ export function DocumentDetailClient({ documentId }: DocumentDetailClientProps) 
               <FileText className="h-5 w-5 text-muted-foreground" />
               Content
             </h2>
-            <div className="border rounded-lg p-4 bg-muted/20">
+            <div className="border rounded-lg p-4 bg-muted/20 max-h-[600px] overflow-y-auto">
               {document.raw_text ? (
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <pre className="whitespace-pre-wrap font-sans text-sm text-foreground/90 leading-relaxed">
-                    {document.raw_text}
-                  </pre>
+                <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-foreground prose-headings:font-semibold prose-h2:text-base prose-h2:mt-6 prose-h2:mb-3 prose-h2:border-b prose-h2:border-border prose-h2:pb-2 prose-p:text-foreground/90 prose-li:text-foreground/90 prose-strong:text-foreground prose-em:text-muted-foreground">
+                  <ReactMarkdown>
+                    {isStory
+                      ? document.raw_text
+                      : formatResumeAsMarkdown(document.raw_text)}
+                  </ReactMarkdown>
                 </div>
               ) : (
                 <p className="text-muted-foreground text-sm italic">
