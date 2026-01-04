@@ -48,4 +48,4 @@ Lightweight "next steps" prompts (not full wizard) - shared logic for web + mobi
 ## Operational
 
 - [x] Set up Axiom logging (completed, plan archived)
-- [ ] Document environment variables needed for deployment (for bus factor)
+- [x] Document environment variables needed for deployment (see `.env.example`)
