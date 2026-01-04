@@ -114,6 +114,7 @@ jest.mock("lucide-react-native", () => ({
   GraduationCap: () => "GraduationCap",
   BadgeCheck: () => "BadgeCheck",
   Sparkles: () => "Sparkles",
+  Cuboid: () => "Cuboid",
   FileText: () => "FileText",
   BookOpen: () => "BookOpen",
   Search: () => "Search",
@@ -163,7 +164,7 @@ describe("IdentityScreen (Home)", () => {
 
     render(<IdentityScreen />);
 
-    expect(screen.getByText("Failed to load identity")).toBeTruthy();
+    expect(screen.getByText("Failed to load Master Record")).toBeTruthy();
     expect(screen.getByText("Failed to load")).toBeTruthy();
   });
 
@@ -184,7 +185,7 @@ describe("IdentityScreen (Home)", () => {
 
     render(<IdentityScreen />);
 
-    expect(screen.getByText("Build Your Professional Identity")).toBeTruthy();
+    expect(screen.getByText("Start your Master Record")).toBeTruthy();
     expect(screen.getByText("Upload Resume")).toBeTruthy();
     expect(screen.getByText("Share a Story")).toBeTruthy();
   });
@@ -267,7 +268,7 @@ describe("IdentityScreen (Home)", () => {
 
     render(<IdentityScreen />);
 
-    expect(screen.getByText("Your Identity")).toBeTruthy();
+    expect(screen.getByText("Master Record")).toBeTruthy();
     expect(screen.getByText("React")).toBeTruthy();
     expect(screen.getByText("TypeScript")).toBeTruthy();
   });
@@ -312,7 +313,7 @@ describe("IdentityScreen (Home)", () => {
 
     render(<IdentityScreen />);
 
-    expect(screen.getByText(/3 claims extracted/)).toBeTruthy();
+    expect(screen.getByText(/3 Evidence Blocks/)).toBeTruthy();
   });
 
   it("filters claims by search query", () => {
@@ -349,7 +350,7 @@ describe("IdentityScreen (Home)", () => {
 
     render(<IdentityScreen />);
 
-    const searchInput = screen.getByPlaceholderText("Search claims...");
+    const searchInput = screen.getByPlaceholderText("Search evidence...");
     fireEvent.changeText(searchInput, "React");
 
     expect(screen.getByText("React")).toBeTruthy();
@@ -382,11 +383,11 @@ describe("IdentityScreen (Home)", () => {
     render(<IdentityScreen />);
 
     fireEvent.changeText(
-      screen.getByPlaceholderText("Search claims..."),
+      screen.getByPlaceholderText("Search evidence..."),
       "xyz123",
     );
 
-    expect(screen.getByText("No claims match your search")).toBeTruthy();
+    expect(screen.getByText("No blocks match your search")).toBeTruthy();
   });
 
   it("expands claim card to show details", () => {
@@ -430,7 +431,7 @@ describe("IdentityScreen (Home)", () => {
     fireEvent.press(screen.getByText("React"));
 
     // Evidence section shows as badge with document name
-    expect(screen.getByText("Sources")).toBeTruthy();
+    expect(screen.getByText("Linked Evidence")).toBeTruthy();
     expect(screen.getByText("resume")).toBeTruthy();
   });
 

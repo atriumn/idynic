@@ -8,7 +8,9 @@ describe("IdentityReflection", () => {
     it("shows loading indicator and message", () => {
       render(<IdentityReflection data={null} isLoading={true} />);
 
-      expect(screen.getByText("Synthesizing your profile...")).toBeTruthy();
+      expect(
+        screen.getByText("Synthesizing your Master Record..."),
+      ).toBeTruthy();
     });
   });
 
@@ -75,8 +77,8 @@ describe("IdentityReflection", () => {
     it("renders job matches section", () => {
       render(<IdentityReflection data={mockIdentityReflection} />);
 
-      // Check for the "Best fit roles:" label
-      expect(screen.getByText("Best fit roles: ")).toBeTruthy();
+      // Check for the "Best Fit Roles" label
+      expect(screen.getByText("Best Fit Roles")).toBeTruthy();
 
       // Check that each match is present in the rendered output
       for (const match of mockIdentityReflection.matches) {
