@@ -33,11 +33,9 @@ import {
   Cuboid,
   type LucideIcon,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { useInvalidateGraph } from "@/lib/hooks/use-identity-graph";
 import { EditClaimModal } from "@/components/edit-claim-modal";
 import { getClaimTypeStyle, CLAIM_TYPE_LABELS } from "@/lib/theme-colors";
-import { Lollipop } from "@/components/ui/lollipop";
 import {
   SortableHeader,
   type SortField,
@@ -426,51 +424,79 @@ export function IdentityClaimsList({
             return (
               <div
                 key={claim.id}
-                className="rounded-lg overflow-hidden cursor-pointer transition-all hover:brightness-105 shadow-sm border-b border-r border-slate-800/50"
+                className="rounded-xl overflow-hidden cursor-pointer transition-all hover:brightness-110 hover:-translate-y-0.5 shadow-md border-b-2 border-r border-slate-900/80 active:translate-y-0"
                 style={{
                   backgroundColor: styles.bg,
                   border: `1px solid ${hasIssues ? "#f59e0b" : styles.border}`,
-                  borderLeft: `4px solid ${styles.border}`,
+                  borderLeft: `6px solid ${styles.border}`,
+                  borderTop: "1px solid rgba(255,255,255,0.1)", // Top highlight
                 }}
                 onClick={() => toggleRow(claim.id)}
               >
                 {/* Collapsed Row */}
-                <div className="flex items-center gap-4 px-3 py-3">
-                  {/* Type icon */}
-                  <div className="w-6 flex justify-center">
+                <div className="flex items-center gap-6 px-5 py-4">
+                  {/* Type icon with block background */}
+                  <div className="h-10 w-10 rounded-lg bg-black/20 flex items-center justify-center shrink-0 border border-white/5 shadow-inner">
                     <TypeIcon
-                      className="h-4 w-4"
+                      className="h-5 w-5"
                       style={{ color: styles.text }}
                     />
                   </div>
 
-                  {/* Label */}
-                  <span className="flex-1 text-sm font-bold tracking-tight truncate">
-                    {claim.label}
-                  </span>
+                  {/* Label & Metadata */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-base font-bold tracking-tight text-white truncate">
+                        {claim.label}
+                      </span>
+                      {hasIssues && (
+                        <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono uppercase tracking-widest opacity-40">
+                        {claim.type.substring(0, 3)}-{claim.id.substring(0, 4)}
+                      </span>
+                      <span className="h-1 w-1 rounded-full bg-white/20" />
+                      <span className="text-[10px] font-mono uppercase tracking-widest opacity-40">
+                        VERIFIED BLOCK
+                      </span>
+                    </div>
+                  </div>
 
-                  {/* Confidence Lollipop */}
-                  <div className="w-32">
-                    <Lollipop
-                      value={Math.round((claim.confidence ?? 0.5) * 100)}
-                    />
+                  {/* Confidence Gauge */}
+                  <div className="hidden sm:flex flex-col items-end gap-1.5 w-32 shrink-0">
+                    <span className="text-[9px] font-mono font-bold tracking-tighter opacity-50 uppercase">
+                      Confidence
+                    </span>
+                    <div className="w-full bg-black/30 rounded-full h-1.5 overflow-hidden border border-white/5">
+                      <div
+                        className="h-full transition-all duration-1000"
+                        style={{
+                          width: `${Math.round((claim.confidence ?? 0.5) * 100)}%`,
+                          backgroundColor: styles.border,
+                          boxShadow: `0 0 10px ${styles.border}80`,
+                        }}
+                      />
+                    </div>
                   </div>
 
                   {/* Sources badge */}
-                  <div className="w-16 text-center">
-                    <span className="text-xs font-mono text-muted-foreground bg-background/50 px-2 py-0.5 rounded border border-border/50">
+                  <div className="w-12 flex flex-col items-center gap-1">
+                    <span className="text-[9px] font-mono font-bold tracking-tighter opacity-50 uppercase">
+                      Links
+                    </span>
+                    <span className="text-xs font-mono font-bold text-white bg-black/40 px-2 py-0.5 rounded border border-white/10">
                       {evidenceCount}
                     </span>
                   </div>
 
-                  {/* Issue/chevron icon */}
-                  <div className="w-6 flex justify-center">
-                    {hasIssues ? (
-                      <AlertTriangle className="h-4 w-4 text-amber-500" />
-                    ) : isExpanded ? (
-                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                  {/* Expansion chevron */}
+                  <div className="w-6 flex justify-center opacity-30 group-hover:opacity-100 transition-opacity">
+                    {isExpanded ? (
+                      <ChevronUp className="h-5 w-5 text-white" />
                     ) : (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      <ChevronDown className="h-5 w-5 text-white" />
                     )}
                   </div>
                 </div>
@@ -478,31 +504,31 @@ export function IdentityClaimsList({
                 {/* Expanded Content */}
                 {isExpanded && (
                   <div
-                    className="px-4 pb-4 pt-3 bg-black/5"
-                    style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}
+                    className="px-6 pb-6 pt-4 bg-black/20"
+                    style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
                   >
                     {/* Issues */}
                     {hasIssues && (
-                      <div className="mb-4 p-3 rounded-lg bg-amber-900/30 border border-amber-700/50">
-                        <div className="text-xs font-bold text-amber-400 uppercase mb-2">
-                          Issues ({claim.issues!.length})
+                      <div className="mb-6 p-4 rounded-xl bg-amber-950/40 border border-amber-500/30 backdrop-blur-sm">
+                        <div className="text-[10px] font-bold text-amber-400 uppercase tracking-[0.2em] mb-3">
+                          Validation Issues ({claim.issues!.length})
                         </div>
                         {claim.issues!.map((issue) => (
                           <div
                             key={issue.id}
-                            className="flex items-start gap-2 mb-1"
+                            className="flex items-start gap-3 mb-2"
                           >
-                            <AlertTriangle className="h-3 w-3 text-amber-400 mt-0.5 shrink-0" />
-                            <span className="text-sm text-amber-200">
+                            <AlertTriangle className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
+                            <span className="text-sm text-amber-100/90 leading-relaxed">
                               {issue.message}
                             </span>
                           </div>
                         ))}
-                        <div className="flex items-center gap-2 mt-3">
+                        <div className="flex items-center gap-3 mt-4 pt-4 border-t border-amber-500/10">
                           <Button
-                            variant="ghost"
+                            variant="secondary"
                             size="sm"
-                            className="h-7 px-2 text-amber-300 hover:text-amber-200 hover:bg-amber-900/50"
+                            className="h-8 bg-amber-500/10 text-amber-400 border-amber-500/20 hover:bg-amber-500/20"
                             onClick={(e) => handleDismissIssues(claim.id, e)}
                             disabled={dismissingClaim === claim.id}
                           >
@@ -511,24 +537,24 @@ export function IdentityClaimsList({
                             ) : (
                               <X className="h-3.5 w-3.5" />
                             )}
-                            <span className="ml-1 text-xs">Dismiss</span>
+                            <span className="ml-2">Dismiss</span>
                           </Button>
                           <Button
-                            variant="ghost"
+                            variant="secondary"
                             size="sm"
-                            className="h-7 px-2 text-amber-300 hover:text-amber-200 hover:bg-amber-900/50"
+                            className="h-8 bg-white/5 text-white border-white/10 hover:bg-white/10"
                             onClick={(e) => {
                               e.stopPropagation();
                               setClaimToEdit(claim);
                             }}
                           >
                             <Pencil className="h-3.5 w-3.5" />
-                            <span className="ml-1 text-xs">Edit</span>
+                            <span className="ml-2">Edit</span>
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 px-2 text-red-400 hover:text-red-300 hover:bg-red-950/50"
+                            className="h-8 text-red-400 hover:text-red-300 hover:bg-red-500/10"
                             onClick={(e) => {
                               e.stopPropagation();
                               setClaimToDelete(claim);
@@ -540,7 +566,7 @@ export function IdentityClaimsList({
                             ) : (
                               <Trash2 className="h-3.5 w-3.5" />
                             )}
-                            <span className="ml-1 text-xs">Delete</span>
+                            <span className="ml-2">Remove</span>
                           </Button>
                         </div>
                       </div>
@@ -548,36 +574,31 @@ export function IdentityClaimsList({
 
                     {/* Description - only show if different from evidence */}
                     {showDescription && (
-                      <p className="text-sm text-foreground/80 mb-4 leading-relaxed italic">
-                        {claim.description}
-                      </p>
+                      <div className="mb-6">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-2 opacity-50">
+                          Context
+                        </span>
+                        <p className="text-sm text-slate-300 leading-relaxed max-w-2xl">
+                          {claim.description}
+                        </p>
+                      </div>
                     )}
 
                     {/* Evidence - badges for each source */}
                     {evidenceCount > 0 && (
-                      <div className="space-y-2">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      <div className="space-y-3">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block opacity-50">
                           Linked Evidence
                         </span>
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-2">
                           {evidenceItems.map((item, idx) => {
                             const doc = item.evidence?.document;
                             const isStory = doc?.type === "story";
                             const Icon = isStory ? BookOpen : FileText;
-                            // Extract just the name without the date for cleaner badges
                             const filename = doc?.filename || "Document";
                             const nameWithoutDate = filename.replace(
                               /\s*\(\d{1,2}\/\d{1,2}\/\d{4}\)\s*$/,
                               "",
-                            );
-                            const badgeContent = (
-                              <Badge
-                                variant="outline"
-                                className={`text-xs font-normal gap-1 bg-background/50 border-slate-200 dark:border-slate-800 ${doc?.id ? "cursor-pointer hover:bg-background/80 transition-colors" : ""}`}
-                              >
-                                <Icon className="h-3 w-3" />
-                                {nameWithoutDate}
-                              </Badge>
                             );
 
                             return doc?.id ? (
@@ -585,11 +606,21 @@ export function IdentityClaimsList({
                                 key={idx}
                                 href={`/documents/${doc.id}`}
                                 onClick={(e) => e.stopPropagation()}
+                                className="group/badge"
                               >
-                                {badgeContent}
+                                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/5 border border-white/10 text-xs font-medium text-slate-300 transition-all hover:bg-white/10 hover:border-white/20 group-hover/badge:text-white">
+                                  <Icon className="h-3.5 w-3.5 opacity-50 group-hover/badge:opacity-100 transition-opacity" />
+                                  {nameWithoutDate}
+                                </div>
                               </Link>
                             ) : (
-                              <span key={idx}>{badgeContent}</span>
+                              <div
+                                key={idx}
+                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/5 border border-white/10 text-xs font-medium text-slate-400"
+                              >
+                                <Icon className="h-3.5 w-3.5 opacity-30" />
+                                {nameWithoutDate}
+                              </div>
                             );
                           })}
                         </div>

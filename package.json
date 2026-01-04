@@ -4,7 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --filter web dev",
+    "dev:local": "./scripts/dev-local.sh",
+    "dev:prod": "cp .env.local.prod .env.local 2>/dev/null || echo 'No .env.local.prod backup found' && pnpm dev",
     "dev:mobile": "pnpm --filter mobile start",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:push": "supabase db push",
     "build": "pnpm --filter web build",
     "lint": "pnpm --filter web lint",
     "typecheck": "pnpm --filter web exec tsc --noEmit",

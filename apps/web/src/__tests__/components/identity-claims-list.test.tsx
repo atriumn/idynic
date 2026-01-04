@@ -268,11 +268,12 @@ describe("IdentityClaimsList", () => {
     });
   });
 
-  it("shows confidence percentage", () => {
+  it("shows confidence gauge", () => {
     render(<IdentityClaimsList claims={mockClaims} />);
 
-    expect(screen.getByText("85%")).toBeInTheDocument();
-    expect(screen.getByText("75%")).toBeInTheDocument();
+    // Confidence is now shown as a gauge bar, not text percentage
+    const confidenceLabels = screen.getAllByText("Confidence");
+    expect(confidenceLabels.length).toBeGreaterThan(0);
   });
 
   describe("expanded claim with issues", () => {
@@ -347,7 +348,7 @@ describe("IdentityClaimsList", () => {
       });
     });
 
-    it("shows delete button for claims with issues", async () => {
+    it("shows remove button for claims with issues", async () => {
       const user = userEvent.setup();
       render(<IdentityClaimsList claims={mockClaims} />);
 
@@ -355,19 +356,19 @@ describe("IdentityClaimsList", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByRole("button", { name: /delete/i }),
+          screen.getByRole("button", { name: /remove/i }),
         ).toBeInTheDocument();
       });
     });
   });
 
   describe("delete claim", () => {
-    it("shows confirmation dialog when delete is clicked", async () => {
+    it("shows confirmation dialog when remove is clicked", async () => {
       const user = userEvent.setup();
       render(<IdentityClaimsList claims={mockClaims} />);
 
       await user.click(screen.getByText("Led team of 5 engineers"));
-      await user.click(screen.getByRole("button", { name: /delete/i }));
+      await user.click(screen.getByRole("button", { name: /remove/i }));
 
       await waitFor(() => {
         expect(screen.getByText("Delete Evidence Block")).toBeInTheDocument();
@@ -386,12 +387,11 @@ describe("IdentityClaimsList", () => {
       );
 
       await user.click(screen.getByText("Led team of 5 engineers"));
-      await user.click(screen.getByRole("button", { name: /delete/i }));
+      await user.click(screen.getByRole("button", { name: /remove/i }));
 
       // Click the Delete button in the dialog
-      const deleteButtons = screen.getAllByRole("button", { name: /delete/i });
-      const confirmButton = deleteButtons[deleteButtons.length - 1];
-      await user.click(confirmButton);
+      const deleteButton = screen.getByRole("button", { name: /^delete$/i });
+      await user.click(deleteButton);
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith("/api/v1/claims/claim-3", {
@@ -405,7 +405,7 @@ describe("IdentityClaimsList", () => {
       render(<IdentityClaimsList claims={mockClaims} />);
 
       await user.click(screen.getByText("Led team of 5 engineers"));
-      await user.click(screen.getByRole("button", { name: /delete/i }));
+      await user.click(screen.getByRole("button", { name: /remove/i }));
 
       await user.click(screen.getByRole("button", { name: /cancel/i }));
 
