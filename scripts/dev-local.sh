@@ -33,6 +33,7 @@ if [ -f ".env.local" ] && [ ! -f ".env.local.prod" ]; then
 fi
 
 # Build .env.local: local Supabase + all other vars from prod
+# Next.js reads from apps/web/.env.local, so we need to update BOTH locations
 if [ -f ".env.local.prod" ]; then
     echo -e "${GREEN}Setting up local environment with prod API keys + local Supabase...${NC}"
 
@@ -42,11 +43,15 @@ if [ -f ".env.local.prod" ]; then
     # Append ALL non-Supabase vars from prod (API keys, Stripe, Inngest, Sentry, etc.)
     grep -v '^#' .env.local.prod | grep -v 'SUPABASE' | grep '=' >> .env.local
 
+    # IMPORTANT: Next.js reads from apps/web/.env.local, not root
+    cp .env.local apps/web/.env.local
+
     echo -e "${GREEN}Merged $(grep -v '^#' .env.local.prod | grep -v 'SUPABASE' | grep '=' | wc -l | tr -d ' ') vars from prod${NC}"
 else
     echo -e "${YELLOW}Warning: No .env.local.prod found. Using .env.local.supabase as-is.${NC}"
     echo -e "${YELLOW}Run 'vercel env pull .env.local.prod' to get prod vars.${NC}"
     cp .env.local.supabase .env.local
+    cp .env.local apps/web/.env.local
 fi
 
 echo ""
