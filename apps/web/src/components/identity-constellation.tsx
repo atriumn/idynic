@@ -33,7 +33,10 @@ interface ConstellationProps {
   selectedClaimId?: string | null;
 }
 
-export function IdentityConstellation({ onSelectClaim, selectedClaimId }: ConstellationProps) {
+export function IdentityConstellation({
+  onSelectClaim,
+  selectedClaimId,
+}: ConstellationProps) {
   const { data, isLoading, error } = useIdentityGraph();
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -73,7 +76,7 @@ export function IdentityConstellation({ onSelectClaim, selectedClaimId }: Conste
     svg.selectAll("*").remove();
 
     // Calculate confidence range for better opacity scaling
-    const confidences = data.nodes.map(n => n.confidence);
+    const confidences = data.nodes.map((n) => n.confidence);
     const minConf = Math.min(...confidences);
     const maxConf = Math.max(...confidences);
     const confRange = maxConf - minConf || 0.1; // Avoid division by zero
@@ -82,12 +85,12 @@ export function IdentityConstellation({ onSelectClaim, selectedClaimId }: Conste
     const normalizeConf = (c: number) => (c - minConf) / confRange;
 
     // Build hierarchical data grouped by type
-    const grouped = d3.group(data.nodes, d => d.type);
+    const grouped = d3.group(data.nodes, (d) => d.type);
     const hierarchyData = {
       name: "root",
       children: Array.from(grouped, ([type, nodes]) => ({
         name: type,
-        children: nodes.map(n => ({
+        children: nodes.map((n) => ({
           name: n.label,
           value: 1, // Equal size for each claim
           ...n,
@@ -96,11 +99,13 @@ export function IdentityConstellation({ onSelectClaim, selectedClaimId }: Conste
     };
 
     // Create treemap layout
-    const root = d3.hierarchy(hierarchyData)
-      .sum(d => (d as { value?: number }).value || 0)
+    const root = d3
+      .hierarchy(hierarchyData)
+      .sum((d) => (d as { value?: number }).value || 0)
       .sort((a, b) => (b.value || 0) - (a.value || 0));
 
-    const treemap = d3.treemap<typeof hierarchyData>()
+    const treemap = d3
+      .treemap<typeof hierarchyData>()
       .size([width, height])
       .padding(2)
       .paddingTop(20)
@@ -109,54 +114,119 @@ export function IdentityConstellation({ onSelectClaim, selectedClaimId }: Conste
     treemap(root);
 
     // Draw group backgrounds
-    const groups = svg.selectAll("g.group")
+    const groups = svg
+      .selectAll("g.group")
       .data(root.children || [])
       .join("g")
       .attr("class", "group");
 
-    groups.append("rect")
-      .attr("x", d => (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x0)
-      .attr("y", d => (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y0)
-      .attr("width", d => (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x1 - (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x0)
-      .attr("height", d => (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y1 - (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y0)
-      .attr("fill", d => TYPE_COLORS[d.data.name] || "#888")
+    groups
+      .append("rect")
+      .attr(
+        "x",
+        (d) => (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x0,
+      )
+      .attr(
+        "y",
+        (d) => (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y0,
+      )
+      .attr(
+        "width",
+        (d) =>
+          (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x1 -
+          (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x0,
+      )
+      .attr(
+        "height",
+        (d) =>
+          (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y1 -
+          (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y0,
+      )
+      .attr("fill", (d) => TYPE_COLORS[d.data.name] || "#888")
       .attr("fill-opacity", 0.1)
-      .attr("stroke", d => TYPE_COLORS[d.data.name] || "#888")
+      .attr("stroke", (d) => TYPE_COLORS[d.data.name] || "#888")
       .attr("stroke-opacity", 0.3);
 
     // Group labels
-    groups.append("text")
-      .attr("x", d => (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x0 + 6)
-      .attr("y", d => (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y0 + 14)
-      .attr("fill", d => TYPE_COLORS[d.data.name] || "#888")
+    groups
+      .append("text")
+      .attr(
+        "x",
+        (d) => (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x0 + 6,
+      )
+      .attr(
+        "y",
+        (d) => (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y0 + 14,
+      )
+      .attr("fill", (d) => TYPE_COLORS[d.data.name] || "#888")
       .attr("font-size", "12px")
       .attr("font-weight", "600")
-      .text(d => `${TYPE_LABELS[d.data.name] || d.data.name} (${d.children?.length || 0})`);
+      .text(
+        (d) =>
+          `${TYPE_LABELS[d.data.name] || d.data.name} (${d.children?.length || 0})`,
+      );
 
     // Draw leaf nodes (individual claims)
     const leaves = root.leaves();
 
-    const leaf = svg.selectAll("g.leaf")
+    const leaf = svg
+      .selectAll("g.leaf")
       .data(leaves)
       .join("g")
       .attr("class", "leaf")
-      .attr("transform", d => `translate(${(d as d3.HierarchyRectangularNode<typeof hierarchyData>).x0},${(d as d3.HierarchyRectangularNode<typeof hierarchyData>).y0})`);
+      .attr(
+        "transform",
+        (d) =>
+          `translate(${(d as d3.HierarchyRectangularNode<typeof hierarchyData>).x0},${(d as d3.HierarchyRectangularNode<typeof hierarchyData>).y0})`,
+      );
 
-    leaf.append("rect")
-      .attr("width", d => Math.max(0, (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x1 - (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x0 - 1))
-      .attr("height", d => Math.max(0, (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y1 - (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y0 - 1))
-      .attr("fill", d => TYPE_COLORS[d.parent?.data.name || ""] || "#888")
-      .attr("fill-opacity", d => 0.3 + normalizeConf((d.data as unknown as TreemapNode).confidence || 0.5) * 0.7)
+    leaf
+      .append("rect")
+      .attr("width", (d) =>
+        Math.max(
+          0,
+          (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x1 -
+            (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x0 -
+            1,
+        ),
+      )
+      .attr("height", (d) =>
+        Math.max(
+          0,
+          (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y1 -
+            (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y0 -
+            1,
+        ),
+      )
+      .attr("fill", (d) => TYPE_COLORS[d.parent?.data.name || ""] || "#888")
+      .attr(
+        "fill-opacity",
+        (d) =>
+          0.3 +
+          normalizeConf((d.data as unknown as TreemapNode).confidence || 0.5) *
+            0.7,
+      )
       .attr("rx", 2)
-      .attr("stroke", d => (d.data as unknown as TreemapNode).id === selectedClaimId ? "white" : "transparent")
+      .attr("stroke", (d) =>
+        (d.data as unknown as TreemapNode).id === selectedClaimId
+          ? "white"
+          : "transparent",
+      )
       .attr("stroke-width", 2)
       .attr("cursor", "pointer")
-      .on("mouseover", function(_, d) {
+      .on("mouseover", function (_, d) {
         d3.select(this).attr("fill-opacity", 1);
         setHoveredNode(d.data as unknown as TreemapNode);
       })
-      .on("mouseout", function(_, d) {
-        d3.select(this).attr("fill-opacity", 0.3 + normalizeConf((d.data as unknown as TreemapNode).confidence || 0.5) * 0.7);
+      .on("mouseout", function (_, d) {
+        d3.select(this).attr(
+          "fill-opacity",
+          0.3 +
+            normalizeConf(
+              (d.data as unknown as TreemapNode).confidence || 0.5,
+            ) *
+              0.7,
+        );
         setHoveredNode(null);
       })
       .on("click", (_, d) => {
@@ -164,21 +234,27 @@ export function IdentityConstellation({ onSelectClaim, selectedClaimId }: Conste
       });
 
     // Add labels to larger cells
-    leaf.append("text")
+    leaf
+      .append("text")
       .attr("x", 4)
       .attr("y", 12)
       .attr("fill", "white")
       .attr("font-size", "9px")
       .attr("pointer-events", "none")
-      .text(d => {
-        const w = (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x1 - (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x0;
-        const h = (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y1 - (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y0;
+      .text((d) => {
+        const w =
+          (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x1 -
+          (d as d3.HierarchyRectangularNode<typeof hierarchyData>).x0;
+        const h =
+          (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y1 -
+          (d as d3.HierarchyRectangularNode<typeof hierarchyData>).y0;
         if (w < 40 || h < 16) return "";
         const label = (d.data as unknown as TreemapNode).label;
         const maxChars = Math.floor(w / 5);
-        return label.length > maxChars ? label.slice(0, maxChars - 1) + "…" : label;
+        return label.length > maxChars
+          ? label.slice(0, maxChars - 1) + "…"
+          : label;
       });
-
   }, [data, dimensions, onSelectClaim, selectedClaimId]);
 
   if (isLoading) {
@@ -202,19 +278,23 @@ export function IdentityConstellation({ onSelectClaim, selectedClaimId }: Conste
   }
 
   return (
-    <div ref={containerRef} className="w-full h-full min-h-[400px] relative p-4">
+    <div
+      ref={containerRef}
+      className="w-full h-full min-h-[400px] relative p-4"
+    >
       <svg
         ref={svgRef}
         width={dimensions.width}
         height={dimensions.height}
         className="bg-background block mx-auto"
-        style={{ maxWidth: '100%', maxHeight: '100%' }}
+        style={{ maxWidth: "100%", maxHeight: "100%" }}
       />
       {/* Legend */}
       <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 text-xs border max-w-[220px]">
         <div className="font-medium mb-2">Claims by Category</div>
         <div className="text-muted-foreground mb-2">
-          Each box is a claim extracted from your documents. Brighter = higher confidence.
+          Each box is a claim extracted from your documents. Brighter = higher
+          confidence.
         </div>
         <div className="text-muted-foreground/70">
           Click any claim to see details and supporting evidence.
@@ -225,7 +305,8 @@ export function IdentityConstellation({ onSelectClaim, selectedClaimId }: Conste
         <div className="absolute top-8 right-8 bg-background/95 backdrop-blur-sm rounded-lg p-3 text-sm shadow-lg border max-w-xs z-10">
           <div className="font-medium">{hoveredNode.label}</div>
           <div className="text-muted-foreground text-xs mt-1">
-            {TYPE_LABELS[hoveredNode.type]} · {Math.round(hoveredNode.confidence * 100)}% confidence
+            {TYPE_LABELS[hoveredNode.type]} ·{" "}
+            {Math.round(hoveredNode.confidence * 100)}% confidence
           </div>
           {hoveredNode.description && (
             <div className="text-muted-foreground text-xs mt-2 line-clamp-2">

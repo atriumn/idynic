@@ -11,29 +11,27 @@ export default function LegalLayout({
         <aside className="space-y-4">
           <h3 className="font-semibold text-lg mb-4">Legal</h3>
           <nav className="flex flex-col space-y-2">
-            <Link 
-              href="/legal/terms" 
+            <Link
+              href="/legal/terms"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               Terms of Service
             </Link>
-            <Link 
-              href="/legal/privacy" 
+            <Link
+              href="/legal/privacy"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               Privacy Policy
             </Link>
-             <Link 
-              href="/legal/cookies" 
+            <Link
+              href="/legal/cookies"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               Cookie Policy
             </Link>
           </nav>
         </aside>
-        <main className="prose dark:prose-invert max-w-none">
-          {children}
-        </main>
+        <main className="prose dark:prose-invert max-w-none">{children}</main>
       </div>
     </div>
   );

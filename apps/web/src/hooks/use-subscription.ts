@@ -59,7 +59,9 @@ interface CheckoutOptions {
   cancelUrl: string;
 }
 
-async function createCheckoutSession(options: CheckoutOptions): Promise<{ url: string }> {
+async function createCheckoutSession(
+  options: CheckoutOptions,
+): Promise<{ url: string }> {
   const res = await fetch("/api/billing/create-checkout-session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -68,7 +70,9 @@ async function createCheckoutSession(options: CheckoutOptions): Promise<{ url: s
 
   if (!res.ok) {
     const error = await res.json();
-    throw new Error(error.error?.message || "Failed to create checkout session");
+    throw new Error(
+      error.error?.message || "Failed to create checkout session",
+    );
   }
 
   const json = await res.json();
@@ -96,7 +100,9 @@ interface CreateSubscriptionResult {
   clientSecret: string;
 }
 
-async function createSubscription(options: CreateSubscriptionOptions): Promise<CreateSubscriptionResult> {
+async function createSubscription(
+  options: CreateSubscriptionOptions,
+): Promise<CreateSubscriptionResult> {
   const res = await fetch("/api/billing/create-subscription", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -122,7 +128,9 @@ interface PortalOptions {
   returnUrl: string;
 }
 
-async function createPortalSession(options: PortalOptions): Promise<{ url: string }> {
+async function createPortalSession(
+  options: PortalOptions,
+): Promise<{ url: string }> {
   const res = await fetch("/api/billing/create-portal-session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

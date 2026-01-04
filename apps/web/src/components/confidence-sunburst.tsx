@@ -12,7 +12,13 @@ const TYPE_COLORS: Record<string, string> = {
   certification: "#14b8a6",
 };
 
-const TYPE_ORDER = ["skill", "achievement", "attribute", "education", "certification"];
+const TYPE_ORDER = [
+  "skill",
+  "achievement",
+  "attribute",
+  "education",
+  "certification",
+];
 
 // Evidence count to heat color
 function getHeatColor(evidenceCount: number): string {
@@ -37,7 +43,10 @@ interface SunburstProps {
   selectedClaimId?: string | null;
 }
 
-export function ConfidenceSunburst({ onSelectClaim, selectedClaimId }: SunburstProps) {
+export function ConfidenceSunburst({
+  onSelectClaim,
+  selectedClaimId,
+}: SunburstProps) {
   const { data, isLoading, error } = useIdentityGraph();
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -52,7 +61,7 @@ export function ConfidenceSunburst({ onSelectClaim, selectedClaimId }: SunburstP
         const padding = 32;
         const size = Math.min(
           containerRef.current.clientWidth - padding,
-          containerRef.current.clientHeight - padding
+          containerRef.current.clientHeight - padding,
         );
         setDimensions({
           width: Math.max(100, size),
@@ -82,7 +91,7 @@ export function ConfidenceSunburst({ onSelectClaim, selectedClaimId }: SunburstP
     for (const edge of data.documentClaimEdges || []) {
       claimEvidenceCount.set(
         edge.claimId,
-        (claimEvidenceCount.get(edge.claimId) || 0) + 1
+        (claimEvidenceCount.get(edge.claimId) || 0) + 1,
       );
     }
 
@@ -104,10 +113,10 @@ export function ConfidenceSunburst({ onSelectClaim, selectedClaimId }: SunburstP
 
     const hierarchyData: SunburstNode = {
       name: "Identity",
-      children: sortedTypes.map(type => ({
+      children: sortedTypes.map((type) => ({
         name: type.charAt(0).toUpperCase() + type.slice(1) + "s",
         type,
-        children: claimsByType.get(type)!.map(claim => ({
+        children: claimsByType.get(type)!.map((claim) => ({
           name: claim.label,
           id: claim.id,
           type: claim.type,
@@ -119,37 +128,41 @@ export function ConfidenceSunburst({ onSelectClaim, selectedClaimId }: SunburstP
     };
 
     // Create hierarchy
-    const root = d3.hierarchy<SunburstNode>(hierarchyData)
-      .sum(d => d.value || 0)
+    const root = d3
+      .hierarchy<SunburstNode>(hierarchyData)
+      .sum((d) => d.value || 0)
       .sort((a, b) => (b.value || 0) - (a.value || 0));
 
     // Create partition layout
-    const partition = d3.partition<SunburstNode>()
+    const partition = d3
+      .partition<SunburstNode>()
       .size([2 * Math.PI, radius * 0.9]);
 
     partition(root);
 
     // Create arc generator
-    const arc = d3.arc<d3.HierarchyRectangularNode<SunburstNode>>()
-      .startAngle(d => d.x0)
-      .endAngle(d => d.x1)
+    const arc = d3
+      .arc<d3.HierarchyRectangularNode<SunburstNode>>()
+      .startAngle((d) => d.x0)
+      .endAngle((d) => d.x1)
       .padAngle(0.01)
       .padRadius(radius / 2)
-      .innerRadius(d => d.y0)
-      .outerRadius(d => d.y1 - 1);
+      .innerRadius((d) => d.y0)
+      .outerRadius((d) => d.y1 - 1);
 
     // Create center group
-    const g = svg.append("g")
+    const g = svg
+      .append("g")
       .attr("transform", `translate(${width / 2},${height / 2})`);
 
     // Draw arcs
-    const nodes = root.descendants().filter(d => d.depth > 0);
+    const nodes = root.descendants().filter((d) => d.depth > 0);
 
     g.selectAll("path")
       .data(nodes)
       .join("path")
       .attr("d", arc as unknown as string)
-      .attr("fill", d => {
+      .attr("fill", (d) => {
         if (d.depth === 1) {
           // Type ring - use type color
           return TYPE_COLORS[d.data.type || ""] || "#888";
@@ -157,20 +170,22 @@ export function ConfidenceSunburst({ onSelectClaim, selectedClaimId }: SunburstP
         // Claim ring - use heat color based on evidence count
         return getHeatColor(d.data.evidenceCount || 0);
       })
-      .attr("fill-opacity", d => {
+      .attr("fill-opacity", (d) => {
         if (d.depth === 1) return 0.7;
         return d.data.id === selectedClaimId ? 1 : 0.85;
       })
-      .attr("stroke", d => d.data.id === selectedClaimId ? "white" : "transparent")
+      .attr("stroke", (d) =>
+        d.data.id === selectedClaimId ? "white" : "transparent",
+      )
       .attr("stroke-width", 2)
-      .attr("cursor", d => d.depth === 2 ? "pointer" : "default")
-      .on("mouseover", function(_, d) {
+      .attr("cursor", (d) => (d.depth === 2 ? "pointer" : "default"))
+      .on("mouseover", function (_, d) {
         if (d.depth > 0) {
           d3.select(this).attr("fill-opacity", 1);
           setHoveredNode(d.data);
         }
       })
-      .on("mouseout", function(_, d) {
+      .on("mouseout", function (_, d) {
         d3.select(this).attr("fill-opacity", d.depth === 1 ? 0.7 : 0.85);
         setHoveredNode(null);
       })
@@ -182,18 +197,18 @@ export function ConfidenceSunburst({ onSelectClaim, selectedClaimId }: SunburstP
 
     // Add type labels on inner ring
     type PartitionNode = d3.HierarchyRectangularNode<SunburstNode>;
-    const typeNodes = nodes.filter(d => d.depth === 1) as PartitionNode[];
+    const typeNodes = nodes.filter((d) => d.depth === 1) as PartitionNode[];
 
     g.selectAll("text.type-label")
       .data(typeNodes)
       .join("text")
       .attr("class", "type-label")
-      .attr("transform", d => {
+      .attr("transform", (d) => {
         const angle = (d.x0 + d.x1) / 2;
         const r = (d.y0 + d.y1) / 2;
         const x = Math.sin(angle) * r;
         const y = -Math.cos(angle) * r;
-        const rotation = (angle * 180 / Math.PI) - 90;
+        const rotation = (angle * 180) / Math.PI - 90;
         const flip = angle > Math.PI;
         return `translate(${x},${y}) rotate(${flip ? rotation + 180 : rotation})`;
       })
@@ -203,7 +218,7 @@ export function ConfidenceSunburst({ onSelectClaim, selectedClaimId }: SunburstP
       .attr("font-size", "11px")
       .attr("font-weight", "600")
       .attr("pointer-events", "none")
-      .text(d => {
+      .text((d) => {
         const angleSpan = d.x1 - d.x0;
         if (angleSpan < 0.3) return ""; // Too small
         return d.data.name;
@@ -246,7 +261,10 @@ export function ConfidenceSunburst({ onSelectClaim, selectedClaimId }: SunburstP
   }
 
   return (
-    <div ref={containerRef} className="w-full h-full min-h-[400px] relative p-4 flex items-center justify-center">
+    <div
+      ref={containerRef}
+      className="w-full h-full min-h-[400px] relative p-4 flex items-center justify-center"
+    >
       <svg
         ref={svgRef}
         width={dimensions.width}
@@ -257,7 +275,8 @@ export function ConfidenceSunburst({ onSelectClaim, selectedClaimId }: SunburstP
       <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 text-xs border max-w-[200px]">
         <div className="font-medium mb-2">Evidence Strength</div>
         <div className="text-muted-foreground mb-2">
-          Inner ring shows categories. Outer ring shows claims colored by how much evidence supports them.
+          Inner ring shows categories. Outer ring shows claims colored by how
+          much evidence supports them.
         </div>
         <div className="space-y-1">
           <div className="flex items-center gap-2">
@@ -283,13 +302,17 @@ export function ConfidenceSunburst({ onSelectClaim, selectedClaimId }: SunburstP
         <div className="absolute top-8 right-8 bg-background/95 backdrop-blur-sm rounded-lg p-3 text-sm shadow-lg border max-w-xs z-10">
           <div className="font-medium">{hoveredNode.name}</div>
           <div className="text-muted-foreground text-xs mt-1">
-            <span className="capitalize">{hoveredNode.type}</span> · {Math.round((hoveredNode.confidence || 0) * 100)}% confidence
+            <span className="capitalize">{hoveredNode.type}</span> ·{" "}
+            {Math.round((hoveredNode.confidence || 0) * 100)}% confidence
           </div>
           <div className="text-xs mt-1">
             {(hoveredNode.evidenceCount || 0) === 0 ? (
               <span className="text-slate-400">No supporting evidence</span>
             ) : (
-              <span className="text-amber-500">{hoveredNode.evidenceCount} evidence source{(hoveredNode.evidenceCount || 0) > 1 ? "s" : ""}</span>
+              <span className="text-amber-500">
+                {hoveredNode.evidenceCount} evidence source
+                {(hoveredNode.evidenceCount || 0) > 1 ? "s" : ""}
+              </span>
             )}
           </div>
         </div>

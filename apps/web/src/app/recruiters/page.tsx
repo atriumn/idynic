@@ -13,14 +13,15 @@ export default function RecruitersPage() {
               Post a job. <br /> Get tailored applicants.
             </h1>
             <p className="text-xl text-muted-foreground">
-              Candidates on Idynic don&apos;t send generic resumes. They send profiles
-              tailored specifically to your role—with evidence behind every claim.
+              Candidates on Idynic don&apos;t send generic resumes. They send
+              profiles tailored specifically to your role—with evidence behind
+              every claim.
             </p>
             <div className="pt-4 max-w-md">
-               <div className="bg-background p-6 rounded-lg border shadow-sm">
-                  <h3 className="font-semibold mb-4">Join the waitlist</h3>
-                  <RecruiterWaitlistForm />
-               </div>
+              <div className="bg-background p-6 rounded-lg border shadow-sm">
+                <h3 className="font-semibold mb-4">Join the waitlist</h3>
+                <RecruiterWaitlistForm />
+              </div>
             </div>
           </div>
           <div className="relative h-[400px] rounded-xl overflow-hidden border shadow-sm group bg-slate-950">
@@ -51,7 +52,8 @@ export default function RecruitersPage() {
               </div>
               <h3 className="font-semibold text-xl">Post your job</h3>
               <p className="text-muted-foreground">
-                Add your open roles to Idynic. Include the job description, requirements, and what you&apos;re looking for.
+                Add your open roles to Idynic. Include the job description,
+                requirements, and what you&apos;re looking for.
               </p>
             </div>
 
@@ -59,9 +61,12 @@ export default function RecruitersPage() {
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary font-bold text-xl">
                 2
               </div>
-              <h3 className="font-semibold text-xl">Candidates tailor their profiles</h3>
+              <h3 className="font-semibold text-xl">
+                Candidates tailor their profiles
+              </h3>
               <p className="text-muted-foreground">
-                Interested candidates generate a profile specifically for your role, highlighting relevant experience with evidence.
+                Interested candidates generate a profile specifically for your
+                role, highlighting relevant experience with evidence.
               </p>
             </div>
 
@@ -69,9 +74,12 @@ export default function RecruitersPage() {
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary font-bold text-xl">
                 3
               </div>
-              <h3 className="font-semibold text-xl">Review quality applications</h3>
+              <h3 className="font-semibold text-xl">
+                Review quality applications
+              </h3>
               <p className="text-muted-foreground">
-                Receive applications where candidates have already done the work of showing why they&apos;re a fit.
+                Receive applications where candidates have already done the work
+                of showing why they&apos;re a fit.
               </p>
             </div>
           </div>
@@ -90,10 +98,13 @@ export default function RecruitersPage() {
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                 <FileCheck className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="font-semibold text-xl mb-2">Evidence-backed claims</h3>
+              <h3 className="font-semibold text-xl mb-2">
+                Evidence-backed claims
+              </h3>
               <p className="text-muted-foreground">
-                Every claim in a candidate&apos;s profile links back to source material.
-                See confidence scores that show what&apos;s proven vs. what&apos;s asserted.
+                Every claim in a candidate&apos;s profile links back to source
+                material. See confidence scores that show what&apos;s proven vs.
+                what&apos;s asserted.
               </p>
             </div>
 
@@ -101,10 +112,13 @@ export default function RecruitersPage() {
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                 <Zap className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="font-semibold text-xl mb-2">Pre-qualified interest</h3>
+              <h3 className="font-semibold text-xl mb-2">
+                Pre-qualified interest
+              </h3>
               <p className="text-muted-foreground">
-                Candidates who apply have already invested time understanding your role
-                and articulating their fit. No spray-and-pray applications.
+                Candidates who apply have already invested time understanding
+                your role and articulating their fit. No spray-and-pray
+                applications.
               </p>
             </div>
 
@@ -112,10 +126,12 @@ export default function RecruitersPage() {
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                 <Users className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="font-semibold text-xl mb-2">Context, not keywords</h3>
+              <h3 className="font-semibold text-xl mb-2">
+                Context, not keywords
+              </h3>
               <p className="text-muted-foreground">
-                See how a candidate&apos;s actual experience maps to your requirements—not
-                just keyword matches on a resume.
+                See how a candidate&apos;s actual experience maps to your
+                requirements—not just keyword matches on a resume.
               </p>
             </div>
 
@@ -125,8 +141,8 @@ export default function RecruitersPage() {
               </div>
               <h3 className="font-semibold text-xl mb-2">Simple to start</h3>
               <p className="text-muted-foreground">
-                Post a job in minutes. No complex integrations required.
-                Start receiving tailored applications immediately.
+                Post a job in minutes. No complex integrations required. Start
+                receiving tailored applications immediately.
               </p>
             </div>
           </div>
@@ -134,13 +150,17 @@ export default function RecruitersPage() {
       </section>
 
       {/* Bottom CTA */}
-       <section className="py-20 px-4 bg-primary text-primary-foreground">
+      <section className="py-20 px-4 bg-primary text-primary-foreground">
         <div className="container mx-auto max-w-4xl text-center space-y-8">
-           <h2 className="text-3xl md:text-4xl font-bold">Ready to try a better way to hire?</h2>
-           <p className="text-xl opacity-90">Join the waitlist for early access.</p>
-           <div className="max-w-md mx-auto bg-background p-6 rounded-lg text-foreground">
-              <RecruiterWaitlistForm />
-           </div>
+          <h2 className="text-3xl md:text-4xl font-bold">
+            Ready to try a better way to hire?
+          </h2>
+          <p className="text-xl opacity-90">
+            Join the waitlist for early access.
+          </p>
+          <div className="max-w-md mx-auto bg-background p-6 rounded-lg text-foreground">
+            <RecruiterWaitlistForm />
+          </div>
         </div>
       </section>
     </div>

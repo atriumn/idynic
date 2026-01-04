@@ -65,20 +65,21 @@ const SYSTEM_PROMPT = `You are a professional resume writer. Generate tailored r
 function buildBulletsPrompt(
   job: WorkHistoryWithClaims,
   requirements: Array<{ text: string; type: string }>,
-  strengths: TalkingPoints["strengths"]
+  strengths: TalkingPoints["strengths"],
 ): string | null {
   // If no claims/evidence, return null - do not fabricate bullets
   if (job.claims.length === 0) {
     return null;
   }
 
-  const relevantStrengths = strengths.filter(s =>
-    job.claims.some(c => c.id === s.claim_id)
+  const relevantStrengths = strengths.filter((s) =>
+    job.claims.some((c) => c.id === s.claim_id),
   );
 
-  const framingSection = relevantStrengths.length > 0
-    ? `## Framing Guidance\n${relevantStrengths.map(s => `- ${s.claim_label}: ${s.framing}`).join("\n")}`
-    : "";
+  const framingSection =
+    relevantStrengths.length > 0
+      ? `## Framing Guidance\n${relevantStrengths.map((s) => `- ${s.claim_label}: ${s.framing}`).join("\n")}`
+      : "";
 
   return `Generate 3-5 resume bullets for this position:
 
@@ -88,10 +89,13 @@ function buildBulletsPrompt(
 - Dates: ${job.start_date} - ${job.end_date || "Present"}
 
 ## Claims/Achievements from this role
-${job.claims.map(c => `- ${c.label}: ${c.description || "(no description)"}`).join("\n")}
+${job.claims.map((c) => `- ${c.label}: ${c.description || "(no description)"}`).join("\n")}
 
 ## Target Role Requirements (for emphasis)
-${requirements.slice(0, 5).map(r => `- ${r.text}`).join("\n")}
+${requirements
+  .slice(0, 5)
+  .map((r) => `- ${r.text}`)
+  .join("\n")}
 
 ${framingSection}
 
@@ -111,9 +115,9 @@ export async function generateResume(
   opportunityId: string,
   talkingPoints: TalkingPoints,
   supabase?: SupabaseClient<Database>,
-  options?: { jobId?: string }
+  options?: { jobId?: string },
 ): Promise<ResumeData> {
-  const client = supabase || await createClient();
+  const client = supabase || (await createClient());
   const config = getModelConfig("generate_resume");
 
   // Get opportunity for context
@@ -123,14 +127,22 @@ export async function generateResume(
     .eq("id", opportunityId)
     .single();
 
-  const requirements = (opportunity?.requirements as { mustHave?: Array<{ text: string; type: string }>; niceToHave?: Array<{ text: string; type: string }> }) || {};
-  const allRequirements = [...(requirements.mustHave || []), ...(requirements.niceToHave || [])];
+  const requirements =
+    (opportunity?.requirements as {
+      mustHave?: Array<{ text: string; type: string }>;
+      niceToHave?: Array<{ text: string; type: string }>;
+    }) || {};
+  const allRequirements = [
+    ...(requirements.mustHave || []),
+    ...(requirements.niceToHave || []),
+  ];
 
   // Get work history (excluding ventures) with linked claims
   // Include null entry_type for backwards compatibility with old data
   const { data: workHistory } = await client
     .from("work_history")
-    .select(`
+    .select(
+      `
       id,
       company,
       company_domain,
@@ -139,7 +151,8 @@ export async function generateResume(
       end_date,
       location,
       entry_type
-    `)
+    `,
+    )
     .eq("user_id", userId)
     .or("entry_type.is.null,entry_type.in.(work,additional)")
     .order("order_index", { ascending: true });
@@ -147,13 +160,15 @@ export async function generateResume(
   // Get ventures separately
   const { data: ventureData } = await client
     .from("work_history")
-    .select(`
+    .select(
+      `
       company,
       title,
       start_date,
       end_date,
       summary
-    `)
+    `,
+    )
     .eq("user_id", userId)
     .eq("entry_type", "venture")
     .order("order_index", { ascending: true });
@@ -161,7 +176,8 @@ export async function generateResume(
   // Get claims with their work_history links via evidence
   const { data: claims } = await client
     .from("identity_claims")
-    .select(`
+    .select(
+      `
       id,
       label,
       type,
@@ -171,21 +187,26 @@ export async function generateResume(
           work_history_id
         )
       )
-    `)
+    `,
+    )
     .eq("user_id", userId);
 
   // Build work history with associated claims
-  const workHistoryWithClaims: WorkHistoryWithClaims[] = (workHistory || []).map((wh) => {
+  const workHistoryWithClaims: WorkHistoryWithClaims[] = (
+    workHistory || []
+  ).map((wh) => {
     const whClaims = (claims || [])
       .filter((c) =>
         (c.claim_evidence || []).some(
           (ce: { evidence: { work_history_id: string | null } | null }) =>
-            ce.evidence?.work_history_id === wh.id
-        )
+            ce.evidence?.work_history_id === wh.id,
+        ),
       )
       .map((c) => {
         // Score relevance based on whether this claim is in strengths
-        const strength = talkingPoints.strengths.find((s) => s.claim_id === c.id);
+        const strength = talkingPoints.strengths.find(
+          (s) => s.claim_id === c.id,
+        );
         return {
           id: c.id,
           label: c.label,
@@ -207,7 +228,11 @@ export async function generateResume(
   const additionalExperience: ResumeExperience[] = [];
 
   for (const job of workHistoryWithClaims) {
-    const prompt = buildBulletsPrompt(job, allRequirements, talkingPoints.strengths);
+    const prompt = buildBulletsPrompt(
+      job,
+      allRequirements,
+      talkingPoints.strengths,
+    );
 
     let bullets: string[] = [];
 
@@ -231,7 +256,7 @@ export async function generateResume(
             userId,
             opportunityId,
             jobId: options?.jobId,
-          }
+          },
         );
 
         const content = response.content || "{}";
@@ -239,7 +264,11 @@ export async function generateResume(
         // Handle various key names the LLM might use
         bullets = Array.isArray(parsed)
           ? parsed
-          : parsed.bullets || parsed.resume_bullets || parsed.bullet_points || Object.values(parsed)[0] || [];
+          : parsed.bullets ||
+            parsed.resume_bullets ||
+            parsed.bullet_points ||
+            Object.values(parsed)[0] ||
+            [];
         if (!Array.isArray(bullets)) bullets = [];
       } catch {
         bullets = [];
@@ -270,13 +299,19 @@ export async function generateResume(
     config.model,
     {
       messages: [
-        { role: "system", content: "Write a 2-3 sentence professional summary for a resume." },
+        {
+          role: "system",
+          content: "Write a 2-3 sentence professional summary for a resume.",
+        },
         {
           role: "user",
           content: `Write a professional summary for someone applying to: ${opportunity?.title || "a role"} at ${opportunity?.company || "a company"}.
 
 Top strengths:
-${talkingPoints.strengths.slice(0, 3).map((s) => `- ${s.claim_label}: ${s.framing}`).join("\n")}
+${talkingPoints.strengths
+  .slice(0, 3)
+  .map((s) => `- ${s.claim_label}: ${s.framing}`)
+  .join("\n")}
 
 Keep it concise, professional, and tailored to the role. No first person ("I am..."), use third person or implied subject.`,
         },
@@ -289,7 +324,7 @@ Keep it concise, professional, and tailored to the role. No first person ("I am.
       userId,
       opportunityId,
       jobId: options?.jobId,
-    }
+    },
   );
 
   const summary = summaryResponse.content?.trim() || "";
@@ -306,7 +341,7 @@ Keep it concise, professional, and tailored to the role. No first person ("I am.
 
   // Reorder skills by relevance to requirements
   const relevantSkills = allSkills.filter((s) =>
-    allRequirements.some((r) => r.text.toLowerCase().includes(s.toLowerCase()))
+    allRequirements.some((r) => r.text.toLowerCase().includes(s.toLowerCase())),
   );
   const otherSkills = allSkills.filter((s) => !relevantSkills.includes(s));
   const orderedSkills = [...relevantSkills, ...otherSkills];
@@ -322,7 +357,8 @@ Keep it concise, professional, and tailored to the role. No first person ("I am.
           messages: [
             {
               role: "system",
-              content: "You categorize technical and professional skills into logical groups. Return JSON only.",
+              content:
+                "You categorize technical and professional skills into logical groups. Return JSON only.",
             },
             {
               role: "user",
@@ -356,7 +392,7 @@ Rules:
           userId,
           opportunityId,
           jobId: options?.jobId,
-        }
+        },
       );
 
       const content = categorizationResponse.content || "{}";
@@ -371,19 +407,25 @@ Rules:
   // Get education
   const { data: eduClaims } = await client
     .from("identity_claims")
-    .select(`
+    .select(
+      `
       label,
       claim_evidence (
         evidence:evidence_id (
           context
         )
       )
-    `)
+    `,
+    )
     .eq("user_id", userId)
     .eq("type", "education");
 
   const education: ResumeEducation[] = (eduClaims || []).map((c) => {
-    const context = (c.claim_evidence?.[0] as { evidence?: { context?: { institution?: string; year?: string } } })?.evidence?.context;
+    const context = (
+      c.claim_evidence?.[0] as {
+        evidence?: { context?: { institution?: string; year?: string } };
+      }
+    )?.evidence?.context;
     return {
       degree: c.label,
       institution: context?.institution || "Unknown",

@@ -36,7 +36,10 @@ export async function POST(request: Request) {
       .single();
 
     if (existing) {
-      return NextResponse.json({ error: "Skill already exists" }, { status: 409 });
+      return NextResponse.json(
+        { error: "Skill already exists" },
+        { status: 409 },
+      );
     }
 
     const { data, error } = await supabase
@@ -54,12 +57,18 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error("Failed to create skill:", error);
-      return NextResponse.json({ error: "Failed to create skill" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to create skill" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json(data, { status: 201 });
   } catch (err) {
     console.error("Skill create error:", err);
-    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to process request" },
+      { status: 500 },
+    );
   }
 }

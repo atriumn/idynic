@@ -10,23 +10,28 @@
  */
 
 // Source types for evidence provenance
-export type SourceType = 'resume' | 'story' | 'certification' | 'inferred';
+export type SourceType = "resume" | "story" | "certification" | "inferred";
 
 // Claim types from identity_claims table
-export type ClaimType = 'skill' | 'achievement' | 'attribute' | 'education' | 'certification';
+export type ClaimType =
+  | "skill"
+  | "achievement"
+  | "attribute"
+  | "education"
+  | "certification";
 
 // Strength levels from claim_evidence junction
-export type StrengthLevel = 'weak' | 'medium' | 'strong';
+export type StrengthLevel = "weak" | "medium" | "strong";
 
 /**
  * Source weight multipliers
  * Higher = more trusted source
  */
 export const SOURCE_WEIGHTS: Record<SourceType, number> = {
-  certification: 1.5,  // Third-party verified
-  resume: 1.0,         // Professional record (baseline)
-  story: 0.8,          // Valuable but unverified
-  inferred: 0.6,       // System-derived
+  certification: 1.5, // Third-party verified
+  resume: 1.0, // Professional record (baseline)
+  story: 0.8, // Valuable but unverified
+  inferred: 0.6, // System-derived
 };
 
 /**
@@ -35,9 +40,9 @@ export const SOURCE_WEIGHTS: Record<SourceType, number> = {
  * Infinity means no decay
  */
 export const CLAIM_HALF_LIVES: Record<ClaimType, number> = {
-  skill: 4,            // Tech skills evolve fast
-  achievement: 7,      // Results matter longer
-  attribute: 15,       // Character traits are durable
+  skill: 4, // Tech skills evolve fast
+  achievement: 7, // Results matter longer
+  attribute: 15, // Character traits are durable
   education: Infinity, // Degrees don't expire
   certification: Infinity, // Credentials are permanent (expiry handled separately)
 };
@@ -64,7 +69,7 @@ export const STRENGTH_MULTIPLIERS: Record<StrengthLevel, number> = {
 export function calculateRecencyDecay(
   evidenceDate: Date | null,
   claimType: ClaimType,
-  referenceDate: Date = new Date()
+  referenceDate: Date = new Date(),
 ): number {
   // No date = no penalty (be generous)
   if (!evidenceDate) {
@@ -79,7 +84,8 @@ export function calculateRecencyDecay(
   }
 
   const msPerYear = 365.25 * 24 * 60 * 60 * 1000;
-  const ageInYears = (referenceDate.getTime() - evidenceDate.getTime()) / msPerYear;
+  const ageInYears =
+    (referenceDate.getTime() - evidenceDate.getTime()) / msPerYear;
 
   // Future dates or very recent = no decay
   if (ageInYears <= 0) {
@@ -121,13 +127,13 @@ export interface EvidenceInput {
  */
 export function calculateEvidenceWeight(
   evidence: EvidenceInput,
-  referenceDate: Date = new Date()
+  referenceDate: Date = new Date(),
 ): number {
   const strengthMultiplier = STRENGTH_MULTIPLIERS[evidence.strength];
   const recencyDecay = calculateRecencyDecay(
     evidence.evidenceDate,
     evidence.claimType,
-    referenceDate
+    referenceDate,
   );
   const sourceWeight = getSourceWeight(evidence.sourceType);
 
@@ -159,7 +165,7 @@ const MAX_CONFIDENCE = 0.95;
  */
 export function calculateClaimConfidence(
   evidenceItems: EvidenceInput[],
-  referenceDate: Date = new Date()
+  referenceDate: Date = new Date(),
 ): number {
   if (evidenceItems.length === 0) {
     return 0;
@@ -184,7 +190,7 @@ export function calculateClaimConfidence(
   // Calculate average weight across all evidence
   const totalWeight = evidenceItems.reduce(
     (sum, evidence) => sum + calculateEvidenceWeight(evidence, referenceDate),
-    0
+    0,
   );
   const avgWeight = totalWeight / evidenceItems.length;
 

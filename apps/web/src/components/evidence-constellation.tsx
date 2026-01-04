@@ -12,7 +12,13 @@ const TYPE_COLORS: Record<string, string> = {
   certification: "#14b8a6",
 };
 
-const TYPE_ORDER = ["skill", "achievement", "attribute", "education", "certification"];
+const TYPE_ORDER = [
+  "skill",
+  "achievement",
+  "attribute",
+  "education",
+  "certification",
+];
 
 const DOCUMENT_COLORS: Record<string, string> = {
   resume: "#f59e0b",
@@ -35,7 +41,10 @@ interface ConstellationProps {
   selectedClaimId?: string | null;
 }
 
-export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: ConstellationProps) {
+export function EvidenceConstellation({
+  onSelectClaim,
+  selectedClaimId,
+}: ConstellationProps) {
   const { data, isLoading, error } = useIdentityGraph();
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -108,7 +117,8 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
       const typeAngleSpan = (claims.length / totalClaims) * Math.PI * 2;
 
       claims.forEach((claim, i) => {
-        const angle = currentAngle + (i + 0.5) * (typeAngleSpan / claims.length);
+        const angle =
+          currentAngle + (i + 0.5) * (typeAngleSpan / claims.length);
         // Vary radius slightly based on confidence
         const radiusVariation = 0.9 + claim.confidence * 0.2;
         const radius = baseRadius * radiusVariation;
@@ -134,7 +144,8 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
     const g = svg.append("g");
 
     // Add zoom behavior
-    const zoom = d3.zoom<SVGSVGElement, unknown>()
+    const zoom = d3
+      .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.5, 4])
       .on("zoom", (event) => {
         g.attr("transform", event.transform);
@@ -150,7 +161,8 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
       const claims = claimsByType.get(type)!;
       const typeAngleSpan = (claims.length / totalClaims) * Math.PI * 2;
 
-      const arc = d3.arc()
+      const arc = d3
+        .arc()
         .innerRadius(baseRadius * 0.6)
         .outerRadius(baseRadius * 1.3)
         .startAngle(arcStart - Math.PI / 2)
@@ -186,7 +198,9 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
         .attr("fill", TYPE_COLORS[type] || "#888")
         .attr("font-size", isSmallSegment ? "10px" : "11px")
         .attr("font-weight", "600")
-        .text(`${type.charAt(0).toUpperCase() + type.slice(1)}${isSmallSegment ? "" : "s"} (${claims.length})`);
+        .text(
+          `${type.charAt(0).toUpperCase() + type.slice(1)}${isSmallSegment ? "" : "s"} (${claims.length})`,
+        );
 
       arcStart += typeAngleSpan;
     }
@@ -219,20 +233,23 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
         .attr("font-weight", "500")
         .text(() => {
           const maxLen = numDocs > 2 ? 15 : 22;
-          return doc.name.length > maxLen ? doc.name.slice(0, maxLen - 1) + "…" : doc.name;
+          return doc.name.length > maxLen
+            ? doc.name.slice(0, maxLen - 1) + "…"
+            : doc.name;
         });
     });
 
     // Draw claim nodes
     const claimGroup = g.append("g").attr("class", "claims");
 
-    const claimNodes = claimGroup.selectAll("g.claim")
+    const claimNodes = claimGroup
+      .selectAll("g.claim")
       .data(allClaims)
       .join("g")
       .attr("class", "claim")
-      .attr("transform", d => `translate(${d.x}, ${d.y})`)
+      .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
       .attr("cursor", "pointer")
-      .on("mouseover", function(_, d) {
+      .on("mouseover", function (_, d) {
         d3.select(this).select("circle").attr("r", 10);
         d3.select(this).select("text").attr("opacity", 1);
         setHoveredClaim(d);
@@ -253,7 +270,7 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
           }
         }
       })
-      .on("mouseout", function() {
+      .on("mouseout", function () {
         d3.select(this).select("circle").attr("r", 6);
         d3.select(this).select("text").attr("opacity", 0);
         setHoveredClaim(null);
@@ -263,22 +280,28 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
         onSelectClaim?.(d.id);
       });
 
-    claimNodes.append("circle")
+    claimNodes
+      .append("circle")
       .attr("r", 6)
-      .attr("fill", d => TYPE_COLORS[d.type] || "#888")
-      .attr("fill-opacity", d => 0.6 + d.confidence * 0.4)
-      .attr("stroke", d => d.id === selectedClaimId ? "white" : "transparent")
+      .attr("fill", (d) => TYPE_COLORS[d.type] || "#888")
+      .attr("fill-opacity", (d) => 0.6 + d.confidence * 0.4)
+      .attr("stroke", (d) =>
+        d.id === selectedClaimId ? "white" : "transparent",
+      )
       .attr("stroke-width", 2);
 
     // Labels hidden by default, shown on hover
-    claimNodes.append("text")
+    claimNodes
+      .append("text")
       .attr("dy", -10)
       .attr("text-anchor", "middle")
       .attr("fill", "currentColor")
       .attr("font-size", "9px")
       .attr("opacity", 0)
       .attr("pointer-events", "none")
-      .text(d => d.label.length > 20 ? d.label.slice(0, 19) + "…" : d.label);
+      .text((d) =>
+        d.label.length > 20 ? d.label.slice(0, 19) + "…" : d.label,
+      );
 
     return () => {};
   }, [data, dimensions, onSelectClaim, selectedClaimId]);
@@ -308,19 +331,23 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
   }
 
   return (
-    <div ref={containerRef} className="w-full h-full min-h-[400px] relative p-4">
+    <div
+      ref={containerRef}
+      className="w-full h-full min-h-[400px] relative p-4"
+    >
       <svg
         ref={svgRef}
         width={dimensions.width}
         height={dimensions.height}
         className="bg-background block mx-auto"
-        style={{ maxWidth: '100%', maxHeight: '100%' }}
+        style={{ maxWidth: "100%", maxHeight: "100%" }}
       />
       {/* Legend */}
       <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 text-xs border max-w-[220px]">
         <div className="font-medium mb-2">Document Sources</div>
         <div className="text-muted-foreground mb-2">
-          Documents in center, claims radiate outward grouped by type. Hover to see which document sourced each claim.
+          Documents in center, claims radiate outward grouped by type. Hover to
+          see which document sourced each claim.
         </div>
         <div className="text-muted-foreground/70">
           Lines connect claims to their source documents.
@@ -331,7 +358,8 @@ export function EvidenceConstellation({ onSelectClaim, selectedClaimId }: Conste
         <div className="absolute top-8 right-8 bg-background/95 backdrop-blur-sm rounded-lg p-3 text-sm shadow-lg border max-w-xs z-10">
           <div className="font-medium">{hoveredClaim.label}</div>
           <div className="text-muted-foreground text-xs mt-1">
-            <span className="capitalize">{hoveredClaim.type}</span> · {Math.round(hoveredClaim.confidence * 100)}% confidence
+            <span className="capitalize">{hoveredClaim.type}</span> ·{" "}
+            {Math.round(hoveredClaim.confidence * 100)}% confidence
           </div>
         </div>
       )}

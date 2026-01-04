@@ -84,12 +84,10 @@ describe("synthesizeClaimsBatch with RAG", () => {
           }),
           insert: vi.fn().mockReturnValue({
             select: vi.fn().mockReturnValue({
-              single: vi
-                .fn()
-                .mockResolvedValue({
-                  data: { id: "new-claim-id" },
-                  error: null,
-                }),
+              single: vi.fn().mockResolvedValue({
+                data: { id: "new-claim-id" },
+                error: null,
+              }),
             }),
           }),
           update: vi.fn().mockReturnValue({

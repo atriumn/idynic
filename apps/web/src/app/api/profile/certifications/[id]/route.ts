@@ -10,7 +10,7 @@ interface CertificationUpdateBody {
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const supabase = await createClient();
   const { id } = await params;
@@ -36,7 +36,10 @@ export async function PATCH(
       .single();
 
     if (!existing) {
-      return NextResponse.json({ error: "Certification not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Certification not found" },
+        { status: 404 },
+      );
     }
 
     const existingContext = (existing.context as Record<string, unknown>) || {};
@@ -64,19 +67,25 @@ export async function PATCH(
 
     if (error) {
       console.error("Failed to update certification:", error);
-      return NextResponse.json({ error: "Failed to update certification" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to update certification" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json(data);
   } catch (err) {
     console.error("Certification update error:", err);
-    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to process request" },
+      { status: 500 },
+    );
   }
 }
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const supabase = await createClient();
   const { id } = await params;
@@ -98,7 +107,10 @@ export async function DELETE(
 
   if (error) {
     console.error("Failed to delete certification:", error);
-    return NextResponse.json({ error: "Failed to delete certification" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete certification" },
+      { status: 500 },
+    );
   }
 
   return NextResponse.json({ success: true });

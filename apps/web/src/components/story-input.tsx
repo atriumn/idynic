@@ -8,7 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useDocumentJob } from "@/lib/hooks/use-document-job";
-import { STORY_PHASES, PHASE_LABELS, type DocumentJobPhase, type JobSummary } from "@idynic/shared/types";
+import {
+  STORY_PHASES,
+  PHASE_LABELS,
+  type DocumentJobPhase,
+  type JobSummary,
+} from "@idynic/shared/types";
 
 interface StoryInputProps {
   onSubmitComplete?: () => void;
@@ -110,13 +115,17 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
                     key={phase}
                     className={cn(
                       "flex items-center gap-2 text-sm transition-opacity",
-                      isPending && "opacity-40"
+                      isPending && "opacity-40",
                     )}
                   >
                     {isCompleted ? (
                       <span className="text-green-500">✓</span>
                     ) : isCurrent ? (
-                      <svg className="h-4 w-4 animate-spin text-teal-500" viewBox="0 0 24 24" fill="none">
+                      <svg
+                        className="h-4 w-4 animate-spin text-teal-500"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
                         <circle
                           className="opacity-25"
                           cx="12"
@@ -155,7 +164,7 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
                         index === 0 && "font-medium",
                         index > 0 && "opacity-60",
                         index > 1 && "opacity-40 blur-[0.5px]",
-                        index > 2 && "opacity-20 blur-[1px]"
+                        index > 2 && "opacity-20 blur-[1px]",
                       )}
                     >
                       {message.text}
@@ -168,12 +177,17 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
 
             {isComplete && summary && (
               <div className="rounded-md bg-teal-500/10 border border-teal-600 p-3 text-sm">
-                <p className="font-medium text-teal-400">Processing complete!</p>
+                <p className="font-medium text-teal-400">
+                  Processing complete!
+                </p>
                 <p className="text-teal-300 mt-1">
                   {summary.claimsCreated > 0 &&
                     `+${summary.claimsCreated} new claim${summary.claimsCreated > 1 ? "s" : ""}`}
-                  {summary.claimsCreated > 0 && summary.claimsUpdated > 0 && ", "}
-                  {summary.claimsUpdated > 0 && `${summary.claimsUpdated} updated`}
+                  {summary.claimsCreated > 0 &&
+                    summary.claimsUpdated > 0 &&
+                    ", "}
+                  {summary.claimsUpdated > 0 &&
+                    `${summary.claimsUpdated} updated`}
                   {summary.claimsCreated === 0 &&
                     summary.claimsUpdated === 0 &&
                     "No new claims (may match existing)"}
@@ -181,7 +195,9 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
               </div>
             )}
 
-            {job?.warning && <p className="text-sm text-yellow-500">{job.warning}</p>}
+            {job?.warning && (
+              <p className="text-sm text-yellow-500">{job.warning}</p>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
@@ -197,12 +213,18 @@ export function StoryInput({ onSubmitComplete }: StoryInputProps) {
               <span
                 className={cn(
                   "text-xs",
-                  charCount < MIN_LENGTH ? "text-muted-foreground" : "text-green-600"
+                  charCount < MIN_LENGTH
+                    ? "text-muted-foreground"
+                    : "text-green-600",
                 )}
               >
                 {charCount}/{MIN_LENGTH} min characters
               </span>
-              <Button onClick={handleSubmit} disabled={!isValidLength} size="sm">
+              <Button
+                onClick={handleSubmit}
+                disabled={!isValidLength}
+                size="sm"
+              >
                 Submit Story
               </Button>
             </div>

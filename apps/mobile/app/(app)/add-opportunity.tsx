@@ -23,18 +23,29 @@ import { Check, X, Loader2, Link as LinkIcon } from "lucide-react-native";
 export default function AddOpportunityScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const params = useLocalSearchParams<{ url?: string; jobId?: string; error?: string }>();
+  const params = useLocalSearchParams<{
+    url?: string;
+    jobId?: string;
+    error?: string;
+  }>();
 
   const [url, setUrl] = useState(params.url || "");
   const [description, setDescription] = useState("");
   // Use jobId from params if passed (from share intent), otherwise null
   const [jobId, setJobId] = useState<string | null>(params.jobId || null);
 
-  const { addOpportunity, isSubmitting, error: submitError, reset } = useAddOpportunity();
+  const {
+    addOpportunity,
+    isSubmitting,
+    error: submitError,
+    reset,
+  } = useAddOpportunity();
   const { job, displayMessages } = useDocumentJob(jobId);
 
   // Show error from share intent if present
-  const [shareError, setShareError] = useState<string | null>(params.error || null);
+  const [shareError, setShareError] = useState<string | null>(
+    params.error || null,
+  );
 
   // Handle job completion
   useEffect(() => {
@@ -42,7 +53,8 @@ export default function AddOpportunityScreen() {
       queryClient.invalidateQueries({ queryKey: ["opportunities"] });
       // Navigate to the opportunity after a brief delay
       setTimeout(() => {
-        const opportunityId = (job.summary as { opportunityId?: string })?.opportunityId;
+        const opportunityId = (job.summary as { opportunityId?: string })
+          ?.opportunityId;
         if (opportunityId) {
           router.replace(`/opportunities/${opportunityId}`);
         } else {
@@ -85,7 +97,9 @@ export default function AddOpportunityScreen() {
   const isCompleted = job?.status === "completed";
   const isFailed = job?.status === "failed";
   const currentPhase = job?.phase as DocumentJobPhase | null;
-  const phaseIndex = currentPhase ? OPPORTUNITY_PHASES.indexOf(currentPhase) : -1;
+  const phaseIndex = currentPhase
+    ? OPPORTUNITY_PHASES.indexOf(currentPhase)
+    : -1;
 
   // Show processing view
   if (jobId) {
@@ -110,17 +124,17 @@ export default function AddOpportunityScreen() {
             {isCompleted
               ? "Opportunity Added!"
               : isFailed
-              ? "Processing Failed"
-              : "Processing Opportunity"}
+                ? "Processing Failed"
+                : "Processing Opportunity"}
           </Text>
           <Text className="text-slate-400 text-center">
             {isCompleted
               ? "Taking you to your opportunity..."
               : isFailed
-              ? job?.error || "Something went wrong"
-              : currentPhase
-              ? PHASE_LABELS[currentPhase]
-              : "Starting..."}
+                ? job?.error || "Something went wrong"
+                : currentPhase
+                  ? PHASE_LABELS[currentPhase]
+                  : "Starting..."}
           </Text>
         </View>
 
@@ -189,14 +203,18 @@ export default function AddOpportunityScreen() {
       className="flex-1 bg-slate-900"
     >
       <ScrollView className="flex-1 p-6">
-        <Text className="text-white text-2xl font-bold mb-2">Add Opportunity</Text>
+        <Text className="text-white text-2xl font-bold mb-2">
+          Add Opportunity
+        </Text>
         <Text className="text-slate-400 mb-6">
           Share a job URL or paste the description
         </Text>
 
         {/* URL Input */}
         <View className="mb-4">
-          <Text className="text-slate-300 text-sm font-medium mb-2">Job URL</Text>
+          <Text className="text-slate-300 text-sm font-medium mb-2">
+            Job URL
+          </Text>
           <View className="flex-row items-center bg-slate-800 rounded-lg px-4 py-3">
             <LinkIcon size={18} color="#64748b" />
             <TextInput
@@ -236,7 +254,9 @@ export default function AddOpportunityScreen() {
         {/* Error message */}
         {(submitError || shareError) && (
           <View className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-4">
-            <Text className="text-red-400 text-sm">{submitError || shareError}</Text>
+            <Text className="text-red-400 text-sm">
+              {submitError || shareError}
+            </Text>
           </View>
         )}
 

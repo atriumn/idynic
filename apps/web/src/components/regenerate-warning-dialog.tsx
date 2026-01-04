@@ -33,7 +33,9 @@ export function RegenerateWarningDialog({
             Regenerate Profile?
           </DialogTitle>
           <DialogDescription>
-            You have {editedFieldCount} edited {editedFieldCount === 1 ? "field" : "fields"} that will be lost if you regenerate. This action cannot be undone.
+            You have {editedFieldCount} edited{" "}
+            {editedFieldCount === 1 ? "field" : "fields"} that will be lost if
+            you regenerate. This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

@@ -20,7 +20,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Bug, Lightbulb, HelpCircle, Loader2, ExternalLink } from "lucide-react";
+import {
+  Bug,
+  Lightbulb,
+  HelpCircle,
+  Loader2,
+  ExternalLink,
+} from "lucide-react";
 import { toast } from "sonner";
 
 type FeedbackType = "bug" | "feature" | "question";
@@ -94,7 +100,9 @@ export function FeedbackModal({ trigger }: FeedbackModalProps) {
       setSubmitted({ issueUrl: data.issueUrl });
       toast.success("Feedback submitted successfully!");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to submit feedback");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to submit feedback",
+      );
     } finally {
       setLoading(false);
     }
@@ -113,47 +121,57 @@ export function FeedbackModal({ trigger }: FeedbackModalProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => isOpen ? setOpen(true) : handleClose()}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => (isOpen ? setOpen(true) : handleClose())}
+    >
       <DialogTrigger asChild>
         {trigger || (
-          <button className="hover:text-foreground">
-            Report a Bug
-          </button>
+          <button className="hover:text-foreground">Report a Bug</button>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Send Feedback</DialogTitle>
           <DialogDescription>
-            Help us improve Idynic by reporting bugs, requesting features, or asking questions.
+            Help us improve Idynic by reporting bugs, requesting features, or
+            asking questions.
           </DialogDescription>
         </DialogHeader>
 
         {submitted ? (
           <div className="space-y-4 py-4">
             <div className="text-center space-y-2">
-              <div className="text-green-600 text-lg font-medium">Thank you!</div>
+              <div className="text-green-600 text-lg font-medium">
+                Thank you!
+              </div>
               <p className="text-muted-foreground text-sm">
-                Your feedback has been submitted. You can track its progress on GitHub.
+                Your feedback has been submitted. You can track its progress on
+                GitHub.
               </p>
             </div>
             <div className="flex flex-col gap-2">
               <Button asChild variant="outline">
-                <a href={submitted.issueUrl} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={submitted.issueUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <ExternalLink className="h-4 w-4 mr-2" />
                   View on GitHub
                 </a>
               </Button>
-              <Button onClick={handleClose}>
-                Close
-              </Button>
+              <Button onClick={handleClose}>Close</Button>
             </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label>Type</Label>
-              <Select value={type} onValueChange={(v) => setType(v as FeedbackType)}>
+              <Select
+                value={type}
+                onValueChange={(v) => setType(v as FeedbackType)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

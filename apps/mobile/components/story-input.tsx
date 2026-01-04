@@ -83,7 +83,9 @@ export function StoryInput({ onComplete }: StoryInputProps) {
   }, [text, isValidLength, session?.access_token]);
 
   // Calculate phase states - include jobId check to handle loading/pending states
-  const isProcessing = isSubmitting || (jobId !== null && job?.status !== "completed" && job?.status !== "failed");
+  const isProcessing =
+    isSubmitting ||
+    (jobId !== null && job?.status !== "completed" && job?.status !== "failed");
   const isComplete = job?.status === "completed";
   const currentPhase = job?.phase as DocumentJobPhase | null;
 
@@ -154,7 +156,9 @@ export function StoryInput({ onComplete }: StoryInputProps) {
         {/* Completion summary */}
         {isComplete && summary && (
           <View className="bg-teal-900/30 border border-teal-700 rounded-xl p-4">
-            <Text className="text-teal-400 font-semibold mb-1">Processing complete!</Text>
+            <Text className="text-teal-400 font-semibold mb-1">
+              Processing complete!
+            </Text>
             <Text className="text-teal-300 text-sm">
               {summary.claimsCreated > 0 &&
                 `+${summary.claimsCreated} new claim${summary.claimsCreated > 1 ? "s" : ""}`}

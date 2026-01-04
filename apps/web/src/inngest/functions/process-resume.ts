@@ -1,7 +1,13 @@
 import { inngest } from "../client";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
-import { extractEvidence, type ExtractedEvidence } from "@/lib/ai/extract-evidence";
-import { extractWorkHistory, type ExtractedJob } from "@/lib/ai/extract-work-history";
+import {
+  extractEvidence,
+  type ExtractedEvidence,
+} from "@/lib/ai/extract-evidence";
+import {
+  extractWorkHistory,
+  type ExtractedJob,
+} from "@/lib/ai/extract-work-history";
 import { extractResume } from "@/lib/ai/extract-resume";
 import { generateEmbeddings } from "@/lib/ai/embeddings";
 import { synthesizeClaimsBatch } from "@/lib/ai/synthesize-claims-batch";
@@ -36,7 +42,10 @@ export const processResume = inngest.createFunction(
         })
         .eq("id", jobId);
 
-      console.error("[process-resume] Job failed after retries:", { jobId, error: errorMessage });
+      console.error("[process-resume] Job failed after retries:", {
+        jobId,
+        error: errorMessage,
+      });
 
       // Flush logs to Axiom on failure
       const { log } = await import("@/lib/logger");
@@ -97,13 +106,16 @@ export const processResume = inngest.createFunction(
 
         if (!count || count === 0) {
           // Orphaned document from failed processing - clean it up
-          jobLog.info("Cleaning up orphaned document from previous failed upload", { docId: existingDoc.id });
+          jobLog.info(
+            "Cleaning up orphaned document from previous failed upload",
+            { docId: existingDoc.id },
+          );
           await supabase.from("documents").delete().eq("id", existingDoc.id);
           return false; // Allow re-upload
         }
 
         await job.setError(
-          `Duplicate document - already uploaded on ${new Date(existingDoc.created_at || Date.now()).toLocaleDateString()}`
+          `Duplicate document - already uploaded on ${new Date(existingDoc.created_at || Date.now()).toLocaleDateString()}`,
         );
         return true;
       }
@@ -123,21 +135,24 @@ export const processResume = inngest.createFunction(
 
       let evidenceError: string | null = null;
 
-      const [evidenceResult, workHistoryResult, resumeResult] = await Promise.all([
-        extractEvidence(rawText, 'resume', { userId, jobId }).catch((err) => {
-          jobLog.error("Evidence extraction error", { error: err.message });
-          evidenceError = err.message;
-          return [];
-        }),
-        extractWorkHistory(rawText, { userId, jobId }).catch((err) => {
-          jobLog.error("Work history extraction error", { error: err.message });
-          return [];
-        }),
-        extractResume(rawText, { userId, jobId }).catch((err) => {
-          jobLog.error("Resume extraction error", { error: err.message });
-          return null;
-        }),
-      ]);
+      const [evidenceResult, workHistoryResult, resumeResult] =
+        await Promise.all([
+          extractEvidence(rawText, "resume", { userId, jobId }).catch((err) => {
+            jobLog.error("Evidence extraction error", { error: err.message });
+            evidenceError = err.message;
+            return [];
+          }),
+          extractWorkHistory(rawText, { userId, jobId }).catch((err) => {
+            jobLog.error("Work history extraction error", {
+              error: err.message,
+            });
+            return [];
+          }),
+          extractResume(rawText, { userId, jobId }).catch((err) => {
+            jobLog.error("Resume extraction error", { error: err.message });
+            return null;
+          }),
+        ]);
 
       // If evidence extraction failed, show the error to the user
       if (evidenceError) {
@@ -152,10 +167,18 @@ export const processResume = inngest.createFunction(
 
       // Send extraction summary (inside step so it only runs once)
       if (evidenceResult.length > 0) {
-        const skills = evidenceResult.filter(e => e.type === "skill_listed").length;
-        const achievements = evidenceResult.filter(e => e.type === "accomplishment").length;
-        const education = evidenceResult.filter(e => e.type === "education").length;
-        const certs = evidenceResult.filter(e => e.type === "certification").length;
+        const skills = evidenceResult.filter(
+          (e) => e.type === "skill_listed",
+        ).length;
+        const achievements = evidenceResult.filter(
+          (e) => e.type === "accomplishment",
+        ).length;
+        const education = evidenceResult.filter(
+          (e) => e.type === "education",
+        ).length;
+        const certs = evidenceResult.filter(
+          (e) => e.type === "certification",
+        ).length;
 
         const parts: string[] = [];
         if (skills > 0) parts.push(`${skills} skills`);
@@ -176,7 +199,8 @@ export const processResume = inngest.createFunction(
     });
 
     const evidenceItems = extractionResult.evidenceItems as ExtractedEvidence[];
-    const workHistoryItems = extractionResult.workHistoryItems as ExtractedJob[];
+    const workHistoryItems =
+      extractionResult.workHistoryItems as ExtractedJob[];
     const resumeData = extractionResult.resumeData;
 
     // Step 4: Update profile with contact info
@@ -199,7 +223,9 @@ export const processResume = inngest.createFunction(
             .eq("id", userId);
 
           if (profileError) {
-            jobLog.error("Profile update error", { error: profileError.message });
+            jobLog.error("Profile update error", {
+              error: profileError.message,
+            });
           }
         }
       });
@@ -213,7 +239,9 @@ export const processResume = inngest.createFunction(
       const highlights = extractHighlights(evidenceItems, workHistoryItems);
       if (highlights.length > 0) {
         await job.addHighlights(
-          highlights.slice(0, 10).map((h) => ({ text: h.text, type: "found" as const }))
+          highlights
+            .slice(0, 10)
+            .map((h) => ({ text: h.text, type: "found" as const })),
         );
       }
 
@@ -241,9 +269,14 @@ export const processResume = inngest.createFunction(
 
     if (evidenceItems.length === 0) {
       await step.run("complete-no-evidence", async () => {
-        await supabase.from("documents").update({ status: "completed" }).eq("id", document.id);
+        await supabase
+          .from("documents")
+          .update({ status: "completed" })
+          .eq("id", document.id);
         // Show warning that no evidence was found
-        await job.setWarning("No evidence could be extracted from this resume. The file may be image-based or in an unsupported format.");
+        await job.setWarning(
+          "No evidence could be extracted from this resume. The file may be image-based or in an unsupported format.",
+        );
         await job.complete(
           {
             documentId: document.id,
@@ -252,7 +285,7 @@ export const processResume = inngest.createFunction(
             claimsCreated: 0,
             claimsUpdated: 0,
           },
-          document.id
+          document.id,
         );
       });
       const { log } = await import("@/lib/logger");
@@ -265,8 +298,10 @@ export const processResume = inngest.createFunction(
       if (workHistoryItems.length === 0) return [];
 
       const sortedWorkHistory = [...workHistoryItems].sort((a, b) => {
-        const aIsCurrent = !a.end_date || a.end_date.toLowerCase() === "present";
-        const bIsCurrent = !b.end_date || b.end_date.toLowerCase() === "present";
+        const aIsCurrent =
+          !a.end_date || a.end_date.toLowerCase() === "present";
+        const bIsCurrent =
+          !b.end_date || b.end_date.toLowerCase() === "present";
         if (aIsCurrent && !bIsCurrent) return -1;
         if (!aIsCurrent && bIsCurrent) return 1;
         const aYear = parseInt(a.start_date.match(/\d{4}/)?.[0] || "0");
@@ -305,7 +340,10 @@ export const processResume = inngest.createFunction(
     const embeddings = await step.run("generate-embeddings", async () => {
       const totalBatches = Math.ceil(evidenceItems.length / 100); // Match BATCH_SIZE in embeddings.ts
       await job.setPhase("embeddings", `0/${totalBatches}`);
-      jobLog.info("Generating embeddings", { count: evidenceItems.length, batches: totalBatches });
+      jobLog.info("Generating embeddings", {
+        count: evidenceItems.length,
+        batches: totalBatches,
+      });
 
       const evidenceTexts = evidenceItems.map((e) => e.text);
       const embeddings = await generateEmbeddings(evidenceTexts, (progress) => {
@@ -343,19 +381,29 @@ export const processResume = inngest.createFunction(
     if (storedWorkHistory.length > 0 && storedEvidence.length > 0) {
       await step.run("link-evidence", async () => {
         // Collect all updates first
-        const updates: Array<{ evidenceId: string; workHistoryId: string }> = [];
+        const updates: Array<{ evidenceId: string; workHistoryId: string }> =
+          [];
 
         for (const evidence of storedEvidence) {
-          const context = evidence.context as { role?: string; company?: string } | null;
+          const context = evidence.context as {
+            role?: string;
+            company?: string;
+          } | null;
           if (context?.company || context?.role) {
             const match = storedWorkHistory.find(
               (wh) =>
                 (context.company &&
-                  wh.company.toLowerCase().includes(context.company.toLowerCase())) ||
-                (context.role && wh.title.toLowerCase().includes(context.role.toLowerCase()))
+                  wh.company
+                    .toLowerCase()
+                    .includes(context.company.toLowerCase())) ||
+                (context.role &&
+                  wh.title.toLowerCase().includes(context.role.toLowerCase())),
             );
             if (match) {
-              updates.push({ evidenceId: evidence.id, workHistoryId: match.id });
+              updates.push({
+                evidenceId: evidence.id,
+                workHistoryId: match.id,
+              });
             }
           }
         }
@@ -367,8 +415,8 @@ export const processResume = inngest.createFunction(
               supabase
                 .from("evidence")
                 .update({ work_history_id: workHistoryId })
-                .eq("id", evidenceId)
-            )
+                .eq("id", evidenceId),
+            ),
           );
         }
       });
@@ -400,15 +448,18 @@ export const processResume = inngest.createFunction(
             job.updateProgress(`${progress.current}/${progress.total}`);
           },
           (claimUpdate) => {
-            const type = claimUpdate.action === "created" ? "created" : "updated";
+            const type =
+              claimUpdate.action === "created" ? "created" : "updated";
             job.addHighlight(claimUpdate.label, type);
           },
-          { jobId }
+          { jobId },
         );
         jobLog.info("Synthesis complete", result);
         return result;
       } catch (err) {
-        jobLog.error("Synthesis error", { error: err instanceof Error ? err.message : String(err) });
+        jobLog.error("Synthesis error", {
+          error: err instanceof Error ? err.message : String(err),
+        });
         await job.setWarning("Claim synthesis partially failed");
         return { claimsCreated: 0, claimsUpdated: 0 };
       }
@@ -424,19 +475,26 @@ export const processResume = inngest.createFunction(
     await step.run("claim-eval", async () => {
       await job.setPhase("evaluation");
       try {
-        const evalResult = await runClaimEval(supabase, userId, document.id, { jobId });
+        const evalResult = await runClaimEval(supabase, userId, document.id, {
+          jobId,
+        });
         if (evalResult.issuesFound > 0) {
           jobLog.info("Claim eval complete", { ...evalResult });
         }
       } catch (err) {
         // Don't fail the job if eval fails - it's supplementary
-        jobLog.error("Claim eval error", { error: err instanceof Error ? err.message : String(err) });
+        jobLog.error("Claim eval error", {
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
     });
 
     // Step 13: Complete job
     await step.run("complete-job", async () => {
-      await supabase.from("documents").update({ status: "completed" }).eq("id", document.id);
+      await supabase
+        .from("documents")
+        .update({ status: "completed" })
+        .eq("id", document.id);
 
       const summary = {
         documentId: document.id,
@@ -459,5 +517,5 @@ export const processResume = inngest.createFunction(
       documentId: document.id,
       evidenceCount: storedEvidence.length,
     };
-  }
+  },
 );

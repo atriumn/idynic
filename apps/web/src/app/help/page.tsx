@@ -16,7 +16,10 @@ import {
 } from "lucide-react";
 import { HELP_DOCS } from "@idynic/shared";
 
-const SECTION_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+const SECTION_ICONS: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
   rocket: Rocket,
   user: User,
   briefcase: Briefcase,
@@ -34,7 +37,11 @@ function RichText({ children }: { children: string }) {
     <>
       {parts.map((part, i) => {
         if (part.startsWith("**") && part.endsWith("**")) {
-          return <strong key={i} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>;
+          return (
+            <strong key={i} className="font-semibold text-foreground">
+              {part.slice(2, -2)}
+            </strong>
+          );
         }
         return <span key={i}>{part}</span>;
       })}
@@ -44,7 +51,7 @@ function RichText({ children }: { children: string }) {
 
 export default function HelpPage() {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(["getting-started"])
+    new Set(["getting-started"]),
   );
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
@@ -91,7 +98,10 @@ export default function HelpPage() {
           const isIntegrations = section.id === "integrations";
 
           return (
-            <div key={section.id} className="border rounded-lg bg-card overflow-hidden">
+            <div
+              key={section.id}
+              className="border rounded-lg bg-card overflow-hidden"
+            >
               <button
                 onClick={() => toggleSection(section.id)}
                 className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors"
@@ -112,7 +122,9 @@ export default function HelpPage() {
                     return (
                       <div
                         key={item.id}
-                        className={i < section.items.length - 1 ? "border-b" : ""}
+                        className={
+                          i < section.items.length - 1 ? "border-b" : ""
+                        }
                       >
                         <button
                           onClick={() => toggleItem(item.id)}
@@ -162,7 +174,10 @@ export default function HelpPage() {
             const isExpanded = expandedItems.has(id);
 
             return (
-              <div key={i} className="border rounded-lg bg-card overflow-hidden">
+              <div
+                key={i}
+                className="border rounded-lg bg-card overflow-hidden"
+              >
                 <button
                   onClick={() => toggleItem(id)}
                   className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors"

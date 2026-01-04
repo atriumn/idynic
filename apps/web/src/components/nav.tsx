@@ -35,7 +35,10 @@ export function Nav({ user }: NavProps) {
     <nav className="border-b bg-background">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-semibold text-lg"
+          >
             <Image
               src="/logo.svg"
               alt="Idynic"
@@ -141,7 +144,10 @@ export function Nav({ user }: NavProps) {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="cursor-pointer"
+                >
                   Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>

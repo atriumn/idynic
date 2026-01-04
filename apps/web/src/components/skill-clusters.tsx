@@ -36,7 +36,10 @@ interface ClustersProps {
   selectedClaimId?: string | null;
 }
 
-export function SkillClusters({ onSelectClaim, selectedClaimId }: ClustersProps) {
+export function SkillClusters({
+  onSelectClaim,
+  selectedClaimId,
+}: ClustersProps) {
   const { data, isLoading, error } = useSkillClusters();
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -103,7 +106,10 @@ export function SkillClusters({ onSelectClaim, selectedClaimId }: ClustersProps)
       .data(data.nodes)
       .join("g")
       .attr("class", "node")
-      .attr("transform", (d: ClusterNode) => `translate(${xScale(d.x)}, ${yScale(d.y)})`)
+      .attr(
+        "transform",
+        (d: ClusterNode) => `translate(${xScale(d.x)}, ${yScale(d.y)})`,
+      )
       .attr("cursor", "pointer")
       .on("mouseover", function (_, d: ClusterNode) {
         d3.select(this).select("circle").attr("r", 12);
@@ -126,7 +132,9 @@ export function SkillClusters({ onSelectClaim, selectedClaimId }: ClustersProps)
       .attr("r", (d: ClusterNode) => 4 + d.confidence * 6)
       .attr("fill", (d: ClusterNode) => TYPE_COLORS[d.type] || "#888")
       .attr("fill-opacity", (d: ClusterNode) => 0.6 + d.confidence * 0.4)
-      .attr("stroke", (d: ClusterNode) => (d.id === selectedClaimId ? "white" : "transparent"))
+      .attr("stroke", (d: ClusterNode) =>
+        d.id === selectedClaimId ? "white" : "transparent",
+      )
       .attr("stroke-width", 2);
 
     // Labels hidden by default, shown on hover
@@ -138,7 +146,9 @@ export function SkillClusters({ onSelectClaim, selectedClaimId }: ClustersProps)
       .attr("font-size", "10px")
       .attr("opacity", 0)
       .attr("pointer-events", "none")
-      .text((d: ClusterNode) => (d.label.length > 20 ? d.label.slice(0, 19) + "…" : d.label));
+      .text((d: ClusterNode) =>
+        d.label.length > 20 ? d.label.slice(0, 19) + "…" : d.label,
+      );
 
     // Draw subtle cluster boundaries (no labels - let proximity speak for itself)
     if (data.regions && data.regions.length > 0) {
@@ -200,7 +210,10 @@ export function SkillClusters({ onSelectClaim, selectedClaimId }: ClustersProps)
   }
 
   return (
-    <div ref={containerRef} className="w-full h-full min-h-[400px] relative p-4">
+    <div
+      ref={containerRef}
+      className="w-full h-full min-h-[400px] relative p-4"
+    >
       <svg
         ref={svgRef}
         width={dimensions.width}

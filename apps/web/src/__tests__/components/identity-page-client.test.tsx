@@ -216,11 +216,12 @@ describe("IdentityPageClient", () => {
       });
     });
 
-    it('shows "All verified" badge when no issues', async () => {
+    it("shows no issue badge when all claims are verified", async () => {
       render(<IdentityPageClient hasAnyClaims={true} />);
 
       await waitFor(() => {
-        expect(screen.getByText("All verified")).toBeInTheDocument();
+        // When no issues, the issue badge should not be present
+        expect(screen.queryByText(/issue/i)).not.toBeInTheDocument();
       });
     });
 
@@ -228,17 +229,17 @@ describe("IdentityPageClient", () => {
       render(<IdentityPageClient hasAnyClaims={true} />);
 
       await waitFor(() => {
-        // There should be multiple view toggle buttons
-        const buttons = screen.getAllByRole("button");
-        expect(buttons.length).toBeGreaterThan(2);
+        // Should have list and clusters view toggle buttons
+        const listButton = screen.getByTitle("List - Data view");
+        expect(listButton).toBeInTheDocument();
       });
     });
 
-    it("shows My Documents link in header", async () => {
+    it("shows blocks badge in header", async () => {
       render(<IdentityPageClient hasAnyClaims={true} />);
 
       await waitFor(() => {
-        expect(screen.getByText("My Documents")).toBeInTheDocument();
+        expect(screen.getByText("2 blocks")).toBeInTheDocument();
       });
     });
 
@@ -276,12 +277,12 @@ describe("IdentityPageClient", () => {
       });
     });
 
-    it("shows My Documents link in header when claims exist from hook", async () => {
+    it("shows blocks badge in header when claims exist from hook", async () => {
       render(<IdentityPageClient hasAnyClaims={false} />);
 
       await waitFor(() => {
-        // Should have My Documents link in header when hook returns claims
-        expect(screen.getByText("My Documents")).toBeInTheDocument();
+        // Should have blocks badge in header when hook returns claims
+        expect(screen.getByText("2 blocks")).toBeInTheDocument();
       });
     });
   });

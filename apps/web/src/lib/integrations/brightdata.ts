@@ -1,7 +1,7 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-const BRIGHTDATA_API_URL = 'https://api.brightdata.com/datasets/v3/scrape';
-const LINKEDIN_JOBS_DATASET_ID = 'gd_lpfll7v5hcqtkxl6l';
+const BRIGHTDATA_API_URL = "https://api.brightdata.com/datasets/v3/scrape";
+const LINKEDIN_JOBS_DATASET_ID = "gd_lpfll7v5hcqtkxl6l";
 
 // Response schema from Bright Data
 const LinkedInJobSchema = z.object({
@@ -42,7 +42,7 @@ export type LinkedInJob = z.infer<typeof LinkedInJobSchema>;
 export async function fetchLinkedInJob(jobUrl: string): Promise<LinkedInJob> {
   const apiKey = process.env.BRIGHTDATA_API_KEY;
   if (!apiKey) {
-    throw new Error('BRIGHTDATA_API_KEY not configured');
+    throw new Error("BRIGHTDATA_API_KEY not configured");
   }
 
   const normalizedUrl = normalizeLinkedInJobUrl(jobUrl);
@@ -50,13 +50,13 @@ export async function fetchLinkedInJob(jobUrl: string): Promise<LinkedInJob> {
   const response = await fetch(
     `${BRIGHTDATA_API_URL}?dataset_id=${LINKEDIN_JOBS_DATASET_ID}&format=json`,
     {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify([{ url: normalizedUrl }]),
-    }
+    },
   );
 
   if (!response.ok) {
@@ -67,7 +67,7 @@ export async function fetchLinkedInJob(jobUrl: string): Promise<LinkedInJob> {
   const data = await response.json();
 
   if (!Array.isArray(data) || data.length === 0) {
-    throw new Error('No job data returned from Bright Data');
+    throw new Error("No job data returned from Bright Data");
   }
 
   return LinkedInJobSchema.parse(data[0]);
@@ -80,7 +80,7 @@ function normalizeLinkedInJobUrl(url: string): string {
   const parsed = new URL(url);
   const jobId = parsed.pathname.match(/\/jobs\/view\/(\d+)/)?.[1];
   if (!jobId) {
-    throw new Error('Invalid LinkedIn job URL');
+    throw new Error("Invalid LinkedIn job URL");
   }
   return `https://www.linkedin.com/jobs/view/${jobId}/`;
 }
@@ -92,7 +92,8 @@ export function isLinkedInJobUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
     return (
-      parsed.hostname.includes('linkedin.com') && parsed.pathname.includes('/jobs/view/')
+      parsed.hostname.includes("linkedin.com") &&
+      parsed.pathname.includes("/jobs/view/")
     );
   } catch {
     return false;

@@ -1,9 +1,9 @@
-import { vi } from 'vitest'
+import { vi } from "vitest";
 
 export function createMockSupabaseClient() {
-  let mockData: unknown = null
-  let mockError: Error | null = null
-  let mockCount: number | null = null
+  let mockData: unknown = null;
+  let mockError: Error | null = null;
+  let mockCount: number | null = null;
 
   const chainableMock = {
     from: vi.fn().mockReturnThis(),
@@ -25,52 +25,74 @@ export function createMockSupabaseClient() {
     order: vi.fn().mockReturnThis(),
     limit: vi.fn().mockReturnThis(),
     range: vi.fn().mockReturnThis(),
-    single: vi.fn().mockImplementation(() =>
-      Promise.resolve({ data: mockData, error: mockError })
-    ),
-    maybeSingle: vi.fn().mockImplementation(() =>
-      Promise.resolve({ data: mockData, error: mockError })
-    ),
-    then: vi.fn().mockImplementation((resolve) =>
-      resolve({ data: mockData, error: mockError, count: mockCount })
-    ),
+    single: vi
+      .fn()
+      .mockImplementation(() =>
+        Promise.resolve({ data: mockData, error: mockError }),
+      ),
+    maybeSingle: vi
+      .fn()
+      .mockImplementation(() =>
+        Promise.resolve({ data: mockData, error: mockError }),
+      ),
+    then: vi
+      .fn()
+      .mockImplementation((resolve) =>
+        resolve({ data: mockData, error: mockError, count: mockCount }),
+      ),
 
     // Test helpers
-    __setMockData: (data: unknown) => { mockData = data },
-    __setMockError: (error: Error | null) => { mockError = error },
-    __setMockCount: (count: number | null) => { mockCount = count },
+    __setMockData: (data: unknown) => {
+      mockData = data;
+    },
+    __setMockError: (error: Error | null) => {
+      mockError = error;
+    },
+    __setMockCount: (count: number | null) => {
+      mockCount = count;
+    },
     __reset: () => {
-      mockData = null
-      mockError = null
-      mockCount = null
-      Object.values(chainableMock).forEach(fn => {
-        if (typeof fn === 'function' && 'mockClear' in fn) {
-          (fn as ReturnType<typeof vi.fn>).mockClear()
+      mockData = null;
+      mockError = null;
+      mockCount = null;
+      Object.values(chainableMock).forEach((fn) => {
+        if (typeof fn === "function" && "mockClear" in fn) {
+          (fn as ReturnType<typeof vi.fn>).mockClear();
         }
-      })
-    }
-  }
+      });
+    },
+  };
 
   const auth = {
     getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
-    getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+    getSession: vi
+      .fn()
+      .mockResolvedValue({ data: { session: null }, error: null }),
     signInWithPassword: vi.fn(),
     signOut: vi.fn(),
-    onAuthStateChange: vi.fn().mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } })
-  }
+    onAuthStateChange: vi
+      .fn()
+      .mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } }),
+  };
 
   const storage = {
     from: vi.fn().mockReturnValue({
-      upload: vi.fn().mockResolvedValue({ data: { path: 'mock-path' }, error: null }),
+      upload: vi
+        .fn()
+        .mockResolvedValue({ data: { path: "mock-path" }, error: null }),
       download: vi.fn().mockResolvedValue({ data: new Blob(), error: null }),
       remove: vi.fn().mockResolvedValue({ data: null, error: null }),
-      getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: 'https://mock.url' } })
-    })
-  }
+      getPublicUrl: vi
+        .fn()
+        .mockReturnValue({ data: { publicUrl: "https://mock.url" } }),
+    }),
+  };
 
-  const rpc = vi.fn().mockImplementation(() =>
-    Promise.resolve({ data: mockData, error: mockError })
-  )
+  const rpc = vi
+    .fn()
+    .mockImplementation(() =>
+      Promise.resolve({ data: mockData, error: mockError }),
+    );
 
   return {
     ...chainableMock,
@@ -80,8 +102,8 @@ export function createMockSupabaseClient() {
     __setMockData: chainableMock.__setMockData,
     __setMockError: chainableMock.__setMockError,
     __setMockCount: chainableMock.__setMockCount,
-    __reset: chainableMock.__reset
-  }
+    __reset: chainableMock.__reset,
+  };
 }
 
-export type MockSupabaseClient = ReturnType<typeof createMockSupabaseClient>
+export type MockSupabaseClient = ReturnType<typeof createMockSupabaseClient>;

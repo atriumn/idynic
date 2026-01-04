@@ -228,7 +228,9 @@ describe("Story Upload API Route", () => {
 
       expect(response.status).toBe(400);
       expect(body.error.code).toBe("validation_error");
-      expect(body.error.message).toBe("Story must be less than 10,000 characters");
+      expect(body.error.message).toBe(
+        "Story must be less than 10,000 characters",
+      );
     });
 
     it("returns 409 for duplicate stories", async () => {
@@ -294,7 +296,9 @@ describe("Story Upload API Route", () => {
             select: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
                 eq: vi.fn().mockReturnValue({
-                  single: vi.fn().mockResolvedValue({ data: null, error: null }),
+                  single: vi
+                    .fn()
+                    .mockResolvedValue({ data: null, error: null }),
                 }),
               }),
             }),

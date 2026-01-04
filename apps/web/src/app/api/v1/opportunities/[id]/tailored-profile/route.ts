@@ -1,11 +1,11 @@
-import { NextRequest } from 'next/server';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
-import { validateApiKey, isAuthError } from '@/lib/api/auth';
-import { apiSuccess, ApiErrors } from '@/lib/api/response';
+import { NextRequest } from "next/server";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
+import { validateApiKey, isAuthError } from "@/lib/api/auth";
+import { apiSuccess, ApiErrors } from "@/lib/api/response";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const authResult = await validateApiKey(request);
   if (isAuthError(authResult)) {
@@ -18,8 +18,9 @@ export async function GET(
 
   // Get tailored profile for this opportunity
   const { data: profile, error } = await supabase
-    .from('tailored_profiles')
-    .select(`
+    .from("tailored_profiles")
+    .select(
+      `
       id,
       narrative,
       resume_data,
@@ -31,16 +32,21 @@ export async function GET(
         title,
         company
       )
-    `)
-    .eq('opportunity_id', id)
-    .eq('user_id', userId)
+    `,
+    )
+    .eq("opportunity_id", id)
+    .eq("user_id", userId)
     .single();
 
   if (error || !profile) {
-    return ApiErrors.notFound('Tailored profile');
+    return ApiErrors.notFound("Tailored profile");
   }
 
-  const opp = profile.opportunities as { id: string; title: string; company: string | null };
+  const opp = profile.opportunities as {
+    id: string;
+    title: string;
+    company: string | null;
+  };
 
   return apiSuccess({
     id: profile.id,

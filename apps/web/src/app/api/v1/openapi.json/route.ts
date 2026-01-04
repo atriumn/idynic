@@ -63,21 +63,35 @@ const openApiSpec = {
             },
           },
           identity: { $ref: "#/components/schemas/Identity" },
-          experience: { type: "array", items: { $ref: "#/components/schemas/WorkHistory" } },
-          skills: { type: "array", items: { $ref: "#/components/schemas/Claim" } },
-          education: { type: "array", items: { $ref: "#/components/schemas/Claim" } },
-          certifications: { type: "array", items: { $ref: "#/components/schemas/Claim" } },
+          experience: {
+            type: "array",
+            items: { $ref: "#/components/schemas/WorkHistory" },
+          },
+          skills: {
+            type: "array",
+            items: { $ref: "#/components/schemas/Claim" },
+          },
+          education: {
+            type: "array",
+            items: { $ref: "#/components/schemas/Claim" },
+          },
+          certifications: {
+            type: "array",
+            items: { $ref: "#/components/schemas/Claim" },
+          },
         },
       },
       Identity: {
         type: "object",
         nullable: true,
-        description: "AI-generated professional identity snapshot synthesized from claims",
+        description:
+          "AI-generated professional identity snapshot synthesized from claims",
         properties: {
           archetype: {
             type: "string",
             nullable: true,
-            description: "One of: Builder, Optimizer, Connector, Guide, Stabilizer, Specialist, Strategist, Advocate, Investigator, Performer",
+            description:
+              "One of: Builder, Optimizer, Connector, Guide, Stabilizer, Specialist, Strategist, Advocate, Investigator, Performer",
           },
           headline: {
             type: "string",

@@ -5,7 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   ChevronDown,
   ChevronRight,
@@ -15,7 +19,7 @@ import {
   Check,
   X,
   Loader2,
-  Building2
+  Building2,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -56,7 +60,10 @@ const EMPTY_ITEM: Omit<WorkHistoryItem, "id" | "order_index"> = {
   company_domain: null,
 };
 
-export function WorkHistorySection({ items, onUpdate }: WorkHistorySectionProps) {
+export function WorkHistorySection({
+  items,
+  onUpdate,
+}: WorkHistorySectionProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<WorkHistoryItem>>({});
@@ -154,7 +161,7 @@ export function WorkHistorySection({ items, onUpdate }: WorkHistorySectionProps)
     data: Partial<WorkHistoryItem>,
     setData: (data: Partial<WorkHistoryItem>) => void,
     onSave: () => void,
-    onCancel: () => void
+    onCancel: () => void,
   ) => (
     <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
       <div className="grid gap-4 sm:grid-cols-2">
@@ -186,7 +193,9 @@ export function WorkHistorySection({ items, onUpdate }: WorkHistorySectionProps)
           <Label>End Date</Label>
           <Input
             value={data.end_date || ""}
-            onChange={(e) => setData({ ...data, end_date: e.target.value || null })}
+            onChange={(e) =>
+              setData({ ...data, end_date: e.target.value || null })
+            }
             placeholder="e.g., Dec 2023 or Present"
           />
         </div>
@@ -194,7 +203,9 @@ export function WorkHistorySection({ items, onUpdate }: WorkHistorySectionProps)
           <Label>Location</Label>
           <Input
             value={data.location || ""}
-            onChange={(e) => setData({ ...data, location: e.target.value || null })}
+            onChange={(e) =>
+              setData({ ...data, location: e.target.value || null })
+            }
             placeholder="City, State"
           />
         </div>
@@ -202,18 +213,29 @@ export function WorkHistorySection({ items, onUpdate }: WorkHistorySectionProps)
           <Label>Company Domain (for logo)</Label>
           <Input
             value={data.company_domain || ""}
-            onChange={(e) => setData({ ...data, company_domain: e.target.value || null })}
+            onChange={(e) =>
+              setData({ ...data, company_domain: e.target.value || null })
+            }
             placeholder="e.g., google.com"
           />
         </div>
       </div>
       <div className="flex justify-end gap-2">
-        <Button variant="outline" size="sm" onClick={onCancel} disabled={isSaving}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onCancel}
+          disabled={isSaving}
+        >
           <X className="h-4 w-4 mr-1" />
           Cancel
         </Button>
         <Button size="sm" onClick={onSave} disabled={isSaving}>
-          {isSaving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
+          {isSaving ? (
+            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+          ) : (
+            <Check className="h-4 w-4 mr-1" />
+          )}
           Save
         </Button>
       </div>
@@ -227,8 +249,14 @@ export function WorkHistorySection({ items, onUpdate }: WorkHistorySectionProps)
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CollapsibleTrigger className="flex items-center gap-2 hover:text-foreground transition-colors">
-                {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                <CardTitle className="text-lg">Work History ({items.length})</CardTitle>
+                {isOpen ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+                <CardTitle className="text-lg">
+                  Work History ({items.length})
+                </CardTitle>
               </CollapsibleTrigger>
             </div>
           </CardHeader>
@@ -243,18 +271,16 @@ export function WorkHistorySection({ items, onUpdate }: WorkHistorySectionProps)
                 items.map((item) =>
                   editingId === item.id ? (
                     <div key={item.id}>
-                      {renderForm(
-                        editData,
-                        setEditData,
-                        handleSaveEdit,
-                        () => {
-                          setEditingId(null);
-                          setEditData({});
-                        }
-                      )}
+                      {renderForm(editData, setEditData, handleSaveEdit, () => {
+                        setEditingId(null);
+                        setEditData({});
+                      })}
                     </div>
                   ) : (
-                    <div key={item.id} className="flex items-start justify-between p-4 border rounded-lg">
+                    <div
+                      key={item.id}
+                      className="flex items-start justify-between p-4 border rounded-lg"
+                    >
                       <div className="flex gap-3">
                         {item.company_domain && (
                           /* eslint-disable-next-line @next/next/no-img-element */
@@ -262,12 +288,16 @@ export function WorkHistorySection({ items, onUpdate }: WorkHistorySectionProps)
                             src={`https://logo.clearbit.com/${item.company_domain}`}
                             alt=""
                             className="w-10 h-10 rounded object-contain bg-white"
-                            onError={(e) => (e.currentTarget.style.display = "none")}
+                            onError={(e) =>
+                              (e.currentTarget.style.display = "none")
+                            }
                           />
                         )}
                         <div>
                           <h4 className="font-medium">{item.title}</h4>
-                          <p className="text-sm text-muted-foreground">{item.company}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {item.company}
+                          </p>
                           <p className="text-xs text-muted-foreground">
                             {item.start_date} - {item.end_date || "Present"}
                             {item.location && ` · ${item.location}`}
@@ -275,19 +305,27 @@ export function WorkHistorySection({ items, onUpdate }: WorkHistorySectionProps)
                         </div>
                       </div>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(item)}
+                        >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setDeleteId(item.id)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteId(item.id)}
+                        >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
                     </div>
-                  )
+                  ),
                 )
               )}
 
-              {isAdding && (
+              {isAdding &&
                 renderForm(
                   newItem,
                   (data) => setNewItem({ ...EMPTY_ITEM, ...data }),
@@ -295,12 +333,15 @@ export function WorkHistorySection({ items, onUpdate }: WorkHistorySectionProps)
                   () => {
                     setIsAdding(false);
                     setNewItem(EMPTY_ITEM);
-                  }
-                )
-              )}
+                  },
+                )}
 
               {!isAdding && (
-                <Button variant="outline" className="w-full" onClick={() => setIsAdding(true)}>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setIsAdding(true)}
+                >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Work History
                 </Button>
@@ -310,12 +351,16 @@ export function WorkHistorySection({ items, onUpdate }: WorkHistorySectionProps)
         </Collapsible>
       </Card>
 
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+      <AlertDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete work history?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will remove this entry from your profile. Evidence and accomplishments linked to this role will be preserved.
+              This will remove this entry from your profile. Evidence and
+              accomplishments linked to this role will be preserved.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

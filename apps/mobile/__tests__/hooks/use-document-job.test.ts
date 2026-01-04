@@ -1,9 +1,9 @@
-import { renderHook, waitFor, act } from '@testing-library/react-native';
-import { useDocumentJob } from '../../hooks/use-document-job';
-import { supabase } from '../../lib/supabase';
+import { renderHook, waitFor, act } from "@testing-library/react-native";
+import { useDocumentJob } from "../../hooks/use-document-job";
+import { supabase } from "../../lib/supabase";
 
 // Mock supabase
-jest.mock('../../lib/supabase', () => ({
+jest.mock("../../lib/supabase", () => ({
   supabase: {
     from: jest.fn(),
     channel: jest.fn(),
@@ -34,7 +34,7 @@ function createMockChannel() {
   };
 }
 
-describe('useDocumentJob', () => {
+describe("useDocumentJob", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
@@ -45,7 +45,7 @@ describe('useDocumentJob', () => {
     jest.useRealTimers();
   });
 
-  it('returns null job when jobId is null', () => {
+  it("returns null job when jobId is null", () => {
     const { result } = renderHook(() => useDocumentJob(null));
 
     expect(result.current.job).toBeNull();
@@ -54,66 +54,76 @@ describe('useDocumentJob', () => {
     expect(result.current.displayMessages).toEqual([]);
   });
 
-  it('fetches job when jobId is provided', async () => {
+  it("fetches job when jobId is provided", async () => {
     const mockJob = {
-      id: 'job-123',
-      status: 'processing',
-      phase: 'parsing',
+      id: "job-123",
+      status: "processing",
+      phase: "parsing",
       highlights: [],
     };
     mockFrom.mockReturnValue(createMockQueryBuilder(mockJob));
 
-    const { result } = renderHook(() => useDocumentJob('job-123'));
+    const { result } = renderHook(() => useDocumentJob("job-123"));
 
     await waitFor(() => {
       expect(result.current.job).toEqual(mockJob);
     });
 
-    expect(mockFrom).toHaveBeenCalledWith('document_jobs');
+    expect(mockFrom).toHaveBeenCalledWith("document_jobs");
   });
 
-  it('sets error on fetch failure', async () => {
+  it("sets error on fetch failure", async () => {
     mockFrom.mockReturnValue(
-      createMockQueryBuilder(null, { message: 'Not found' })
+      createMockQueryBuilder(null, { message: "Not found" }),
     );
 
-    const { result } = renderHook(() => useDocumentJob('job-123'));
+    const { result } = renderHook(() => useDocumentJob("job-123"));
 
     await waitFor(() => {
       expect(result.current.error).toBeTruthy();
     });
   });
 
-  it('subscribes to realtime updates', async () => {
-    const mockJob = { id: 'job-123', status: 'processing', phase: 'parsing', highlights: [] };
+  it("subscribes to realtime updates", async () => {
+    const mockJob = {
+      id: "job-123",
+      status: "processing",
+      phase: "parsing",
+      highlights: [],
+    };
     mockFrom.mockReturnValue(createMockQueryBuilder(mockJob));
     const channel = createMockChannel();
     mockChannel.mockReturnValue(channel);
 
-    renderHook(() => useDocumentJob('job-123'));
+    renderHook(() => useDocumentJob("job-123"));
 
     await waitFor(() => {
-      expect(mockChannel).toHaveBeenCalledWith('job-job-123');
+      expect(mockChannel).toHaveBeenCalledWith("job-job-123");
     });
 
     expect(channel.on).toHaveBeenCalledWith(
-      'postgres_changes',
+      "postgres_changes",
       expect.objectContaining({
-        event: 'UPDATE',
-        table: 'document_jobs',
+        event: "UPDATE",
+        table: "document_jobs",
       }),
-      expect.any(Function)
+      expect.any(Function),
     );
     expect(channel.subscribe).toHaveBeenCalled();
   });
 
-  it('unsubscribes on unmount', async () => {
-    const mockJob = { id: 'job-123', status: 'processing', phase: 'parsing', highlights: [] };
+  it("unsubscribes on unmount", async () => {
+    const mockJob = {
+      id: "job-123",
+      status: "processing",
+      phase: "parsing",
+      highlights: [],
+    };
     mockFrom.mockReturnValue(createMockQueryBuilder(mockJob));
     const channel = createMockChannel();
     mockChannel.mockReturnValue(channel);
 
-    const { unmount } = renderHook(() => useDocumentJob('job-123'));
+    const { unmount } = renderHook(() => useDocumentJob("job-123"));
 
     await waitFor(() => {
       expect(mockChannel).toHaveBeenCalled();
@@ -124,19 +134,19 @@ describe('useDocumentJob', () => {
     expect(channel.unsubscribe).toHaveBeenCalled();
   });
 
-  it('formats highlights in displayMessages', async () => {
+  it("formats highlights in displayMessages", async () => {
     const mockJob = {
-      id: 'job-123',
-      status: 'processing',
-      phase: 'parsing',
+      id: "job-123",
+      status: "processing",
+      phase: "parsing",
       highlights: [
-        { type: 'skill', text: 'React' },
-        { type: 'achievement', text: 'Led team' },
+        { type: "skill", text: "React" },
+        { type: "achievement", text: "Led team" },
       ],
     };
     mockFrom.mockReturnValue(createMockQueryBuilder(mockJob));
 
-    const { result } = renderHook(() => useDocumentJob('job-123'));
+    const { result } = renderHook(() => useDocumentJob("job-123"));
 
     await waitFor(() => {
       expect(result.current.job).toBeTruthy();
@@ -146,13 +156,18 @@ describe('useDocumentJob', () => {
     expect(result.current.displayMessages.length).toBeGreaterThan(0);
   });
 
-  it('clears state when jobId becomes null', async () => {
-    const mockJob = { id: 'job-123', status: 'completed', phase: null, highlights: [] };
+  it("clears state when jobId becomes null", async () => {
+    const mockJob = {
+      id: "job-123",
+      status: "completed",
+      phase: null,
+      highlights: [],
+    };
     mockFrom.mockReturnValue(createMockQueryBuilder(mockJob));
 
     const { result, rerender } = renderHook(
       (props: { jobId: string | null }) => useDocumentJob(props.jobId),
-      { initialProps: { jobId: 'job-123' as string | null } }
+      { initialProps: { jobId: "job-123" as string | null } },
     );
 
     await waitFor(() => {

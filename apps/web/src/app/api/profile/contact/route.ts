@@ -12,7 +12,16 @@ interface ContactUpdateBody {
   logo_url?: string;
 }
 
-const ALLOWED_FIELDS = ["name", "email", "phone", "location", "linkedin", "github", "website", "logo_url"];
+const ALLOWED_FIELDS = [
+  "name",
+  "email",
+  "phone",
+  "location",
+  "linkedin",
+  "github",
+  "website",
+  "logo_url",
+];
 
 export async function PATCH(request: Request) {
   const supabase = await createClient();
@@ -37,7 +46,10 @@ export async function PATCH(request: Request) {
     }
 
     if (Object.keys(updates).length === 0) {
-      return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No valid fields to update" },
+        { status: 400 },
+      );
     }
 
     // Validate URL fields
@@ -47,7 +59,10 @@ export async function PATCH(request: Request) {
         try {
           new URL(updates[field]!);
         } catch {
-          return NextResponse.json({ error: `Invalid URL for ${field}` }, { status: 400 });
+          return NextResponse.json(
+            { error: `Invalid URL for ${field}` },
+            { status: 400 },
+          );
         }
       }
     }
@@ -61,12 +76,18 @@ export async function PATCH(request: Request) {
 
     if (error) {
       console.error("Failed to update contact:", error);
-      return NextResponse.json({ error: "Failed to update contact info" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to update contact info" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json(data);
   } catch (err) {
     console.error("Contact update error:", err);
-    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to process request" },
+      { status: 500 },
+    );
   }
 }

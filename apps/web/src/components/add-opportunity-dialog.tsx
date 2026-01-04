@@ -17,12 +17,19 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Loader2, Linkedin, CheckCircle2, XCircle } from "lucide-react";
 import { useDocumentJob } from "@/lib/hooks/use-document-job";
-import { OPPORTUNITY_PHASES, PHASE_LABELS, type DocumentJobPhase } from "@idynic/shared/types";
+import {
+  OPPORTUNITY_PHASES,
+  PHASE_LABELS,
+  type DocumentJobPhase,
+} from "@idynic/shared/types";
 
 function isLinkedInJobUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
-    return parsed.hostname.includes("linkedin.com") && parsed.pathname.includes("/jobs/view/");
+    return (
+      parsed.hostname.includes("linkedin.com") &&
+      parsed.pathname.includes("/jobs/view/")
+    );
   } catch {
     return false;
   }
@@ -36,15 +43,34 @@ function looksLikeJobUrl(url: string): boolean {
 
     // Known job boards
     const jobBoards = [
-      "indeed.com", "glassdoor.com", "ziprecruiter.com", "monster.com",
-      "dice.com", "builtin.com", "lever.co", "greenhouse.io", "workday.com",
-      "myworkdayjobs.com", "smartrecruiters.com", "ashbyhq.com", "wellfound.com",
+      "indeed.com",
+      "glassdoor.com",
+      "ziprecruiter.com",
+      "monster.com",
+      "dice.com",
+      "builtin.com",
+      "lever.co",
+      "greenhouse.io",
+      "workday.com",
+      "myworkdayjobs.com",
+      "smartrecruiters.com",
+      "ashbyhq.com",
+      "wellfound.com",
     ];
 
     if (jobBoards.some((board) => hostname.includes(board))) return true;
-    if (hostname.startsWith("jobs.") || hostname.startsWith("careers.")) return true;
+    if (hostname.startsWith("jobs.") || hostname.startsWith("careers."))
+      return true;
 
-    const jobPatterns = ["/job/", "/jobs/", "/career/", "/careers/", "/position/", "/opening/", "/apply/"];
+    const jobPatterns = [
+      "/job/",
+      "/jobs/",
+      "/career/",
+      "/careers/",
+      "/position/",
+      "/opening/",
+      "/apply/",
+    ];
     if (jobPatterns.some((pattern) => pathname.includes(pattern))) return true;
 
     return false;
@@ -80,12 +106,15 @@ export function AddOpportunityDialog() {
     }
   }, [job?.status, job?.error, router]);
 
-  const handleUrlChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const newUrl = e.target.value;
-    setUrl(newUrl);
-    setIsLinkedIn(isLinkedInJobUrl(newUrl));
-    setIsJobUrl(looksLikeJobUrl(newUrl) || isLinkedInJobUrl(newUrl));
-  }, []);
+  const handleUrlChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newUrl = e.target.value;
+      setUrl(newUrl);
+      setIsLinkedIn(isLinkedInJobUrl(newUrl));
+      setIsJobUrl(looksLikeJobUrl(newUrl) || isLinkedInJobUrl(newUrl));
+    },
+    [],
+  );
 
   const handleOpenChange = useCallback((newOpen: boolean) => {
     setOpen(newOpen);
@@ -136,7 +165,9 @@ export function AddOpportunityDialog() {
   const isProcessing = !!jobId && job?.status === "processing";
   const isCompleted = job?.status === "completed";
   const currentPhase = job?.phase as DocumentJobPhase | null;
-  const phaseIndex = currentPhase ? OPPORTUNITY_PHASES.indexOf(currentPhase) : -1;
+  const phaseIndex = currentPhase
+    ? OPPORTUNITY_PHASES.indexOf(currentPhase)
+    : -1;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -176,8 +207,7 @@ export function AddOpportunityDialog() {
                   <p className="text-sm text-muted-foreground">
                     {isLinkedIn
                       ? "LinkedIn job detected - we'll auto-fill the details"
-                      : "Job URL detected - we'll try to fetch the details"
-                    }
+                      : "Job URL detected - we'll try to fetch the details"}
                   </p>
                 )}
               </div>
@@ -188,25 +218,34 @@ export function AddOpportunityDialog() {
                 <Textarea
                   id="description"
                   name="description"
-                  placeholder={isJobUrl ? "Optional - will be fetched from the URL" : "Paste the full job description here..."}
+                  placeholder={
+                    isJobUrl
+                      ? "Optional - will be fetched from the URL"
+                      : "Paste the full job description here..."
+                  }
                   className="min-h-[200px]"
                   required={!isJobUrl}
                 />
               </div>
-              {error && (
-                <p className="text-sm text-destructive">{error}</p>
-              )}
+              {error && <p className="text-sm text-destructive">{error}</p>}
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 {isSubmitting
-                  ? (isLinkedIn ? "Starting..." : "Starting...")
-                  : "Add Opportunity"
-                }
+                  ? isLinkedIn
+                    ? "Starting..."
+                    : "Starting..."
+                  : "Add Opportunity"}
               </Button>
             </DialogFooter>
           </form>
@@ -238,8 +277,7 @@ export function AddOpportunityDialog() {
                     ? PHASE_LABELS[currentPhase]
                     : job?.status === "pending"
                       ? "Queued for processing..."
-                      : "Starting..."
-                }
+                      : "Starting..."}
               </DialogDescription>
             </DialogHeader>
 

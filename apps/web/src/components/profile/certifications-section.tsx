@@ -5,8 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronRight, Pencil, Plus, Trash2, Check, X, Loader2, Award } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  ChevronDown,
+  ChevronRight,
+  Pencil,
+  Plus,
+  Trash2,
+  Check,
+  X,
+  Loader2,
+  Award,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -32,10 +46,17 @@ interface CertificationsSectionProps {
 
 const EMPTY_ITEM = { name: "", issuer: "", date: "" };
 
-export function CertificationsSection({ items, onUpdate }: CertificationsSectionProps) {
+export function CertificationsSection({
+  items,
+  onUpdate,
+}: CertificationsSectionProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editData, setEditData] = useState<{ name: string; issuer: string; date: string }>({ name: "", issuer: "", date: "" });
+  const [editData, setEditData] = useState<{
+    name: string;
+    issuer: string;
+    date: string;
+  }>({ name: "", issuer: "", date: "" });
   const [isAdding, setIsAdding] = useState(false);
   const [newItem, setNewItem] = useState(EMPTY_ITEM);
   const [isSaving, setIsSaving] = useState(false);
@@ -134,7 +155,7 @@ export function CertificationsSection({ items, onUpdate }: CertificationsSection
     data: { name: string; issuer: string; date: string },
     setData: (data: { name: string; issuer: string; date: string }) => void,
     onSave: () => void,
-    onCancel: () => void
+    onCancel: () => void,
   ) => (
     <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
       <div className="grid gap-4 sm:grid-cols-3">
@@ -164,12 +185,21 @@ export function CertificationsSection({ items, onUpdate }: CertificationsSection
         </div>
       </div>
       <div className="flex justify-end gap-2">
-        <Button variant="outline" size="sm" onClick={onCancel} disabled={isSaving}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onCancel}
+          disabled={isSaving}
+        >
           <X className="h-4 w-4 mr-1" />
           Cancel
         </Button>
         <Button size="sm" onClick={onSave} disabled={isSaving}>
-          {isSaving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
+          {isSaving ? (
+            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+          ) : (
+            <Check className="h-4 w-4 mr-1" />
+          )}
           Save
         </Button>
       </div>
@@ -183,8 +213,14 @@ export function CertificationsSection({ items, onUpdate }: CertificationsSection
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CollapsibleTrigger className="flex items-center gap-2 hover:text-foreground transition-colors">
-                {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                <CardTitle className="text-lg">Certifications ({items.length})</CardTitle>
+                {isOpen ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+                <CardTitle className="text-lg">
+                  Certifications ({items.length})
+                </CardTitle>
               </CollapsibleTrigger>
             </div>
           </CardHeader>
@@ -199,51 +235,57 @@ export function CertificationsSection({ items, onUpdate }: CertificationsSection
                 items.map((item) =>
                   editingId === item.id ? (
                     <div key={item.id}>
-                      {renderForm(
-                        editData,
-                        setEditData,
-                        handleSaveEdit,
-                        () => {
-                          setEditingId(null);
-                          setEditData({ name: "", issuer: "", date: "" });
-                        }
-                      )}
+                      {renderForm(editData, setEditData, handleSaveEdit, () => {
+                        setEditingId(null);
+                        setEditData({ name: "", issuer: "", date: "" });
+                      })}
                     </div>
                   ) : (
-                    <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div>
                         <p className="font-medium">{item.text}</p>
                         <p className="text-sm text-muted-foreground">
-                          {[item.context?.issuer, item.context?.date].filter(Boolean).join(" · ") || "No details"}
+                          {[item.context?.issuer, item.context?.date]
+                            .filter(Boolean)
+                            .join(" · ") || "No details"}
                         </p>
                       </div>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(item)}
+                        >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setDeleteId(item.id)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteId(item.id)}
+                        >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
                     </div>
-                  )
+                  ),
                 )
               )}
 
-              {isAdding && (
-                renderForm(
-                  newItem,
-                  setNewItem,
-                  handleAdd,
-                  () => {
-                    setIsAdding(false);
-                    setNewItem(EMPTY_ITEM);
-                  }
-                )
-              )}
+              {isAdding &&
+                renderForm(newItem, setNewItem, handleAdd, () => {
+                  setIsAdding(false);
+                  setNewItem(EMPTY_ITEM);
+                })}
 
               {!isAdding && (
-                <Button variant="outline" className="w-full" onClick={() => setIsAdding(true)}>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setIsAdding(true)}
+                >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Certification
                 </Button>
@@ -253,7 +295,10 @@ export function CertificationsSection({ items, onUpdate }: CertificationsSection
         </Collapsible>
       </Card>
 
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+      <AlertDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete certification?</AlertDialogTitle>

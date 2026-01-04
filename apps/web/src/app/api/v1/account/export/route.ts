@@ -52,7 +52,7 @@ export async function POST() {
       supabase
         .from("evidence")
         .select(
-          "id, evidence_type, text, context, source_type, evidence_date, created_at"
+          "id, evidence_type, text, context, source_type, evidence_date, created_at",
         )
         .eq("user_id", user.id),
       supabase.from("opportunities").select("*").eq("user_id", user.id),
@@ -62,7 +62,7 @@ export async function POST() {
       supabase
         .from("api_keys")
         .select(
-          "id, name, key_prefix, scopes, last_used_at, expires_at, revoked_at, created_at"
+          "id, name, key_prefix, scopes, last_used_at, expires_at, revoked_at, created_at",
         )
         .eq("user_id", user.id),
     ]);
@@ -88,7 +88,7 @@ export async function POST() {
         .select("shared_link_id")
         .in(
           "shared_link_id",
-          sharedLinks.map((sl) => sl.id)
+          sharedLinks.map((sl) => sl.id),
         );
 
       if (viewCounts) {
@@ -128,7 +128,7 @@ export async function POST() {
           rawText: doc.raw_text,
           localPath,
         };
-      })
+      }),
     );
 
     // Build export data object

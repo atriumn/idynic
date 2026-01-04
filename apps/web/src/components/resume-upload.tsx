@@ -7,7 +7,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useDocumentJob } from "@/lib/hooks/use-document-job";
-import { RESUME_PHASES, PHASE_LABELS, type DocumentJobPhase } from "@idynic/shared/types";
+import {
+  RESUME_PHASES,
+  PHASE_LABELS,
+  type DocumentJobPhase,
+} from "@idynic/shared/types";
 
 interface ResumeUploadProps {
   onUploadComplete?: () => void;
@@ -85,7 +89,7 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
       const file = e.dataTransfer.files[0];
       if (file) handleFile(file);
     },
-    [handleFile]
+    [handleFile],
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -103,7 +107,7 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
       const file = e.target.files?.[0];
       if (file) handleFile(file);
     },
-    [handleFile]
+    [handleFile],
   );
 
   // Calculate phase states
@@ -127,7 +131,9 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
     <Card
       className={cn(
         "border-2 border-dashed transition-colors",
-        isDragging ? "border-primary bg-primary/5" : "border-muted-foreground/25"
+        isDragging
+          ? "border-primary bg-primary/5"
+          : "border-muted-foreground/25",
       )}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
@@ -148,13 +154,17 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
                     key={phase}
                     className={cn(
                       "flex items-center gap-2 text-sm transition-opacity",
-                      isPending && "opacity-40"
+                      isPending && "opacity-40",
                     )}
                   >
                     {isCompleted ? (
                       <span className="text-green-500">✓</span>
                     ) : isCurrent ? (
-                      <svg className="h-4 w-4 animate-spin text-teal-500" viewBox="0 0 24 24" fill="none">
+                      <svg
+                        className="h-4 w-4 animate-spin text-teal-500"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
                         <circle
                           className="opacity-25"
                           cx="12"
@@ -175,11 +185,13 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
                     <span>
                       {PHASE_LABELS[phase]}
                       {isCurrent && job?.progress && ` (batch ${job.progress})`}
-                      {isCurrent && !job?.progress && phase === "extracting" && (
-                        <span className="ml-2 animate-pulse text-muted-foreground">
-                          analyzing...
-                        </span>
-                      )}
+                      {isCurrent &&
+                        !job?.progress &&
+                        phase === "extracting" && (
+                          <span className="ml-2 animate-pulse text-muted-foreground">
+                            analyzing...
+                          </span>
+                        )}
                     </span>
                   </div>
                 );
@@ -198,7 +210,7 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
                         index === 0 && "font-medium",
                         index > 0 && "opacity-60",
                         index > 1 && "opacity-40 blur-[0.5px]",
-                        index > 2 && "opacity-20 blur-[1px]"
+                        index > 2 && "opacity-20 blur-[1px]",
                       )}
                     >
                       {message.text}
@@ -210,8 +222,14 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
               </div>
             )}
 
-            {isComplete && <p className="text-sm font-medium text-green-500">Processing complete!</p>}
-            {job?.warning && <p className="text-sm text-yellow-500">{job.warning}</p>}
+            {isComplete && (
+              <p className="text-sm font-medium text-green-500">
+                Processing complete!
+              </p>
+            )}
+            {job?.warning && (
+              <p className="text-sm text-yellow-500">{job.warning}</p>
+            )}
           </div>
         ) : (
           <>
@@ -231,8 +249,12 @@ export function ResumeUpload({ onUploadComplete }: ResumeUploadProps) {
               </svg>
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-medium">Drag and drop your resume here</p>
-              <p className="text-xs text-muted-foreground">PDF files only, max 10MB</p>
+              <p className="text-sm font-medium">
+                Drag and drop your resume here
+              </p>
+              <p className="text-xs text-muted-foreground">
+                PDF files only, max 10MB
+              </p>
             </div>
             <div className="mt-4">
               <Button variant="outline" size="sm" asChild>

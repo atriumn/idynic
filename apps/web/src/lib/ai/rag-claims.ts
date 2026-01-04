@@ -5,8 +5,8 @@
  * semantically relevant claims for each evidence batch.
  */
 
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '@/lib/supabase/types';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/types";
 
 export interface RelevantClaim {
   id: string;
@@ -46,7 +46,7 @@ export async function findRelevantClaimsForBatch(
   supabase: SupabaseClient<Database>,
   userId: string,
   evidenceItems: EvidenceWithEmbedding[],
-  options: RAGOptions = {}
+  options: RAGOptions = {},
 ): Promise<RelevantClaim[]> {
   if (evidenceItems.length === 0) {
     return [];
@@ -60,20 +60,20 @@ export async function findRelevantClaimsForBatch(
 
   // Query all evidence embeddings in parallel
   const results = await Promise.all(
-    evidenceItems.map(evidence =>
-      supabase.rpc('find_relevant_claims_for_synthesis', {
+    evidenceItems.map((evidence) =>
+      supabase.rpc("find_relevant_claims_for_synthesis", {
         query_embedding: evidence.embedding as unknown as string,
         p_user_id: userId,
         similarity_threshold: similarityThreshold,
         max_claims: maxClaimsPerQuery,
-      })
-    )
+      }),
+    ),
   );
 
   // Deduplicate results
   for (const { data, error } of results) {
     if (error) {
-      console.error('RAG query failed:', error.message);
+      console.error("RAG query failed:", error.message);
       continue;
     }
 

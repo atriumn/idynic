@@ -34,10 +34,7 @@ function formatDate(dateString: string | null): string {
   });
 }
 
-function getDocumentDisplayName(
-  filename: string | null,
-  type: string
-): string {
+function getDocumentDisplayName(filename: string | null, type: string): string {
   if (filename) {
     // Remove date suffix pattern like "(12/25/2024)"
     return filename.replace(/\s*\(\d{1,2}\/\d{1,2}\/\d{4}\)\s*$/, "");
@@ -92,7 +89,11 @@ function EvidenceCard({ evidence }: { evidence: DocumentEvidence }) {
   return (
     <View
       className="p-3 rounded-lg mb-2"
-      style={{ backgroundColor: style.bgHex, borderColor: style.borderHex, borderWidth: 1 }}
+      style={{
+        backgroundColor: style.bgHex,
+        borderColor: style.borderHex,
+        borderWidth: 1,
+      }}
     >
       <View className="flex-row items-start gap-2">
         <View className="mt-0.5">
@@ -104,7 +105,10 @@ function EvidenceCard({ evidence }: { evidence: DocumentEvidence }) {
               className="px-2 py-0.5 rounded-md"
               style={{ backgroundColor: `${style.textHex}20` }}
             >
-              <Text className="text-xs font-medium" style={{ color: style.textHex }}>
+              <Text
+                className="text-xs font-medium"
+                style={{ color: style.textHex }}
+              >
                 {typeLabel}
               </Text>
             </View>
@@ -148,12 +152,15 @@ export default function DocumentDetailScreen() {
               await deleteDocumentMutation.mutateAsync(document.id);
               router.back();
             } catch (err) {
-              Alert.alert("Error", "Failed to delete document. Please try again.");
+              Alert.alert(
+                "Error",
+                "Failed to delete document. Please try again.",
+              );
               setIsDeleting(false);
             }
           },
         },
-      ]
+      ],
     );
   };
 

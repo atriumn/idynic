@@ -22,7 +22,7 @@ Write the executive summary:`;
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ token: string }> }
+  { params }: { params: Promise<{ token: string }> },
 ) {
   const { token } = await params;
   const supabase = createServiceRoleClient();
@@ -36,7 +36,7 @@ export async function GET(
     console.error("Failed to fetch shared profile:", error);
     return NextResponse.json(
       { error: { code: "server_error", message: "Failed to fetch profile" } },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -52,7 +52,7 @@ export async function GET(
   if (result.error === "not_found") {
     return NextResponse.json(
       { error: { code: "not_found", message: "Share link not found" } },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
@@ -65,7 +65,7 @@ export async function GET(
           candidate_name: result.candidate_name,
         },
       },
-      { status: 410 }
+      { status: 410 },
     );
   }
 
@@ -77,7 +77,7 @@ export async function GET(
       resume: result.resumeData,
     },
     null,
-    2
+    2,
   );
 
   const opportunityText = JSON.stringify(result.opportunity, null, 2);
@@ -86,7 +86,7 @@ export async function GET(
   try {
     const prompt = SUMMARY_PROMPT.replace("{profile}", profileText).replace(
       "{opportunity}",
-      opportunityText
+      opportunityText,
     );
 
     const response = await openai.chat.completions.create({
@@ -109,7 +109,7 @@ export async function GET(
     console.error("Failed to generate summary:", err);
     return NextResponse.json(
       { error: { code: "ai_error", message: "Failed to generate summary" } },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

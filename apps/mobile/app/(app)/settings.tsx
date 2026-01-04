@@ -1,14 +1,28 @@
-import { View, Text, Pressable, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link, ChevronRight, LogOut, FileText, Shield, Cookie, HelpCircle } from 'lucide-react-native';
-import * as WebBrowser from 'expo-web-browser';
-import { useAuth } from '../../lib/auth-context';
-import { useSharedLinks } from '../../hooks/use-shared-links';
+import { View, Text, Pressable, ScrollView } from "react-native";
+import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  Link,
+  ChevronRight,
+  LogOut,
+  FileText,
+  Shield,
+  Cookie,
+  HelpCircle,
+} from "lucide-react-native";
+import * as WebBrowser from "expo-web-browser";
+import { useAuth } from "../../lib/auth-context";
+import { useSharedLinks } from "../../hooks/use-shared-links";
 
-const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || 'https://idynic.com';
+const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || "https://idynic.com";
 
-function MenuSection({ title, children }: { title: string; children: React.ReactNode }) {
+function MenuSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <View className="mb-6">
       <Text className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 px-1">
@@ -40,7 +54,9 @@ function MenuItem({
       className="flex-row items-center px-4 py-3.5 active:bg-slate-700 border-b border-slate-700/50 last:border-b-0"
     >
       <View className="mr-3">{icon}</View>
-      <Text className={`flex-1 font-medium ${destructive ? 'text-red-400' : 'text-white'}`}>
+      <Text
+        className={`flex-1 font-medium ${destructive ? "text-red-400" : "text-white"}`}
+      >
         {label}
       </Text>
       {badge !== undefined && (
@@ -58,13 +74,17 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { data: sharedLinks } = useSharedLinks();
 
-  const activeLinksCount = sharedLinks?.filter(
-    (link) => !link.revokedAt && new Date(link.expiresAt) > new Date()
-  ).length || 0;
+  const activeLinksCount =
+    sharedLinks?.filter(
+      (link) => !link.revokedAt && new Date(link.expiresAt) > new Date(),
+    ).length || 0;
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-900" edges={['top', 'bottom']}>
-      <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 32 }}>
+    <SafeAreaView className="flex-1 bg-slate-900" edges={["top", "bottom"]}>
+      <ScrollView
+        className="flex-1 px-4"
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         {/* Header */}
         <View className="py-4 mb-2">
           <Text className="text-2xl font-bold text-white mb-1">Settings</Text>
@@ -77,7 +97,7 @@ export default function SettingsScreen() {
             icon={<Link color="#14b8a6" size={20} />}
             label="Shared Links"
             badge={activeLinksCount > 0 ? activeLinksCount : undefined}
-            onPress={() => router.push('/shared-links')}
+            onPress={() => router.push("/shared-links")}
           />
         </MenuSection>
 
@@ -86,7 +106,7 @@ export default function SettingsScreen() {
           <MenuItem
             icon={<HelpCircle color="#14b8a6" size={20} />}
             label="Help Center"
-            onPress={() => router.push('/help')}
+            onPress={() => router.push("/help")}
           />
         </MenuSection>
 
@@ -105,17 +125,23 @@ export default function SettingsScreen() {
           <MenuItem
             icon={<FileText color="#94a3b8" size={20} />}
             label="Terms of Service"
-            onPress={() => WebBrowser.openBrowserAsync(`${WEB_URL}/legal/terms`)}
+            onPress={() =>
+              WebBrowser.openBrowserAsync(`${WEB_URL}/legal/terms`)
+            }
           />
           <MenuItem
             icon={<Shield color="#94a3b8" size={20} />}
             label="Privacy Policy"
-            onPress={() => WebBrowser.openBrowserAsync(`${WEB_URL}/legal/privacy`)}
+            onPress={() =>
+              WebBrowser.openBrowserAsync(`${WEB_URL}/legal/privacy`)
+            }
           />
           <MenuItem
             icon={<Cookie color="#94a3b8" size={20} />}
             label="Cookie Policy"
-            onPress={() => WebBrowser.openBrowserAsync(`${WEB_URL}/legal/cookies`)}
+            onPress={() =>
+              WebBrowser.openBrowserAsync(`${WEB_URL}/legal/cookies`)
+            }
           />
         </MenuSection>
       </ScrollView>

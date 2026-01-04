@@ -13,7 +13,11 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
   }, obj as unknown);
 }
 
-function setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): void {
+function setNestedValue(
+  obj: Record<string, unknown>,
+  path: string,
+  value: unknown,
+): void {
   const keys = path.split(".");
   const lastKey = keys.pop()!;
 
@@ -48,7 +52,7 @@ interface PatchBody {
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ opportunityId: string }> }
+  { params }: { params: Promise<{ opportunityId: string }> },
 ) {
   const supabase = await createClient();
   const { opportunityId } = await params;
@@ -72,7 +76,7 @@ export async function PATCH(
     if (!value && !instruction) {
       return NextResponse.json(
         { error: "Either value or instruction is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -126,7 +130,9 @@ export async function PATCH(
       editedFields.push(field);
     }
 
-    const updatePayload: Record<string, unknown> = { edited_fields: editedFields };
+    const updatePayload: Record<string, unknown> = {
+      edited_fields: editedFields,
+    };
 
     if (field === "narrative") {
       updatePayload.narrative = newValue;
@@ -144,7 +150,10 @@ export async function PATCH(
 
     if (updateError) {
       console.error("Failed to update profile:", updateError);
-      return NextResponse.json({ error: "Failed to save edit" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to save edit" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({
@@ -154,7 +163,10 @@ export async function PATCH(
     });
   } catch (err) {
     console.error("Edit error:", err);
-    return NextResponse.json({ error: "Failed to process edit" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to process edit" },
+      { status: 500 },
+    );
   }
 }
 
@@ -164,7 +176,7 @@ interface RevertBody {
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ opportunityId: string }> }
+  { params }: { params: Promise<{ opportunityId: string }> },
 ) {
   const supabase = await createClient();
   const { opportunityId } = await params;
@@ -210,7 +222,10 @@ export async function POST(
       updatePayload = { narrative: originalValue };
     } else {
       // Get from resume_data_original
-      const originalData = profile.resume_data_original as Record<string, unknown>;
+      const originalData = profile.resume_data_original as Record<
+        string,
+        unknown
+      >;
       originalValue = String(getNestedValue(originalData, field) || "");
 
       // Update resume_data with original value
@@ -220,7 +235,9 @@ export async function POST(
     }
 
     // Remove field from edited_fields
-    const editedFields = (profile.edited_fields || []).filter((f: string) => f !== field);
+    const editedFields = (profile.edited_fields || []).filter(
+      (f: string) => f !== field,
+    );
     updatePayload.edited_fields = editedFields;
 
     const { error: updateError } = await supabase

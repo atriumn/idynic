@@ -1,14 +1,18 @@
-import { createHash, randomBytes } from 'crypto';
+import { createHash, randomBytes } from "crypto";
 
-const KEY_PREFIX = 'idn_';
+const KEY_PREFIX = "idn_";
 const KEY_BYTES = 32;
 
 /**
  * Generate a new API key.
  * Returns both the full key (to show user once) and the hash (to store).
  */
-export function generateApiKey(): { key: string; hash: string; prefix: string } {
-  const randomPart = randomBytes(KEY_BYTES).toString('hex');
+export function generateApiKey(): {
+  key: string;
+  hash: string;
+  prefix: string;
+} {
+  const randomPart = randomBytes(KEY_BYTES).toString("hex");
   const key = `${KEY_PREFIX}${randomPart}`;
   const hash = hashApiKey(key);
   const prefix = `${KEY_PREFIX}${randomPart.slice(0, 4)}`;
@@ -20,7 +24,7 @@ export function generateApiKey(): { key: string; hash: string; prefix: string } 
  * Hash an API key for storage/lookup.
  */
 export function hashApiKey(key: string): string {
-  return createHash('sha256').update(key).digest('hex');
+  return createHash("sha256").update(key).digest("hex");
 }
 
 /**

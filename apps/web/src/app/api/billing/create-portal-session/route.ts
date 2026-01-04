@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     return apiError(
       "no_subscription",
       "No billing account found. Please subscribe to a plan first.",
-      404
+      404,
     );
   }
 

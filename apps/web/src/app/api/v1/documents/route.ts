@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
         status,
         created_at,
         evidence:evidence(count)
-      `
+      `,
       )
       .eq("user_id", userId)
       .order("created_at", { ascending: false });

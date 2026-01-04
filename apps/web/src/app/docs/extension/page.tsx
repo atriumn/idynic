@@ -18,7 +18,10 @@ export default function ExtensionDocsPage() {
       <aside className="w-64 shrink-0 border-r bg-muted/30 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto hidden lg:block">
         <div className="p-6 space-y-6">
           <div>
-            <Link href="/docs" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link
+              href="/docs"
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
               ← Back to Docs
             </Link>
           </div>
@@ -57,18 +60,20 @@ export default function ExtensionDocsPage() {
             <Left>
               <h1 className="text-3xl font-bold mb-4">Chrome Extension</h1>
               <p className="text-muted-foreground mb-4">
-                Save job opportunities to Idynic with one click while browsing LinkedIn,
-                Greenhouse, Lever, and other job boards.
+                Save job opportunities to Idynic with one click while browsing
+                LinkedIn, Greenhouse, Lever, and other job boards.
               </p>
               <p className="text-muted-foreground">
-                The extension automatically extracts job details, detects duplicates,
-                and syncs with your Idynic account so you can track and analyze
-                opportunities from anywhere.
+                The extension automatically extracts job details, detects
+                duplicates, and syncs with your Idynic account so you can track
+                and analyze opportunities from anywhere.
               </p>
             </Left>
             <Right>
               <div className="rounded-lg overflow-hidden">
-                <div className="bg-slate-800 px-4 py-2 text-xs text-teal-300 font-medium">Features</div>
+                <div className="bg-slate-800 px-4 py-2 text-xs text-teal-300 font-medium">
+                  Features
+                </div>
                 <div className="bg-slate-900/80 p-4 text-sm space-y-2">
                   <div>• One-click job saving</div>
                   <div>• LinkedIn job enrichment</div>
@@ -92,7 +97,8 @@ export default function ExtensionDocsPage() {
                   <h3 className="font-semibold mb-2">Chrome Web Store</h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     Click the button below to install from the Chrome Web Store.
-                    The extension works with Chrome, Edge, Brave, and other Chromium browsers.
+                    The extension works with Chrome, Edge, Brave, and other
+                    Chromium browsers.
                   </p>
                   <a
                     href="https://chrome.google.com/webstore"
@@ -132,26 +138,33 @@ Vivaldi`}
                   <h3 className="font-semibold mb-2">1. Get your API key</h3>
                   <p className="text-sm text-muted-foreground">
                     Log into Idynic, go to{" "}
-                    <Link href="/settings/api-keys" className="text-primary hover:underline">
+                    <Link
+                      href="/settings/api-keys"
+                      className="text-primary hover:underline"
+                    >
                       Settings → API Keys
                     </Link>
-                    , and create a new key. Copy it immediately—it&apos;s only shown once.
+                    , and create a new key. Copy it immediately—it&apos;s only
+                    shown once.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-2">2. Open extension settings</h3>
+                  <h3 className="font-semibold mb-2">
+                    2. Open extension settings
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Click the Idynic extension icon in your browser toolbar, then click
-                    &quot;Open Settings&quot; (or right-click the icon and select &quot;Options&quot;).
+                    Click the Idynic extension icon in your browser toolbar,
+                    then click &quot;Open Settings&quot; (or right-click the
+                    icon and select &quot;Options&quot;).
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold mb-2">3. Paste your API key</h3>
                   <p className="text-sm text-muted-foreground">
-                    Paste your API key and click &quot;Save&quot;. The extension will verify
-                    the connection and show a success message.
+                    Paste your API key and click &quot;Save&quot;. The extension
+                    will verify the connection and show a success message.
                   </p>
                 </div>
               </div>
@@ -162,10 +175,13 @@ Vivaldi`}
                 code="idn_xxxxxxxxxxxxxxxxxxxx"
               />
               <div className="rounded-lg overflow-hidden">
-                <div className="bg-slate-800 px-4 py-2 text-xs text-teal-300 font-medium">Security</div>
+                <div className="bg-slate-800 px-4 py-2 text-xs text-teal-300 font-medium">
+                  Security
+                </div>
                 <div className="bg-slate-900/80 p-4 text-sm">
-                  Your API key is stored locally in your browser and never sent to third parties.
-                  You can revoke it anytime from Settings → API Keys.
+                  Your API key is stored locally in your browser and never sent
+                  to third parties. You can revoke it anytime from Settings →
+                  API Keys.
                 </div>
               </div>
             </Right>
@@ -183,7 +199,10 @@ Vivaldi`}
                 <div>
                   <h3 className="font-semibold mb-2">Saving a job</h3>
                   <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                    <li>Navigate to a job posting on LinkedIn, Greenhouse, Lever, or any job site</li>
+                    <li>
+                      Navigate to a job posting on LinkedIn, Greenhouse, Lever,
+                      or any job site
+                    </li>
                     <li>Click the Idynic extension icon</li>
                     <li>Click &quot;Save Job&quot;</li>
                     <li>The job is added to your Opportunities in Idynic</li>
@@ -193,24 +212,27 @@ Vivaldi`}
                 <div>
                   <h3 className="font-semibold mb-2">LinkedIn jobs</h3>
                   <p className="text-sm text-muted-foreground">
-                    LinkedIn jobs are automatically enriched with additional metadata like
-                    location, salary range, seniority level, and company logo.
+                    LinkedIn jobs are automatically enriched with additional
+                    metadata like location, salary range, seniority level, and
+                    company logo.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold mb-2">Manual paste</h3>
                   <p className="text-sm text-muted-foreground">
-                    If automatic extraction fails, click &quot;Paste description manually&quot;
-                    to copy/paste the job description text directly.
+                    If automatic extraction fails, click &quot;Paste description
+                    manually&quot; to copy/paste the job description text
+                    directly.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold mb-2">Duplicate detection</h3>
                   <p className="text-sm text-muted-foreground">
-                    The extension recognizes jobs you&apos;ve already saved and shows a link
-                    to view the existing opportunity instead of creating duplicates.
+                    The extension recognizes jobs you&apos;ve already saved and
+                    shows a link to view the existing opportunity instead of
+                    creating duplicates.
                   </p>
                 </div>
               </div>
@@ -227,7 +249,9 @@ BambooHR
 + any job page URL`}
               />
               <div className="rounded-lg overflow-hidden">
-                <div className="bg-slate-800 px-4 py-2 text-xs text-teal-300 font-medium">Pro tip</div>
+                <div className="bg-slate-800 px-4 py-2 text-xs text-teal-300 font-medium">
+                  Pro tip
+                </div>
                 <div className="bg-slate-900/80 p-4 text-sm">
                   Pin the Idynic extension to your toolbar for quick access.
                   Click the puzzle piece icon → Pin Idynic.
@@ -246,53 +270,78 @@ BambooHR
 
               <div className="space-y-6">
                 <div>
-                  <h3 className="font-semibold mb-2">&quot;Couldn&apos;t extract job&quot;</h3>
+                  <h3 className="font-semibold mb-2">
+                    &quot;Couldn&apos;t extract job&quot;
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Some job pages have complex layouts that prevent automatic extraction.
-                    Use the &quot;Paste description manually&quot; option to copy the job text
-                    from the page and paste it directly.
+                    Some job pages have complex layouts that prevent automatic
+                    extraction. Use the &quot;Paste description manually&quot;
+                    option to copy the job text from the page and paste it
+                    directly.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-2">&quot;API key invalid&quot;</h3>
+                  <h3 className="font-semibold mb-2">
+                    &quot;API key invalid&quot;
+                  </h3>
                   <p className="text-sm text-muted-foreground">
                     Your API key may have been revoked or expired. Go to{" "}
-                    <Link href="/settings/api-keys" className="text-primary hover:underline">
+                    <Link
+                      href="/settings/api-keys"
+                      className="text-primary hover:underline"
+                    >
                       Settings → API Keys
                     </Link>{" "}
-                    in Idynic to create a new key, then update it in the extension settings.
+                    in Idynic to create a new key, then update it in the
+                    extension settings.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-2">&quot;Network error&quot;</h3>
+                  <h3 className="font-semibold mb-2">
+                    &quot;Network error&quot;
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Check your internet connection. If the problem persists, Idynic may be
-                    temporarily unavailable. Try again in a few minutes.
+                    Check your internet connection. If the problem persists,
+                    Idynic may be temporarily unavailable. Try again in a few
+                    minutes.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-2">Extension not appearing</h3>
+                  <h3 className="font-semibold mb-2">
+                    Extension not appearing
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Click the puzzle piece icon in Chrome&apos;s toolbar to see all extensions.
-                    Click the pin icon next to Idynic to keep it visible.
+                    Click the puzzle piece icon in Chrome&apos;s toolbar to see
+                    all extensions. Click the pin icon next to Idynic to keep it
+                    visible.
                   </p>
                 </div>
               </div>
             </Left>
             <Right>
               <div className="rounded-lg overflow-hidden">
-                <div className="bg-slate-800 px-4 py-2 text-xs text-teal-300 font-medium">Need help?</div>
+                <div className="bg-slate-800 px-4 py-2 text-xs text-teal-300 font-medium">
+                  Need help?
+                </div>
                 <div className="bg-slate-900/80 p-4 text-sm space-y-2">
                   <div>
-                    <a href="mailto:support@idynic.com" className="text-teal-300 hover:text-white">
+                    <a
+                      href="mailto:support@idynic.com"
+                      className="text-teal-300 hover:text-white"
+                    >
                       support@idynic.com
                     </a>
                   </div>
                   <div>
-                    <a href="https://github.com/atriumn/idynic/issues" target="_blank" rel="noopener noreferrer" className="text-teal-300 hover:text-white">
+                    <a
+                      href="https://github.com/atriumn/idynic/issues"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-teal-300 hover:text-white"
+                    >
                       GitHub Issues →
                     </a>
                   </div>
@@ -330,7 +379,9 @@ function Right({ children }: { children: React.ReactNode }) {
 function CodeBlock({ title, code }: { title: string; code: string }) {
   return (
     <div className="rounded-lg overflow-hidden">
-      <div className="bg-slate-800 px-4 py-2 text-xs text-teal-300 font-medium">{title}</div>
+      <div className="bg-slate-800 px-4 py-2 text-xs text-teal-300 font-medium">
+        {title}
+      </div>
       <pre className="bg-slate-900/80 p-4 text-sm overflow-x-auto">
         <code>{code}</code>
       </pre>

@@ -79,7 +79,7 @@ export function OnboardingPrompt({
       prompt.secondaryAction?.route
     ) {
       router.push(
-        prompt.secondaryAction.webRoute || prompt.secondaryAction.route!
+        prompt.secondaryAction.webRoute || prompt.secondaryAction.route!,
       );
     }
     dismissPrompt(promptKey);
@@ -95,7 +95,9 @@ export function OnboardingPrompt({
         <X className="h-4 w-4" />
       </button>
 
-      <h3 className="font-semibold text-foreground mb-1 pr-6">{prompt.title}</h3>
+      <h3 className="font-semibold text-foreground mb-1 pr-6">
+        {prompt.title}
+      </h3>
       <p className="text-sm text-muted-foreground mb-3">{prompt.message}</p>
 
       <div className="flex gap-2">

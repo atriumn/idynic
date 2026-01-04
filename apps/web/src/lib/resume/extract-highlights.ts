@@ -3,11 +3,40 @@ import type { ExtractedJob } from "@/lib/ai/extract-work-history";
 
 // Notable companies that are worth highlighting
 const NOTABLE_COMPANIES = new Set([
-  "google", "meta", "facebook", "amazon", "apple", "microsoft", "netflix",
-  "uber", "airbnb", "stripe", "twitter", "x", "linkedin", "salesforce",
-  "oracle", "ibm", "intel", "nvidia", "adobe", "spotify", "snap",
-  "dropbox", "slack", "zoom", "shopify", "square", "block", "paypal",
-  "coinbase", "robinhood", "doordash", "instacart", "lyft", "pinterest",
+  "google",
+  "meta",
+  "facebook",
+  "amazon",
+  "apple",
+  "microsoft",
+  "netflix",
+  "uber",
+  "airbnb",
+  "stripe",
+  "twitter",
+  "x",
+  "linkedin",
+  "salesforce",
+  "oracle",
+  "ibm",
+  "intel",
+  "nvidia",
+  "adobe",
+  "spotify",
+  "snap",
+  "dropbox",
+  "slack",
+  "zoom",
+  "shopify",
+  "square",
+  "block",
+  "paypal",
+  "coinbase",
+  "robinhood",
+  "doordash",
+  "instacart",
+  "lyft",
+  "pinterest",
 ]);
 
 function isNotableCompany(company: string): boolean {
@@ -49,7 +78,7 @@ export interface Highlight {
 
 export function extractHighlights(
   evidence: ExtractedEvidence[],
-  workHistory: ExtractedJob[]
+  workHistory: ExtractedJob[],
 ): Highlight[] {
   const highlights: Highlight[] = [];
 
@@ -88,7 +117,7 @@ export function extractHighlights(
 
   // From evidence - quantified achievements (limit to avoid overwhelming)
   const quantifiedAchievements = evidence
-    .filter(item => item.type === "accomplishment" && hasNumbers(item.text))
+    .filter((item) => item.type === "accomplishment" && hasNumbers(item.text))
     .slice(0, 3);
 
   for (const item of quantifiedAchievements) {

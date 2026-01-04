@@ -1,7 +1,7 @@
-import { NextRequest } from 'next/server';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
-import { validateApiKey, isAuthError } from '@/lib/api/auth';
-import { apiSuccess, apiError, ApiErrors } from '@/lib/api/response';
+import { NextRequest } from "next/server";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
+import { validateApiKey, isAuthError } from "@/lib/api/auth";
+import { apiSuccess, apiError, ApiErrors } from "@/lib/api/response";
 
 export async function GET(request: NextRequest) {
   // Validate API key
@@ -15,47 +15,50 @@ export async function GET(request: NextRequest) {
 
   // Fetch profile
   const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
     .single();
 
   if (profileError || !profile) {
-    return ApiErrors.notFound('Profile');
+    return ApiErrors.notFound("Profile");
   }
 
   // Fetch work history
   const { data: workHistory } = await supabase
-    .from('work_history')
-    .select('*')
-    .eq('user_id', userId)
-    .order('order_index', { ascending: true });
+    .from("work_history")
+    .select("*")
+    .eq("user_id", userId)
+    .order("order_index", { ascending: true });
 
   // Fetch identity claims (for skills, education, certifications)
   const { data: claims } = await supabase
-    .from('identity_claims')
-    .select('*')
-    .eq('user_id', userId)
-    .order('confidence', { ascending: false });
+    .from("identity_claims")
+    .select("*")
+    .eq("user_id", userId)
+    .order("confidence", { ascending: false });
 
   // Separate claims by type
-  const skills = claims?.filter(c => c.type === 'skill') || [];
-  const education = claims?.filter(c => c.type === 'education') || [];
-  const certifications = claims?.filter(c => c.type === 'certification') || [];
+  const skills = claims?.filter((c) => c.type === "skill") || [];
+  const education = claims?.filter((c) => c.type === "education") || [];
+  const certifications =
+    claims?.filter((c) => c.type === "certification") || [];
 
   // Note: work_history table doesn't have entry_type field yet
   // For now, return all work history in experience array
   const experience = workHistory || [];
 
   // Build identity reflection object (only if generated)
-  const identity = profile.identity_generated_at ? {
-    archetype: profile.identity_archetype,
-    headline: profile.identity_headline,
-    bio: profile.identity_bio,
-    keywords: profile.identity_keywords || [],
-    matches: profile.identity_matches || [],
-    generated_at: profile.identity_generated_at,
-  } : null;
+  const identity = profile.identity_generated_at
+    ? {
+        archetype: profile.identity_archetype,
+        headline: profile.identity_headline,
+        bio: profile.identity_bio,
+        keywords: profile.identity_keywords || [],
+        matches: profile.identity_matches || [],
+        generated_at: profile.identity_generated_at,
+      }
+    : null;
 
   return apiSuccess({
     contact: {
@@ -72,19 +75,19 @@ export async function GET(request: NextRequest) {
     experience,
     ventures: [],
     additional_experience: [],
-    skills: skills.map(s => ({
+    skills: skills.map((s) => ({
       id: s.id,
       label: s.label,
       description: s.description,
       confidence: s.confidence,
     })),
-    education: education.map(e => ({
+    education: education.map((e) => ({
       id: e.id,
       label: e.label,
       description: e.description,
       confidence: e.confidence,
     })),
-    certifications: certifications.map(c => ({
+    certifications: certifications.map((c) => ({
       id: c.id,
       label: c.label,
       description: c.description,
@@ -104,7 +107,16 @@ interface ContactUpdateBody {
   logo_url?: string;
 }
 
-const ALLOWED_FIELDS = ['name', 'email', 'phone', 'location', 'linkedin', 'github', 'website', 'logo_url'];
+const ALLOWED_FIELDS = [
+  "name",
+  "email",
+  "phone",
+  "location",
+  "linkedin",
+  "github",
+  "website",
+  "logo_url",
+];
 
 export async function PATCH(request: NextRequest) {
   const authResult = await validateApiKey(request);
@@ -127,31 +139,31 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (Object.keys(updates).length === 0) {
-      return apiError('validation_error', 'No valid fields to update', 400);
+      return apiError("validation_error", "No valid fields to update", 400);
     }
 
     // Validate URL fields
-    const urlFields = ['linkedin', 'github', 'website', 'logo_url'];
+    const urlFields = ["linkedin", "github", "website", "logo_url"];
     for (const field of urlFields) {
       if (updates[field]) {
         try {
           new URL(updates[field]!);
         } catch {
-          return apiError('validation_error', `Invalid URL for ${field}`, 400);
+          return apiError("validation_error", `Invalid URL for ${field}`, 400);
         }
       }
     }
 
     const { data, error } = await supabase
-      .from('profiles')
+      .from("profiles")
       .update(updates)
-      .eq('id', userId)
+      .eq("id", userId)
       .select()
       .single();
 
     if (error) {
-      console.error('Failed to update contact:', error);
-      return apiError('server_error', 'Failed to update contact info', 500);
+      console.error("Failed to update contact:", error);
+      return apiError("server_error", "Failed to update contact info", 500);
     }
 
     return apiSuccess({
@@ -165,7 +177,7 @@ export async function PATCH(request: NextRequest) {
       logo_url: data.logo_url,
     });
   } catch (err) {
-    console.error('Contact update error:', err);
-    return apiError('server_error', 'Failed to process request', 500);
+    console.error("Contact update error:", err);
+    return apiError("server_error", "Failed to process request", 500);
   }
 }

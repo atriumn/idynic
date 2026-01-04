@@ -191,7 +191,9 @@ export default function LoginPage() {
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
+            <CardTitle className="text-2xl font-bold">
+              Check your email
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <p className="text-muted-foreground">
@@ -286,10 +288,22 @@ export default function LoginPage() {
                 className="w-full flex items-center justify-center gap-2.5 h-11 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <svg className="w-[18px] h-[18px]" viewBox="0 0 18 18">
-                  <path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18Z" />
-                  <path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17Z" />
-                  <path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07Z" />
-                  <path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3Z" />
+                  <path
+                    fill="#4285F4"
+                    d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18Z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17Z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07Z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3Z"
+                  />
                 </svg>
                 Sign up with Google
               </button>
@@ -300,8 +314,12 @@ export default function LoginPage() {
                 disabled={loading}
                 className="w-full flex items-center justify-center gap-2.5 h-11 bg-black rounded-lg text-sm text-white font-medium hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                <svg className="w-[18px] h-[18px]" viewBox="0 0 18 18" fill="currentColor">
-                  <path d="M13.04 15.21c-.73.71-1.54.6-2.31.26-.82-.35-1.57-.36-2.43 0-1.08.46-1.65.33-2.3-.26-3.62-3.78-3.08-9.53 1.08-9.74 1.01.05 1.72.56 2.31.6.89-.18 1.73-.7 2.68-.63 1.13.09 1.99.54 2.55 1.35-2.34 1.4-1.78 4.49.36 5.35-.43 1.12-.98 2.24-1.9 3.07h-.04ZM9.27 5.44c-.11-1.67 1.24-3.05 2.8-3.19.22 1.94-1.75 3.38-2.8 3.19Z"/>
+                <svg
+                  className="w-[18px] h-[18px]"
+                  viewBox="0 0 18 18"
+                  fill="currentColor"
+                >
+                  <path d="M13.04 15.21c-.73.71-1.54.6-2.31.26-.82-.35-1.57-.36-2.43 0-1.08.46-1.65.33-2.3-.26-3.62-3.78-3.08-9.53 1.08-9.74 1.01.05 1.72.56 2.31.6.89-.18 1.73-.7 2.68-.63 1.13.09 1.99.54 2.55 1.35-2.34 1.4-1.78 4.49.36 5.35-.43 1.12-.98 2.24-1.9 3.07h-.04ZM9.27 5.44c-.11-1.67 1.24-3.05 2.8-3.19.22 1.94-1.75 3.38-2.8 3.19Z" />
                 </svg>
                 Sign up with Apple
               </button>
@@ -342,11 +360,17 @@ export default function LoginPage() {
 
               <p className="text-center text-xs text-muted-foreground">
                 By signing up, you agree to our{" "}
-                <a href="/legal/terms" className="underline hover:text-foreground">
+                <a
+                  href="/legal/terms"
+                  className="underline hover:text-foreground"
+                >
                   Terms of Service
                 </a>{" "}
                 and{" "}
-                <a href="/legal/privacy" className="underline hover:text-foreground">
+                <a
+                  href="/legal/privacy"
+                  className="underline hover:text-foreground"
+                >
                   Privacy Policy
                 </a>
               </p>
@@ -371,10 +395,22 @@ export default function LoginPage() {
                 className="w-full flex items-center justify-center gap-2.5 h-11 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <svg className="w-[18px] h-[18px]" viewBox="0 0 18 18">
-                  <path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18Z" />
-                  <path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17Z" />
-                  <path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07Z" />
-                  <path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3Z" />
+                  <path
+                    fill="#4285F4"
+                    d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18Z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17Z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07Z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3Z"
+                  />
                 </svg>
                 Sign in with Google
               </button>
@@ -385,8 +421,12 @@ export default function LoginPage() {
                 disabled={loading}
                 className="w-full flex items-center justify-center gap-2.5 h-11 bg-black rounded-lg text-sm text-white font-medium hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                <svg className="w-[18px] h-[18px]" viewBox="0 0 18 18" fill="currentColor">
-                  <path d="M13.04 15.21c-.73.71-1.54.6-2.31.26-.82-.35-1.57-.36-2.43 0-1.08.46-1.65.33-2.3-.26-3.62-3.78-3.08-9.53 1.08-9.74 1.01.05 1.72.56 2.31.6.89-.18 1.73-.7 2.68-.63 1.13.09 1.99.54 2.55 1.35-2.34 1.4-1.78 4.49.36 5.35-.43 1.12-.98 2.24-1.9 3.07h-.04ZM9.27 5.44c-.11-1.67 1.24-3.05 2.8-3.19.22 1.94-1.75 3.38-2.8 3.19Z"/>
+                <svg
+                  className="w-[18px] h-[18px]"
+                  viewBox="0 0 18 18"
+                  fill="currentColor"
+                >
+                  <path d="M13.04 15.21c-.73.71-1.54.6-2.31.26-.82-.35-1.57-.36-2.43 0-1.08.46-1.65.33-2.3-.26-3.62-3.78-3.08-9.53 1.08-9.74 1.01.05 1.72.56 2.31.6.89-.18 1.73-.7 2.68-.63 1.13.09 1.99.54 2.55 1.35-2.34 1.4-1.78 4.49.36 5.35-.43 1.12-.98 2.24-1.9 3.07h-.04ZM9.27 5.44c-.11-1.67 1.24-3.05 2.8-3.19.22 1.94-1.75 3.38-2.8 3.19Z" />
                 </svg>
                 Sign in with Apple
               </button>

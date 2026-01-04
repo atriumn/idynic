@@ -22,7 +22,9 @@ export const POST = withRequestContext(async (request: Request) => {
   try {
     body = await request.json();
   } catch (err) {
-    log.error("JSON parsing error", { error: err instanceof Error ? err.message : String(err) });
+    log.error("JSON parsing error", {
+      error: err instanceof Error ? err.message : String(err),
+    });
     return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
@@ -31,7 +33,7 @@ export const POST = withRequestContext(async (request: Request) => {
   if (!url && !description) {
     return Response.json(
       { error: "Either url or description is required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -56,7 +58,7 @@ export const POST = withRequestContext(async (request: Request) => {
               company: existing.company,
             },
           },
-          { status: 409 }
+          { status: 409 },
         );
       }
     }

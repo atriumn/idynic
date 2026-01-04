@@ -83,7 +83,9 @@ export function ResumeUpload({ onComplete }: ResumeUploadProps) {
       if (!contentType || !contentType.includes("application/json")) {
         const text = await response.text();
         console.error("Non-JSON response:", text.substring(0, 200));
-        throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Server error: ${response.status} ${response.statusText}`,
+        );
       }
 
       const data = await response.json();
@@ -102,7 +104,9 @@ export function ResumeUpload({ onComplete }: ResumeUploadProps) {
   }, [session?.access_token]);
 
   // Calculate phase states - include jobId check to handle loading/pending states
-  const isProcessing = isUploading || (jobId !== null && job?.status !== "completed" && job?.status !== "failed");
+  const isProcessing =
+    isUploading ||
+    (jobId !== null && job?.status !== "completed" && job?.status !== "failed");
   const isComplete = job?.status === "completed";
   const currentPhase = job?.phase as DocumentJobPhase | null;
 
@@ -181,12 +185,17 @@ export function ResumeUpload({ onComplete }: ResumeUploadProps) {
         {/* Completion summary */}
         {isComplete && summary && (
           <View className="bg-teal-900/30 border border-teal-700 rounded-xl p-4">
-            <Text className="text-teal-400 font-semibold mb-1">Processing complete!</Text>
+            <Text className="text-teal-400 font-semibold mb-1">
+              Processing complete!
+            </Text>
             <Text className="text-teal-300 text-sm">
               Found {summary.evidenceCount} evidence items
-              {summary.workHistoryCount > 0 && `, ${summary.workHistoryCount} work history entries`}
-              {summary.claimsCreated > 0 && `, +${summary.claimsCreated} new claims`}
-              {summary.claimsUpdated > 0 && `, ${summary.claimsUpdated} updated`}
+              {summary.workHistoryCount > 0 &&
+                `, ${summary.workHistoryCount} work history entries`}
+              {summary.claimsCreated > 0 &&
+                `, +${summary.claimsCreated} new claims`}
+              {summary.claimsUpdated > 0 &&
+                `, ${summary.claimsUpdated} updated`}
             </Text>
           </View>
         )}

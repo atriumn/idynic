@@ -31,7 +31,7 @@ export async function DELETE(request: NextRequest) {
     return apiError(
       "invalid_confirmation",
       "Confirmation text must be exactly 'DELETE MY ACCOUNT'",
-      400
+      400,
     );
   }
 
@@ -100,7 +100,7 @@ export async function DELETE(request: NextRequest) {
         .delete()
         .in(
           "shared_link_id",
-          userSharedLinks.map((sl) => sl.id)
+          userSharedLinks.map((sl) => sl.id),
         );
     }
 
@@ -116,7 +116,7 @@ export async function DELETE(request: NextRequest) {
         .delete()
         .in(
           "claim_id",
-          userClaims.map((c) => c.id)
+          userClaims.map((c) => c.id),
         );
     }
 

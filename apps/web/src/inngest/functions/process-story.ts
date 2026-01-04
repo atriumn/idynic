@@ -28,7 +28,10 @@ export const processStory = inngest.createFunction(
         })
         .eq("id", jobId);
 
-      console.error("[process-story] Job failed after retries:", { jobId, error: errorMessage });
+      console.error("[process-story] Job failed after retries:", {
+        jobId,
+        error: errorMessage,
+      });
 
       // Flush logs to Axiom on failure
       const { log } = await import("@/lib/logger");
@@ -39,7 +42,12 @@ export const processStory = inngest.createFunction(
   async ({ event, step }) => {
     const { jobId, userId, text, contentHash } = event.data;
     const supabase = createServiceRoleClient();
-    const jobLog = createLogger({ jobId, userId, textLength: text.length, inngest: true });
+    const jobLog = createLogger({
+      jobId,
+      userId,
+      textLength: text.length,
+      inngest: true,
+    });
     const job = new JobUpdater(supabase, jobId);
 
     // Step 1: Check for duplicates
@@ -55,9 +63,11 @@ export const processStory = inngest.createFunction(
         .single();
 
       if (existingDoc) {
-        jobLog.warn("Duplicate story detected", { existingDocId: existingDoc.id });
+        jobLog.warn("Duplicate story detected", {
+          existingDocId: existingDoc.id,
+        });
         await job.setError(
-          `Duplicate story - already submitted on ${new Date(existingDoc.created_at || Date.now()).toLocaleDateString()}`
+          `Duplicate story - already submitted on ${new Date(existingDoc.created_at || Date.now()).toLocaleDateString()}`,
         );
         return true;
       }
@@ -76,7 +86,9 @@ export const processStory = inngest.createFunction(
       jobLog.info("Starting evidence extraction");
 
       const items = await extractStoryEvidence(text);
-      jobLog.info("Evidence extraction complete", { evidenceCount: items.length });
+      jobLog.info("Evidence extraction complete", {
+        evidenceCount: items.length,
+      });
 
       // Add highlights
       if (items.length > 0) {
@@ -84,7 +96,7 @@ export const processStory = inngest.createFunction(
           items.slice(0, 5).map((item) => ({
             text: item.text.slice(0, 60) + (item.text.length > 60 ? "..." : ""),
             type: "found" as const,
-          }))
+          })),
         );
       }
 
@@ -125,13 +137,19 @@ export const processStory = inngest.createFunction(
         throw new Error(`Failed to create document: ${docError?.message}`);
       }
 
-      jobLog.info("Document created", { documentId: doc.id, title: storyTitle });
+      jobLog.info("Document created", {
+        documentId: doc.id,
+        title: storyTitle,
+      });
       return doc;
     });
 
     if (evidenceItems.length === 0) {
       await step.run("complete-no-evidence", async () => {
-        await supabase.from("documents").update({ status: "completed" }).eq("id", document.id);
+        await supabase
+          .from("documents")
+          .update({ status: "completed" })
+          .eq("id", document.id);
         await job.complete(
           {
             documentId: document.id,
@@ -140,7 +158,7 @@ export const processStory = inngest.createFunction(
             claimsCreated: 0,
             claimsUpdated: 0,
           },
-          document.id
+          document.id,
         );
       });
       const { log } = await import("@/lib/logger");
@@ -151,7 +169,9 @@ export const processStory = inngest.createFunction(
     // Step 5: Generate embeddings
     const embeddings = await step.run("generate-embeddings", async () => {
       await job.setPhase("embeddings");
-      jobLog.info("Starting embeddings", { evidenceCount: evidenceItems.length });
+      jobLog.info("Starting embeddings", {
+        evidenceCount: evidenceItems.length,
+      });
 
       const evidenceTexts = evidenceItems.map((e) => e.text);
       const embeddings = await generateEmbeddings(evidenceTexts);
@@ -201,7 +221,9 @@ export const processStory = inngest.createFunction(
     // Step 7: Synthesize claims
     const synthesisResult = await step.run("synthesize-claims", async () => {
       await job.setPhase("synthesis", "0/?");
-      jobLog.info("Starting synthesis", { evidenceCount: storedEvidence.length });
+      jobLog.info("Starting synthesis", {
+        evidenceCount: storedEvidence.length,
+      });
 
       const evidenceWithIds = storedEvidence.map((e) => ({
         id: e.id,
@@ -226,14 +248,17 @@ export const processStory = inngest.createFunction(
             job.updateProgress(`${progress.current}/${progress.total}`);
           },
           (claimUpdate) => {
-            const type = claimUpdate.action === "created" ? "created" : "updated";
+            const type =
+              claimUpdate.action === "created" ? "created" : "updated";
             job.addHighlight(claimUpdate.label, type);
-          }
+          },
         );
         jobLog.info("Synthesis complete", result);
         return result;
       } catch (err) {
-        jobLog.error("Synthesis error", { error: err instanceof Error ? err.message : String(err) });
+        jobLog.error("Synthesis error", {
+          error: err instanceof Error ? err.message : String(err),
+        });
         await job.setWarning("Claim synthesis partially failed");
         return { claimsCreated: 0, claimsUpdated: 0 };
       }
@@ -255,13 +280,18 @@ export const processStory = inngest.createFunction(
         }
       } catch (err) {
         // Don't fail the job if eval fails - it's supplementary
-        jobLog.error("Claim eval error", { error: err instanceof Error ? err.message : String(err) });
+        jobLog.error("Claim eval error", {
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
     });
 
     // Step 10: Complete job
     await step.run("complete-job", async () => {
-      await supabase.from("documents").update({ status: "completed" }).eq("id", document.id);
+      await supabase
+        .from("documents")
+        .update({ status: "completed" })
+        .eq("id", document.id);
 
       const summary = {
         documentId: document.id,
@@ -284,5 +314,5 @@ export const processStory = inngest.createFunction(
       documentId: document.id,
       evidenceCount: storedEvidence.length,
     };
-  }
+  },
 );

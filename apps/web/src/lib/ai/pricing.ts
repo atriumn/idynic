@@ -53,7 +53,7 @@ export function calculateCostCents(
   provider: string,
   model: string,
   inputTokens: number,
-  outputTokens: number
+  outputTokens: number,
 ): number {
   const pricing = AI_PRICING[provider]?.[model];
   if (!pricing) {

@@ -7,7 +7,7 @@ import { getModelConfig } from "./config";
  */
 export async function summarizeStoryTitle(
   text: string,
-  options?: { userId?: string; jobId?: string }
+  options?: { userId?: string; jobId?: string },
 ): Promise<string> {
   const config = getModelConfig("summarize_story_title");
 
@@ -47,7 +47,7 @@ Examples of good titles:
       operation: "summarize_story_title",
       userId: options?.userId,
       jobId: options?.jobId,
-    }
+    },
   );
 
   const title = response.content?.trim();
@@ -56,7 +56,10 @@ Examples of good titles:
   }
 
   // Clean up any quotes and newlines the model might add
-  const cleaned = title.replace(/^["']|["']$/g, "").replace(/\n/g, " ").trim();
+  const cleaned = title
+    .replace(/^["']|["']$/g, "")
+    .replace(/\n/g, " ")
+    .trim();
 
   // If the response is too long or looks like content (not a title), fall back
   if (cleaned.length > 60 || cleaned.includes("##") || cleaned.includes("*")) {

@@ -142,7 +142,11 @@ export function SharedLinksTable({ links }: SharedLinksTableProps) {
                   <TableRow className="cursor-pointer hover:bg-muted/50">
                     <TableCell>
                       <CollapsibleTrigger asChild>
-                        <Button variant="ghost" size="sm" className="p-0 h-auto">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="p-0 h-auto"
+                        >
                           {isExpanded ? (
                             <ChevronDown className="h-4 w-4" />
                           ) : (
@@ -153,7 +157,9 @@ export function SharedLinksTable({ links }: SharedLinksTableProps) {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{link.opportunityTitle}</div>
+                        <div className="font-medium">
+                          {link.opportunityTitle}
+                        </div>
                         {link.company && (
                           <div className="text-sm text-muted-foreground flex items-center gap-1">
                             <Building2 className="h-3 w-3" />
@@ -173,8 +179,8 @@ export function SharedLinksTable({ links }: SharedLinksTableProps) {
                       {status === "active"
                         ? formatDate(link.expiresAt)
                         : status === "expired"
-                        ? "Expired"
-                        : "—"}
+                          ? "Expired"
+                          : "—"}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
@@ -229,9 +235,14 @@ export function SharedLinksTable({ links }: SharedLinksTableProps) {
                           </p>
                         ) : (
                           <div className="space-y-1">
-                            <p className="text-sm font-medium mb-2">View history</p>
+                            <p className="text-sm font-medium mb-2">
+                              View history
+                            </p>
                             {link.views.slice(0, 10).map((viewedAt, i) => (
-                              <p key={i} className="text-sm text-muted-foreground">
+                              <p
+                                key={i}
+                                className="text-sm text-muted-foreground"
+                              >
                                 Viewed {formatDateTime(viewedAt)}
                               </p>
                             ))}

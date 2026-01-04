@@ -68,14 +68,22 @@ export async function POST(request: NextRequest) {
             stripe_subscription_id: subscription.id,
             plan_type: planType,
             status: status,
-            current_period_start: new Date((subscription as unknown as { current_period_start: number }).current_period_start * 1000).toISOString(),
-            current_period_end: new Date((subscription as unknown as { current_period_end: number }).current_period_end * 1000).toISOString(),
+            current_period_start: new Date(
+              (subscription as unknown as { current_period_start: number })
+                .current_period_start * 1000,
+            ).toISOString(),
+            current_period_end: new Date(
+              (subscription as unknown as { current_period_end: number })
+                .current_period_end * 1000,
+            ).toISOString(),
             cancel_at_period_end: subscription.cancel_at_period_end,
             updated_at: new Date().toISOString(),
           })
           .eq("stripe_customer_id", customerId);
 
-        console.log(`Subscription ${event.type} for customer ${customerId}: ${planType}`);
+        console.log(
+          `Subscription ${event.type} for customer ${customerId}: ${planType}`,
+        );
         break;
       }
 
@@ -95,7 +103,9 @@ export async function POST(request: NextRequest) {
           })
           .eq("stripe_customer_id", customerId);
 
-        console.log(`Subscription deleted for customer ${customerId}, downgraded to free`);
+        console.log(
+          `Subscription deleted for customer ${customerId}, downgraded to free`,
+        );
         break;
       }
 

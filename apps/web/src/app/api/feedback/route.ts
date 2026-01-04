@@ -18,16 +18,13 @@ export async function POST(request: NextRequest) {
     const body: FeedbackRequest = await request.json();
 
     if (!body.title?.trim()) {
-      return NextResponse.json(
-        { error: "Title is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Title is required" }, { status: 400 });
     }
 
     if (!body.description?.trim()) {
       return NextResponse.json(
         { error: "Description is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -36,7 +33,7 @@ export async function POST(request: NextRequest) {
       console.error("GITHUB_FEEDBACK_TOKEN not configured");
       return NextResponse.json(
         { error: "Feedback service not configured" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -46,7 +43,9 @@ export async function POST(request: NextRequest) {
 
     try {
       const supabase = await createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         userId = user.id;
         userEmail = userEmail || user.email || null;
@@ -95,7 +94,7 @@ export async function POST(request: NextRequest) {
           body: issueBody,
           labels: [labelMap[body.type] || "bug"],
         }),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -103,7 +102,7 @@ export async function POST(request: NextRequest) {
       console.error("GitHub API error:", response.status, errorText);
       return NextResponse.json(
         { error: "Failed to submit feedback" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -118,7 +117,7 @@ export async function POST(request: NextRequest) {
     console.error("Feedback submission error:", error);
     return NextResponse.json(
       { error: "Failed to submit feedback" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

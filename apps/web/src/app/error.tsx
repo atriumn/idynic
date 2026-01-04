@@ -20,11 +20,12 @@ export default function Error({
       <AlertCircle className="h-16 w-16 text-destructive/50 mb-4" />
       <h2 className="text-2xl font-semibold mb-2">Something went wrong</h2>
       <p className="text-muted-foreground mb-6 max-w-md">
-        An unexpected error occurred. Please try again or contact support if the problem persists.
+        An unexpected error occurred. Please try again or contact support if the
+        problem persists.
       </p>
       <div className="flex gap-4">
         <Button onClick={reset}>Try again</Button>
-        <Button variant="outline" onClick={() => window.location.href = "/"}>
+        <Button variant="outline" onClick={() => (window.location.href = "/")}>
           Go home
         </Button>
       </div>

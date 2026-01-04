@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ token: string }> }
+  { params }: { params: Promise<{ token: string }> },
 ) {
   const supabase = await createClient();
   const { token } = await params;
@@ -38,7 +38,7 @@ export async function GET(
         error: result.error,
         candidateName: result.candidate_name,
       },
-      { status: 410 }
+      { status: 410 },
     );
   }
 

@@ -73,7 +73,7 @@ function buildUserPrompt(claims: Claim[], claimCount: number): string {
   const claimList = claims
     .map(
       (c, i) =>
-        `${i + 1}. [${c.type.toUpperCase()}] ${c.label}${c.description ? `: ${c.description}` : ""} (confidence: ${(c.confidence * 100).toFixed(0)}%)`
+        `${i + 1}. [${c.type.toUpperCase()}] ${c.label}${c.description ? `: ${c.description}` : ""} (confidence: ${(c.confidence * 100).toFixed(0)}%)`,
     )
     .join("\n");
 
@@ -127,7 +127,7 @@ export async function reflectIdentity(
   userId: string,
   sse?: SSEStream,
   job?: JobUpdater,
-  options?: { jobId?: string }
+  options?: { jobId?: string },
 ): Promise<void> {
   try {
     // Fetch top 50 claims by confidence
@@ -183,7 +183,7 @@ export async function reflectIdentity(
         operation: "reflect_identity",
         userId,
         jobId: options?.jobId,
-      }
+      },
     );
 
     const content = response.content;

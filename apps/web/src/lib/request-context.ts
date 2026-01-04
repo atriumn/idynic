@@ -30,10 +30,7 @@ export function getRequestId(): string | undefined {
  * Run a function with request context
  * Use this to wrap API route handlers
  */
-export function runWithContext<T>(
-  context: RequestContext,
-  fn: () => T
-): T {
+export function runWithContext<T>(context: RequestContext, fn: () => T): T {
   return requestContext.run(context, fn);
 }
 
@@ -42,7 +39,7 @@ export function runWithContext<T>(
  */
 export function createRequestContext(
   requestId: string,
-  userId?: string
+  userId?: string,
 ): RequestContext {
   return {
     requestId,

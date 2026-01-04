@@ -33,11 +33,17 @@ export const POST = withRequestContext(async (request: Request) => {
   }
 
   if (text.length < 200) {
-    return Response.json({ error: "Story must be at least 200 characters" }, { status: 400 });
+    return Response.json(
+      { error: "Story must be at least 200 characters" },
+      { status: 400 },
+    );
   }
 
   if (text.length > 10000) {
-    return Response.json({ error: "Story must be less than 10,000 characters" }, { status: 400 });
+    return Response.json(
+      { error: "Story must be less than 10,000 characters" },
+      { status: 400 },
+    );
   }
 
   log.info("Processing story submission", { textLength: text.length });

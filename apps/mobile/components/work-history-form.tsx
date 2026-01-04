@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,9 +9,9 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
-import { X } from 'lucide-react-native';
-import { WorkHistoryData } from '../hooks/use-profile-mutations';
+} from "react-native";
+import { X } from "lucide-react-native";
+import { WorkHistoryData } from "../hooks/use-profile-mutations";
 
 interface WorkHistoryFormProps {
   visible: boolean;
@@ -27,37 +27,37 @@ export function WorkHistoryForm({
   onClose,
   onSubmit,
   initialData,
-  title = 'Add Experience',
+  title = "Add Experience",
   isVenture = false,
 }: WorkHistoryFormProps) {
-  const [company, setCompany] = useState(initialData?.company || '');
-  const [jobTitle, setJobTitle] = useState(initialData?.title || '');
-  const [startDate, setStartDate] = useState(initialData?.start_date || '');
-  const [endDate, setEndDate] = useState(initialData?.end_date || '');
-  const [location, setLocation] = useState(initialData?.location || '');
-  const [summary, setSummary] = useState(initialData?.summary || '');
+  const [company, setCompany] = useState(initialData?.company || "");
+  const [jobTitle, setJobTitle] = useState(initialData?.title || "");
+  const [startDate, setStartDate] = useState(initialData?.start_date || "");
+  const [endDate, setEndDate] = useState(initialData?.end_date || "");
+  const [location, setLocation] = useState(initialData?.location || "");
+  const [summary, setSummary] = useState(initialData?.summary || "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Reset form when initialData changes (fixes "wrong item" bug)
   useEffect(() => {
-    setCompany(initialData?.company || '');
-    setJobTitle(initialData?.title || '');
-    setStartDate(initialData?.start_date || '');
-    setEndDate(initialData?.end_date || '');
-    setLocation(initialData?.location || '');
-    setSummary(initialData?.summary || '');
+    setCompany(initialData?.company || "");
+    setJobTitle(initialData?.title || "");
+    setStartDate(initialData?.start_date || "");
+    setEndDate(initialData?.end_date || "");
+    setLocation(initialData?.location || "");
+    setSummary(initialData?.summary || "");
     setError(null);
   }, [initialData]);
 
   const handleSubmit = async () => {
     if (!company.trim() || !jobTitle.trim()) {
-      setError('Company and title are required');
+      setError("Company and title are required");
       return;
     }
 
     if (!startDate.trim()) {
-      setError('Start date is required');
+      setError("Start date is required");
       return;
     }
 
@@ -72,23 +72,23 @@ export function WorkHistoryForm({
         end_date: endDate.trim() || null,
         location: location.trim() || null,
         summary: summary.trim() || null,
-        entry_type: isVenture ? 'venture' : 'work',
+        entry_type: isVenture ? "venture" : "work",
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save');
+      setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
       setLoading(false);
     }
   };
 
   const handleClose = () => {
-    setCompany(initialData?.company || '');
-    setJobTitle(initialData?.title || '');
-    setStartDate(initialData?.start_date || '');
-    setEndDate(initialData?.end_date || '');
-    setLocation(initialData?.location || '');
-    setSummary(initialData?.summary || '');
+    setCompany(initialData?.company || "");
+    setJobTitle(initialData?.title || "");
+    setStartDate(initialData?.start_date || "");
+    setEndDate(initialData?.end_date || "");
+    setLocation(initialData?.location || "");
+    setSummary(initialData?.summary || "");
     setError(null);
     onClose();
   };
@@ -96,7 +96,7 @@ export function WorkHistoryForm({
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
       >
         <View className="flex-1 bg-black/50 justify-end">
@@ -118,12 +118,12 @@ export function WorkHistoryForm({
 
               <View className="mb-4">
                 <Text className="text-sm font-medium text-slate-400 mb-2">
-                  {isVenture ? 'Venture Name' : 'Company'} *
+                  {isVenture ? "Venture Name" : "Company"} *
                 </Text>
                 <TextInput
                   value={company}
                   onChangeText={setCompany}
-                  placeholder={isVenture ? 'Your Startup Inc.' : 'Company name'}
+                  placeholder={isVenture ? "Your Startup Inc." : "Company name"}
                   placeholderTextColor="#64748b"
                   className="bg-slate-800 text-white p-3 rounded-lg"
                 />
@@ -131,12 +131,14 @@ export function WorkHistoryForm({
 
               <View className="mb-4">
                 <Text className="text-sm font-medium text-slate-400 mb-2">
-                  {isVenture ? 'Role' : 'Job Title'} *
+                  {isVenture ? "Role" : "Job Title"} *
                 </Text>
                 <TextInput
                   value={jobTitle}
                   onChangeText={setJobTitle}
-                  placeholder={isVenture ? 'Founder & CEO' : 'Software Engineer'}
+                  placeholder={
+                    isVenture ? "Founder & CEO" : "Software Engineer"
+                  }
                   placeholderTextColor="#64748b"
                   className="bg-slate-800 text-white p-3 rounded-lg"
                 />
@@ -144,7 +146,9 @@ export function WorkHistoryForm({
 
               <View className="flex-row gap-3 mb-4">
                 <View className="flex-1">
-                  <Text className="text-sm font-medium text-slate-400 mb-2">Start Date</Text>
+                  <Text className="text-sm font-medium text-slate-400 mb-2">
+                    Start Date
+                  </Text>
                   <TextInput
                     value={startDate}
                     onChangeText={setStartDate}
@@ -154,7 +158,9 @@ export function WorkHistoryForm({
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-sm font-medium text-slate-400 mb-2">End Date</Text>
+                  <Text className="text-sm font-medium text-slate-400 mb-2">
+                    End Date
+                  </Text>
                   <TextInput
                     value={endDate}
                     onChangeText={setEndDate}
@@ -166,7 +172,9 @@ export function WorkHistoryForm({
               </View>
 
               <View className="mb-4">
-                <Text className="text-sm font-medium text-slate-400 mb-2">Location</Text>
+                <Text className="text-sm font-medium text-slate-400 mb-2">
+                  Location
+                </Text>
                 <TextInput
                   value={location}
                   onChangeText={setLocation}
@@ -177,7 +185,9 @@ export function WorkHistoryForm({
               </View>
 
               <View className="mb-6">
-                <Text className="text-sm font-medium text-slate-400 mb-2">Summary</Text>
+                <Text className="text-sm font-medium text-slate-400 mb-2">
+                  Summary
+                </Text>
                 <TextInput
                   value={summary}
                   onChangeText={setSummary}
@@ -196,17 +206,21 @@ export function WorkHistoryForm({
                   onPress={handleClose}
                   className="flex-1 py-3 rounded-xl border border-slate-700"
                 >
-                  <Text className="text-center text-slate-400 font-semibold">Cancel</Text>
+                  <Text className="text-center text-slate-400 font-semibold">
+                    Cancel
+                  </Text>
                 </Pressable>
                 <Pressable
                   onPress={handleSubmit}
                   disabled={loading}
-                  className={`flex-1 py-3 rounded-xl ${loading ? 'bg-teal-800' : 'bg-teal-600'}`}
+                  className={`flex-1 py-3 rounded-xl ${loading ? "bg-teal-800" : "bg-teal-600"}`}
                 >
                   {loading ? (
                     <ActivityIndicator color="white" size="small" />
                   ) : (
-                    <Text className="text-center text-white font-semibold">Save</Text>
+                    <Text className="text-center text-white font-semibold">
+                      Save
+                    </Text>
                   )}
                 </Pressable>
               </View>

@@ -20,7 +20,7 @@ export interface UsageData {
  */
 export async function getUserPlanType(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
 ): Promise<PlanType> {
   const { data: subscription } = await supabase
     .from("subscriptions")
@@ -44,7 +44,7 @@ export async function getUserPlanType(
  */
 export async function getCurrentUsage(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
 ): Promise<UsageData> {
   const periodStart = new Date();
   periodStart.setDate(1);
@@ -70,7 +70,7 @@ export async function getCurrentUsage(
  */
 export async function checkUploadLimit(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
 ): Promise<UsageCheckResult> {
   const planType = await getUserPlanType(supabase, userId);
   const limit = PLAN_LIMITS[planType].uploads_per_month;
@@ -104,7 +104,7 @@ export async function checkUploadLimit(
  */
 export async function checkTailoredProfileLimit(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
 ): Promise<UsageCheckResult> {
   const planType = await getUserPlanType(supabase, userId);
   const limit = PLAN_LIMITS[planType].tailored_profiles_per_month;
@@ -138,7 +138,7 @@ export async function checkTailoredProfileLimit(
  */
 export async function incrementUploadCount(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
 ): Promise<void> {
   await supabase.rpc("increment_upload_count", { p_user_id: userId });
 }
@@ -148,7 +148,9 @@ export async function incrementUploadCount(
  */
 export async function incrementTailoredProfileCount(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
 ): Promise<void> {
-  await supabase.rpc("increment_tailored_profiles_count", { p_user_id: userId });
+  await supabase.rpc("increment_tailored_profiles_count", {
+    p_user_id: userId,
+  });
 }

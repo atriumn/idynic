@@ -51,7 +51,7 @@ export function DeleteAccountModal({
       router.push("/");
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to delete account"
+        err instanceof Error ? err.message : "Failed to delete account",
       );
     } finally {
       setLoading(false);

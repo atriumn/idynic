@@ -41,7 +41,7 @@ async function fetchDocuments(userId: string): Promise<DocumentListItem[]> {
       status,
       created_at,
       evidence:evidence(count)
-    `
+    `,
     )
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
@@ -62,7 +62,7 @@ async function fetchDocuments(userId: string): Promise<DocumentListItem[]> {
 
 async function fetchDocument(
   userId: string,
-  documentId: string
+  documentId: string,
 ): Promise<DocumentDetail> {
   const { data: document, error: docError } = await supabase
     .from("documents")
@@ -103,7 +103,7 @@ async function fetchDocument(
 
 async function deleteDocument(
   userId: string,
-  documentId: string
+  documentId: string,
 ): Promise<void> {
   // First get the document to check storage path
   const { data: document, error: docError } = await supabase

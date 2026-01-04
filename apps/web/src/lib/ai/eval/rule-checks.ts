@@ -32,7 +32,7 @@ export interface ClaimForEval {
 }
 
 const DUPLICATE_THRESHOLD = 0.92; // Higher threshold to reduce false positives
-const SEMANTIC_DUPLICATE_THRESHOLD = 0.70; // Embedding cosine similarity - catches CI/CD variants
+const SEMANTIC_DUPLICATE_THRESHOLD = 0.7; // Embedding cosine similarity - catches CI/CD variants
 
 /**
  * Cosine similarity between two embedding vectors

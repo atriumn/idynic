@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { supabase } from './supabase';
-import { useAuth } from './auth-context';
+import { useState, useEffect } from "react";
+import { supabase } from "./supabase";
+import { useAuth } from "./auth-context";
 
 interface BetaAccess {
   hasAccess: boolean;
@@ -22,20 +22,20 @@ export function useBetaAccess(): BetaAccess {
 
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('beta_code_used')
-        .eq('id', user.id)
+        .from("profiles")
+        .select("beta_code_used")
+        .eq("id", user.id)
         .single();
 
       if (error) {
-        console.error('[BetaAccess] Error checking access:', error.message);
+        console.error("[BetaAccess] Error checking access:", error.message);
         // If no profile exists yet, they don't have access
         setHasAccess(false);
       } else {
         setHasAccess(!!data?.beta_code_used);
       }
     } catch (e) {
-      console.error('[BetaAccess] Exception:', e);
+      console.error("[BetaAccess] Exception:", e);
       setHasAccess(false);
     } finally {
       setLoading(false);

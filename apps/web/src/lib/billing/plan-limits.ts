@@ -42,7 +42,10 @@ export const PLAN_DISPLAY_NAMES: Record<PlanType, string> = {
   job_search: "Job Search",
 };
 
-export const PLAN_PRICES: Record<Exclude<PlanType, "free">, { amount: number; interval: string; display: string }> = {
+export const PLAN_PRICES: Record<
+  Exclude<PlanType, "free">,
+  { amount: number; interval: string; display: string }
+> = {
   pro: {
     amount: 10000, // $100 in cents
     interval: "year",
@@ -64,18 +67,27 @@ export function canUpload(planType: PlanType, currentUploads: number): boolean {
   return limit === Infinity || currentUploads < limit;
 }
 
-export function canCreateTailoredProfile(planType: PlanType, currentProfiles: number): boolean {
+export function canCreateTailoredProfile(
+  planType: PlanType,
+  currentProfiles: number,
+): boolean {
   const limit = PLAN_LIMITS[planType].tailored_profiles_per_month;
   return limit === Infinity || currentProfiles < limit;
 }
 
-export function getRemainingUploads(planType: PlanType, currentUploads: number): number | "unlimited" {
+export function getRemainingUploads(
+  planType: PlanType,
+  currentUploads: number,
+): number | "unlimited" {
   const limit = PLAN_LIMITS[planType].uploads_per_month;
   if (limit === Infinity) return "unlimited";
   return Math.max(0, limit - currentUploads);
 }
 
-export function getRemainingTailoredProfiles(planType: PlanType, currentProfiles: number): number | "unlimited" {
+export function getRemainingTailoredProfiles(
+  planType: PlanType,
+  currentProfiles: number,
+): number | "unlimited" {
   const limit = PLAN_LIMITS[planType].tailored_profiles_per_month;
   if (limit === Infinity) return "unlimited";
   return Math.max(0, limit - currentProfiles);

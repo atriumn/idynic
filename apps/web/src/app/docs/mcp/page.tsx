@@ -17,7 +17,10 @@ export default function McpDocsPage() {
       <aside className="w-64 shrink-0 border-r bg-muted/30 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto hidden lg:block">
         <div className="p-6 space-y-6">
           <div>
-            <Link href="/docs" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link
+              href="/docs"
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
               ← Back to Docs
             </Link>
           </div>
@@ -56,20 +59,18 @@ export default function McpDocsPage() {
             <Left>
               <h1 className="text-3xl font-bold mb-4">MCP Server</h1>
               <p className="text-muted-foreground mb-4">
-                The Idynic MCP server lets you manage your career directly from Claude Desktop,
-                Cursor, or any MCP-compatible AI assistant.
+                The Idynic MCP server lets you manage your career directly from
+                Claude Desktop, Cursor, or any MCP-compatible AI assistant.
               </p>
               <p className="text-muted-foreground">
-                MCP (Model Context Protocol) is an open standard for connecting AI applications
-                to external tools and data sources. With the Idynic MCP server, your AI assistant
-                can access your profile, track opportunities, and generate tailored applications.
+                MCP (Model Context Protocol) is an open standard for connecting
+                AI applications to external tools and data sources. With the
+                Idynic MCP server, your AI assistant can access your profile,
+                track opportunities, and generate tailored applications.
               </p>
             </Left>
             <Right>
-              <CodeBlock
-                title="Package"
-                code="@atriumn/idynic-mcp"
-              />
+              <CodeBlock title="Package" code="@atriumn/idynic-mcp" />
               <CodeBlock
                 title="Requirements"
                 code={`Node.js >= 18
@@ -83,7 +84,8 @@ IDYNIC_API_KEY`}
             <Left>
               <h2 className="text-2xl font-bold mb-4">Installation</h2>
               <p className="text-muted-foreground mb-6">
-                Install globally via npm, or run directly with npx without installation.
+                Install globally via npm, or run directly with npx without
+                installation.
               </p>
 
               <div className="space-y-4">
@@ -119,7 +121,8 @@ IDYNIC_API_KEY`}
             <Left>
               <h2 className="text-2xl font-bold mb-4">Configuration</h2>
               <p className="text-muted-foreground mb-6">
-                Add the Idynic MCP server to your AI client&apos;s configuration.
+                Add the Idynic MCP server to your AI client&apos;s
+                configuration.
               </p>
 
               <div className="space-y-6">
@@ -127,15 +130,21 @@ IDYNIC_API_KEY`}
                   <h3 className="font-semibold mb-2">1. Get your API key</h3>
                   <p className="text-sm text-muted-foreground">
                     Log into Idynic, go to{" "}
-                    <Link href="/settings/api-keys" className="text-primary hover:underline">
+                    <Link
+                      href="/settings/api-keys"
+                      className="text-primary hover:underline"
+                    >
                       Settings → API Keys
                     </Link>
-                    , and create a new key. Copy it immediately—it&apos;s only shown once.
+                    , and create a new key. Copy it immediately—it&apos;s only
+                    shown once.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-2">2. Add to Claude Desktop</h3>
+                  <h3 className="font-semibold mb-2">
+                    2. Add to Claude Desktop
+                  </h3>
                   <p className="text-sm text-muted-foreground mb-2">
                     Edit your Claude Desktop config file:
                   </p>
@@ -149,11 +158,15 @@ IDYNIC_API_KEY`}
                   <div className="space-y-2 text-sm">
                     <div className="flex gap-3">
                       <code className="font-mono shrink-0">IDYNIC_API_KEY</code>
-                      <span className="text-muted-foreground">Required. Your API key.</span>
+                      <span className="text-muted-foreground">
+                        Required. Your API key.
+                      </span>
                     </div>
                     <div className="flex gap-3">
                       <code className="font-mono shrink-0">IDYNIC_API_URL</code>
-                      <span className="text-muted-foreground">Optional. Custom API endpoint.</span>
+                      <span className="text-muted-foreground">
+                        Optional. Custom API endpoint.
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -182,8 +195,8 @@ IDYNIC_API_KEY`}
             <Left>
               <h2 className="text-2xl font-bold mb-4">Tools</h2>
               <p className="text-muted-foreground mb-6">
-                Tools are functions your AI assistant can call. They perform actions like
-                updating your profile or creating share links.
+                Tools are functions your AI assistant can call. They perform
+                actions like updating your profile or creating share links.
               </p>
 
               <div className="space-y-6">
@@ -270,17 +283,36 @@ Add it and create a share link."
             <Left>
               <h2 className="text-2xl font-bold mb-4">Resources</h2>
               <p className="text-muted-foreground mb-6">
-                Resources provide read-only access to your data via URI patterns.
-                Your AI assistant can read these to understand context.
+                Resources provide read-only access to your data via URI
+                patterns. Your AI assistant can read these to understand
+                context.
               </p>
 
               <div className="space-y-4">
-                <ResourceItem uri="idynic://profile" description="User profile with contact info and work history" />
-                <ResourceItem uri="idynic://claims" description="Skills, education, and certifications with confidence" />
-                <ResourceItem uri="idynic://opportunities" description="List of tracked job opportunities" />
-                <ResourceItem uri="idynic://work-history" description="Work history entries" />
-                <ResourceItem uri="idynic://opportunity/{id}" description="Specific opportunity details" />
-                <ResourceItem uri="idynic://opportunity/{id}/match" description="Match analysis for an opportunity" />
+                <ResourceItem
+                  uri="idynic://profile"
+                  description="User profile with contact info and work history"
+                />
+                <ResourceItem
+                  uri="idynic://claims"
+                  description="Skills, education, and certifications with confidence"
+                />
+                <ResourceItem
+                  uri="idynic://opportunities"
+                  description="List of tracked job opportunities"
+                />
+                <ResourceItem
+                  uri="idynic://work-history"
+                  description="Work history entries"
+                />
+                <ResourceItem
+                  uri="idynic://opportunity/{id}"
+                  description="Specific opportunity details"
+                />
+                <ResourceItem
+                  uri="idynic://opportunity/{id}/match"
+                  description="Match analysis for an opportunity"
+                />
               </div>
             </Left>
             <Right>
@@ -325,7 +357,9 @@ function Right({ children }: { children: React.ReactNode }) {
 function CodeBlock({ title, code }: { title: string; code: string }) {
   return (
     <div className="rounded-lg overflow-hidden">
-      <div className="bg-violet-900 px-4 py-2 text-xs text-violet-300 font-medium">{title}</div>
+      <div className="bg-violet-900 px-4 py-2 text-xs text-violet-300 font-medium">
+        {title}
+      </div>
       <pre className="bg-violet-950/80 p-4 text-sm overflow-x-auto">
         <code>{code}</code>
       </pre>
@@ -344,7 +378,9 @@ function ToolItem({
 }) {
   return (
     <div className="border-l-2 border-violet-500/50 pl-4">
-      <code className="font-mono text-sm font-medium text-violet-600 dark:text-violet-400">{name}</code>
+      <code className="font-mono text-sm font-medium text-violet-600 dark:text-violet-400">
+        {name}
+      </code>
       <p className="text-sm text-muted-foreground mt-1">{description}</p>
       {params && (
         <p className="text-xs text-muted-foreground mt-1">
@@ -355,10 +391,18 @@ function ToolItem({
   );
 }
 
-function ResourceItem({ uri, description }: { uri: string; description: string }) {
+function ResourceItem({
+  uri,
+  description,
+}: {
+  uri: string;
+  description: string;
+}) {
   return (
     <div className="flex items-start gap-3 py-2">
-      <code className="font-mono text-sm bg-muted px-2 py-1 rounded shrink-0">{uri}</code>
+      <code className="font-mono text-sm bg-muted px-2 py-1 rounded shrink-0">
+        {uri}
+      </code>
       <span className="text-sm text-muted-foreground">{description}</span>
     </div>
   );

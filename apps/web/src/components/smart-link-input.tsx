@@ -1,44 +1,44 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Plus } from "@phosphor-icons/react"
-import { detectUrlType, type UrlType } from "@/lib/utils/url-detection"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Plus } from "@phosphor-icons/react";
+import { detectUrlType, type UrlType } from "@/lib/utils/url-detection";
 
 interface LinkData {
-  url: string
-  label: string | null
-  type: UrlType
+  url: string;
+  label: string | null;
+  type: UrlType;
 }
 
 interface SmartLinkInputProps {
-  onAdd: (link: LinkData) => void
+  onAdd: (link: LinkData) => void;
 }
 
 export function SmartLinkInput({ onAdd }: SmartLinkInputProps) {
-  const [url, setUrl] = useState("")
-  const [label, setLabel] = useState("")
-  const [detectedType, setDetectedType] = useState<UrlType>("link")
+  const [url, setUrl] = useState("");
+  const [label, setLabel] = useState("");
+  const [detectedType, setDetectedType] = useState<UrlType>("link");
 
   const handleUrlChange = (value: string) => {
-    setUrl(value)
-    setDetectedType(detectUrlType(value))
-  }
+    setUrl(value);
+    setDetectedType(detectUrlType(value));
+  };
 
   const handleAdd = () => {
-    if (!url.trim()) return
+    if (!url.trim()) return;
 
     onAdd({
       url: url.trim(),
       label: label.trim() || null,
-      type: detectedType
-    })
+      type: detectedType,
+    });
 
-    setUrl("")
-    setLabel("")
-    setDetectedType("link")
-  }
+    setUrl("");
+    setLabel("");
+    setDetectedType("link");
+  };
 
   return (
     <div className="flex gap-2 items-end">
@@ -71,5 +71,5 @@ export function SmartLinkInput({ onAdd }: SmartLinkInputProps) {
         Add
       </Button>
     </div>
-  )
+  );
 }

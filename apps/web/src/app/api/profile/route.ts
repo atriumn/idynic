@@ -24,14 +24,18 @@ export async function GET() {
     // Contact info from profiles
     supabase
       .from("profiles")
-      .select("name, email, phone, location, linkedin, github, website, logo_url")
+      .select(
+        "name, email, phone, location, linkedin, github, website, logo_url",
+      )
       .eq("id", user.id)
       .single(),
 
     // Work history (excluding ventures)
     supabase
       .from("work_history")
-      .select("id, company, title, start_date, end_date, location, summary, company_domain, order_index")
+      .select(
+        "id, company, title, start_date, end_date, location, summary, company_domain, order_index",
+      )
       .eq("user_id", user.id)
       .or("entry_type.is.null,entry_type.in.(work,additional)")
       .order("order_index", { ascending: true }),
@@ -39,7 +43,9 @@ export async function GET() {
     // Ventures
     supabase
       .from("work_history")
-      .select("id, company, title, start_date, end_date, location, summary, company_domain, order_index")
+      .select(
+        "id, company, title, start_date, end_date, location, summary, company_domain, order_index",
+      )
       .eq("user_id", user.id)
       .eq("entry_type", "venture")
       .order("order_index", { ascending: true }),

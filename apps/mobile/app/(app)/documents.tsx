@@ -65,7 +65,7 @@ function DocumentRow({
       [
         { text: "Cancel", style: "cancel" },
         { text: "Delete", style: "destructive", onPress: onDelete },
-      ]
+      ],
     );
   };
 
@@ -139,7 +139,13 @@ function DocumentRow({
 
 export default function DocumentsScreen() {
   const router = useRouter();
-  const { data: documents, isLoading, error, refetch, isRefetching } = useDocuments();
+  const {
+    data: documents,
+    isLoading,
+    error,
+    refetch,
+    isRefetching,
+  } = useDocuments();
   const deleteDocumentMutation = useDeleteDocument();
 
   const onRefresh = useCallback(() => {
@@ -182,7 +188,11 @@ export default function DocumentsScreen() {
     return (
       <ScrollView
         className="flex-1 bg-slate-900"
-        contentContainerStyle={{ padding: 24, flex: 1, justifyContent: "center" }}
+        contentContainerStyle={{
+          padding: 24,
+          flex: 1,
+          justifyContent: "center",
+        }}
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}

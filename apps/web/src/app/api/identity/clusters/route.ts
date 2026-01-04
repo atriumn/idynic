@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { UMAP } from "umap-js";
 import crypto from "crypto";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // Server-side cache for UMAP results (expensive computation)
 interface CachedResult {
@@ -27,7 +27,7 @@ interface ClaimWithEmbedding {
 function parseEmbedding(embedding: string | number[] | null): number[] | null {
   if (!embedding) return null;
   if (Array.isArray(embedding)) return embedding;
-  if (typeof embedding === 'string') {
+  if (typeof embedding === "string") {
     try {
       const parsed = JSON.parse(embedding);
       if (Array.isArray(parsed) && parsed.length > 0) {
@@ -37,8 +37,8 @@ function parseEmbedding(embedding: string | number[] | null): number[] | null {
       // Try parsing as PostgreSQL vector format: [0.1,0.2,...]
       const match = embedding.match(/^\[([\d\s,.-]+)\]$/);
       if (match) {
-        const nums = match[1].split(',').map(n => parseFloat(n.trim()));
-        if (nums.length > 0 && nums.every(n => !isNaN(n))) {
+        const nums = match[1].split(",").map((n) => parseFloat(n.trim()));
+        if (nums.length > 0 && nums.every((n) => !isNaN(n))) {
           return nums;
         }
       }
@@ -67,7 +67,11 @@ interface ClusterRegion {
 }
 
 // Simple DBSCAN implementation for 2D points
-function dbscan(points: { x: number; y: number }[], eps: number, minPts: number): number[] {
+function dbscan(
+  points: { x: number; y: number }[],
+  eps: number,
+  minPts: number,
+): number[] {
   const n = points.length;
   const labels = new Array(n).fill(-1); // -1 = noise
   let clusterId = 0;
@@ -159,7 +163,7 @@ export async function GET() {
       console.error("Error fetching claims:", error);
       return NextResponse.json(
         { error: "Failed to fetch claims" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -169,11 +173,13 @@ export async function GET() {
 
     // Parse and filter claims with valid embeddings
     const claimsWithParsedEmbeddings = (claims as ClaimWithEmbedding[])
-      .map(c => ({
+      .map((c) => ({
         ...c,
         parsedEmbedding: parseEmbedding(c.embedding),
       }))
-      .filter(c => c.parsedEmbedding !== null && c.parsedEmbedding.length > 0);
+      .filter(
+        (c) => c.parsedEmbedding !== null && c.parsedEmbedding.length > 0,
+      );
 
     if (claimsWithParsedEmbeddings.length < 2) {
       // Not enough data for UMAP, return simple grid layout with metadata
@@ -188,7 +194,8 @@ export async function GET() {
       return NextResponse.json({
         nodes,
         hasEmbeddings: false,
-        message: "Claims don't have embeddings yet. Embeddings are generated when processing documents with AI."
+        message:
+          "Claims don't have embeddings yet. Embeddings are generated when processing documents with AI.",
       });
     }
 
@@ -196,15 +203,28 @@ export async function GET() {
     const cacheKey = user.id;
     const dataHash = crypto
       .createHash("md5")
-      .update(claimsWithParsedEmbeddings.map(c => `${c.id}:${c.label}`).sort().join("|"))
+      .update(
+        claimsWithParsedEmbeddings
+          .map((c) => `${c.id}:${c.label}`)
+          .sort()
+          .join("|"),
+      )
       .digest("hex");
 
     // Check cache for existing result
     const cached = clusterCache.get(cacheKey);
-    if (cached && cached.hash === dataHash && Date.now() - cached.timestamp < CACHE_TTL) {
+    if (
+      cached &&
+      cached.hash === dataHash &&
+      Date.now() - cached.timestamp < CACHE_TTL
+    ) {
       // Add claims without embeddings to cached result
-      const claimIdsWithEmbeddings = new Set(claimsWithParsedEmbeddings.map(c => c.id));
-      const claimsWithoutEmbeddings = claims.filter(c => !claimIdsWithEmbeddings.has(c.id));
+      const claimIdsWithEmbeddings = new Set(
+        claimsWithParsedEmbeddings.map((c) => c.id),
+      );
+      const claimsWithoutEmbeddings = claims.filter(
+        (c) => !claimIdsWithEmbeddings.has(c.id),
+      );
 
       const allNodes = [...cached.nodes];
       claimsWithoutEmbeddings.forEach((c, i) => {
@@ -230,14 +250,16 @@ export async function GET() {
     }
 
     // Extract embedding matrix (use parsedEmbedding which is guaranteed to be number[])
-    const embeddings = claimsWithParsedEmbeddings.map((c) => c.parsedEmbedding!);
+    const embeddings = claimsWithParsedEmbeddings.map(
+      (c) => c.parsedEmbedding!,
+    );
 
     // Seeded random for consistent UMAP results
     const seededRandom = () => {
       // Simple seeded PRNG (mulberry32)
       let t = 12345;
       return () => {
-        t = (t + 0x6D2B79F5) | 0;
+        t = (t + 0x6d2b79f5) | 0;
         let x = Math.imul(t ^ (t >>> 15), t | 1);
         x ^= x + Math.imul(x ^ (x >>> 7), x | 61);
         return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
@@ -292,7 +314,8 @@ export async function GET() {
     const clusterMap = new Map<number, ClusterNode[]>();
     nodes.forEach((node, i) => {
       const clusterId = clusterLabels[i];
-      if (clusterId >= 0) { // Skip noise (-1)
+      if (clusterId >= 0) {
+        // Skip noise (-1)
         if (!clusterMap.has(clusterId)) clusterMap.set(clusterId, []);
         clusterMap.get(clusterId)!.push(node);
       }
@@ -301,13 +324,15 @@ export async function GET() {
     const regions: ClusterRegion[] = [];
     clusterMap.forEach((clusterNodes, clusterId) => {
       // Calculate centroid
-      const centroidX = clusterNodes.reduce((sum, n) => sum + n.x, 0) / clusterNodes.length;
-      const centroidY = clusterNodes.reduce((sum, n) => sum + n.y, 0) / clusterNodes.length;
+      const centroidX =
+        clusterNodes.reduce((sum, n) => sum + n.x, 0) / clusterNodes.length;
+      const centroidY =
+        clusterNodes.reduce((sum, n) => sum + n.y, 0) / clusterNodes.length;
 
       // Simple label based on count and type
       const label = getClusterLabel(
-        clusterNodes.map(n => n.type),
-        clusterNodes.length
+        clusterNodes.map((n) => n.type),
+        clusterNodes.length,
       );
 
       regions.push({
@@ -321,8 +346,12 @@ export async function GET() {
     });
 
     // Add claims without embeddings in a separate area
-    const claimIdsWithEmbeddings = new Set(claimsWithParsedEmbeddings.map(c => c.id));
-    const claimsWithoutEmbeddings = claims.filter(c => !claimIdsWithEmbeddings.has(c.id));
+    const claimIdsWithEmbeddings = new Set(
+      claimsWithParsedEmbeddings.map((c) => c.id),
+    );
+    const claimsWithoutEmbeddings = claims.filter(
+      (c) => !claimIdsWithEmbeddings.has(c.id),
+    );
 
     claimsWithoutEmbeddings.forEach((c, i) => {
       nodes.push({
@@ -337,7 +366,9 @@ export async function GET() {
     });
 
     // Cache the result (nodes with embeddings only, without the appended non-embedding claims)
-    const nodesWithEmbeddings = nodes.filter((_, i) => i < claimsWithParsedEmbeddings.length);
+    const nodesWithEmbeddings = nodes.filter(
+      (_, i) => i < claimsWithParsedEmbeddings.length,
+    );
     clusterCache.set(cacheKey, {
       nodes: nodesWithEmbeddings,
       regions,
@@ -356,7 +387,7 @@ export async function GET() {
     console.error("Clusters API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

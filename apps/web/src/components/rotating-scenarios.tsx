@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Clock, Briefcase, TrendUp, Microphone, PencilLine } from "@phosphor-icons/react";
+import {
+  Clock,
+  Briefcase,
+  TrendUp,
+  Microphone,
+  PencilLine,
+} from "@phosphor-icons/react";
 
 const scenarios = [
   {
@@ -65,7 +71,9 @@ export function RotatingScenarios() {
         <div className="p-8 md:p-12">
           <div
             className={`transition-all duration-300 ${
-              isTransitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+              isTransitioning
+                ? "opacity-0 translate-y-2"
+                : "opacity-100 translate-y-0"
             }`}
           >
             {/* Icon */}
@@ -88,7 +96,9 @@ export function RotatingScenarios() {
             {/* Divider */}
             <div className="flex items-center justify-center gap-3 mb-6">
               <div className="h-px w-12 bg-border" />
-              <span className="text-xs text-muted-foreground uppercase tracking-wider">with idynic</span>
+              <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                with idynic
+              </span>
               <div className="h-px w-12 bg-border" />
             </div>
 

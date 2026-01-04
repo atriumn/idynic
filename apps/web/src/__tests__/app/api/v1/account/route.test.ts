@@ -22,7 +22,7 @@ vi.mock("@/lib/supabase/server", () => ({
       storage: {
         from: mockSupabaseStorage,
       },
-    })
+    }),
   ),
 }));
 
@@ -58,7 +58,7 @@ vi.mock("@/lib/api/response", () => ({
       {
         status,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   },
 }));
@@ -69,7 +69,7 @@ function createMockRequest(
     method?: string;
     headers?: Record<string, string>;
     body?: unknown;
-  } = {}
+  } = {},
 ): NextRequest {
   const { method = "DELETE", headers = {}, body } = options;
 
@@ -100,9 +100,12 @@ describe("Account API Route", () => {
       mockSupabaseAuth.mockResolvedValue({ data: { user: null } });
 
       const { DELETE } = await import("@/app/api/v1/account/route");
-      const request = createMockRequest("http://localhost:3000/api/v1/account", {
-        body: { password: "password123", confirmation: "DELETE MY ACCOUNT" },
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/v1/account",
+        {
+          body: { password: "password123", confirmation: "DELETE MY ACCOUNT" },
+        },
+      );
 
       const response = await DELETE(request);
 
@@ -119,9 +122,12 @@ describe("Account API Route", () => {
       });
 
       const { DELETE } = await import("@/app/api/v1/account/route");
-      const request = createMockRequest("http://localhost:3000/api/v1/account", {
-        body: { password: "password123", confirmation: "wrong text" },
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/v1/account",
+        {
+          body: { password: "password123", confirmation: "wrong text" },
+        },
+      );
 
       const response = await DELETE(request);
 
@@ -138,9 +144,12 @@ describe("Account API Route", () => {
       });
 
       const { DELETE } = await import("@/app/api/v1/account/route");
-      const request = createMockRequest("http://localhost:3000/api/v1/account", {
-        body: { confirmation: "DELETE MY ACCOUNT" },
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/v1/account",
+        {
+          body: { confirmation: "DELETE MY ACCOUNT" },
+        },
+      );
 
       const response = await DELETE(request);
 
@@ -167,7 +176,7 @@ describe("Account API Route", () => {
                 }),
               signInWithPassword: mockSignIn,
             },
-          })
+          }),
         ),
       }));
 
@@ -175,9 +184,15 @@ describe("Account API Route", () => {
       vi.resetModules();
       const { DELETE } = await import("@/app/api/v1/account/route");
 
-      const request = createMockRequest("http://localhost:3000/api/v1/account", {
-        body: { password: "wrongpassword", confirmation: "DELETE MY ACCOUNT" },
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/v1/account",
+        {
+          body: {
+            password: "wrongpassword",
+            confirmation: "DELETE MY ACCOUNT",
+          },
+        },
+      );
 
       const response = await DELETE(request);
 
@@ -202,7 +217,7 @@ describe("Account API Route", () => {
                 }),
               signInWithPassword: mockSignIn,
             },
-          })
+          }),
         ),
       }));
 
@@ -230,9 +245,15 @@ describe("Account API Route", () => {
       vi.resetModules();
       const { DELETE } = await import("@/app/api/v1/account/route");
 
-      const request = createMockRequest("http://localhost:3000/api/v1/account", {
-        body: { password: "correctpassword", confirmation: "DELETE MY ACCOUNT" },
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/v1/account",
+        {
+          body: {
+            password: "correctpassword",
+            confirmation: "DELETE MY ACCOUNT",
+          },
+        },
+      );
 
       const response = await DELETE(request);
 
@@ -253,7 +274,7 @@ describe("Account API Route", () => {
                 }),
               signInWithPassword: mockSignIn,
             },
-          })
+          }),
         ),
       }));
 
@@ -288,9 +309,15 @@ describe("Account API Route", () => {
       vi.resetModules();
       const { DELETE } = await import("@/app/api/v1/account/route");
 
-      const request = createMockRequest("http://localhost:3000/api/v1/account", {
-        body: { password: "correctpassword", confirmation: "DELETE MY ACCOUNT" },
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/v1/account",
+        {
+          body: {
+            password: "correctpassword",
+            confirmation: "DELETE MY ACCOUNT",
+          },
+        },
+      );
 
       await DELETE(request);
 
@@ -312,7 +339,7 @@ describe("Account API Route", () => {
                 }),
               signInWithPassword: mockSignIn,
             },
-          })
+          }),
         ),
       }));
 
@@ -341,9 +368,15 @@ describe("Account API Route", () => {
       vi.resetModules();
       const { DELETE } = await import("@/app/api/v1/account/route");
 
-      const request = createMockRequest("http://localhost:3000/api/v1/account", {
-        body: { password: "correctpassword", confirmation: "DELETE MY ACCOUNT" },
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/v1/account",
+        {
+          body: {
+            password: "correctpassword",
+            confirmation: "DELETE MY ACCOUNT",
+          },
+        },
+      );
 
       await DELETE(request);
 
@@ -366,7 +399,7 @@ describe("Account API Route", () => {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: "not valid json",
-        }
+        },
       );
 
       const response = await DELETE(request);

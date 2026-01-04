@@ -25,7 +25,10 @@ export async function POST(request: Request) {
     const body: EducationCreateBody = await request.json();
 
     if (!body.school || body.school.trim() === "") {
-      return NextResponse.json({ error: "school is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "school is required" },
+        { status: 400 },
+      );
     }
 
     // Build display text
@@ -56,12 +59,18 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error("Failed to create education:", error);
-      return NextResponse.json({ error: "Failed to create education entry" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to create education entry" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json(data, { status: 201 });
   } catch (err) {
     console.error("Education create error:", err);
-    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to process request" },
+      { status: 500 },
+    );
   }
 }

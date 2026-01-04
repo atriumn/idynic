@@ -1,14 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
-import { hashApiKey, isValidApiKeyFormat } from './keys';
-import { checkRateLimit, API_RATE_LIMITS } from './rate-limit';
-import { apiError } from './response';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
+import { hashApiKey, isValidApiKeyFormat } from "./keys";
+import { checkRateLimit, API_RATE_LIMITS } from "./rate-limit";
+import { apiError } from "./response";
 
 export interface ApiAuthResult {
   userId: string;
   keyId: string | null; // null for JWT auth
-  authType: 'api_key' | 'jwt';
+  authType: "api_key" | "jwt";
 }
 
 export interface ApiAuthError {
@@ -24,9 +24,9 @@ export interface ApiAuthError {
  */
 export function rateLimitResponse(resetAt: number): NextResponse<ApiAuthError> {
   const retryAfter = Math.ceil((resetAt - Date.now()) / 1000);
-  return apiError('rate_limited', 'Too many requests', 429, {
-    'Retry-After': String(retryAfter),
-    'X-RateLimit-Reset': String(Math.ceil(resetAt / 1000)),
+  return apiError("rate_limited", "Too many requests", 429, {
+    "Retry-After": String(retryAfter),
+    "X-RateLimit-Reset": String(Math.ceil(resetAt / 1000)),
   });
 }
 
@@ -36,7 +36,7 @@ export function rateLimitResponse(resetAt: number): NextResponse<ApiAuthError> {
  */
 async function validateJwtToken(
   token: string,
-  requestId: string
+  requestId: string,
 ): Promise<ApiAuthResult | NextResponse<ApiAuthError>> {
   // Create a Supabase client with the user's JWT to validate it
   const supabase = createClient(
@@ -48,21 +48,24 @@ async function validateJwtToken(
           Authorization: `Bearer ${token}`,
         },
       },
-    }
+    },
   );
 
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
 
   if (error || !user) {
     return NextResponse.json(
       {
         error: {
-          code: 'invalid_token',
-          message: 'Invalid or expired JWT token',
+          code: "invalid_token",
+          message: "Invalid or expired JWT token",
           request_id: requestId,
         },
       },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -75,7 +78,7 @@ async function validateJwtToken(
   return {
     userId: user.id,
     keyId: null,
-    authType: 'jwt',
+    authType: "jwt",
   };
 }
 
@@ -87,22 +90,23 @@ async function validateJwtToken(
  * Returns user info if valid, error response if not.
  */
 export async function validateApiKey(
-  request: NextRequest
+  request: NextRequest,
 ): Promise<ApiAuthResult | NextResponse<ApiAuthError>> {
   const requestId = crypto.randomUUID().slice(0, 8);
 
   // Extract Bearer token
-  const authHeader = request.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
+  const authHeader = request.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
     return NextResponse.json(
       {
         error: {
-          code: 'unauthorized',
-          message: 'Missing or malformed Authorization header. Expected: Bearer <token>',
+          code: "unauthorized",
+          message:
+            "Missing or malformed Authorization header. Expected: Bearer <token>",
           request_id: requestId,
         },
       },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -123,28 +127,28 @@ export async function validateApiKey(
  */
 async function validateApiKeyToken(
   key: string,
-  requestId: string
+  requestId: string,
 ): Promise<ApiAuthResult | NextResponse<ApiAuthError>> {
   // Look up key in database using service role (bypasses RLS)
   const keyHash = hashApiKey(key);
   const supabase = createServiceRoleClient();
 
   const { data: apiKey, error } = await supabase
-    .from('api_keys')
-    .select('id, user_id, expires_at, revoked_at')
-    .eq('key_hash', keyHash)
+    .from("api_keys")
+    .select("id, user_id, expires_at, revoked_at")
+    .eq("key_hash", keyHash)
     .single();
 
   if (error || !apiKey) {
     return NextResponse.json(
       {
         error: {
-          code: 'invalid_api_key',
-          message: 'API key not found or invalid',
+          code: "invalid_api_key",
+          message: "API key not found or invalid",
           request_id: requestId,
         },
       },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -153,12 +157,12 @@ async function validateApiKeyToken(
     return NextResponse.json(
       {
         error: {
-          code: 'invalid_api_key',
-          message: 'API key has been revoked',
+          code: "invalid_api_key",
+          message: "API key has been revoked",
           request_id: requestId,
         },
       },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -167,24 +171,27 @@ async function validateApiKeyToken(
     return NextResponse.json(
       {
         error: {
-          code: 'expired_api_key',
-          message: 'API key has expired',
+          code: "expired_api_key",
+          message: "API key has expired",
           request_id: requestId,
         },
       },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
   // Update last_used_at (fire and forget)
   supabase
-    .from('api_keys')
+    .from("api_keys")
     .update({ last_used_at: new Date().toISOString() })
-    .eq('id', apiKey.id)
+    .eq("id", apiKey.id)
     .then(() => {});
 
   // Check rate limit
-  const rateLimit = checkRateLimit(`api:${apiKey.user_id}`, API_RATE_LIMITS.api);
+  const rateLimit = checkRateLimit(
+    `api:${apiKey.user_id}`,
+    API_RATE_LIMITS.api,
+  );
   if (!rateLimit.allowed) {
     return rateLimitResponse(rateLimit.resetAt);
   }
@@ -192,7 +199,7 @@ async function validateApiKeyToken(
   return {
     userId: apiKey.user_id,
     keyId: apiKey.id,
-    authType: 'api_key',
+    authType: "api_key",
   };
 }
 
@@ -200,7 +207,7 @@ async function validateApiKeyToken(
  * Check if result is an error response.
  */
 export function isAuthError(
-  result: ApiAuthResult | NextResponse<ApiAuthError>
+  result: ApiAuthResult | NextResponse<ApiAuthError>,
 ): result is NextResponse<ApiAuthError> {
   return result instanceof NextResponse;
 }

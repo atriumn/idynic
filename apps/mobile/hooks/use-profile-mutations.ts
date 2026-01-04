@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
-import { api } from '../lib/api';
-import { useAuth } from '../lib/auth-context';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "../lib/supabase";
+import { api } from "../lib/api";
+import { useAuth } from "../lib/auth-context";
 
 // Contact info update
 export interface ContactData {
@@ -20,17 +20,17 @@ export function useUpdateContact() {
 
   return useMutation({
     mutationFn: async (data: ContactData) => {
-      if (!session?.user?.id) throw new Error('Not authenticated');
+      if (!session?.user?.id) throw new Error("Not authenticated");
 
       const { error } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update(data)
-        .eq('id', session.user.id);
+        .eq("id", session.user.id);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 }
@@ -43,7 +43,7 @@ export interface WorkHistoryData {
   end_date?: string | null;
   location?: string | null;
   summary?: string | null;
-  entry_type?: 'work' | 'venture' | 'additional';
+  entry_type?: "work" | "venture" | "additional";
 }
 
 export function useAddWorkHistory() {
@@ -54,7 +54,7 @@ export function useAddWorkHistory() {
       return api.workHistory.create(data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 }
@@ -63,11 +63,17 @@ export function useUpdateWorkHistory() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<Omit<WorkHistoryData, 'entry_type'>> }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<Omit<WorkHistoryData, "entry_type">>;
+    }) => {
       return api.workHistory.update(id, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 }
@@ -80,7 +86,7 @@ export function useDeleteWorkHistory() {
       return api.workHistory.delete(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 }
@@ -98,7 +104,7 @@ export function useAddEducation() {
       return api.education.create(data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 }
@@ -107,11 +113,17 @@ export function useUpdateEducation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<EducationData> }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<EducationData>;
+    }) => {
       return api.education.update(id, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 }
@@ -124,7 +136,7 @@ export function useDeleteEducation() {
       return api.education.delete(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 }
@@ -138,8 +150,8 @@ export function useAddSkill() {
       return api.skills.create(label);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      queryClient.invalidateQueries({ queryKey: ['identity-claims'] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["identity-claims"] });
     },
   });
 }
@@ -152,8 +164,8 @@ export function useDeleteSkill() {
       return api.skills.delete(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      queryClient.invalidateQueries({ queryKey: ['identity-claims'] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["identity-claims"] });
     },
   });
 }
@@ -163,14 +175,14 @@ export function useAddVenture() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: Omit<WorkHistoryData, 'entry_type'>) => {
+    mutationFn: async (data: Omit<WorkHistoryData, "entry_type">) => {
       return api.workHistory.create({
         ...data,
-        entry_type: 'venture',
+        entry_type: "venture",
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 }

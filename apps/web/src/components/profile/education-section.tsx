@@ -5,8 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronRight, Pencil, Plus, Trash2, Check, X, Loader2, GraduationCap } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  ChevronDown,
+  ChevronRight,
+  Pencil,
+  Plus,
+  Trash2,
+  Check,
+  X,
+  Loader2,
+  GraduationCap,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -22,7 +36,14 @@ import {
 interface EducationItem {
   id: string;
   text: string;
-  context: { school?: string; degree?: string; field?: string; start_date?: string; end_date?: string; source?: string } | null;
+  context: {
+    school?: string;
+    degree?: string;
+    field?: string;
+    start_date?: string;
+    end_date?: string;
+    source?: string;
+  } | null;
 }
 
 interface EducationSectionProps {
@@ -30,7 +51,13 @@ interface EducationSectionProps {
   onUpdate: (items: EducationItem[]) => void;
 }
 
-const EMPTY_ITEM = { school: "", degree: "", field: "", start_date: "", end_date: "" };
+const EMPTY_ITEM = {
+  school: "",
+  degree: "",
+  field: "",
+  start_date: "",
+  end_date: "",
+};
 
 export function EducationSection({ items, onUpdate }: EducationSectionProps) {
   const [isOpen, setIsOpen] = useState(true);
@@ -136,7 +163,7 @@ export function EducationSection({ items, onUpdate }: EducationSectionProps) {
     data: typeof EMPTY_ITEM,
     setData: (data: typeof EMPTY_ITEM) => void,
     onSave: () => void,
-    onCancel: () => void
+    onCancel: () => void,
   ) => (
     <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
       <div className="grid gap-4 sm:grid-cols-2">
@@ -184,12 +211,21 @@ export function EducationSection({ items, onUpdate }: EducationSectionProps) {
         </div>
       </div>
       <div className="flex justify-end gap-2">
-        <Button variant="outline" size="sm" onClick={onCancel} disabled={isSaving}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onCancel}
+          disabled={isSaving}
+        >
           <X className="h-4 w-4 mr-1" />
           Cancel
         </Button>
         <Button size="sm" onClick={onSave} disabled={isSaving}>
-          {isSaving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
+          {isSaving ? (
+            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+          ) : (
+            <Check className="h-4 w-4 mr-1" />
+          )}
           Save
         </Button>
       </div>
@@ -203,8 +239,14 @@ export function EducationSection({ items, onUpdate }: EducationSectionProps) {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CollapsibleTrigger className="flex items-center gap-2 hover:text-foreground transition-colors">
-                {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                <CardTitle className="text-lg">Education ({items.length})</CardTitle>
+                {isOpen ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+                <CardTitle className="text-lg">
+                  Education ({items.length})
+                </CardTitle>
               </CollapsibleTrigger>
             </div>
           </CardHeader>
@@ -219,58 +261,69 @@ export function EducationSection({ items, onUpdate }: EducationSectionProps) {
                 items.map((item) =>
                   editingId === item.id ? (
                     <div key={item.id}>
-                      {renderForm(
-                        editData,
-                        setEditData,
-                        handleSaveEdit,
-                        () => {
-                          setEditingId(null);
-                          setEditData(EMPTY_ITEM);
-                        }
-                      )}
+                      {renderForm(editData, setEditData, handleSaveEdit, () => {
+                        setEditingId(null);
+                        setEditData(EMPTY_ITEM);
+                      })}
                     </div>
                   ) : (
-                    <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div>
-                        <p className="font-medium">{item.context?.school || item.text}</p>
+                        <p className="font-medium">
+                          {item.context?.school || item.text}
+                        </p>
                         <p className="text-sm text-muted-foreground">
-                          {[item.context?.degree, item.context?.field && `in ${item.context.field}`]
+                          {[
+                            item.context?.degree,
+                            item.context?.field && `in ${item.context.field}`,
+                          ]
                             .filter(Boolean)
                             .join(" ")}
                         </p>
-                        {(item.context?.start_date || item.context?.end_date) && (
+                        {(item.context?.start_date ||
+                          item.context?.end_date) && (
                           <p className="text-xs text-muted-foreground">
-                            {item.context?.start_date} - {item.context?.end_date || "Present"}
+                            {item.context?.start_date} -{" "}
+                            {item.context?.end_date || "Present"}
                           </p>
                         )}
                       </div>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(item)}
+                        >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setDeleteId(item.id)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteId(item.id)}
+                        >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
                     </div>
-                  )
+                  ),
                 )
               )}
 
-              {isAdding && (
-                renderForm(
-                  newItem,
-                  setNewItem,
-                  handleAdd,
-                  () => {
-                    setIsAdding(false);
-                    setNewItem(EMPTY_ITEM);
-                  }
-                )
-              )}
+              {isAdding &&
+                renderForm(newItem, setNewItem, handleAdd, () => {
+                  setIsAdding(false);
+                  setNewItem(EMPTY_ITEM);
+                })}
 
               {!isAdding && (
-                <Button variant="outline" className="w-full" onClick={() => setIsAdding(true)}>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setIsAdding(true)}
+                >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Education
                 </Button>
@@ -280,7 +333,10 @@ export function EducationSection({ items, onUpdate }: EducationSectionProps) {
         </Collapsible>
       </Card>
 
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+      <AlertDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete education entry?</AlertDialogTitle>

@@ -42,7 +42,8 @@ export default async function SharedLinksPage() {
 
   const { data: links } = await supabase
     .from("shared_links")
-    .select(`
+    .select(
+      `
       id,
       token,
       expires_at,
@@ -62,24 +63,30 @@ export default async function SharedLinksPage() {
         id,
         viewed_at
       )
-    `)
+    `,
+    )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
   // Transform the data for the table component
-  const transformedLinks = (links as SharedLinkWithRelations[] | null)?.map((link) => ({
-    id: link.id,
-    token: link.token,
-    expiresAt: link.expires_at,
-    revokedAt: link.revoked_at,
-    createdAt: link.created_at,
-    tailoredProfileId: link.tailored_profile_id,
-    opportunityId: link.tailored_profiles.opportunities.id,
-    opportunityTitle: link.tailored_profiles.opportunities.title,
-    company: link.tailored_profiles.opportunities.company,
-    viewCount: link.shared_link_views?.length || 0,
-    views: link.shared_link_views?.map((v) => v.viewed_at).sort().reverse() || [],
-  })) || [];
+  const transformedLinks =
+    (links as SharedLinkWithRelations[] | null)?.map((link) => ({
+      id: link.id,
+      token: link.token,
+      expiresAt: link.expires_at,
+      revokedAt: link.revoked_at,
+      createdAt: link.created_at,
+      tailoredProfileId: link.tailored_profile_id,
+      opportunityId: link.tailored_profiles.opportunities.id,
+      opportunityTitle: link.tailored_profiles.opportunities.title,
+      company: link.tailored_profiles.opportunities.company,
+      viewCount: link.shared_link_views?.length || 0,
+      views:
+        link.shared_link_views
+          ?.map((v) => v.viewed_at)
+          .sort()
+          .reverse() || [],
+    })) || [];
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -98,7 +105,8 @@ export default async function SharedLinksPage() {
             <Link2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">No shared links yet</h3>
             <p className="text-muted-foreground mb-4">
-              Share your tailored profiles from the opportunities page to track views here.
+              Share your tailored profiles from the opportunities page to track
+              views here.
             </p>
             <Link
               href="/opportunities"

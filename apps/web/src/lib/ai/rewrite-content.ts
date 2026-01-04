@@ -91,7 +91,8 @@ Rewrite the text according to the instruction. Keep similar length unless the in
       messages: [
         {
           role: "system",
-          content: "You are a professional resume and cover letter editor. Make precise edits as instructed. Preserve the original voice and style unless told otherwise.",
+          content:
+            "You are a professional resume and cover letter editor. Make precise edits as instructed. Preserve the original voice and style unless told otherwise.",
         },
         { role: "user", content: prompt },
       ],
@@ -102,7 +103,7 @@ Rewrite the text according to the instruction. Keep similar length unless the in
       operation: "rewrite_content",
       userId,
       opportunityId,
-    }
+    },
   );
 
   const result = response.content;
@@ -112,8 +113,10 @@ Rewrite the text according to the instruction. Keep similar length unless the in
 
   // Strip any quotes the AI may have added despite instructions
   let cleaned = result.trim();
-  if ((cleaned.startsWith('"') && cleaned.endsWith('"')) ||
-      (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
+  if (
+    (cleaned.startsWith('"') && cleaned.endsWith('"')) ||
+    (cleaned.startsWith("'") && cleaned.endsWith("'"))
+  ) {
     cleaned = cleaned.slice(1, -1);
   }
 

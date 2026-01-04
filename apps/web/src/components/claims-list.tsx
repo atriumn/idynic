@@ -26,15 +26,16 @@ export function ClaimsList({ claims }: ClaimsListProps) {
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <Badge
-                className={CLAIM_TYPE_COLORS[claim.claim_type] || "bg-gray-100 text-gray-800"}
+                className={
+                  CLAIM_TYPE_COLORS[claim.claim_type] ||
+                  "bg-gray-100 text-gray-800"
+                }
                 variant="secondary"
               >
                 {claim.claim_type}
               </Badge>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-foreground">
-                  {claim.evidence_text}
-                </p>
+                <p className="text-sm text-foreground">{claim.evidence_text}</p>
                 <pre className="mt-2 text-xs text-muted-foreground bg-muted p-2 rounded overflow-x-auto">
                   {JSON.stringify(claim.value, null, 2)}
                 </pre>

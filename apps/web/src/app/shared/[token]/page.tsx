@@ -70,7 +70,7 @@ async function getSharedProfile(token: string): Promise<{
 }> {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/shared/${token}`,
-    { cache: "no-store" }
+    { cache: "no-store" },
   );
 
   if (res.status === 404) {
@@ -109,7 +109,8 @@ export default async function SharedProfilePage({
             <h1 className="text-xl font-semibold mb-2">Link Expired</h1>
             <p className="text-muted-foreground mb-4">
               This link has expired. Please reach out to{" "}
-              <strong>{result.candidateName || "the candidate"}</strong> for a fresh link.
+              <strong>{result.candidateName || "the candidate"}</strong> for a
+              fresh link.
             </p>
           </CardContent>
         </Card>
@@ -136,7 +137,9 @@ export default async function SharedProfilePage({
                 />
               )}
               <div>
-                <h1 className="text-2xl font-bold">{candidate.name || "Candidate"}</h1>
+                <h1 className="text-2xl font-bold">
+                  {candidate.name || "Candidate"}
+                </h1>
                 <p className="text-muted-foreground flex items-center gap-1">
                   {opportunity.title}
                   {opportunity.company && (
@@ -166,7 +169,10 @@ export default async function SharedProfilePage({
           {/* Contact info */}
           <div className="flex flex-wrap gap-4 mt-4 text-sm text-muted-foreground">
             {candidate.email && (
-              <a href={`mailto:${candidate.email}`} className="flex items-center gap-1 hover:text-foreground">
+              <a
+                href={`mailto:${candidate.email}`}
+                className="flex items-center gap-1 hover:text-foreground"
+              >
                 <Mail className="h-4 w-4" />
                 {candidate.email}
               </a>
@@ -185,7 +191,11 @@ export default async function SharedProfilePage({
             )}
             {candidate.linkedin && (
               <a
-                href={candidate.linkedin.startsWith("http") ? candidate.linkedin : `https://${candidate.linkedin}`}
+                href={
+                  candidate.linkedin.startsWith("http")
+                    ? candidate.linkedin
+                    : `https://${candidate.linkedin}`
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 hover:text-foreground"
@@ -196,7 +206,11 @@ export default async function SharedProfilePage({
             )}
             {candidate.github && (
               <a
-                href={candidate.github.startsWith("http") ? candidate.github : `https://${candidate.github}`}
+                href={
+                  candidate.github.startsWith("http")
+                    ? candidate.github
+                    : `https://${candidate.github}`
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 hover:text-foreground"
@@ -220,7 +234,9 @@ export default async function SharedProfilePage({
           <TabsContent value="narrative" className="mt-4">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Cover Letter Narrative</CardTitle>
+                <CardTitle className="text-base">
+                  Cover Letter Narrative
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="whitespace-pre-wrap text-sm leading-relaxed">
@@ -235,7 +251,9 @@ export default async function SharedProfilePage({
             {resumeData.summary && (
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Professional Summary</CardTitle>
+                  <CardTitle className="text-base">
+                    Professional Summary
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm">{resumeData.summary}</p>
@@ -262,7 +280,9 @@ export default async function SharedProfilePage({
                           />
                           <div>
                             <p className="font-semibold">{job.title}</p>
-                            <p className="text-sm text-muted-foreground">{job.company}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {job.company}
+                            </p>
                           </div>
                         </div>
                         <div className="text-right text-sm text-muted-foreground">
@@ -273,9 +293,16 @@ export default async function SharedProfilePage({
                       {job.bullets && job.bullets.length > 0 && (
                         <ul className="list-disc list-inside space-y-1 ml-11">
                           {job.bullets.map((bullet, j) => (
-                            <li key={j} className="text-sm" dangerouslySetInnerHTML={{
-                              __html: bullet.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                            }} />
+                            <li
+                              key={j}
+                              className="text-sm"
+                              dangerouslySetInnerHTML={{
+                                __html: bullet.replace(
+                                  /\*\*(.*?)\*\*/g,
+                                  "<strong>$1</strong>",
+                                ),
+                              }}
+                            />
                           ))}
                         </ul>
                       )}
@@ -286,52 +313,66 @@ export default async function SharedProfilePage({
             )}
 
             {/* Additional Experience */}
-            {resumeData.additionalExperience && resumeData.additionalExperience.length > 0 && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Additional Experience</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {resumeData.additionalExperience.map((job, i) => (
-                    <div key={i}>
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-3">
-                          <CompanyLogo
-                            domain={job.companyDomain}
-                            companyName={job.company}
-                            size={28}
-                            className="mt-0.5 shrink-0"
-                          />
-                          <div>
-                            <p className="font-medium">{job.title}</p>
-                            <p className="text-sm text-muted-foreground">{job.company}</p>
+            {resumeData.additionalExperience &&
+              resumeData.additionalExperience.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">
+                      Additional Experience
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {resumeData.additionalExperience.map((job, i) => (
+                      <div key={i}>
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start gap-3">
+                            <CompanyLogo
+                              domain={job.companyDomain}
+                              companyName={job.company}
+                              size={28}
+                              className="mt-0.5 shrink-0"
+                            />
+                            <div>
+                              <p className="font-medium">{job.title}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {job.company}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right text-sm text-muted-foreground">
+                            <p>{job.dates}</p>
+                            {job.location && <p>{job.location}</p>}
                           </div>
                         </div>
-                        <div className="text-right text-sm text-muted-foreground">
-                          <p>{job.dates}</p>
-                          {job.location && <p>{job.location}</p>}
-                        </div>
+                        {job.bullets && job.bullets.length > 0 && (
+                          <ul className="list-disc list-inside space-y-1 mt-1 ml-10">
+                            {job.bullets.map((bullet, j) => (
+                              <li
+                                key={j}
+                                className="text-sm"
+                                dangerouslySetInnerHTML={{
+                                  __html: bullet.replace(
+                                    /\*\*(.*?)\*\*/g,
+                                    "<strong>$1</strong>",
+                                  ),
+                                }}
+                              />
+                            ))}
+                          </ul>
+                        )}
                       </div>
-                      {job.bullets && job.bullets.length > 0 && (
-                        <ul className="list-disc list-inside space-y-1 mt-1 ml-10">
-                          {job.bullets.map((bullet, j) => (
-                            <li key={j} className="text-sm" dangerouslySetInnerHTML={{
-                              __html: bullet.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                            }} />
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
 
             {/* Ventures */}
             {resumeData.ventures && resumeData.ventures.length > 0 && (
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Ventures & Projects</CardTitle>
+                  <CardTitle className="text-base">
+                    Ventures & Projects
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {resumeData.ventures.map((venture, i) => (
@@ -344,7 +385,9 @@ export default async function SharedProfilePage({
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground">{venture.role}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {venture.role}
+                      </p>
                       {venture.description && (
                         <p className="text-sm mt-1">{venture.description}</p>
                       )}
@@ -380,34 +423,42 @@ export default async function SharedProfilePage({
                   ) : (
                     // New format: categorized
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {(resumeData.skills as SkillCategory[]).map((category, catIndex) => (
-                        <div
-                          key={catIndex}
-                          className={`p-3 rounded-lg border ${
-                            catIndex === 0 ? "bg-primary/5 border-primary/20" : "bg-muted/30 border-border"
-                          }`}
-                        >
-                          <h4 className={`text-xs font-semibold uppercase tracking-wide mb-2 ${
-                            catIndex === 0 ? "text-primary" : "text-muted-foreground"
-                          }`}>
-                            {category.category}
-                          </h4>
-                          <div className="flex flex-wrap gap-1.5">
-                            {category.skills.map((skill, i) => (
-                              <span
-                                key={i}
-                                className={`text-xs px-2 py-0.5 rounded ${
-                                  catIndex === 0 && i < 3
-                                    ? "bg-primary/15 text-primary font-medium"
-                                    : "bg-background text-foreground/70"
-                                }`}
-                              >
-                                {skill}
-                              </span>
-                            ))}
+                      {(resumeData.skills as SkillCategory[]).map(
+                        (category, catIndex) => (
+                          <div
+                            key={catIndex}
+                            className={`p-3 rounded-lg border ${
+                              catIndex === 0
+                                ? "bg-primary/5 border-primary/20"
+                                : "bg-muted/30 border-border"
+                            }`}
+                          >
+                            <h4
+                              className={`text-xs font-semibold uppercase tracking-wide mb-2 ${
+                                catIndex === 0
+                                  ? "text-primary"
+                                  : "text-muted-foreground"
+                              }`}
+                            >
+                              {category.category}
+                            </h4>
+                            <div className="flex flex-wrap gap-1.5">
+                              {category.skills.map((skill, i) => (
+                                <span
+                                  key={i}
+                                  className={`text-xs px-2 py-0.5 rounded ${
+                                    catIndex === 0 && i < 3
+                                      ? "bg-primary/15 text-primary font-medium"
+                                      : "bg-background text-foreground/70"
+                                  }`}
+                                >
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ),
+                      )}
                     </div>
                   )}
                 </CardContent>
@@ -425,10 +476,14 @@ export default async function SharedProfilePage({
                     <div key={i} className="flex justify-between">
                       <div>
                         <p className="font-medium">{edu.degree}</p>
-                        <p className="text-sm text-muted-foreground">{edu.institution}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {edu.institution}
+                        </p>
                       </div>
                       {edu.year && (
-                        <p className="text-sm text-muted-foreground">{edu.year}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {edu.year}
+                        </p>
                       )}
                     </div>
                   ))}

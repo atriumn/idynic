@@ -13,11 +13,14 @@ interface MatchScoreVisualizerProps {
   };
 }
 
-export function MatchScoreVisualizer({ 
-  overallScore, 
-  mustHaveScore, 
+export function MatchScoreVisualizer({
+  overallScore,
+  mustHaveScore,
   niceToHaveScore,
-  matchDetails = { mustHave: { matched: 0, total: 0 }, niceToHave: { matched: 0, total: 0 } }
+  matchDetails = {
+    mustHave: { matched: 0, total: 0 },
+    niceToHave: { matched: 0, total: 0 },
+  },
 }: MatchScoreVisualizerProps) {
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-600 dark:text-green-400";
@@ -70,15 +73,21 @@ export function MatchScoreVisualizer({
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className={`text-3xl font-bold tracking-tight ${getScoreColor(overallScore)}`}>
+            <span
+              className={`text-3xl font-bold tracking-tight ${getScoreColor(overallScore)}`}
+            >
               {overallScore}%
             </span>
           </div>
         </div>
-        
+
         <div className="space-y-1">
-          <h4 className="text-lg font-semibold tracking-tight">{getMatchLabel(overallScore)}</h4>
-          <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium">Identity Synthesis Score</p>
+          <h4 className="text-lg font-semibold tracking-tight">
+            {getMatchLabel(overallScore)}
+          </h4>
+          <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium">
+            Identity Synthesis Score
+          </p>
         </div>
       </div>
 
@@ -94,7 +103,8 @@ export function MatchScoreVisualizer({
           <Progress value={mustHaveScore} className="h-1.5" />
           {matchDetails.mustHave.total > 0 && (
             <p className="text-[10px] text-muted-foreground/70 text-right">
-              {matchDetails.mustHave.matched} OF {matchDetails.mustHave.total} CRITERIA MET
+              {matchDetails.mustHave.matched} OF {matchDetails.mustHave.total}{" "}
+              CRITERIA MET
             </p>
           )}
         </div>
@@ -110,16 +120,18 @@ export function MatchScoreVisualizer({
           <Progress value={niceToHaveScore} className="h-1.5" />
           {matchDetails.niceToHave.total > 0 && (
             <p className="text-[10px] text-muted-foreground/70 text-right">
-              {matchDetails.niceToHave.matched} OF {matchDetails.niceToHave.total} CRITERIA MET
+              {matchDetails.niceToHave.matched} OF{" "}
+              {matchDetails.niceToHave.total} CRITERIA MET
             </p>
           )}
         </div>
       </div>
-      
+
       <div className="bg-primary/5 rounded-xl p-3 border border-primary/10 flex gap-3 items-start">
         <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
         <p className="text-xs leading-relaxed text-muted-foreground">
-          This score represents how well your documented claims and story evidence align with the role&apos;s specific requirements.
+          This score represents how well your documented claims and story
+          evidence align with the role&apos;s specific requirements.
         </p>
       </div>
     </div>

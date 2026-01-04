@@ -3,9 +3,9 @@
  * Uses Claude to verify claims are supported by their evidence
  */
 
-import { aiComplete } from '../gateway';
-import { getModelConfig } from '../config';
-import type { ClaimIssue } from './rule-checks';
+import { aiComplete } from "../gateway";
+import { getModelConfig } from "../config";
+import type { ClaimIssue } from "./rule-checks";
 
 export interface ClaimWithEvidence {
   id: string;
@@ -80,28 +80,28 @@ Respond with JSON only:
  */
 export async function runClaimGroundingEval(
   claims: ClaimWithEvidence[],
-  options?: { userId?: string; jobId?: string }
+  options?: { userId?: string; jobId?: string },
 ): Promise<{ issues: ClaimIssue[]; costCents: number }> {
   if (claims.length === 0) {
     return { issues: [], costCents: 0 };
   }
 
-  const config = getModelConfig('claim_eval');
+  const config = getModelConfig("claim_eval");
 
   // Prepare claims for prompt
-  const claimsForPrompt = claims.map(c => ({
+  const claimsForPrompt = claims.map((c) => ({
     id: c.id,
     label: c.label,
     description: c.description,
-    evidence: c.evidence.map(e => ({
+    evidence: c.evidence.map((e) => ({
       text: e.text,
       strength: e.strength,
     })),
   }));
 
   const prompt = CLAIM_EVAL_PROMPT.replace(
-    '{claims_json}',
-    JSON.stringify(claimsForPrompt, null, 2)
+    "{claims_json}",
+    JSON.stringify(claimsForPrompt, null, 2),
   );
 
   try {
@@ -109,23 +109,21 @@ export async function runClaimGroundingEval(
       config.provider,
       config.model,
       {
-        messages: [
-          { role: 'user', content: prompt },
-        ],
+        messages: [{ role: "user", content: prompt }],
         temperature: 0,
         jsonMode: true,
       },
       {
-        operation: 'claim_eval',
+        operation: "claim_eval",
         userId: options?.userId,
         jobId: options?.jobId,
-      }
+      },
     );
 
     // Parse response - strip markdown code blocks if present
     let content = response.content;
-    if (content.startsWith('```')) {
-      content = content.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+    if (content.startsWith("```")) {
+      content = content.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
     }
     const parsed = JSON.parse(content) as GroundingResponse;
 
@@ -137,9 +135,9 @@ export async function runClaimGroundingEval(
       if (!e.grounded) {
         issues.push({
           claimId: e.claim_id,
-          type: 'not_grounded' as const,
-          severity: 'warning' as const,
-          message: e.issue || 'Claim is not supported by evidence',
+          type: "not_grounded" as const,
+          severity: "warning" as const,
+          message: e.issue || "Claim is not supported by evidence",
         });
       }
 
@@ -147,8 +145,8 @@ export async function runClaimGroundingEval(
       if (e.quality_issue) {
         issues.push({
           claimId: e.claim_id,
-          type: 'low_quality' as const,
-          severity: 'warning' as const,
+          type: "low_quality" as const,
+          severity: "warning" as const,
           message: e.quality_issue,
         });
       }
@@ -158,19 +156,19 @@ export async function runClaimGroundingEval(
     const inputTokens = response.usage.inputTokens;
     const outputTokens = response.usage.outputTokens;
     const costCents = Math.round(
-      (inputTokens * 0.003 + outputTokens * 0.015) / 10 // Claude Sonnet pricing
+      (inputTokens * 0.003 + outputTokens * 0.015) / 10, // Claude Sonnet pricing
     );
 
     return { issues, costCents };
   } catch (error) {
     // On AI failure, flag all claims as unevaluated
-    console.error('[claim-grounding] AI eval failed:', error);
+    console.error("[claim-grounding] AI eval failed:", error);
 
-    const issues: ClaimIssue[] = claims.map(c => ({
+    const issues: ClaimIssue[] = claims.map((c) => ({
       claimId: c.id,
-      type: 'unevaluated' as const,
-      severity: 'warning' as const,
-      message: 'Could not verify this claim - AI evaluation failed',
+      type: "unevaluated" as const,
+      severity: "warning" as const,
+      message: "Could not verify this claim - AI evaluation failed",
     }));
 
     return { issues, costCents: 0 };

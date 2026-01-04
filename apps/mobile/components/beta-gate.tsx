@@ -1,8 +1,14 @@
-import { useState } from 'react';
-import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
-import { Logo } from './logo';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../lib/auth-context';
+import { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
+import { Logo } from "./logo";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../lib/auth-context";
 
 interface BetaGateProps {
   onAccessGranted: () => void;
@@ -10,18 +16,18 @@ interface BetaGateProps {
 
 export function BetaGate({ onAccessGranted }: BetaGateProps) {
   const { user, signOut } = useAuth();
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showWaitlist, setShowWaitlist] = useState(false);
-  const [waitlistEmail, setWaitlistEmail] = useState('');
+  const [waitlistEmail, setWaitlistEmail] = useState("");
   const [waitlistSubmitted, setWaitlistSubmitted] = useState(false);
   const [waitlistLoading, setWaitlistLoading] = useState(false);
 
   const validateAndConsumeCode = async () => {
     const trimmedCode = code.trim().toUpperCase();
     if (!trimmedCode) {
-      setError('Please enter an invite code');
+      setError("Please enter an invite code");
       return;
     }
 
@@ -30,30 +36,33 @@ export function BetaGate({ onAccessGranted }: BetaGateProps) {
 
     try {
       // First validate the code
-      const { data: isValid, error: checkError } = await supabase.rpc('check_beta_code', {
-        input_code: trimmedCode,
-      });
+      const { data: isValid, error: checkError } = await supabase.rpc(
+        "check_beta_code",
+        {
+          input_code: trimmedCode,
+        },
+      );
 
       if (checkError) {
-        setError('Unable to validate code. Please try again.');
+        setError("Unable to validate code. Please try again.");
         setLoading(false);
         return;
       }
 
       if (!isValid) {
-        setError('Invalid or expired invite code');
+        setError("Invalid or expired invite code");
         setLoading(false);
         return;
       }
 
       // Consume the code
-      const { error: consumeError } = await supabase.rpc('consume_beta_code', {
+      const { error: consumeError } = await supabase.rpc("consume_beta_code", {
         input_code: trimmedCode,
         user_id: user!.id,
       });
 
       if (consumeError) {
-        setError('Unable to activate code. Please try again.');
+        setError("Unable to activate code. Please try again.");
         setLoading(false);
         return;
       }
@@ -61,7 +70,7 @@ export function BetaGate({ onAccessGranted }: BetaGateProps) {
       // Success - notify parent
       onAccessGranted();
     } catch (e) {
-      setError('Something went wrong. Please try again.');
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -70,7 +79,7 @@ export function BetaGate({ onAccessGranted }: BetaGateProps) {
   const joinWaitlist = async () => {
     const email = waitlistEmail.trim().toLowerCase();
     if (!email) {
-      setError('Please enter your email');
+      setError("Please enter your email");
       return;
     }
 
@@ -78,15 +87,13 @@ export function BetaGate({ onAccessGranted }: BetaGateProps) {
     setError(null);
 
     try {
-      const { error } = await supabase
-        .from('beta_waitlist')
-        .insert({ email });
+      const { error } = await supabase.from("beta_waitlist").insert({ email });
 
       if (error) {
-        if (error.code === '23505') {
-          setError('This email is already on the waitlist');
+        if (error.code === "23505") {
+          setError("This email is already on the waitlist");
         } else {
-          setError('Unable to join waitlist. Please try again.');
+          setError("Unable to join waitlist. Please try again.");
         }
         setWaitlistLoading(false);
         return;
@@ -94,7 +101,7 @@ export function BetaGate({ onAccessGranted }: BetaGateProps) {
 
       setWaitlistSubmitted(true);
     } catch {
-      setError('Something went wrong. Please try again.');
+      setError("Something went wrong. Please try again.");
     } finally {
       setWaitlistLoading(false);
     }
@@ -129,9 +136,7 @@ export function BetaGate({ onAccessGranted }: BetaGateProps) {
         </Pressable>
 
         <Pressable onPress={signOut} className="mt-4">
-          <Text className="text-slate-500 text-center text-sm">
-            Sign out
-          </Text>
+          <Text className="text-slate-500 text-center text-sm">Sign out</Text>
         </Pressable>
       </View>
     );
@@ -232,9 +237,7 @@ export function BetaGate({ onAccessGranted }: BetaGateProps) {
         {loading ? (
           <ActivityIndicator color="white" />
         ) : (
-          <Text className="text-white text-center font-semibold">
-            Activate
-          </Text>
+          <Text className="text-white text-center font-semibold">Activate</Text>
         )}
       </Pressable>
 
@@ -245,9 +248,7 @@ export function BetaGate({ onAccessGranted }: BetaGateProps) {
       </Pressable>
 
       <Pressable onPress={signOut} className="mt-6">
-        <Text className="text-slate-500 text-center text-sm">
-          Sign out
-        </Text>
+        <Text className="text-slate-500 text-center text-sm">Sign out</Text>
       </Pressable>
     </View>
   );

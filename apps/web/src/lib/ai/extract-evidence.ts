@@ -3,7 +3,12 @@ import { getModelConfig } from "./config";
 
 export interface ExtractedEvidence {
   text: string;
-  type: "accomplishment" | "skill_listed" | "trait_indicator" | "education" | "certification";
+  type:
+    | "accomplishment"
+    | "skill_listed"
+    | "trait_indicator"
+    | "education"
+    | "certification";
   context: {
     role?: string;
     company?: string;
@@ -11,7 +16,7 @@ export interface ExtractedEvidence {
     institution?: string;
     year?: string;
   } | null;
-  sourceType?: 'resume' | 'story' | 'certification' | 'inferred';
+  sourceType?: "resume" | "story" | "certification" | "inferred";
 }
 
 const SYSTEM_PROMPT = `You are an evidence extractor. Extract discrete factual statements from resumes. Return ONLY valid JSON.`;
@@ -106,8 +111,8 @@ export interface ExtractEvidenceOptions {
 
 export async function extractEvidence(
   text: string,
-  sourceType: 'resume' | 'story' = 'resume',
-  options: ExtractEvidenceOptions = {}
+  sourceType: "resume" | "story" = "resume",
+  options: ExtractEvidenceOptions = {},
 ): Promise<ExtractedEvidence[]> {
   const config = getModelConfig("extract_evidence");
 
@@ -128,7 +133,7 @@ export async function extractEvidence(
       userId: options.userId,
       documentId: options.documentId,
       jobId: options.jobId,
-    }
+    },
   );
 
   const content = response.content;
@@ -137,7 +142,10 @@ export async function extractEvidence(
   }
 
   // Log raw response for debugging (first 500 chars)
-  console.log("[extract-evidence] Raw response preview:", content.slice(0, 500));
+  console.log(
+    "[extract-evidence] Raw response preview:",
+    content.slice(0, 500),
+  );
 
   // Clean markdown code blocks if present
   const cleanedContent = content
@@ -153,9 +161,12 @@ export async function extractEvidence(
     if (cleanedContent.startsWith("{") && !cleanedContent.startsWith("[")) {
       const obj = JSON.parse(cleanedContent);
       // Look for array property (evidence, items, results, etc.)
-      const arrayProp = Object.keys(obj).find(k => Array.isArray(obj[k]));
+      const arrayProp = Object.keys(obj).find((k) => Array.isArray(obj[k]));
       if (arrayProp) {
-        console.log("[extract-evidence] Unwrapping array from property:", arrayProp);
+        console.log(
+          "[extract-evidence] Unwrapping array from property:",
+          arrayProp,
+        );
         jsonToParse = JSON.stringify(obj[arrayProp]);
       }
     }
@@ -168,21 +179,31 @@ export async function extractEvidence(
     }
 
     const MAX_TEXT_LENGTH = 5000;
-    const validItems = parsed.filter(item =>
-      item.text &&
-      typeof item.text === "string" &&
-      item.text.length > 0 &&
-      item.text.length <= MAX_TEXT_LENGTH &&
-      ["accomplishment", "skill_listed", "trait_indicator", "education", "certification"].includes(item.type)
+    const validItems = parsed.filter(
+      (item) =>
+        item.text &&
+        typeof item.text === "string" &&
+        item.text.length > 0 &&
+        item.text.length <= MAX_TEXT_LENGTH &&
+        [
+          "accomplishment",
+          "skill_listed",
+          "trait_indicator",
+          "education",
+          "certification",
+        ].includes(item.type),
     );
 
     // Add sourceType to each extracted item
-    return validItems.map(item => ({
+    return validItems.map((item) => ({
       ...item,
       sourceType,
     }));
   } catch (parseError) {
-    const errMsg = parseError instanceof Error ? parseError.message : String(parseError);
-    throw new Error(`Failed to parse evidence (${errMsg}). Length: ${cleanedContent.length}. Start: ${cleanedContent.slice(0, 100)}... End: ${cleanedContent.slice(-100)}`);
+    const errMsg =
+      parseError instanceof Error ? parseError.message : String(parseError);
+    throw new Error(
+      `Failed to parse evidence (${errMsg}). Length: ${cleanedContent.length}. Start: ${cleanedContent.slice(0, 100)}... End: ${cleanedContent.slice(-100)}`,
+    );
   }
 }

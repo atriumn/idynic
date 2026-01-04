@@ -8,7 +8,7 @@ interface SkillUpdateBody {
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const supabase = await createClient();
   const { id } = await params;
@@ -25,7 +25,10 @@ export async function PATCH(
     const body: SkillUpdateBody = await request.json();
 
     if (body.label !== undefined && body.label.trim() === "") {
-      return NextResponse.json({ error: "label cannot be empty" }, { status: 400 });
+      return NextResponse.json(
+        { error: "label cannot be empty" },
+        { status: 400 },
+      );
     }
 
     const updates: Record<string, unknown> = {};
@@ -43,7 +46,10 @@ export async function PATCH(
 
     if (error) {
       console.error("Failed to update skill:", error);
-      return NextResponse.json({ error: "Failed to update skill" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to update skill" },
+        { status: 500 },
+      );
     }
 
     if (!data) {
@@ -53,13 +59,16 @@ export async function PATCH(
     return NextResponse.json(data);
   } catch (err) {
     console.error("Skill update error:", err);
-    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to process request" },
+      { status: 500 },
+    );
   }
 }
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const supabase = await createClient();
   const { id } = await params;
@@ -84,7 +93,10 @@ export async function DELETE(
 
   if (error) {
     console.error("Failed to delete skill:", error);
-    return NextResponse.json({ error: "Failed to delete skill" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete skill" },
+      { status: 500 },
+    );
   }
 
   return NextResponse.json({ success: true });

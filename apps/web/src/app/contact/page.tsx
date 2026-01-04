@@ -36,7 +36,8 @@ export default function ContactPage() {
               <div>
                 <h3 className="font-semibold">Support</h3>
                 <p className="text-muted-foreground">
-                  Visit our help center or chat with us for immediate assistance.
+                  Visit our help center or chat with us for immediate
+                  assistance.
                 </p>
               </div>
             </div>
@@ -61,7 +62,6 @@ export default function ContactPage() {
                 </p>
               </div>
             </div>
-
           </div>
         </div>
 
@@ -78,7 +78,7 @@ export default function ContactPage() {
                 <Input id="last-name" placeholder="Doe" />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" placeholder="jane@example.com" />
@@ -91,9 +91,9 @@ export default function ContactPage() {
 
             <div className="space-y-2">
               <Label htmlFor="message">Message</Label>
-              <Textarea 
-                id="message" 
-                placeholder="Tell us more about your inquiry..." 
+              <Textarea
+                id="message"
+                placeholder="Tell us more about your inquiry..."
                 className="min-h-[150px]"
               />
             </div>

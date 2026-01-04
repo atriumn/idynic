@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     if (!body.company || !body.title || !body.start_date) {
       return NextResponse.json(
         { error: "company, title, and start_date are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     if (!document) {
       return NextResponse.json(
         { error: "No resume document found. Upload a resume first." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -81,12 +81,18 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error("Failed to create work history:", error);
-      return NextResponse.json({ error: "Failed to create entry" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to create entry" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json(data, { status: 201 });
   } catch (err) {
     console.error("Work history create error:", err);
-    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to process request" },
+      { status: 500 },
+    );
   }
 }

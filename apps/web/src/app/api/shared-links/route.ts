@@ -33,14 +33,17 @@ function generateToken(): string {
 export async function GET() {
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { data: links, error } = await supabase
     .from("shared_links")
-    .select(`
+    .select(
+      `
       id,
       token,
       expires_at,
@@ -60,7 +63,8 @@ export async function GET() {
         id,
         viewed_at
       )
-    `)
+    `,
+    )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -70,24 +74,27 @@ export async function GET() {
   }
 
   // Transform to include view count and opportunity info
-  const transformed = (links as SharedLinkWithRelations[] | null)?.map((link) => ({
-    id: link.id,
-    token: link.token,
-    expiresAt: link.expires_at,
-    revokedAt: link.revoked_at,
-    createdAt: link.created_at,
-    tailoredProfileId: link.tailored_profile_id,
-    opportunity: {
-      id: link.tailored_profiles.opportunities.id,
-      title: link.tailored_profiles.opportunities.title,
-      company: link.tailored_profiles.opportunities.company,
-    },
-    viewCount: link.shared_link_views?.length || 0,
-    views: link.shared_link_views?.map((v) => ({
-      id: v.id,
-      viewedAt: v.viewed_at,
-    })) || [],
-  }));
+  const transformed = (links as SharedLinkWithRelations[] | null)?.map(
+    (link) => ({
+      id: link.id,
+      token: link.token,
+      expiresAt: link.expires_at,
+      revokedAt: link.revoked_at,
+      createdAt: link.created_at,
+      tailoredProfileId: link.tailored_profile_id,
+      opportunity: {
+        id: link.tailored_profiles.opportunities.id,
+        title: link.tailored_profiles.opportunities.title,
+        company: link.tailored_profiles.opportunities.company,
+      },
+      viewCount: link.shared_link_views?.length || 0,
+      views:
+        link.shared_link_views?.map((v) => ({
+          id: v.id,
+          viewedAt: v.viewed_at,
+        })) || [],
+    }),
+  );
 
   return NextResponse.json({ links: transformed });
 }
@@ -96,7 +103,9 @@ export async function GET() {
 export async function POST(request: Request) {
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -108,7 +117,7 @@ export async function POST(request: Request) {
     if (!tailoredProfileId) {
       return NextResponse.json(
         { error: "tailoredProfileId is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -123,7 +132,7 @@ export async function POST(request: Request) {
     if (!profile) {
       return NextResponse.json(
         { error: "Tailored profile not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -136,7 +145,7 @@ export async function POST(request: Request) {
     if (existingLink) {
       return NextResponse.json(
         { error: "Link already exists for this profile" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -163,7 +172,10 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error("Failed to create shared link:", error);
-      return NextResponse.json({ error: "Failed to create link" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to create link" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({
@@ -174,6 +186,9 @@ export async function POST(request: Request) {
     });
   } catch (err) {
     console.error("Error creating shared link:", err);
-    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to process request" },
+      { status: 500 },
+    );
   }
 }

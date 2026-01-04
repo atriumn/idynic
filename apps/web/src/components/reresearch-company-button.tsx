@@ -9,7 +9,9 @@ interface ReresearchCompanyButtonProps {
   opportunityId: string;
 }
 
-export function ReresearchCompanyButton({ opportunityId }: ReresearchCompanyButtonProps) {
+export function ReresearchCompanyButton({
+  opportunityId,
+}: ReresearchCompanyButtonProps) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 

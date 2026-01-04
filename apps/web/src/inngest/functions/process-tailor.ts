@@ -27,7 +27,10 @@ export const processTailor = inngest.createFunction(
         })
         .eq("id", jobId);
 
-      console.error("[process-tailor] Job failed after retries:", { jobId, error: errorMessage });
+      console.error("[process-tailor] Job failed after retries:", {
+        jobId,
+        error: errorMessage,
+      });
 
       const { log } = await import("@/lib/logger");
       await log.flush();
@@ -37,7 +40,12 @@ export const processTailor = inngest.createFunction(
   async ({ event, step }) => {
     const { jobId, userId, opportunityId, regenerate } = event.data;
     const supabase = createServiceRoleClient();
-    const jobLog = createLogger({ jobId, userId, opportunityId, inngest: true });
+    const jobLog = createLogger({
+      jobId,
+      userId,
+      opportunityId,
+      inngest: true,
+    });
     const job = new JobUpdater(supabase, jobId);
 
     // Step 1: Validate and fetch opportunity
@@ -77,15 +85,25 @@ export const processTailor = inngest.createFunction(
     }
 
     // Step 3: Generate talking points
-    const talkingPoints = await step.run("generate-talking-points", async () => {
-      await job.addHighlight("Analyzing your experience...", "found");
-      jobLog.info("Generating talking points");
+    const talkingPoints = await step.run(
+      "generate-talking-points",
+      async () => {
+        await job.addHighlight("Analyzing your experience...", "found");
+        jobLog.info("Generating talking points");
 
-      const points = await generateTalkingPoints(opportunityId, userId, supabase);
+        const points = await generateTalkingPoints(
+          opportunityId,
+          userId,
+          supabase,
+        );
 
-      await job.addHighlight(`Found ${points.strengths.length} talking points`, "found");
-      return points;
-    });
+        await job.addHighlight(
+          `Found ${points.strengths.length} talking points`,
+          "found",
+        );
+        return points;
+      },
+    );
 
     // Step 4: Generate narrative
     const narrative = await step.run("generate-narrative", async () => {
@@ -96,7 +114,7 @@ export const processTailor = inngest.createFunction(
       return await generateNarrative(
         talkingPoints,
         opportunity.title,
-        opportunity.company
+        opportunity.company,
       );
     });
 
@@ -105,7 +123,12 @@ export const processTailor = inngest.createFunction(
       await job.addHighlight("Building tailored resume...", "found");
       jobLog.info("Generating resume data");
 
-      return await generateResume(userId, opportunityId, talkingPoints, supabase);
+      return await generateResume(
+        userId,
+        opportunityId,
+        talkingPoints,
+        supabase,
+      );
     });
 
     // Step 6: Store profile
@@ -155,8 +178,10 @@ export const processTailor = inngest.createFunction(
           user_id: userId,
           passed: evaluation.passed,
           grounding_passed: evaluation.grounding.passed,
-          hallucinations: evaluation.grounding.hallucinations as unknown as Json,
-          missed_opportunities: evaluation.utilization.missed as unknown as Json,
+          hallucinations: evaluation.grounding
+            .hallucinations as unknown as Json,
+          missed_opportunities: evaluation.utilization
+            .missed as unknown as Json,
           gaps: evaluation.gaps as unknown as Json,
           eval_model: evaluation.model,
           eval_cost_cents: evaluation.costCents,
@@ -171,7 +196,9 @@ export const processTailor = inngest.createFunction(
 
         jobLog.info("Evaluation complete", { passed: evaluation.passed });
       } catch (evalErr) {
-        jobLog.error("Evaluation failed", { error: evalErr instanceof Error ? evalErr.message : String(evalErr) });
+        jobLog.error("Evaluation failed", {
+          error: evalErr instanceof Error ? evalErr.message : String(evalErr),
+        });
         // Don't fail the job - evaluation is optional
       }
     });
@@ -206,5 +233,5 @@ export const processTailor = inngest.createFunction(
       profileId: profile.id,
       opportunityId: opportunity.id,
     };
-  }
+  },
 );

@@ -12,7 +12,7 @@ interface EducationUpdateBody {
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const supabase = await createClient();
   const { id } = await params;
@@ -38,7 +38,10 @@ export async function PATCH(
       .single();
 
     if (!existing) {
-      return NextResponse.json({ error: "Education entry not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Education entry not found" },
+        { status: 404 },
+      );
     }
 
     const existingContext = (existing.context as Record<string, unknown>) || {};
@@ -70,19 +73,25 @@ export async function PATCH(
 
     if (error) {
       console.error("Failed to update education:", error);
-      return NextResponse.json({ error: "Failed to update education entry" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to update education entry" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json(data);
   } catch (err) {
     console.error("Education update error:", err);
-    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to process request" },
+      { status: 500 },
+    );
   }
 }
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const supabase = await createClient();
   const { id } = await params;
@@ -104,7 +113,10 @@ export async function DELETE(
 
   if (error) {
     console.error("Failed to delete education:", error);
-    return NextResponse.json({ error: "Failed to delete education entry" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete education entry" },
+      { status: 500 },
+    );
   }
 
   return NextResponse.json({ success: true });

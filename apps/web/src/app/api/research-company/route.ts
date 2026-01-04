@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     if (!opportunityId) {
       return NextResponse.json(
         { error: "opportunityId is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -35,14 +35,14 @@ export async function POST(request: Request) {
     if (fetchError || !opportunity) {
       return NextResponse.json(
         { error: "Opportunity not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     if (!opportunity.company) {
       return NextResponse.json(
         { error: "No company name to research" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     const insights = await researchCompany(
       opportunity.company,
       opportunity.title,
-      opportunity.description || ""
+      opportunity.description || "",
     );
 
     // Save results
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
       console.error("Failed to save company research:", updateError);
       return NextResponse.json(
         { error: "Failed to save research" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
     console.error("Research company error:", err);
     return NextResponse.json(
       { error: "Failed to research company" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

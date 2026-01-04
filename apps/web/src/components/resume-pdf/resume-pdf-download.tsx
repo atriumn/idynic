@@ -10,7 +10,10 @@ interface ResumePDFDownloadProps {
   filename?: string;
 }
 
-export function ResumePDFDownload({ data, filename = "resume.pdf" }: ResumePDFDownloadProps) {
+export function ResumePDFDownload({
+  data,
+  filename = "resume.pdf",
+}: ResumePDFDownloadProps) {
   const [isClient, setIsClient] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 

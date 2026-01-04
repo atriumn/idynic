@@ -4,7 +4,11 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverAnchor,
+} from "@/components/ui/popover";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,8 +37,12 @@ export type ContentType = "bullet" | "summary" | "narrative";
 function renderMarkdownBold(text: string): React.ReactNode {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
   return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>;
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={i} className="font-semibold">
+          {part.slice(2, -2)}
+        </strong>
+      );
     }
     return part;
   });
@@ -48,20 +56,60 @@ interface QuickAction {
 
 const QUICK_ACTIONS: Record<ContentType, QuickAction[]> = {
   bullet: [
-    { label: "Shorten", instruction: "Make this more concise without losing impact", icon: <Minus className="h-3 w-3" /> },
-    { label: "Add Metrics", instruction: "Add specific numbers or metrics if possible", icon: <Plus className="h-3 w-3" /> },
-    { label: "Stronger Verbs", instruction: "Use stronger action verbs at the start", icon: <Zap className="h-3 w-3" /> },
+    {
+      label: "Shorten",
+      instruction: "Make this more concise without losing impact",
+      icon: <Minus className="h-3 w-3" />,
+    },
+    {
+      label: "Add Metrics",
+      instruction: "Add specific numbers or metrics if possible",
+      icon: <Plus className="h-3 w-3" />,
+    },
+    {
+      label: "Stronger Verbs",
+      instruction: "Use stronger action verbs at the start",
+      icon: <Zap className="h-3 w-3" />,
+    },
   ],
   summary: [
-    { label: "Shorten", instruction: "Make this more concise", icon: <Minus className="h-3 w-3" /> },
-    { label: "Expand", instruction: "Add more detail and context", icon: <Plus className="h-3 w-3" /> },
-    { label: "More Confident", instruction: "Remove hedging language, be more direct", icon: <Zap className="h-3 w-3" /> },
+    {
+      label: "Shorten",
+      instruction: "Make this more concise",
+      icon: <Minus className="h-3 w-3" />,
+    },
+    {
+      label: "Expand",
+      instruction: "Add more detail and context",
+      icon: <Plus className="h-3 w-3" />,
+    },
+    {
+      label: "More Confident",
+      instruction: "Remove hedging language, be more direct",
+      icon: <Zap className="h-3 w-3" />,
+    },
   ],
   narrative: [
-    { label: "Shorten", instruction: "Make this more concise while keeping key points", icon: <Minus className="h-3 w-3" /> },
-    { label: "Expand", instruction: "Add more detail and context", icon: <Plus className="h-3 w-3" /> },
-    { label: "More Conversational", instruction: "Make the tone warmer and more conversational", icon: <MessageSquare className="h-3 w-3" /> },
-    { label: "Strengthen Opening", instruction: "Make the opening sentence more compelling", icon: <Sparkles className="h-3 w-3" /> },
+    {
+      label: "Shorten",
+      instruction: "Make this more concise while keeping key points",
+      icon: <Minus className="h-3 w-3" />,
+    },
+    {
+      label: "Expand",
+      instruction: "Add more detail and context",
+      icon: <Plus className="h-3 w-3" />,
+    },
+    {
+      label: "More Conversational",
+      instruction: "Make the tone warmer and more conversational",
+      icon: <MessageSquare className="h-3 w-3" />,
+    },
+    {
+      label: "Strengthen Opening",
+      instruction: "Make the opening sentence more compelling",
+      icon: <Sparkles className="h-3 w-3" />,
+    },
   ],
 };
 
@@ -149,32 +197,35 @@ export function EditableText({
     }
   }, [editValue, value, opportunityId, fieldPath, onUpdate]);
 
-  const handleAiAction = useCallback(async (instruction: string) => {
-    setIsLoading(true);
-    setError(null);
+  const handleAiAction = useCallback(
+    async (instruction: string) => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const response = await fetch(`/api/tailored-profile/${opportunityId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ field: fieldPath, instruction }),
-      });
+      try {
+        const response = await fetch(`/api/tailored-profile/${opportunityId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ field: fieldPath, instruction }),
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to process");
+        if (!response.ok) {
+          throw new Error("Failed to process");
+        }
+
+        const data = await response.json();
+        setEditValue(data.value);
+        onUpdate(data.value, fieldPath);
+      } catch (err) {
+        console.error("Failed to process AI edit:", err);
+        setError("AI edit failed. Try again.");
+      } finally {
+        setIsLoading(false);
+        setCustomInstruction("");
       }
-
-      const data = await response.json();
-      setEditValue(data.value);
-      onUpdate(data.value, fieldPath);
-    } catch (err) {
-      console.error("Failed to process AI edit:", err);
-      setError("AI edit failed. Try again.");
-    } finally {
-      setIsLoading(false);
-      setCustomInstruction("");
-    }
-  }, [opportunityId, fieldPath, onUpdate]);
+    },
+    [opportunityId, fieldPath, onUpdate],
+  );
 
   const handleRevert = useCallback(async () => {
     setIsLoading(true);
@@ -224,7 +275,10 @@ export function EditableText({
           {renderMarkdownBold(value)}
         </span>
         {isEdited && (
-          <Badge variant="outline" className="ml-2 text-xs py-0 px-1 text-muted-foreground">
+          <Badge
+            variant="outline"
+            className="ml-2 text-xs py-0 px-1 text-muted-foreground"
+          >
             edited
           </Badge>
         )}
@@ -291,7 +345,12 @@ export function EditableText({
             {contentType === "bullet" && skills.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-7 text-xs" disabled={isLoading}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    disabled={isLoading}
+                  >
                     Emphasize
                     <ChevronDown className="h-3 w-3 ml-1" />
                   </Button>
@@ -300,7 +359,11 @@ export function EditableText({
                   {skills.slice(0, 5).map((skill) => (
                     <DropdownMenuItem
                       key={skill}
-                      onClick={() => handleAiAction(`Emphasize ${skill} skills and experience`)}
+                      onClick={() =>
+                        handleAiAction(
+                          `Emphasize ${skill} skills and experience`,
+                        )
+                      }
                     >
                       {skill}
                     </DropdownMenuItem>
@@ -336,9 +399,7 @@ export function EditableText({
           </div>
 
           {/* Error message */}
-          {error && (
-            <p className="text-xs text-destructive">{error}</p>
-          )}
+          {error && <p className="text-xs text-destructive">{error}</p>}
 
           {/* Action buttons */}
           <div className="flex justify-between items-center pt-1 border-t">

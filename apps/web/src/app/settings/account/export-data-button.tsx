@@ -37,9 +37,7 @@ export function ExportDataButton() {
 
       toast.success("Data exported successfully");
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to export data"
-      );
+      toast.error(err instanceof Error ? err.message : "Failed to export data");
     } finally {
       setLoading(false);
     }

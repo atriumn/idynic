@@ -37,7 +37,7 @@ export async function getApiUser(request: Request): Promise<User | null> {
           autoRefreshToken: false,
           persistSession: false,
         },
-      }
+      },
     );
 
     const {

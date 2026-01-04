@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { View, Text, ScrollView, Pressable, Linking } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useState } from "react";
+import { View, Text, ScrollView, Pressable, Linking } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import {
   ChevronDown,
   ChevronRight,
@@ -14,15 +14,15 @@ import {
   Plug,
   HelpCircle,
   ExternalLink,
-} from 'lucide-react-native';
-import { HELP_DOCS } from '@idynic/shared';
+} from "lucide-react-native";
+import { HELP_DOCS } from "@idynic/shared";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SECTION_ICONS: Record<string, React.ComponentType<any>> = {
   rocket: Rocket,
   user: User,
   briefcase: Briefcase,
-  'id-card': CreditCard,
+  "id-card": CreditCard,
   shield: ShieldCheck,
   plug: Plug,
 };
@@ -35,7 +35,7 @@ function RichText({ children, style }: { children: string; style?: string }) {
   return (
     <Text className={style}>
       {parts.map((part, i) => {
-        if (part.startsWith('**') && part.endsWith('**')) {
+        if (part.startsWith("**") && part.endsWith("**")) {
           return (
             <Text key={i} className="font-semibold text-slate-200">
               {part.slice(2, -2)}
@@ -51,7 +51,7 @@ function RichText({ children, style }: { children: string; style?: string }) {
 export default function HelpScreen() {
   const router = useRouter();
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(['getting-started'])
+    new Set(["getting-started"]),
   );
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
@@ -80,8 +80,11 @@ export default function HelpScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-900" edges={['top', 'bottom']}>
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
+    <SafeAreaView className="flex-1 bg-slate-900" edges={["top", "bottom"]}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+      >
         {/* Header */}
         <View className="flex-row items-center mb-6">
           <Pressable onPress={() => router.back()} className="mr-3 p-1">
@@ -92,8 +95,12 @@ export default function HelpScreen() {
               <HelpCircle color="#14b8a6" size={20} />
             </View>
             <View>
-              <Text className="text-xl font-bold text-white">{HELP_DOCS.title}</Text>
-              <Text className="text-slate-400 text-sm">{HELP_DOCS.subtitle}</Text>
+              <Text className="text-xl font-bold text-white">
+                {HELP_DOCS.title}
+              </Text>
+              <Text className="text-slate-400 text-sm">
+                {HELP_DOCS.subtitle}
+              </Text>
             </View>
           </View>
         </View>
@@ -103,16 +110,21 @@ export default function HelpScreen() {
           {HELP_DOCS.sections.map((section) => {
             const Icon = SECTION_ICONS[section.icon] || HelpCircle;
             const isExpanded = expandedSections.has(section.id);
-            const isIntegrations = section.id === 'integrations';
+            const isIntegrations = section.id === "integrations";
 
             return (
-              <View key={section.id} className="mb-3 bg-slate-800 rounded-xl overflow-hidden border border-slate-700">
+              <View
+                key={section.id}
+                className="mb-3 bg-slate-800 rounded-xl overflow-hidden border border-slate-700"
+              >
                 <Pressable
                   onPress={() => toggleSection(section.id)}
                   className="flex-row items-center p-4"
                 >
                   <Icon color="#14b8a6" size={20} />
-                  <Text className="text-white font-semibold flex-1 ml-3">{section.title}</Text>
+                  <Text className="text-white font-semibold flex-1 ml-3">
+                    {section.title}
+                  </Text>
                   {isExpanded ? (
                     <ChevronDown color="#64748b" size={20} />
                   ) : (
@@ -127,13 +139,19 @@ export default function HelpScreen() {
                       return (
                         <View
                           key={item.id}
-                          className={i < section.items.length - 1 ? 'border-b border-slate-700/50' : ''}
+                          className={
+                            i < section.items.length - 1
+                              ? "border-b border-slate-700/50"
+                              : ""
+                          }
                         >
                           <Pressable
                             onPress={() => toggleItem(item.id)}
                             className="flex-row items-center p-4 pl-12"
                           >
-                            <Text className="text-slate-300 flex-1">{item.title}</Text>
+                            <Text className="text-slate-300 flex-1">
+                              {item.title}
+                            </Text>
                             {itemExpanded ? (
                               <ChevronDown color="#64748b" size={16} />
                             ) : (
@@ -157,7 +175,9 @@ export default function HelpScreen() {
                         onPress={openDocs}
                         className="flex-row items-center gap-2 px-12 py-4 border-t border-slate-700"
                       >
-                        <Text className="text-teal-400 font-medium">View full documentation</Text>
+                        <Text className="text-teal-400 font-medium">
+                          View full documentation
+                        </Text>
                         <ExternalLink color="#2dd4bf" size={16} />
                       </Pressable>
                     )}
@@ -170,36 +190,45 @@ export default function HelpScreen() {
 
         {/* FAQ */}
         <View>
-          <Text className="text-lg font-bold text-white mb-4">Frequently Asked Questions</Text>
+          <Text className="text-lg font-bold text-white mb-4">
+            Frequently Asked Questions
+          </Text>
           {HELP_DOCS.faq
-            .filter((item) => !item.question.toLowerCase().includes('mobile app'))
+            .filter(
+              (item) => !item.question.toLowerCase().includes("mobile app"),
+            )
             .map((item, i) => {
-            const id = `faq-${i}`;
-            const isExpanded = expandedItems.has(id);
+              const id = `faq-${i}`;
+              const isExpanded = expandedItems.has(id);
 
-            return (
-              <View key={i} className="mb-3 bg-slate-800 rounded-xl overflow-hidden border border-slate-700">
-                <Pressable
-                  onPress={() => toggleItem(id)}
-                  className="flex-row items-center p-4"
+              return (
+                <View
+                  key={i}
+                  className="mb-3 bg-slate-800 rounded-xl overflow-hidden border border-slate-700"
                 >
-                  <Text className="text-white flex-1 font-medium">{item.question}</Text>
-                  {isExpanded ? (
-                    <ChevronDown color="#64748b" size={20} />
-                  ) : (
-                    <ChevronRight color="#64748b" size={20} />
+                  <Pressable
+                    onPress={() => toggleItem(id)}
+                    className="flex-row items-center p-4"
+                  >
+                    <Text className="text-white flex-1 font-medium">
+                      {item.question}
+                    </Text>
+                    {isExpanded ? (
+                      <ChevronDown color="#64748b" size={20} />
+                    ) : (
+                      <ChevronRight color="#64748b" size={20} />
+                    )}
+                  </Pressable>
+                  {isExpanded && (
+                    <View className="px-4 pb-4">
+                      <RichText style="text-slate-400 text-sm leading-relaxed">
+                        {item.answer}
+                      </RichText>
+                    </View>
                   )}
-                </Pressable>
-                {isExpanded && (
-                  <View className="px-4 pb-4">
-                    <RichText style="text-slate-400 text-sm leading-relaxed">
-                      {item.answer}
-                    </RichText>
-                  </View>
-                )}
-              </View>
-            );
-          })}
+                </View>
+              );
+            })}
         </View>
       </ScrollView>
     </SafeAreaView>

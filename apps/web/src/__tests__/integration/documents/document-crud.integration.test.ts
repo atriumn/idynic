@@ -1,445 +1,462 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import {
   createTestUserWithClient,
   cleanupTestUsers,
-  generateTestEmail
-} from '../setup/test-utils'
-import type { SupabaseClient, User } from '@supabase/supabase-js'
-import type { Database } from '@/lib/supabase/types'
+  generateTestEmail,
+} from "../setup/test-utils";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/types";
 
-describe('Document CRUD Operations', () => {
-  let user: User
-  let client: SupabaseClient<Database>
+describe("Document CRUD Operations", () => {
+  let user: User;
+  let client: SupabaseClient<Database>;
 
   beforeAll(async () => {
-    const result = await createTestUserWithClient(generateTestEmail('docs-crud'))
-    user = result.user
-    client = result.client
-  })
+    const result = await createTestUserWithClient(
+      generateTestEmail("docs-crud"),
+    );
+    user = result.user;
+    client = result.client;
+  });
 
   afterAll(async () => {
-    await cleanupTestUsers()
-  })
+    await cleanupTestUsers();
+  });
 
-  describe('Create Documents', () => {
-    it('should create a resume document', async () => {
+  describe("Create Documents", () => {
+    it("should create a resume document", async () => {
       const { data, error } = await client
-        .from('documents')
+        .from("documents")
         .insert({
           user_id: user.id,
-          type: 'resume',
-          filename: 'my-resume.pdf',
-          status: 'pending'
+          type: "resume",
+          filename: "my-resume.pdf",
+          status: "pending",
         })
         .select()
-        .single()
+        .single();
 
-      expect(error).toBeNull()
-      expect(data).toBeDefined()
-      expect(data?.type).toBe('resume')
-      expect(data?.filename).toBe('my-resume.pdf')
-      expect(data?.status).toBe('pending')
-      expect(data?.user_id).toBe(user.id)
-    })
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(data?.type).toBe("resume");
+      expect(data?.filename).toBe("my-resume.pdf");
+      expect(data?.status).toBe("pending");
+      expect(data?.user_id).toBe(user.id);
+    });
 
-    it('should create a story document', async () => {
+    it("should create a story document", async () => {
       const { data, error } = await client
-        .from('documents')
+        .from("documents")
         .insert({
           user_id: user.id,
-          type: 'story',
-          filename: 'my-career-story.pdf',
-          status: 'pending'
+          type: "story",
+          filename: "my-career-story.pdf",
+          status: "pending",
         })
         .select()
-        .single()
+        .single();
 
-      expect(error).toBeNull()
-      expect(data?.type).toBe('story')
-    })
+      expect(error).toBeNull();
+      expect(data?.type).toBe("story");
+    });
 
-    it('should create document with raw text', async () => {
-      const rawText = 'This is the extracted text from my resume...'
+    it("should create document with raw text", async () => {
+      const rawText = "This is the extracted text from my resume...";
 
       const { data, error } = await client
-        .from('documents')
+        .from("documents")
         .insert({
           user_id: user.id,
-          type: 'resume',
-          filename: 'text-resume.txt',
+          type: "resume",
+          filename: "text-resume.txt",
           raw_text: rawText,
-          status: 'completed'
+          status: "completed",
         })
         .select()
-        .single()
+        .single();
 
-      expect(error).toBeNull()
-      expect(data?.raw_text).toBe(rawText)
-    })
+      expect(error).toBeNull();
+      expect(data?.raw_text).toBe(rawText);
+    });
 
-    it('should create document with storage path', async () => {
-      const storagePath = 'documents/user-123/resume-abc.pdf'
+    it("should create document with storage path", async () => {
+      const storagePath = "documents/user-123/resume-abc.pdf";
 
       const { data, error } = await client
-        .from('documents')
+        .from("documents")
         .insert({
           user_id: user.id,
-          type: 'resume',
-          filename: 'cloud-resume.pdf',
+          type: "resume",
+          filename: "cloud-resume.pdf",
           storage_path: storagePath,
-          status: 'pending'
+          status: "pending",
         })
         .select()
-        .single()
+        .single();
 
-      expect(error).toBeNull()
-      expect(data?.storage_path).toBe(storagePath)
-    })
-  })
+      expect(error).toBeNull();
+      expect(data?.storage_path).toBe(storagePath);
+    });
+  });
 
-  describe('Read Documents', () => {
-    let testDocId: string
+  describe("Read Documents", () => {
+    let testDocId: string;
 
     beforeAll(async () => {
       const { data } = await client
-        .from('documents')
+        .from("documents")
         .insert({
           user_id: user.id,
-          type: 'resume',
-          filename: 'read-test.pdf',
-          status: 'completed'
+          type: "resume",
+          filename: "read-test.pdf",
+          status: "completed",
         })
         .select()
-        .single()
-      testDocId = data!.id
-    })
+        .single();
+      testDocId = data!.id;
+    });
 
-    it('should read document by ID', async () => {
+    it("should read document by ID", async () => {
       const { data, error } = await client
-        .from('documents')
-        .select('*')
-        .eq('id', testDocId)
-        .single()
+        .from("documents")
+        .select("*")
+        .eq("id", testDocId)
+        .single();
 
-      expect(error).toBeNull()
-      expect(data?.id).toBe(testDocId)
-    })
+      expect(error).toBeNull();
+      expect(data?.id).toBe(testDocId);
+    });
 
-    it('should list all user documents', async () => {
+    it("should list all user documents", async () => {
       const { data, error } = await client
-        .from('documents')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
+        .from("documents")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
-      expect(error).toBeNull()
-      expect(data).toBeDefined()
-      expect(data!.length).toBeGreaterThan(0)
-    })
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(data!.length).toBeGreaterThan(0);
+    });
 
-    it('should filter documents by type', async () => {
+    it("should filter documents by type", async () => {
       const { data, error } = await client
-        .from('documents')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('type', 'resume')
+        .from("documents")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("type", "resume");
 
-      expect(error).toBeNull()
-      expect(data).toBeDefined()
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
       data?.forEach((doc) => {
-        expect(doc.type).toBe('resume')
-      })
-    })
+        expect(doc.type).toBe("resume");
+      });
+    });
 
-    it('should filter documents by status', async () => {
+    it("should filter documents by status", async () => {
       const { data, error } = await client
-        .from('documents')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('status', 'completed')
+        .from("documents")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("status", "completed");
 
-      expect(error).toBeNull()
+      expect(error).toBeNull();
       data?.forEach((doc) => {
-        expect(doc.status).toBe('completed')
-      })
-    })
-  })
+        expect(doc.status).toBe("completed");
+      });
+    });
+  });
 
-  describe('Update Documents', () => {
-    let docToUpdate: string
+  describe("Update Documents", () => {
+    let docToUpdate: string;
 
     beforeAll(async () => {
       const { data } = await client
-        .from('documents')
+        .from("documents")
         .insert({
           user_id: user.id,
-          type: 'resume',
-          filename: 'update-test.pdf',
-          status: 'pending'
+          type: "resume",
+          filename: "update-test.pdf",
+          status: "pending",
         })
         .select()
-        .single()
-      docToUpdate = data!.id
-    })
+        .single();
+      docToUpdate = data!.id;
+    });
 
-    it('should update document status', async () => {
+    it("should update document status", async () => {
       const { data, error } = await client
-        .from('documents')
-        .update({ status: 'processing' })
-        .eq('id', docToUpdate)
+        .from("documents")
+        .update({ status: "processing" })
+        .eq("id", docToUpdate)
         .select()
-        .single()
+        .single();
 
-      expect(error).toBeNull()
-      expect(data?.status).toBe('processing')
-    })
+      expect(error).toBeNull();
+      expect(data?.status).toBe("processing");
+    });
 
-    it('should update document to completed with raw text', async () => {
-      const rawText = 'Extracted resume content goes here...'
+    it("should update document to completed with raw text", async () => {
+      const rawText = "Extracted resume content goes here...";
 
       const { data, error } = await client
-        .from('documents')
+        .from("documents")
         .update({
-          status: 'completed',
-          raw_text: rawText
+          status: "completed",
+          raw_text: rawText,
         })
-        .eq('id', docToUpdate)
+        .eq("id", docToUpdate)
         .select()
-        .single()
+        .single();
 
-      expect(error).toBeNull()
-      expect(data?.status).toBe('completed')
-      expect(data?.raw_text).toBe(rawText)
-    })
+      expect(error).toBeNull();
+      expect(data?.status).toBe("completed");
+      expect(data?.raw_text).toBe(rawText);
+    });
 
-    it('should update document to failed status', async () => {
+    it("should update document to failed status", async () => {
       // Create a new document to fail
       const { data: newDoc } = await client
-        .from('documents')
+        .from("documents")
         .insert({
           user_id: user.id,
-          type: 'resume',
-          filename: 'will-fail.pdf',
-          status: 'processing'
+          type: "resume",
+          filename: "will-fail.pdf",
+          status: "processing",
         })
         .select()
-        .single()
+        .single();
 
       const { data, error } = await client
-        .from('documents')
-        .update({ status: 'failed' })
-        .eq('id', newDoc!.id)
+        .from("documents")
+        .update({ status: "failed" })
+        .eq("id", newDoc!.id)
         .select()
-        .single()
+        .single();
 
-      expect(error).toBeNull()
-      expect(data?.status).toBe('failed')
-    })
-  })
+      expect(error).toBeNull();
+      expect(data?.status).toBe("failed");
+    });
+  });
 
-  describe('Delete Documents', () => {
-    it('should delete a document', async () => {
+  describe("Delete Documents", () => {
+    it("should delete a document", async () => {
       // Create a document to delete
       const { data: created } = await client
-        .from('documents')
+        .from("documents")
         .insert({
           user_id: user.id,
-          type: 'resume',
-          filename: 'to-delete.pdf',
-          status: 'pending'
+          type: "resume",
+          filename: "to-delete.pdf",
+          status: "pending",
         })
         .select()
-        .single()
+        .single();
 
-      const { error } = await client.from('documents').delete().eq('id', created!.id)
+      const { error } = await client
+        .from("documents")
+        .delete()
+        .eq("id", created!.id);
 
-      expect(error).toBeNull()
+      expect(error).toBeNull();
 
       // Verify deletion
       const { data: verify } = await client
-        .from('documents')
-        .select('id')
-        .eq('id', created!.id)
+        .from("documents")
+        .select("id")
+        .eq("id", created!.id);
 
-      expect(verify?.length ?? 0).toBe(0)
-    })
-  })
-})
+      expect(verify?.length ?? 0).toBe(0);
+    });
+  });
+});
 
-describe('Claims CRUD Operations', () => {
-  let user: User
-  let client: SupabaseClient<Database>
-  let documentId: string
+describe("Claims CRUD Operations", () => {
+  let user: User;
+  let client: SupabaseClient<Database>;
+  let documentId: string;
 
   beforeAll(async () => {
-    const result = await createTestUserWithClient(generateTestEmail('claims-crud'))
-    user = result.user
-    client = result.client
+    const result = await createTestUserWithClient(
+      generateTestEmail("claims-crud"),
+    );
+    user = result.user;
+    client = result.client;
 
     // Create a document to attach claims to
     const { data } = await client
-      .from('documents')
+      .from("documents")
       .insert({
         user_id: user.id,
-        type: 'resume',
-        filename: 'claims-test.pdf',
-        status: 'completed'
+        type: "resume",
+        filename: "claims-test.pdf",
+        status: "completed",
       })
       .select()
-      .single()
-    documentId = data!.id
-  })
+      .single();
+    documentId = data!.id;
+  });
 
   afterAll(async () => {
-    await cleanupTestUsers()
-  })
+    await cleanupTestUsers();
+  });
 
-  describe('Create Claims', () => {
-    it('should create a skill claim', async () => {
+  describe("Create Claims", () => {
+    it("should create a skill claim", async () => {
       const { data, error } = await client
-        .from('claims')
+        .from("claims")
         .insert({
           user_id: user.id,
           document_id: documentId,
-          claim_type: 'skill',
-          value: { name: 'TypeScript', level: 'expert' },
-          evidence_text: 'Built multiple production apps with TypeScript',
-          confidence: 0.95
+          claim_type: "skill",
+          value: { name: "TypeScript", level: "expert" },
+          evidence_text: "Built multiple production apps with TypeScript",
+          confidence: 0.95,
         })
         .select()
-        .single()
+        .single();
 
-      expect(error).toBeNull()
-      expect(data?.claim_type).toBe('skill')
-      expect(data?.value).toEqual({ name: 'TypeScript', level: 'expert' })
-      expect(data?.confidence).toBe(0.95)
-    })
+      expect(error).toBeNull();
+      expect(data?.claim_type).toBe("skill");
+      expect(data?.value).toEqual({ name: "TypeScript", level: "expert" });
+      expect(data?.confidence).toBe(0.95);
+    });
 
-    it('should create an experience claim', async () => {
+    it("should create an experience claim", async () => {
       const { data, error } = await client
-        .from('claims')
+        .from("claims")
         .insert({
           user_id: user.id,
           document_id: documentId,
-          claim_type: 'experience',
+          claim_type: "experience",
           value: {
-            title: 'Senior Engineer',
-            company: 'Tech Corp',
-            years: 3
+            title: "Senior Engineer",
+            company: "Tech Corp",
+            years: 3,
           },
-          evidence_text: 'Worked as Senior Engineer at Tech Corp from 2020-2023',
-          confidence: 0.9
+          evidence_text:
+            "Worked as Senior Engineer at Tech Corp from 2020-2023",
+          confidence: 0.9,
         })
         .select()
-        .single()
+        .single();
 
-      expect(error).toBeNull()
-      expect(data?.claim_type).toBe('experience')
-    })
-  })
+      expect(error).toBeNull();
+      expect(data?.claim_type).toBe("experience");
+    });
+  });
 
-  describe('Read Claims', () => {
-    it('should list claims for a document', async () => {
+  describe("Read Claims", () => {
+    it("should list claims for a document", async () => {
       const { data, error } = await client
-        .from('claims')
-        .select('*')
-        .eq('document_id', documentId)
+        .from("claims")
+        .select("*")
+        .eq("document_id", documentId);
 
-      expect(error).toBeNull()
-      expect(data).toBeDefined()
-      expect(data!.length).toBeGreaterThan(0)
-    })
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(data!.length).toBeGreaterThan(0);
+    });
 
-    it('should list all claims for user', async () => {
-      const { data, error } = await client.from('claims').select('*').eq('user_id', user.id)
-
-      expect(error).toBeNull()
-      expect(data).toBeDefined()
-    })
-
-    it('should filter claims by type', async () => {
+    it("should list all claims for user", async () => {
       const { data, error } = await client
-        .from('claims')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('claim_type', 'skill')
+        .from("claims")
+        .select("*")
+        .eq("user_id", user.id);
 
-      expect(error).toBeNull()
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+    });
+
+    it("should filter claims by type", async () => {
+      const { data, error } = await client
+        .from("claims")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("claim_type", "skill");
+
+      expect(error).toBeNull();
       data?.forEach((claim) => {
-        expect(claim.claim_type).toBe('skill')
-      })
-    })
-  })
+        expect(claim.claim_type).toBe("skill");
+      });
+    });
+  });
 
-  describe('Update Claims', () => {
-    it('should update claim confidence', async () => {
+  describe("Update Claims", () => {
+    it("should update claim confidence", async () => {
       // Get a claim
       const { data: existing } = await client
-        .from('claims')
-        .select('id')
-        .eq('user_id', user.id)
+        .from("claims")
+        .select("id")
+        .eq("user_id", user.id)
         .limit(1)
-        .single()
+        .single();
 
       const { data, error } = await client
-        .from('claims')
+        .from("claims")
         .update({ confidence: 0.85 })
-        .eq('id', existing!.id)
+        .eq("id", existing!.id)
         .select()
-        .single()
+        .single();
 
-      expect(error).toBeNull()
-      expect(data?.confidence).toBe(0.85)
-    })
+      expect(error).toBeNull();
+      expect(data?.confidence).toBe(0.85);
+    });
 
-    it('should update claim value', async () => {
+    it("should update claim value", async () => {
       // Get a claim
       const { data: existing } = await client
-        .from('claims')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('claim_type', 'skill')
+        .from("claims")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("claim_type", "skill")
         .limit(1)
-        .single()
+        .single();
 
-      const newValue = { name: 'TypeScript', level: 'advanced', years: 5 }
+      const newValue = { name: "TypeScript", level: "advanced", years: 5 };
 
       const { data, error } = await client
-        .from('claims')
+        .from("claims")
         .update({ value: newValue })
-        .eq('id', existing!.id)
+        .eq("id", existing!.id)
         .select()
-        .single()
+        .single();
 
-      expect(error).toBeNull()
-      expect(data?.value).toEqual(newValue)
-    })
-  })
+      expect(error).toBeNull();
+      expect(data?.value).toEqual(newValue);
+    });
+  });
 
-  describe('Delete Claims', () => {
-    it('should delete a claim', async () => {
+  describe("Delete Claims", () => {
+    it("should delete a claim", async () => {
       // Create a claim to delete
       const { data: created } = await client
-        .from('claims')
+        .from("claims")
         .insert({
           user_id: user.id,
           document_id: documentId,
-          claim_type: 'skill',
-          value: { name: 'To Delete' },
-          evidence_text: 'Will be deleted',
-          confidence: 0.5
+          claim_type: "skill",
+          value: { name: "To Delete" },
+          evidence_text: "Will be deleted",
+          confidence: 0.5,
         })
         .select()
-        .single()
+        .single();
 
-      const { error } = await client.from('claims').delete().eq('id', created!.id)
+      const { error } = await client
+        .from("claims")
+        .delete()
+        .eq("id", created!.id);
 
-      expect(error).toBeNull()
+      expect(error).toBeNull();
 
       // Verify deletion
-      const { data: verify } = await client.from('claims').select('id').eq('id', created!.id)
+      const { data: verify } = await client
+        .from("claims")
+        .select("id")
+        .eq("id", created!.id);
 
-      expect(verify?.length ?? 0).toBe(0)
-    })
-  })
-})
+      expect(verify?.length ?? 0).toBe(0);
+    });
+  });
+});

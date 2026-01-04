@@ -485,7 +485,9 @@ describe("Resume Upload API Route", () => {
 
     it("returns 500 on storage upload error", async () => {
       mockSupabaseStorage.mockReturnValue({
-        upload: vi.fn().mockResolvedValue({ error: { message: "Upload failed" } }),
+        upload: vi
+          .fn()
+          .mockResolvedValue({ error: { message: "Upload failed" } }),
       });
 
       const { POST } = await import("@/app/api/v1/documents/resume/route");
@@ -523,7 +525,9 @@ describe("Resume Upload API Route", () => {
             select: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
                 eq: vi.fn().mockReturnValue({
-                  single: vi.fn().mockResolvedValue({ data: null, error: null }),
+                  single: vi
+                    .fn()
+                    .mockResolvedValue({ data: null, error: null }),
                 }),
               }),
             }),

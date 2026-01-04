@@ -21,11 +21,19 @@ export async function POST(request: NextRequest) {
   const { plan, successUrl, cancelUrl } = body;
 
   if (!plan || !["pro", "job_search"].includes(plan)) {
-    return apiError("validation_error", "Invalid plan. Must be 'pro' or 'job_search'", 400);
+    return apiError(
+      "validation_error",
+      "Invalid plan. Must be 'pro' or 'job_search'",
+      400,
+    );
   }
 
   if (!successUrl || !cancelUrl) {
-    return apiError("validation_error", "successUrl and cancelUrl are required", 400);
+    return apiError(
+      "validation_error",
+      "successUrl and cancelUrl are required",
+      400,
+    );
   }
 
   const supabase = createServiceRoleClient();
@@ -60,21 +68,23 @@ export async function POST(request: NextRequest) {
       customerId = customer.id;
     } catch (err) {
       console.error("Failed to create Stripe customer:", err);
-      const message = err instanceof Error ? err.message : "Failed to create customer";
+      const message =
+        err instanceof Error ? err.message : "Failed to create customer";
       return apiError("stripe_error", message, 500);
     }
 
     // Update or create subscription record with customer ID
-    await supabase
-      .from("subscriptions")
-      .upsert({
+    await supabase.from("subscriptions").upsert(
+      {
         user_id: user.id,
         stripe_customer_id: customerId,
         plan_type: "free",
         status: "active",
-      }, {
+      },
+      {
         onConflict: "user_id",
-      });
+      },
+    );
   }
 
   // Get the price ID for the selected plan
@@ -83,7 +93,11 @@ export async function POST(request: NextRequest) {
     priceId = getPriceIdForPlan(plan);
   } catch (err) {
     console.error("Failed to get price ID:", err);
-    return apiError("configuration_error", `Price ID not configured for plan: ${plan}`, 500);
+    return apiError(
+      "configuration_error",
+      `Price ID not configured for plan: ${plan}`,
+      500,
+    );
   }
 
   // Create Stripe Checkout session
@@ -116,7 +130,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (err) {
     console.error("Stripe checkout session error:", err);
-    const message = err instanceof Error ? err.message : "Failed to create checkout session";
+    const message =
+      err instanceof Error ? err.message : "Failed to create checkout session";
     return apiError("stripe_error", message, 500);
   }
 }

@@ -45,12 +45,18 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error("Failed to create certification:", error);
-      return NextResponse.json({ error: "Failed to create certification" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to create certification" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json(data, { status: 201 });
   } catch (err) {
     console.error("Certification create error:", err);
-    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to process request" },
+      { status: 500 },
+    );
   }
 }

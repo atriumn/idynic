@@ -7,7 +7,10 @@ interface AddOpportunityResult {
 }
 
 interface UseAddOpportunityResult {
-  addOpportunity: (url: string, description?: string) => Promise<AddOpportunityResult>;
+  addOpportunity: (
+    url: string,
+    description?: string,
+  ) => Promise<AddOpportunityResult>;
   isSubmitting: boolean;
   error: string | null;
   reset: () => void;
@@ -22,7 +25,7 @@ export function useAddOpportunity(): UseAddOpportunityResult {
 
   const addOpportunity = async (
     url: string,
-    description?: string
+    description?: string,
   ): Promise<AddOpportunityResult> => {
     if (!session?.access_token) {
       throw new Error("Not authenticated");
@@ -49,7 +52,8 @@ export function useAddOpportunity(): UseAddOpportunityResult {
 
       return { jobId: data.jobId };
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
+      const message =
+        err instanceof Error ? err.message : "Something went wrong";
       setError(message);
       throw err;
     } finally {

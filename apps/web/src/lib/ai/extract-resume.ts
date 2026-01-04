@@ -118,7 +118,7 @@ export interface ExtractResumeOptions {
 
 export async function extractResume(
   text: string,
-  options: ExtractResumeOptions = {}
+  options: ExtractResumeOptions = {},
 ): Promise<ResumeExtraction> {
   const config = getModelConfig("extract_resume");
 
@@ -139,7 +139,7 @@ export async function extractResume(
       userId: options.userId,
       documentId: options.documentId,
       jobId: options.jobId,
-    }
+    },
   );
 
   const content = response.content;
@@ -157,7 +157,7 @@ export async function extractResume(
     return JSON.parse(cleanedContent) as ResumeExtraction;
   } catch {
     throw new Error(
-      `Failed to parse extraction response: ${cleanedContent.slice(0, 200)}`
+      `Failed to parse extraction response: ${cleanedContent.slice(0, 200)}`,
     );
   }
 }

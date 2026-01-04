@@ -23,7 +23,7 @@ export interface EmbeddingsProgress {
 
 export async function generateEmbeddings(
   texts: string[],
-  onProgress?: (progress: EmbeddingsProgress) => void
+  onProgress?: (progress: EmbeddingsProgress) => void,
 ): Promise<number[][]> {
   if (texts.length === 0) return [];
 

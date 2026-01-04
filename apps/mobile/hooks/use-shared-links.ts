@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../lib/auth-context';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../lib/auth-context";
 
 export interface SharedLink {
   id: string;
@@ -38,8 +38,9 @@ interface SharedLinkDbResult {
 
 async function fetchSharedLinks(userId: string): Promise<SharedLink[]> {
   const { data, error } = await supabase
-    .from('shared_links')
-    .select(`
+    .from("shared_links")
+    .select(
+      `
       id,
       token,
       expires_at,
@@ -58,9 +59,10 @@ async function fetchSharedLinks(userId: string): Promise<SharedLink[]> {
       shared_link_views (
         id
       )
-    `)
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+    `,
+    )
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
 
   if (error) throw error;
 
@@ -86,9 +88,9 @@ export function useSharedLinks() {
   const { session } = useAuth();
 
   return useQuery({
-    queryKey: ['shared-links', session?.user?.id],
+    queryKey: ["shared-links", session?.user?.id],
     queryFn: () => {
-      if (!session?.user?.id) throw new Error('Not authenticated');
+      if (!session?.user?.id) throw new Error("Not authenticated");
       return fetchSharedLinks(session.user.id);
     },
     enabled: !!session?.user?.id,
@@ -98,7 +100,9 @@ export function useSharedLinks() {
 function generateToken(): string {
   const array = new Uint8Array(16);
   crypto.getRandomValues(array);
-  return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
+    "",
+  );
 }
 
 interface CreateSharedLinkParams {
@@ -122,15 +126,15 @@ export function useCreateSharedLink() {
       tailoredProfileId,
       expiresInDays = 30,
     }: CreateSharedLinkParams): Promise<CreateSharedLinkResult> => {
-      if (!session?.user?.id) throw new Error('Not authenticated');
+      if (!session?.user?.id) throw new Error("Not authenticated");
 
       // Check if link already exists for this profile
       const { data: existingLink } = await supabase
-        .from('shared_links')
-        .select('id, token, expires_at')
-        .eq('tailored_profile_id', tailoredProfileId)
-        .eq('user_id', session.user.id)
-        .is('revoked_at', null)
+        .from("shared_links")
+        .select("id, token, expires_at")
+        .eq("tailored_profile_id", tailoredProfileId)
+        .eq("user_id", session.user.id)
+        .is("revoked_at", null)
         .single();
 
       if (existingLink) {
@@ -155,7 +159,7 @@ export function useCreateSharedLink() {
       const token = generateToken();
 
       const { data: newLink, error } = await supabase
-        .from('shared_links')
+        .from("shared_links")
         .insert({
           tailored_profile_id: tailoredProfileId,
           user_id: session.user.id,
@@ -175,7 +179,7 @@ export function useCreateSharedLink() {
       };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['shared-links'] });
+      queryClient.invalidateQueries({ queryKey: ["shared-links"] });
     },
   });
 }
@@ -186,18 +190,18 @@ export function useRevokeSharedLink() {
 
   return useMutation({
     mutationFn: async (linkId: string) => {
-      if (!session?.user?.id) throw new Error('Not authenticated');
+      if (!session?.user?.id) throw new Error("Not authenticated");
 
       const { error } = await supabase
-        .from('shared_links')
+        .from("shared_links")
         .update({ revoked_at: new Date().toISOString() })
-        .eq('id', linkId)
-        .eq('user_id', session.user.id);
+        .eq("id", linkId)
+        .eq("user_id", session.user.id);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['shared-links'] });
+      queryClient.invalidateQueries({ queryKey: ["shared-links"] });
     },
   });
 }
@@ -208,18 +212,18 @@ export function useDeleteSharedLink() {
 
   return useMutation({
     mutationFn: async (linkId: string) => {
-      if (!session?.user?.id) throw new Error('Not authenticated');
+      if (!session?.user?.id) throw new Error("Not authenticated");
 
       const { error } = await supabase
-        .from('shared_links')
+        .from("shared_links")
         .delete()
-        .eq('id', linkId)
-        .eq('user_id', session.user.id);
+        .eq("id", linkId)
+        .eq("user_id", session.user.id);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['shared-links'] });
+      queryClient.invalidateQueries({ queryKey: ["shared-links"] });
     },
   });
 }
@@ -229,27 +233,27 @@ export function useSharedLinkForOpportunity(opportunityId: string) {
   const { session } = useAuth();
 
   return useQuery({
-    queryKey: ['shared-link-for-opportunity', opportunityId, session?.user?.id],
+    queryKey: ["shared-link-for-opportunity", opportunityId, session?.user?.id],
     queryFn: async () => {
-      if (!session?.user?.id) throw new Error('Not authenticated');
+      if (!session?.user?.id) throw new Error("Not authenticated");
 
       // First get the tailored profile for this opportunity
       const { data: profile } = await supabase
-        .from('tailored_profiles')
-        .select('id')
-        .eq('opportunity_id', opportunityId)
-        .eq('user_id', session.user.id)
+        .from("tailored_profiles")
+        .select("id")
+        .eq("opportunity_id", opportunityId)
+        .eq("user_id", session.user.id)
         .single();
 
       if (!profile) return null;
 
       // Then check for existing link
       const { data: link } = await supabase
-        .from('shared_links')
-        .select('id, token, expires_at, revoked_at')
-        .eq('tailored_profile_id', profile.id)
-        .eq('user_id', session.user.id)
-        .is('revoked_at', null)
+        .from("shared_links")
+        .select("id, token, expires_at, revoked_at")
+        .eq("tailored_profile_id", profile.id)
+        .eq("user_id", session.user.id)
+        .is("revoked_at", null)
         .single();
 
       if (!link) return null;

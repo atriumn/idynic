@@ -21,7 +21,11 @@ export async function POST(request: NextRequest) {
   const { plan } = body;
 
   if (!plan || !["pro", "job_search"].includes(plan)) {
-    return apiError("validation_error", "Invalid plan. Must be 'pro' or 'job_search'", 400);
+    return apiError(
+      "validation_error",
+      "Invalid plan. Must be 'pro' or 'job_search'",
+      400,
+    );
   }
 
   const supabase = createServiceRoleClient();
@@ -56,21 +60,23 @@ export async function POST(request: NextRequest) {
       customerId = customer.id;
     } catch (err) {
       console.error("Failed to create Stripe customer:", err);
-      const message = err instanceof Error ? err.message : "Failed to create customer";
+      const message =
+        err instanceof Error ? err.message : "Failed to create customer";
       return apiError("stripe_error", message, 500);
     }
 
     // Update or create subscription record with customer ID
-    await supabase
-      .from("subscriptions")
-      .upsert({
+    await supabase.from("subscriptions").upsert(
+      {
         user_id: user.id,
         stripe_customer_id: customerId,
         plan_type: "free",
         status: "active",
-      }, {
+      },
+      {
         onConflict: "user_id",
-      });
+      },
+    );
   }
 
   // Get the price ID for the selected plan
@@ -79,7 +85,11 @@ export async function POST(request: NextRequest) {
     priceId = getPriceIdForPlan(plan);
   } catch (err) {
     console.error("Failed to get price ID:", err);
-    return apiError("configuration_error", `Price ID not configured for plan: ${plan}`, 500);
+    return apiError(
+      "configuration_error",
+      `Price ID not configured for plan: ${plan}`,
+      500,
+    );
   }
 
   // Create incomplete subscription - payment will be collected via Elements
@@ -111,7 +121,9 @@ export async function POST(request: NextRequest) {
 
     if (!confirmationSecret?.client_secret) {
       console.error("Invoice confirmation_secret:", confirmationSecret);
-      throw new Error(`Failed to get client_secret from invoice. Invoice ID: ${invoiceObj.id}`);
+      throw new Error(
+        `Failed to get client_secret from invoice. Invoice ID: ${invoiceObj.id}`,
+      );
     }
 
     return apiSuccess({
@@ -120,7 +132,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (err) {
     console.error("Stripe subscription error:", err);
-    const message = err instanceof Error ? err.message : "Failed to create subscription";
+    const message =
+      err instanceof Error ? err.message : "Failed to create subscription";
     return apiError("stripe_error", message, 500);
   }
 }

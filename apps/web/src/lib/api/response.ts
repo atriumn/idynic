@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 interface ApiMeta {
   request_id: string;
@@ -24,7 +24,7 @@ interface ApiErrorResponse {
  */
 export function apiSuccess<T>(
   data: T,
-  options?: { count?: number; has_more?: boolean }
+  options?: { count?: number; has_more?: boolean },
 ): NextResponse<ApiSuccessResponse<T>> {
   const requestId = crypto.randomUUID().slice(0, 8);
 
@@ -45,7 +45,7 @@ export function apiError(
   code: string,
   message: string,
   status: number = 400,
-  headers?: Record<string, string>
+  headers?: Record<string, string>,
 ): NextResponse<ApiErrorResponse> {
   const requestId = crypto.randomUUID().slice(0, 8);
 
@@ -57,7 +57,7 @@ export function apiError(
         request_id: requestId,
       },
     },
-    { status }
+    { status },
   );
 
   if (headers) {
@@ -74,11 +74,11 @@ export function apiError(
  */
 export const ApiErrors = {
   notFound: (resource: string) =>
-    apiError('not_found', `${resource} not found`, 404),
+    apiError("not_found", `${resource} not found`, 404),
 
   validationError: (message: string) =>
-    apiError('validation_error', message, 400),
+    apiError("validation_error", message, 400),
 
-  serverError: (message: string = 'An unexpected error occurred') =>
-    apiError('server_error', message, 500),
+  serverError: (message: string = "An unexpected error occurred") =>
+    apiError("server_error", message, 500),
 };

@@ -44,7 +44,12 @@ const CLAIM_TYPES = [
   { value: "certification", label: "Certification" },
 ];
 
-export function EditClaimModal({ claim, open, onOpenChange, onSaved }: EditClaimModalProps) {
+export function EditClaimModal({
+  claim,
+  open,
+  onOpenChange,
+  onSaved,
+}: EditClaimModalProps) {
   const [label, setLabel] = useState("");
   const [description, setDescription] = useState("");
   const [type, setType] = useState("");
@@ -92,11 +97,11 @@ export function EditClaimModal({ claim, open, onOpenChange, onSaved }: EditClaim
     }
   };
 
-  const hasChanges = claim && (
-    label.trim() !== claim.label ||
-    (description.trim() || null) !== (claim.description || null) ||
-    type !== claim.type
-  );
+  const hasChanges =
+    claim &&
+    (label.trim() !== claim.label ||
+      (description.trim() || null) !== (claim.description || null) ||
+      type !== claim.type);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -146,9 +151,7 @@ export function EditClaimModal({ claim, open, onOpenChange, onSaved }: EditClaim
             />
           </div>
 
-          {error && (
-            <p className="text-sm text-red-600">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-600">{error}</p>}
         </div>
 
         <DialogFooter>

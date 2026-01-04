@@ -4,12 +4,14 @@ import { NextResponse } from "next/server";
 // PATCH - Update expiration or revoke
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const supabase = await createClient();
   const { id } = await params;
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -36,7 +38,10 @@ export async function PATCH(
         .eq("id", id);
 
       if (error) {
-        return NextResponse.json({ error: "Failed to revoke" }, { status: 500 });
+        return NextResponse.json(
+          { error: "Failed to revoke" },
+          { status: 500 },
+        );
       }
 
       return NextResponse.json({ success: true, action: "revoked" });
@@ -54,33 +59,45 @@ export async function PATCH(
         .from("shared_links")
         .update({
           expires_at: expiresAt.toISOString(),
-          revoked_at: null // Unrevoke if extending
+          revoked_at: null, // Unrevoke if extending
         })
         .eq("id", id);
 
       if (error) {
-        return NextResponse.json({ error: "Failed to extend" }, { status: 500 });
+        return NextResponse.json(
+          { error: "Failed to extend" },
+          { status: 500 },
+        );
       }
 
-      return NextResponse.json({ success: true, action: "extended", expiresAt });
+      return NextResponse.json({
+        success: true,
+        action: "extended",
+        expiresAt,
+      });
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (err) {
     console.error("Error updating shared link:", err);
-    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to process request" },
+      { status: 500 },
+    );
   }
 }
 
 // DELETE - Delete link entirely
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const supabase = await createClient();
   const { id } = await params;
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

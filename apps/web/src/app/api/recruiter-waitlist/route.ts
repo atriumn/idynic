@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     if (!email || !email.includes("@")) {
       return NextResponse.json(
         { error: "Valid email is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -25,12 +25,18 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true });
       }
       console.error("Failed to add to waitlist:", error);
-      return NextResponse.json({ error: "Failed to join waitlist" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to join waitlist" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("Waitlist error:", err);
-    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to process request" },
+      { status: 500 },
+    );
   }
 }

@@ -1,17 +1,17 @@
-import { waitFor } from '@testing-library/react-native';
-import { renderHook } from '../test-utils';
-import { useProfile } from '../../hooks/use-profile';
-import { supabase } from '../../lib/supabase';
-import { mockSession, mockProfile } from '../mocks/api-responses';
+import { waitFor } from "@testing-library/react-native";
+import { renderHook } from "../test-utils";
+import { useProfile } from "../../hooks/use-profile";
+import { supabase } from "../../lib/supabase";
+import { mockSession, mockProfile } from "../mocks/api-responses";
 
 // Mock expo-linking
-jest.mock('expo-linking', () => ({
+jest.mock("expo-linking", () => ({
   getInitialURL: jest.fn(() => Promise.resolve(null)),
   addEventListener: jest.fn(() => ({ remove: jest.fn() })),
 }));
 
 // Mock supabase
-jest.mock('../../lib/supabase', () => ({
+jest.mock("../../lib/supabase", () => ({
   supabase: {
     auth: {
       getSession: jest.fn(),
@@ -36,7 +36,7 @@ function setupAuthenticatedSession() {
 
   mockOnAuthStateChange.mockImplementation((callback) => {
     // Trigger callback with session immediately
-    setTimeout(() => callback('SIGNED_IN', mockSession), 0);
+    setTimeout(() => callback("SIGNED_IN", mockSession), 0);
     return {
       data: {
         subscription: { unsubscribe: jest.fn() },
@@ -59,12 +59,12 @@ function setupUnauthenticatedSession() {
   });
 }
 
-describe('useProfile', () => {
+describe("useProfile", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('when user is authenticated', () => {
+  describe("when user is authenticated", () => {
     beforeEach(() => {
       setupAuthenticatedSession();
 
@@ -93,21 +93,27 @@ describe('useProfile', () => {
           or: jest.fn().mockReturnThis(),
           order: jest.fn().mockReturnThis(),
           single: jest.fn().mockResolvedValue({
-            data: table === 'profiles' ? mockProfileData : null,
+            data: table === "profiles" ? mockProfileData : null,
             error: null,
           }),
           then: (resolve: (value: unknown) => void) => {
-            if (table === 'profiles') {
-              return Promise.resolve({ data: mockProfileData, error: null }).then(resolve);
+            if (table === "profiles") {
+              return Promise.resolve({
+                data: mockProfileData,
+                error: null,
+              }).then(resolve);
             }
-            return Promise.resolve({ data: mockProfile.workHistory, error: null }).then(resolve);
+            return Promise.resolve({
+              data: mockProfile.workHistory,
+              error: null,
+            }).then(resolve);
           },
         };
         return builder;
       });
     });
 
-    it('fetches profile data successfully', async () => {
+    it("fetches profile data successfully", async () => {
       const { result } = renderHook(() => useProfile());
 
       await waitFor(() => {
@@ -118,23 +124,23 @@ describe('useProfile', () => {
       expect(result.current.data?.contact.name).toBe(mockProfile.contact.name);
     });
 
-    it('queries all profile-related tables', async () => {
+    it("queries all profile-related tables", async () => {
       const { result } = renderHook(() => useProfile());
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(mockFrom).toHaveBeenCalledWith('profiles');
-      expect(mockFrom).toHaveBeenCalledWith('work_history');
-      expect(mockFrom).toHaveBeenCalledWith('identity_claims');
-      expect(mockFrom).toHaveBeenCalledWith('evidence');
+      expect(mockFrom).toHaveBeenCalledWith("profiles");
+      expect(mockFrom).toHaveBeenCalledWith("work_history");
+      expect(mockFrom).toHaveBeenCalledWith("identity_claims");
+      expect(mockFrom).toHaveBeenCalledWith("evidence");
     });
 
-    it('handles profile with no identity reflection', async () => {
+    it("handles profile with no identity reflection", async () => {
       const mockProfileNoIdentity = {
-        name: 'Test User',
-        email: 'test@example.com',
+        name: "Test User",
+        email: "test@example.com",
         phone: null,
         location: null,
         linkedin: null,
@@ -156,7 +162,7 @@ describe('useProfile', () => {
           or: jest.fn().mockReturnThis(),
           order: jest.fn().mockReturnThis(),
           single: jest.fn().mockResolvedValue({
-            data: table === 'profiles' ? mockProfileNoIdentity : null,
+            data: table === "profiles" ? mockProfileNoIdentity : null,
             error: null,
           }),
           then: (resolve: (value: unknown) => void) => {
@@ -176,29 +182,29 @@ describe('useProfile', () => {
     });
   });
 
-  describe('when user is not authenticated', () => {
+  describe("when user is not authenticated", () => {
     beforeEach(() => {
       setupUnauthenticatedSession();
     });
 
-    it('does not fetch profile when not authenticated', async () => {
+    it("does not fetch profile when not authenticated", async () => {
       const { result } = renderHook(() => useProfile());
 
       // Wait for auth to settle
       await waitFor(() => {
-        expect(result.current.fetchStatus).toBe('idle');
+        expect(result.current.fetchStatus).toBe("idle");
       });
 
       expect(mockFrom).not.toHaveBeenCalled();
     });
   });
 
-  describe('error handling', () => {
+  describe("error handling", () => {
     beforeEach(() => {
       setupAuthenticatedSession();
     });
 
-    it('handles database error', async () => {
+    it("handles database error", async () => {
       mockFrom.mockImplementation(() => {
         const builder = {
           select: jest.fn().mockReturnThis(),
@@ -207,10 +213,13 @@ describe('useProfile', () => {
           order: jest.fn().mockReturnThis(),
           single: jest.fn().mockResolvedValue({
             data: null,
-            error: { message: 'Database error', code: 'PGRST116' },
+            error: { message: "Database error", code: "PGRST116" },
           }),
           then: (resolve: (value: unknown) => void) => {
-            return Promise.resolve({ data: null, error: { message: 'Database error' } }).then(resolve);
+            return Promise.resolve({
+              data: null,
+              error: { message: "Database error" },
+            }).then(resolve);
           },
         };
         return builder;
@@ -226,12 +235,12 @@ describe('useProfile', () => {
     });
   });
 
-  describe('refetch behavior', () => {
+  describe("refetch behavior", () => {
     beforeEach(() => {
       setupAuthenticatedSession();
     });
 
-    it('can refetch profile data', async () => {
+    it("can refetch profile data", async () => {
       mockFrom.mockImplementation((table: string) => {
         const builder = {
           select: jest.fn().mockReturnThis(),
@@ -239,7 +248,11 @@ describe('useProfile', () => {
           or: jest.fn().mockReturnThis(),
           order: jest.fn().mockReturnThis(),
           single: jest.fn().mockResolvedValue({
-            data: { name: 'Test', email: 'test@example.com', identity_generated_at: null },
+            data: {
+              name: "Test",
+              email: "test@example.com",
+              identity_generated_at: null,
+            },
             error: null,
           }),
           then: (resolve: (value: unknown) => void) => {

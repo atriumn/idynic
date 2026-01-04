@@ -21,8 +21,8 @@ export function SiteFooter() {
               Idynic
             </div>
             <p className="text-muted-foreground max-w-xs">
-              The AI-powered career companion that helps you tell your professional
-              story.
+              The AI-powered career companion that helps you tell your
+              professional story.
             </p>
             <div className="flex gap-3 pt-2">
               <Link

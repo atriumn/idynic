@@ -86,12 +86,14 @@ const mockOpportunities = [
 describe("OpportunityList", () => {
   it("renders search input", () => {
     render(<OpportunityList initialOpportunities={mockOpportunities} />);
-    expect(screen.getByPlaceholderText(/search roles/i)).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText(/search targets, roles, or companies/i),
+    ).toBeInTheDocument();
   });
 
   it("renders filter button", () => {
     render(<OpportunityList initialOpportunities={mockOpportunities} />);
-    expect(screen.getByRole("button", { name: /filter/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /status/i })).toBeInTheDocument();
   });
 
   it("renders view toggle buttons", () => {
@@ -126,7 +128,10 @@ describe("OpportunityList", () => {
     const user = userEvent.setup();
     render(<OpportunityList initialOpportunities={mockOpportunities} />);
 
-    await user.type(screen.getByPlaceholderText(/search roles/i), "Senior");
+    await user.type(
+      screen.getByPlaceholderText(/search targets, roles, or companies/i),
+      "Senior",
+    );
 
     const cards = screen.getAllByTestId("opportunity-card");
     expect(cards).toHaveLength(1);
@@ -137,7 +142,10 @@ describe("OpportunityList", () => {
     const user = userEvent.setup();
     render(<OpportunityList initialOpportunities={mockOpportunities} />);
 
-    await user.type(screen.getByPlaceholderText(/search roles/i), "TechCorp");
+    await user.type(
+      screen.getByPlaceholderText(/search targets, roles, or companies/i),
+      "TechCorp",
+    );
 
     const cards = screen.getAllByTestId("opportunity-card");
     expect(cards).toHaveLength(1);
@@ -148,11 +156,13 @@ describe("OpportunityList", () => {
     render(<OpportunityList initialOpportunities={mockOpportunities} />);
 
     await user.type(
-      screen.getByPlaceholderText(/search roles/i),
+      screen.getByPlaceholderText(/search targets, roles, or companies/i),
       "nonexistent",
     );
 
-    expect(screen.getByText("Zero matches found")).toBeInTheDocument();
+    expect(
+      screen.getByText("Zero targets match your search"),
+    ).toBeInTheDocument();
   });
 
   it("shows empty state message", async () => {
@@ -160,7 +170,7 @@ describe("OpportunityList", () => {
     render(<OpportunityList initialOpportunities={mockOpportunities} />);
 
     await user.type(
-      screen.getByPlaceholderText(/search roles/i),
+      screen.getByPlaceholderText(/search targets, roles, or companies/i),
       "nonexistent",
     );
 
@@ -169,7 +179,9 @@ describe("OpportunityList", () => {
 
   it("renders with empty opportunities list", () => {
     render(<OpportunityList initialOpportunities={[]} />);
-    expect(screen.getByText("Zero matches found")).toBeInTheDocument();
+    expect(
+      screen.getByText("Zero targets match your search"),
+    ).toBeInTheDocument();
   });
 
   it("displays table headers in list view", async () => {
@@ -182,7 +194,7 @@ describe("OpportunityList", () => {
       await user.click(listButton);
     }
 
-    expect(screen.getByText("Opportunity")).toBeInTheDocument();
+    expect(screen.getByText("Target Role")).toBeInTheDocument();
     expect(screen.getByText("Status")).toBeInTheDocument();
     expect(screen.getByText("Location")).toBeInTheDocument();
   });

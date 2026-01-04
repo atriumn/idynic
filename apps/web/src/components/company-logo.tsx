@@ -30,7 +30,10 @@ export function CompanyLogo({
         style={{ width: size, height: size }}
         title={companyName}
       >
-        <Building2 className="text-muted-foreground" style={{ width: size * 0.6, height: size * 0.6 }} />
+        <Building2
+          className="text-muted-foreground"
+          style={{ width: size * 0.6, height: size * 0.6 }}
+        />
       </div>
     );
   }

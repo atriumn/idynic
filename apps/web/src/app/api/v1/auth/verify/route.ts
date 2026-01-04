@@ -1,6 +1,6 @@
-import { NextRequest } from 'next/server';
-import { validateApiKey, isAuthError } from '@/lib/api/auth';
-import { apiSuccess } from '@/lib/api/response';
+import { NextRequest } from "next/server";
+import { validateApiKey, isAuthError } from "@/lib/api/auth";
+import { apiSuccess } from "@/lib/api/response";
 
 /**
  * GET /api/v1/auth/verify

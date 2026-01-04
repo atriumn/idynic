@@ -24,7 +24,7 @@ export async function GET(request: Request) {
   if (!opportunityId) {
     return NextResponse.json(
       { error: "opportunityId is required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -42,7 +42,9 @@ export async function GET(request: Request) {
   // Fetch the latest eval log for this profile
   const { data: evalLog } = await supabase
     .from("tailoring_eval_log")
-    .select("passed, grounding_passed, hallucinations, missed_opportunities, gaps")
+    .select(
+      "passed, grounding_passed, hallucinations, missed_opportunities, gaps",
+    )
     .eq("tailored_profile_id", profile.id)
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
@@ -51,13 +53,15 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     profile,
-    evaluation: evalLog ? {
-      passed: evalLog.passed,
-      groundingPassed: evalLog.grounding_passed,
-      hallucinations: evalLog.hallucinations,
-      missedOpportunities: evalLog.missed_opportunities,
-      gaps: evalLog.gaps,
-    } : null,
+    evaluation: evalLog
+      ? {
+          passed: evalLog.passed,
+          groundingPassed: evalLog.grounding_passed,
+          hallucinations: evalLog.hallucinations,
+          missedOpportunities: evalLog.missed_opportunities,
+          gaps: evalLog.gaps,
+        }
+      : null,
   });
 }
 
@@ -78,7 +82,7 @@ export async function POST(request: Request) {
     if (!opportunityId) {
       return NextResponse.json(
         { error: "opportunityId is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -93,7 +97,7 @@ export async function POST(request: Request) {
     if (!opportunity) {
       return NextResponse.json(
         { error: "Opportunity not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -124,9 +128,13 @@ export async function POST(request: Request) {
     const narrative = await generateNarrative(
       talkingPoints,
       opportunity.title,
-      opportunity.company
+      opportunity.company,
     );
-    const resumeData = await generateResume(user.id, opportunityId, talkingPoints);
+    const resumeData = await generateResume(
+      user.id,
+      opportunityId,
+      talkingPoints,
+    );
 
     // Store profile
     const { data: profile, error } = await supabase
@@ -148,7 +156,7 @@ export async function POST(request: Request) {
       console.error("Failed to store profile:", error);
       return NextResponse.json(
         { error: "Failed to save profile" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -199,7 +207,7 @@ export async function POST(request: Request) {
     console.error("Profile generation error:", err);
     return NextResponse.json(
       { error: "Failed to generate profile" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -238,7 +246,7 @@ export async function PUT(request: Request) {
     console.error("Profile regeneration error:", err);
     return NextResponse.json(
       { error: "Failed to regenerate profile" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

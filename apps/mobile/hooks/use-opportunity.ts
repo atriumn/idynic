@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../lib/auth-context';
-import { api } from '../lib/api';
+import { useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../lib/auth-context";
+import { api } from "../lib/api";
 
 export interface OpportunityDetail {
   id: string;
@@ -69,12 +69,15 @@ export interface TailoredProfile {
   created_at: string | null;
 }
 
-async function fetchOpportunity(userId: string, opportunityId: string): Promise<OpportunityDetail | null> {
+async function fetchOpportunity(
+  userId: string,
+  opportunityId: string,
+): Promise<OpportunityDetail | null> {
   const { data, error } = await supabase
-    .from('opportunities')
-    .select('*')
-    .eq('id', opportunityId)
-    .eq('user_id', userId)
+    .from("opportunities")
+    .select("*")
+    .eq("id", opportunityId)
+    .eq("user_id", userId)
     .single();
 
   if (error) throw error;
@@ -92,20 +95,20 @@ export function useOpportunity(opportunityId: string) {
     const channel = supabase
       .channel(`opportunity-${opportunityId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'opportunities',
+          event: "UPDATE",
+          schema: "public",
+          table: "opportunities",
           filter: `id=eq.${opportunityId}`,
         },
         (payload) => {
           // Update the cache with new data (e.g., from company research)
           queryClient.setQueryData(
-            ['opportunity', opportunityId, session.user.id],
-            payload.new
+            ["opportunity", opportunityId, session.user.id],
+            payload.new,
           );
-        }
+        },
       )
       .subscribe();
 
@@ -115,10 +118,10 @@ export function useOpportunity(opportunityId: string) {
   }, [opportunityId, session?.user?.id, queryClient]);
 
   return useQuery({
-    queryKey: ['opportunity', opportunityId, session?.user?.id],
+    queryKey: ["opportunity", opportunityId, session?.user?.id],
     queryFn: () => {
       if (!session?.user?.id) {
-        throw new Error('Not authenticated');
+        throw new Error("Not authenticated");
       }
       return fetchOpportunity(session.user.id, opportunityId);
     },
@@ -126,16 +129,19 @@ export function useOpportunity(opportunityId: string) {
   });
 }
 
-async function fetchTailoredProfile(userId: string, opportunityId: string): Promise<TailoredProfile | null> {
+async function fetchTailoredProfile(
+  userId: string,
+  opportunityId: string,
+): Promise<TailoredProfile | null> {
   const { data, error } = await supabase
-    .from('tailored_profiles')
-    .select('id, narrative, resume_data, created_at')
-    .eq('opportunity_id', opportunityId)
-    .eq('user_id', userId)
+    .from("tailored_profiles")
+    .select("id, narrative, resume_data, created_at")
+    .eq("opportunity_id", opportunityId)
+    .eq("user_id", userId)
     .single();
 
   if (error) {
-    if (error.code === 'PGRST116') return null; // Not found
+    if (error.code === "PGRST116") return null; // Not found
     throw error;
   }
 
@@ -150,10 +156,10 @@ export function useTailoredProfile(opportunityId: string) {
   const { session } = useAuth();
 
   return useQuery({
-    queryKey: ['tailored-profile', opportunityId, session?.user?.id],
+    queryKey: ["tailored-profile", opportunityId, session?.user?.id],
     queryFn: () => {
       if (!session?.user?.id) {
-        throw new Error('Not authenticated');
+        throw new Error("Not authenticated");
       }
       return fetchTailoredProfile(session.user.id, opportunityId);
     },
@@ -179,8 +185,10 @@ export function useGenerateTailoredProfile(opportunityId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (options?: { regenerate?: boolean }): Promise<GeneratedProfile> => {
-      if (!session?.user?.id) throw new Error('Not authenticated');
+    mutationFn: async (options?: {
+      regenerate?: boolean;
+    }): Promise<GeneratedProfile> => {
+      if (!session?.user?.id) throw new Error("Not authenticated");
 
       const response = await api.opportunities.tailor(opportunityId);
       return response.data;
@@ -188,7 +196,7 @@ export function useGenerateTailoredProfile(opportunityId: string) {
     onSuccess: () => {
       // Invalidate the tailored profile query to refetch
       queryClient.invalidateQueries({
-        queryKey: ['tailored-profile', opportunityId, session?.user?.id]
+        queryKey: ["tailored-profile", opportunityId, session?.user?.id],
       });
     },
   });

@@ -18,9 +18,9 @@ export default async function ProfilePage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Your Profile</h1>
         <p className="text-muted-foreground">
-          Your Profile is the source of truth about your career. This data feeds into every
-          tailored resume. Edit your work history, contact info, skills, and certifications here.
-          Changes apply to all future resumes.
+          Your Profile is the source of truth about your career. This data feeds
+          into every tailored resume. Edit your work history, contact info,
+          skills, and certifications here. Changes apply to all future resumes.
         </p>
       </div>
 

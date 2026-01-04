@@ -3,9 +3,9 @@
  * Checks generated profiles for hallucinations, missed opportunities, and gaps
  */
 
-import { aiComplete } from '../gateway';
-import { getModelConfig } from '../config';
-import { calculateCostCents } from '../pricing';
+import { aiComplete } from "../gateway";
+import { getModelConfig } from "../config";
+import { calculateCostCents } from "../pricing";
 
 export interface UserClaim {
   id: string;
@@ -17,7 +17,7 @@ export interface UserClaim {
 export interface JobRequirement {
   category: string;
   requirement: string;
-  priority: 'must_have' | 'nice_to_have';
+  priority: "must_have" | "nice_to_have";
 }
 
 export interface Hallucination {
@@ -114,7 +114,7 @@ export async function evaluateTailoredProfile(params: {
 }): Promise<TailoringEvalResult> {
   const { narrative, resumeData, userClaims, jobRequirements } = params;
 
-  const config = getModelConfig('tailoring_eval');
+  const config = getModelConfig("tailoring_eval");
 
   // Build profile content string
   const profileParts: string[] = [];
@@ -124,19 +124,20 @@ export async function evaluateTailoredProfile(params: {
   if (resumeData) {
     profileParts.push(`Resume Data:\n${JSON.stringify(resumeData, null, 2)}`);
   }
-  const profileContent = profileParts.join('\n\n');
+  const profileContent = profileParts.join("\n\n");
 
   // Build claims summary
-  const claimsSummary = userClaims.map(c => ({
+  const claimsSummary = userClaims.map((c) => ({
     type: c.type,
     label: c.label,
     description: c.description,
   }));
 
   // Build prompt
-  let prompt = TAILORING_EVAL_PROMPT
-    .replace('{claims_json}', JSON.stringify(claimsSummary, null, 2))
-    .replace('{profile_content}', profileContent);
+  let prompt = TAILORING_EVAL_PROMPT.replace(
+    "{claims_json}",
+    JSON.stringify(claimsSummary, null, 2),
+  ).replace("{profile_content}", profileContent);
 
   // Add job requirements if available
   if (jobRequirements && jobRequirements.length > 0) {
@@ -148,16 +149,14 @@ export async function evaluateTailoredProfile(params: {
       config.provider,
       config.model,
       {
-        messages: [
-          { role: 'user', content: prompt },
-        ],
+        messages: [{ role: "user", content: prompt }],
         temperature: 0,
         jsonMode: true,
       },
       {
-        operation: 'tailoring_eval',
+        operation: "tailoring_eval",
         userId: params.userId,
-      }
+      },
     );
 
     const parsed = JSON.parse(response.content) as TailoringEvalResponse;
@@ -166,7 +165,7 @@ export async function evaluateTailoredProfile(params: {
       config.provider,
       config.model,
       response.usage.inputTokens,
-      response.usage.outputTokens
+      response.usage.outputTokens,
     );
 
     return {
@@ -178,17 +177,19 @@ export async function evaluateTailoredProfile(params: {
       costCents,
     };
   } catch (error) {
-    console.error('[tailoring-grounding] AI eval failed:', error);
+    console.error("[tailoring-grounding] AI eval failed:", error);
 
     // On failure, return a cautious result
     return {
       passed: false,
       grounding: {
         passed: false,
-        hallucinations: [{
-          text: 'Evaluation failed',
-          issue: 'Could not verify profile content - AI evaluation failed',
-        }],
+        hallucinations: [
+          {
+            text: "Evaluation failed",
+            issue: "Could not verify profile content - AI evaluation failed",
+          },
+        ],
       },
       utilization: { missed: [] },
       gaps: [],
@@ -203,13 +204,20 @@ export async function evaluateTailoredProfile(params: {
  */
 export async function getUserClaimsForEval(
   supabase: { from: (table: string) => unknown },
-  userId: string
+  userId: string,
 ): Promise<UserClaim[]> {
-  const { data: claims } = await (supabase.from('identity_claims') as {
-    select: (columns: string) => { eq: (column: string, value: string) => Promise<{ data: UserClaim[] | null }> }
-  })
-    .select('id, type, label, description')
-    .eq('user_id', userId);
+  const { data: claims } = await (
+    supabase.from("identity_claims") as {
+      select: (columns: string) => {
+        eq: (
+          column: string,
+          value: string,
+        ) => Promise<{ data: UserClaim[] | null }>;
+      };
+    }
+  )
+    .select("id, type, label, description")
+    .eq("user_id", userId);
 
   return claims || [];
 }

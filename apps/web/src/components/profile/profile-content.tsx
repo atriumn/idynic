@@ -57,7 +57,13 @@ interface ProfileData {
   education: Array<{
     id: string;
     text: string;
-    context: { school?: string; degree?: string; field?: string; start_date?: string; end_date?: string } | null;
+    context: {
+      school?: string;
+      degree?: string;
+      field?: string;
+      start_date?: string;
+      end_date?: string;
+    } | null;
   }>;
 }
 
@@ -127,7 +133,9 @@ export function ProfileContent() {
       />
       <CertificationsSection
         items={profile.certifications}
-        onUpdate={(certifications) => setProfile({ ...profile, certifications })}
+        onUpdate={(certifications) =>
+          setProfile({ ...profile, certifications })
+        }
       />
       <EducationSection
         items={profile.education}

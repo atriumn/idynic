@@ -1,4 +1,4 @@
-import Svg, { Defs, LinearGradient, Stop, G, Path } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Stop, G, Path } from "react-native-svg";
 
 interface LogoProps {
   size?: number;

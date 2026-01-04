@@ -39,8 +39,8 @@ export function useDocumentJob(jobId: string | null): UseDocumentJobResult {
   const supabaseRef = useRef(
     createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    ),
   );
 
   // Generate ticker messages based on current phase
@@ -56,7 +56,9 @@ export function useDocumentJob(jobId: string | null): UseDocumentJobResult {
     // Send first message immediately
     if (messages.length > 0) {
       const id = ++tickerIdRef.current;
-      setTickerMessages((prev) => [{ id, text: messages[0] }, ...prev].slice(0, 5));
+      setTickerMessages((prev) =>
+        [{ id, text: messages[0] }, ...prev].slice(0, 5),
+      );
       index = 1;
     }
 
@@ -125,7 +127,10 @@ export function useDocumentJob(jobId: string | null): UseDocumentJobResult {
           const newJob = payload.new as DocumentJob;
           setJob((prevJob) => {
             // Restart ticker if phase changed
-            if (newJob.phase !== prevJob?.phase && newJob.status === "processing") {
+            if (
+              newJob.phase !== prevJob?.phase &&
+              newJob.status === "processing"
+            ) {
               startTicker(newJob.phase);
             }
             return newJob;
@@ -135,7 +140,7 @@ export function useDocumentJob(jobId: string | null): UseDocumentJobResult {
           if (newJob.status === "completed" || newJob.status === "failed") {
             stopTicker();
           }
-        }
+        },
       )
       .subscribe();
 

@@ -349,7 +349,7 @@ export default function OpportunityDetailScreen() {
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<"tailored" | "research">(
-    "tailored",
+    "research",
   );
   const [shareCopied, setShareCopied] = useState(false);
   const [showOpportunityAddedPrompt, setShowOpportunityAddedPrompt] =
@@ -592,16 +592,6 @@ export default function OpportunityDetailScreen() {
 
           <View className="flex-row bg-slate-900 border border-white/5 rounded-2xl p-1.5 mb-8 h-14">
             <Pressable
-              onPress={() => setActiveTab("tailored")}
-              className={`flex-1 items-center justify-center rounded-xl ${activeTab === "tailored" ? "bg-slate-800" : ""}`}
-            >
-              <Text
-                className={`text-[10px] font-black uppercase tracking-[0.15em] ${activeTab === "tailored" ? "text-white" : "text-slate-500"}`}
-              >
-                Tailored Profile
-              </Text>
-            </Pressable>
-            <Pressable
               onPress={() => setActiveTab("research")}
               className={`flex-1 items-center justify-center rounded-xl ${activeTab === "research" ? "bg-slate-800" : ""}`}
             >
@@ -609,6 +599,16 @@ export default function OpportunityDetailScreen() {
                 className={`text-[10px] font-black uppercase tracking-[0.15em] ${activeTab === "research" ? "text-white" : "text-slate-500"}`}
               >
                 Research
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setActiveTab("tailored")}
+              className={`flex-1 items-center justify-center rounded-xl ${activeTab === "tailored" ? "bg-slate-800" : ""}`}
+            >
+              <Text
+                className={`text-[10px] font-black uppercase tracking-[0.15em] ${activeTab === "tailored" ? "text-white" : "text-slate-500"}`}
+              >
+                Tailored Profile
               </Text>
             </Pressable>
           </View>

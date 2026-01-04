@@ -1,4 +1,4 @@
-import { mockSession } from './api-responses';
+import { mockSession } from "./api-responses";
 
 // Type for the mock chain builder
 interface MockQueryBuilder {
@@ -18,7 +18,12 @@ interface MockQueryBuilder {
 }
 
 // Create a chainable mock query builder
-export function createMockQueryBuilder(resolvedValue: { data: unknown; error: unknown } = { data: null, error: null }): MockQueryBuilder {
+export function createMockQueryBuilder(
+  resolvedValue: { data: unknown; error: unknown } = {
+    data: null,
+    error: null,
+  },
+): MockQueryBuilder {
   const builder: MockQueryBuilder = {
     select: jest.fn().mockReturnThis(),
     insert: jest.fn().mockReturnThis(),
@@ -37,20 +42,23 @@ export function createMockQueryBuilder(resolvedValue: { data: unknown; error: un
 
   // Make the builder itself a thenable that resolves to the data
   Object.assign(builder, {
-    then: (resolve: (value: unknown) => void) => Promise.resolve(resolvedValue).then(resolve),
+    then: (resolve: (value: unknown) => void) =>
+      Promise.resolve(resolvedValue).then(resolve),
   });
 
   return builder;
 }
 
 // Create mock supabase client with default mocks
-export function createMockSupabaseClient(overrides: {
-  getSession?: jest.Mock;
-  onAuthStateChange?: jest.Mock;
-  signOut?: jest.Mock;
-  from?: jest.Mock;
-  rpc?: jest.Mock;
-} = {}) {
+export function createMockSupabaseClient(
+  overrides: {
+    getSession?: jest.Mock;
+    onAuthStateChange?: jest.Mock;
+    signOut?: jest.Mock;
+    from?: jest.Mock;
+    rpc?: jest.Mock;
+  } = {},
+) {
   const defaultGetSession = jest.fn().mockResolvedValue({
     data: { session: mockSession },
     error: null,
@@ -71,7 +79,8 @@ export function createMockSupabaseClient(overrides: {
   return {
     auth: {
       getSession: overrides.getSession ?? defaultGetSession,
-      onAuthStateChange: overrides.onAuthStateChange ?? defaultOnAuthStateChange,
+      onAuthStateChange:
+        overrides.onAuthStateChange ?? defaultOnAuthStateChange,
       signOut: overrides.signOut ?? defaultSignOut,
       signInWithOtp: jest.fn(),
       verifyOtp: jest.fn(),
@@ -83,8 +92,10 @@ export function createMockSupabaseClient(overrides: {
 }
 
 // Helper to set up supabase mock for a specific test
-export function setupSupabaseMock(mockClient: ReturnType<typeof createMockSupabaseClient>) {
-  jest.mock('../../lib/supabase', () => ({
+export function setupSupabaseMock(
+  mockClient: ReturnType<typeof createMockSupabaseClient>,
+) {
+  jest.mock("../../lib/supabase", () => ({
     supabase: mockClient,
     markSessionInvalid: jest.fn(),
   }));
@@ -92,10 +103,13 @@ export function setupSupabaseMock(mockClient: ReturnType<typeof createMockSupaba
 
 // Helper to create mock for profile queries
 export function createProfileQueryMock(profileData: Record<string, unknown>) {
-  const mockBuilder = createMockQueryBuilder({ data: profileData, error: null });
+  const mockBuilder = createMockQueryBuilder({
+    data: profileData,
+    error: null,
+  });
 
   return jest.fn().mockImplementation((table: string) => {
-    if (table === 'profiles') {
+    if (table === "profiles") {
       return mockBuilder;
     }
     // Default empty array for other tables (work_history, identity_claims, evidence)
@@ -104,7 +118,9 @@ export function createProfileQueryMock(profileData: Record<string, unknown>) {
 }
 
 // Helper to create mock that returns different data per table
-export function createMultiTableMock(tableData: Record<string, { data: unknown; error: unknown }>) {
+export function createMultiTableMock(
+  tableData: Record<string, { data: unknown; error: unknown }>,
+) {
   return jest.fn().mockImplementation((table: string) => {
     const response = tableData[table] ?? { data: null, error: null };
     return createMockQueryBuilder(response);
@@ -117,15 +133,17 @@ export const mockAuthWithSession = {
     data: { session: mockSession },
     error: null,
   }),
-  onAuthStateChange: jest.fn((callback: (event: string, session: unknown) => void) => {
-    // Immediately call with current session
-    callback('SIGNED_IN', mockSession);
-    return {
-      data: {
-        subscription: { unsubscribe: jest.fn() },
-      },
-    };
-  }),
+  onAuthStateChange: jest.fn(
+    (callback: (event: string, session: unknown) => void) => {
+      // Immediately call with current session
+      callback("SIGNED_IN", mockSession);
+      return {
+        data: {
+          subscription: { unsubscribe: jest.fn() },
+        },
+      };
+    },
+  ),
 };
 
 // Mock auth state without session
@@ -145,6 +163,6 @@ export const mockAuthWithoutSession = {
 export const mockAuthError = {
   getSession: jest.fn().mockResolvedValue({
     data: { session: null },
-    error: { message: 'Auth error', code: 'auth_error' },
+    error: { message: "Auth error", code: "auth_error" },
   }),
 };

@@ -28,7 +28,7 @@ export interface DocumentDetail {
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   // Validate API key or JWT
   const authResult = await validateApiKey(request);
@@ -96,7 +96,7 @@ export async function GET(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   // Validate API key or JWT
   const authResult = await validateApiKey(request);
@@ -130,7 +130,7 @@ export async function DELETE(
       if (storageError) {
         console.warn(
           "[v1/documents/[id]] Storage deletion error:",
-          storageError
+          storageError,
         );
         // Continue with document deletion even if storage fails
       }

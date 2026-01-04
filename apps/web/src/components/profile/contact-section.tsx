@@ -5,8 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronRight, Pencil, Check, X, Loader2 } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  ChevronDown,
+  ChevronRight,
+  Pencil,
+  Check,
+  X,
+  Loader2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface ContactData {
@@ -110,7 +121,16 @@ export function ContactSection({ contact, onUpdate }: ContactSectionProps) {
     setIsEditing(false);
   };
 
-  const fields: (keyof ContactData)[] = ["name", "email", "phone", "location", "linkedin", "github", "website", "logo_url"];
+  const fields: (keyof ContactData)[] = [
+    "name",
+    "email",
+    "phone",
+    "location",
+    "linkedin",
+    "github",
+    "website",
+    "logo_url",
+  ];
 
   return (
     <Card>
@@ -118,11 +138,19 @@ export function ContactSection({ contact, onUpdate }: ContactSectionProps) {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CollapsibleTrigger className="flex items-center gap-2 hover:text-foreground transition-colors">
-              {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              {isOpen ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
               <CardTitle className="text-lg">Contact Info</CardTitle>
             </CollapsibleTrigger>
             {!isEditing && (
-              <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+              >
                 <Pencil className="h-4 w-4 mr-1" />
                 Edit
               </Button>
@@ -139,16 +167,35 @@ export function ContactSection({ contact, onUpdate }: ContactSectionProps) {
                       <Label htmlFor={field}>{FIELD_LABELS[field]}</Label>
                       <Input
                         id={field}
-                        type={field === "email" ? "email" : field.includes("url") || field === "linkedin" || field === "github" || field === "website" ? "url" : "text"}
+                        type={
+                          field === "email"
+                            ? "email"
+                            : field.includes("url") ||
+                                field === "linkedin" ||
+                                field === "github" ||
+                                field === "website"
+                              ? "url"
+                              : "text"
+                        }
                         value={editData[field] || ""}
-                        onChange={(e) => setEditData({ ...editData, [field]: e.target.value || undefined })}
+                        onChange={(e) =>
+                          setEditData({
+                            ...editData,
+                            [field]: e.target.value || undefined,
+                          })
+                        }
                         placeholder={`Enter ${FIELD_LABELS[field].toLowerCase()}`}
                       />
                     </div>
                   ))}
                 </div>
                 <div className="flex justify-end gap-2 pt-2">
-                  <Button variant="outline" size="sm" onClick={handleCancel} disabled={isSaving}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCancel}
+                    disabled={isSaving}
+                  >
                     <X className="h-4 w-4 mr-1" />
                     Cancel
                   </Button>
@@ -166,10 +213,15 @@ export function ContactSection({ contact, onUpdate }: ContactSectionProps) {
               <dl className="grid gap-2 sm:grid-cols-2">
                 {fields.map((field) => (
                   <div key={field}>
-                    <dt className="text-sm font-medium text-muted-foreground">{FIELD_LABELS[field]}</dt>
+                    <dt className="text-sm font-medium text-muted-foreground">
+                      {FIELD_LABELS[field]}
+                    </dt>
                     <dd className="text-sm">
                       {contact[field] ? (
-                        field.includes("url") || field === "linkedin" || field === "github" || field === "website" ? (
+                        field.includes("url") ||
+                        field === "linkedin" ||
+                        field === "github" ||
+                        field === "website" ? (
                           <a
                             href={normalizeUrl(contact[field] as string, field)}
                             target="_blank"
@@ -182,7 +234,9 @@ export function ContactSection({ contact, onUpdate }: ContactSectionProps) {
                           contact[field]
                         )
                       ) : (
-                        <span className="text-muted-foreground/50">Not set</span>
+                        <span className="text-muted-foreground/50">
+                          Not set
+                        </span>
                       )}
                     </dd>
                   </div>

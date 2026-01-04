@@ -1,11 +1,11 @@
-import { renderHook, waitFor } from '@testing-library/react-native';
-import { useBetaAccess } from '../../lib/use-beta-access';
-import { supabase } from '../../lib/supabase';
-import { createWrapper } from '../test-utils';
-import { mockSession, mockUser } from '../mocks/api-responses';
+import { renderHook, waitFor } from "@testing-library/react-native";
+import { useBetaAccess } from "../../lib/use-beta-access";
+import { supabase } from "../../lib/supabase";
+import { createWrapper } from "../test-utils";
+import { mockSession, mockUser } from "../mocks/api-responses";
 
 // Mock supabase
-jest.mock('../../lib/supabase', () => ({
+jest.mock("../../lib/supabase", () => ({
   supabase: {
     auth: {
       getSession: jest.fn(),
@@ -25,7 +25,7 @@ function setupAuthenticatedSession() {
     error: null,
   });
   mockOnAuthStateChange.mockImplementation((callback) => {
-    callback('SIGNED_IN', mockSession);
+    callback("SIGNED_IN", mockSession);
     return { data: { subscription: { unsubscribe: jest.fn() } } };
   });
 }
@@ -38,15 +38,15 @@ function createMockQueryBuilder(data: unknown, error: unknown = null) {
   };
 }
 
-describe('useBetaAccess', () => {
+describe("useBetaAccess", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('returns hasAccess true when user has beta code', async () => {
+  it("returns hasAccess true when user has beta code", async () => {
     setupAuthenticatedSession();
     mockFrom.mockReturnValue(
-      createMockQueryBuilder({ beta_code_used: 'BETA123' })
+      createMockQueryBuilder({ beta_code_used: "BETA123" }),
     );
 
     const { result } = renderHook(() => useBetaAccess(), {
@@ -60,11 +60,9 @@ describe('useBetaAccess', () => {
     });
   });
 
-  it('returns hasAccess false when no beta code', async () => {
+  it("returns hasAccess false when no beta code", async () => {
     setupAuthenticatedSession();
-    mockFrom.mockReturnValue(
-      createMockQueryBuilder({ beta_code_used: null })
-    );
+    mockFrom.mockReturnValue(createMockQueryBuilder({ beta_code_used: null }));
 
     const { result } = renderHook(() => useBetaAccess(), {
       wrapper: createWrapper(),
@@ -77,13 +75,13 @@ describe('useBetaAccess', () => {
     expect(result.current.hasAccess).toBe(false);
   });
 
-  it('returns hasAccess false when not authenticated', async () => {
+  it("returns hasAccess false when not authenticated", async () => {
     mockGetSession.mockResolvedValue({
       data: { session: null },
       error: null,
     });
     mockOnAuthStateChange.mockImplementation((callback) => {
-      callback('SIGNED_OUT', null);
+      callback("SIGNED_OUT", null);
       return { data: { subscription: { unsubscribe: jest.fn() } } };
     });
 
@@ -98,10 +96,10 @@ describe('useBetaAccess', () => {
     expect(result.current.hasAccess).toBe(false);
   });
 
-  it('handles database errors gracefully', async () => {
+  it("handles database errors gracefully", async () => {
     setupAuthenticatedSession();
     mockFrom.mockReturnValue(
-      createMockQueryBuilder(null, { message: 'Database error' })
+      createMockQueryBuilder(null, { message: "Database error" }),
     );
 
     const { result } = renderHook(() => useBetaAccess(), {
@@ -115,10 +113,10 @@ describe('useBetaAccess', () => {
     expect(result.current.hasAccess).toBe(false);
   });
 
-  it('provides refetch function', async () => {
+  it("provides refetch function", async () => {
     setupAuthenticatedSession();
     mockFrom.mockReturnValue(
-      createMockQueryBuilder({ beta_code_used: 'BETA123' })
+      createMockQueryBuilder({ beta_code_used: "BETA123" }),
     );
 
     const { result } = renderHook(() => useBetaAccess(), {
@@ -129,6 +127,6 @@ describe('useBetaAccess', () => {
       expect(result.current.loading).toBe(false);
     });
 
-    expect(typeof result.current.refetch).toBe('function');
+    expect(typeof result.current.refetch).toBe("function");
   });
 });

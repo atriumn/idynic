@@ -29,7 +29,9 @@ export function BetaGate({ onAccessGranted }: BetaGateProps) {
     setError(null);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         setError("Not authenticated");
         setLoading(false);
@@ -39,7 +41,7 @@ export function BetaGate({ onAccessGranted }: BetaGateProps) {
       // Validate the code
       const { data: isValid, error: checkError } = await supabase.rpc(
         "check_beta_code",
-        { input_code: trimmedCode }
+        { input_code: trimmedCode },
       );
 
       if (checkError) {

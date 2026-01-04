@@ -40,9 +40,12 @@ export function CookieConsent() {
       <div className="container mx-auto max-w-4xl flex flex-col sm:flex-row items-center justify-between gap-4">
         <p className="text-sm text-muted-foreground text-center sm:text-left">
           We use cookies to analyze site usage and improve your experience. By
-          clicking &quot;Accept&quot;, you consent to our use of analytics cookies. See
-          our{" "}
-          <Link href="/legal/cookies" className="underline hover:text-foreground">
+          clicking &quot;Accept&quot;, you consent to our use of analytics
+          cookies. See our{" "}
+          <Link
+            href="/legal/cookies"
+            className="underline hover:text-foreground"
+          >
             Cookie Policy
           </Link>{" "}
           for details.

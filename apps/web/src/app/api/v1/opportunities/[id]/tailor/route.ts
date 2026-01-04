@@ -1,13 +1,13 @@
-import { NextRequest } from 'next/server';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
-import { validateApiKey, isAuthError } from '@/lib/api/auth';
-import { apiSuccess, ApiErrors, apiError } from '@/lib/api/response';
-import { checkTailoredProfileLimit } from '@/lib/billing/check-usage';
-import { inngest } from '@/inngest';
+import { NextRequest } from "next/server";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
+import { validateApiKey, isAuthError } from "@/lib/api/auth";
+import { apiSuccess, ApiErrors, apiError } from "@/lib/api/response";
+import { checkTailoredProfileLimit } from "@/lib/billing/check-usage";
+import { inngest } from "@/inngest";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const authResult = await validateApiKey(request);
   if (isAuthError(authResult)) {
@@ -29,23 +29,23 @@ export async function POST(
 
   // Verify opportunity exists and belongs to user
   const { data: opportunity, error } = await supabase
-    .from('opportunities')
-    .select('id, title, company')
-    .eq('id', opportunityId)
-    .eq('user_id', userId)
+    .from("opportunities")
+    .select("id, title, company")
+    .eq("id", opportunityId)
+    .eq("user_id", userId)
     .single();
 
   if (error || !opportunity) {
-    return ApiErrors.notFound('Opportunity');
+    return ApiErrors.notFound("Opportunity");
   }
 
   // Check for cached profile (unless regenerating)
   if (!regenerate) {
     const { data: existingProfile } = await supabase
-      .from('tailored_profiles')
-      .select('id, narrative, resume_data, created_at')
-      .eq('opportunity_id', opportunityId)
-      .eq('user_id', userId)
+      .from("tailored_profiles")
+      .select("id, narrative, resume_data, created_at")
+      .eq("opportunity_id", opportunityId)
+      .eq("user_id", userId)
       .single();
 
     if (existingProfile) {
@@ -69,32 +69,32 @@ export async function POST(
   const usageCheck = await checkTailoredProfileLimit(supabase, userId);
   if (!usageCheck.allowed) {
     return apiError(
-      'limit_reached',
-      usageCheck.reason || 'Tailored profile limit reached',
+      "limit_reached",
+      usageCheck.reason || "Tailored profile limit reached",
       403,
     );
   }
 
   // Create job record
   const { data: job, error: jobError } = await supabase
-    .from('document_jobs')
+    .from("document_jobs")
     .insert({
       user_id: userId,
-      job_type: 'tailor',
+      job_type: "tailor",
       opportunity_id: opportunityId,
-      status: 'pending',
+      status: "pending",
     })
     .select()
     .single();
 
   if (jobError || !job) {
-    console.error('[tailor] Job creation error:', jobError);
-    return apiError('server_error', 'Failed to create processing job', 500);
+    console.error("[tailor] Job creation error:", jobError);
+    return apiError("server_error", "Failed to create processing job", 500);
   }
 
   // Trigger Inngest for async processing
   await inngest.send({
-    name: 'tailor/process',
+    name: "tailor/process",
     data: {
       jobId: job.id,
       userId,
@@ -103,12 +103,12 @@ export async function POST(
     },
   });
 
-  console.log('[tailor] Job created and Inngest triggered:', job.id);
+  console.log("[tailor] Job created and Inngest triggered:", job.id);
 
   // Return job ID for polling (async)
   return apiSuccess({
     job_id: job.id,
-    status: 'processing',
-    message: 'Tailoring in progress',
+    status: "processing",
+    message: "Tailoring in progress",
   });
 }

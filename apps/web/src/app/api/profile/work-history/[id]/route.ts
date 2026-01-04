@@ -13,7 +13,7 @@ interface WorkHistoryUpdateBody {
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const supabase = await createClient();
   const { id } = await params;
@@ -39,7 +39,10 @@ export async function PATCH(
 
     if (error) {
       console.error("Failed to update work history:", error);
-      return NextResponse.json({ error: "Failed to update entry" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to update entry" },
+        { status: 500 },
+      );
     }
 
     if (!data) {
@@ -49,13 +52,16 @@ export async function PATCH(
     return NextResponse.json(data);
   } catch (err) {
     console.error("Work history update error:", err);
-    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to process request" },
+      { status: 500 },
+    );
   }
 }
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const supabase = await createClient();
   const { id } = await params;
@@ -77,7 +83,10 @@ export async function DELETE(
 
   if (error) {
     console.error("Failed to delete work history:", error);
-    return NextResponse.json({ error: "Failed to delete entry" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete entry" },
+      { status: 500 },
+    );
   }
 
   return NextResponse.json({ success: true });

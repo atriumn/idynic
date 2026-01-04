@@ -55,7 +55,8 @@ export function RecruiterWaitlistCTA() {
         <DialogHeader>
           <DialogTitle>Join the Waitlist</DialogTitle>
           <DialogDescription>
-            Be the first to know when we launch tools for recruiters and hiring managers.
+            Be the first to know when we launch tools for recruiters and hiring
+            managers.
           </DialogDescription>
         </DialogHeader>
 

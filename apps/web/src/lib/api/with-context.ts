@@ -26,7 +26,8 @@ type RouteHandler = (request: Request) => Promise<Response>;
 export function withRequestContext(handler: RouteHandler): RouteHandler {
   return async (request: Request) => {
     // Get request ID from header (set by middleware) or generate new one
-    const requestId = request.headers.get("x-request-id") || generateRequestId();
+    const requestId =
+      request.headers.get("x-request-id") || generateRequestId();
 
     const context = createRequestContext(requestId);
 
@@ -79,7 +80,7 @@ export function withRequestContext(handler: RouteHandler): RouteHandler {
 
         const errorResponse = NextResponse.json(
           { error: "Internal server error" },
-          { status: 500 }
+          { status: 500 },
         );
         errorResponse.headers.set("x-request-id", requestId);
         return errorResponse;

@@ -1,7 +1,10 @@
 import { inngest } from "../client";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { generateEmbedding } from "@/lib/ai/embeddings";
-import { fetchLinkedInJob, isLinkedInJobUrl } from "@/lib/integrations/brightdata";
+import {
+  fetchLinkedInJob,
+  isLinkedInJobUrl,
+} from "@/lib/integrations/brightdata";
 import { fetchJobPageContent } from "@/lib/integrations/scraping";
 import { researchCompany } from "@/lib/ai/research-company";
 import { normalizeJobUrl } from "@/lib/utils/normalize-url";
@@ -46,7 +49,6 @@ Return JSON:
 JOB DESCRIPTION:
 `;
 
-
 export const processOpportunity = inngest.createFunction(
   {
     id: "process-opportunity",
@@ -66,7 +68,10 @@ export const processOpportunity = inngest.createFunction(
         })
         .eq("id", jobId);
 
-      console.error("[process-opportunity] Job failed after retries:", { jobId, error: errorMessage });
+      console.error("[process-opportunity] Job failed after retries:", {
+        jobId,
+        error: errorMessage,
+      });
 
       // Flush logs to Axiom on failure
       const { log } = await import("@/lib/logger");
@@ -96,7 +101,7 @@ export const processOpportunity = inngest.createFunction(
 
           if (existing) {
             await job.setError(
-              `You have already saved this job: ${existing.title} at ${existing.company || "Unknown"}`
+              `You have already saved this job: ${existing.title} at ${existing.company || "Unknown"}`,
             );
             return { isDuplicate: true, existing };
           }
@@ -148,7 +153,10 @@ export const processOpportunity = inngest.createFunction(
             description_html: linkedInJob.job_description_formatted,
           };
           source = "linkedin";
-          jobLog.info("LinkedIn enrichment successful", { title: enrichedTitle, company: enrichedCompany });
+          jobLog.info("LinkedIn enrichment successful", {
+            title: enrichedTitle,
+            company: enrichedCompany,
+          });
 
           // Add highlights for what we found
           if (enrichedTitle) {
@@ -160,15 +168,25 @@ export const processOpportunity = inngest.createFunction(
           if (linkedInJob.job_location) {
             await job.addHighlight(linkedInJob.job_location, "found");
           }
-          if (linkedInJob.base_salary?.min_amount && linkedInJob.base_salary?.max_amount) {
+          if (
+            linkedInJob.base_salary?.min_amount &&
+            linkedInJob.base_salary?.max_amount
+          ) {
             const salary = `$${linkedInJob.base_salary.min_amount.toLocaleString()}-$${linkedInJob.base_salary.max_amount.toLocaleString()}`;
             await job.addHighlight(salary, "found");
           }
         } catch (enrichError) {
-          const errorMsg = enrichError instanceof Error ? enrichError.message : String(enrichError);
+          const errorMsg =
+            enrichError instanceof Error
+              ? enrichError.message
+              : String(enrichError);
           jobLog.error("LinkedIn enrichment failed", { error: errorMsg });
-          await job.setError("Couldn't fetch LinkedIn job data. Please try again or paste the job description.");
-          throw new Error("Couldn't fetch LinkedIn job data. Please try again or paste the job description.");
+          await job.setError(
+            "Couldn't fetch LinkedIn job data. Please try again or paste the job description.",
+          );
+          throw new Error(
+            "Couldn't fetch LinkedIn job data. Please try again or paste the job description.",
+          );
         }
       } else if (url && !description) {
         // Try to scrape any URL the user shares - they explicitly want this job
@@ -183,13 +201,19 @@ export const processOpportunity = inngest.createFunction(
           await job.addHighlight("Job content extracted", "found");
         } else {
           jobLog.warn("Scraping failed, no content returned");
-          await job.setWarning("Could not scrape page content - please paste job description manually");
+          await job.setWarning(
+            "Could not scrape page content - please paste job description manually",
+          );
         }
       }
 
       if (!description) {
-        await job.setError("Couldn't fetch job details from that URL. Please provide the job description.");
-        throw new Error("Couldn't fetch job details from that URL. Please provide the job description.");
+        await job.setError(
+          "Couldn't fetch job details from that URL. Please provide the job description.",
+        );
+        throw new Error(
+          "Couldn't fetch job details from that URL. Please provide the job description.",
+        );
       }
 
       return {
@@ -202,69 +226,96 @@ export const processOpportunity = inngest.createFunction(
     });
 
     // Step 3: Extract requirements using GPT
-    const extractionResult = await step.run("extract-requirements", async () => {
-      await job.setPhase("extracting");
-      jobLog.info("Extracting requirements with GPT");
+    const extractionResult = await step.run(
+      "extract-requirements",
+      async () => {
+        await job.setPhase("extracting");
+        jobLog.info("Extracting requirements with GPT");
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        temperature: 0,
-        max_tokens: 2000,
-        messages: [
-          { role: "system", content: "You are a job posting analyzer. Return ONLY valid JSON." },
-          { role: "user", content: EXTRACTION_PROMPT + enrichmentResult.description },
-        ],
-      });
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          temperature: 0,
+          max_tokens: 2000,
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a job posting analyzer. Return ONLY valid JSON.",
+            },
+            {
+              role: "user",
+              content: EXTRACTION_PROMPT + enrichmentResult.description,
+            },
+          ],
+        });
 
-      const content = response.choices[0]?.message?.content;
-      let extracted = {
-        title: "Unknown Position",
-        company: null as string | null,
-        description: null as string | null,
-        mustHave: [] as ClassifiedRequirement[],
-        niceToHave: [] as ClassifiedRequirement[],
-        responsibilities: [] as string[],
-      };
+        const content = response.choices[0]?.message?.content;
+        let extracted = {
+          title: "Unknown Position",
+          company: null as string | null,
+          description: null as string | null,
+          mustHave: [] as ClassifiedRequirement[],
+          niceToHave: [] as ClassifiedRequirement[],
+          responsibilities: [] as string[],
+        };
 
-      if (content) {
-        try {
-          const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-          extracted = JSON.parse(cleaned);
-        } catch {
-          jobLog.error("Failed to parse extraction", { content });
-          await job.setWarning("Could not parse all job requirements");
+        if (content) {
+          try {
+            const cleaned = content
+              .replace(/```json\n?/g, "")
+              .replace(/```\n?/g, "")
+              .trim();
+            extracted = JSON.parse(cleaned);
+          } catch {
+            jobLog.error("Failed to parse extraction", { content });
+            await job.setWarning("Could not parse all job requirements");
+          }
         }
-      }
 
-      jobLog.info("Extraction complete", {
-        title: extracted.title,
-        mustHaveCount: extracted.mustHave.length,
-        niceToHaveCount: extracted.niceToHave.length,
-      });
+        jobLog.info("Extraction complete", {
+          title: extracted.title,
+          mustHaveCount: extracted.mustHave.length,
+          niceToHaveCount: extracted.niceToHave.length,
+        });
 
-      // Add highlights for extracted requirements
-      if (extracted.mustHave.length > 0) {
-        await job.addHighlight(`${extracted.mustHave.length} required qualifications`, "found");
-        // Show first few requirements
-        for (const req of extracted.mustHave.slice(0, 3)) {
-          await job.addHighlight(req.text.slice(0, 50) + (req.text.length > 50 ? "..." : ""), "found");
+        // Add highlights for extracted requirements
+        if (extracted.mustHave.length > 0) {
+          await job.addHighlight(
+            `${extracted.mustHave.length} required qualifications`,
+            "found",
+          );
+          // Show first few requirements
+          for (const req of extracted.mustHave.slice(0, 3)) {
+            await job.addHighlight(
+              req.text.slice(0, 50) + (req.text.length > 50 ? "..." : ""),
+              "found",
+            );
+          }
         }
-      }
-      if (extracted.niceToHave.length > 0) {
-        await job.addHighlight(`${extracted.niceToHave.length} preferred qualifications`, "found");
-      }
+        if (extracted.niceToHave.length > 0) {
+          await job.addHighlight(
+            `${extracted.niceToHave.length} preferred qualifications`,
+            "found",
+          );
+        }
 
-      return extracted;
-    });
+        return extracted;
+      },
+    );
 
     // Step 4: Generate embedding
     const embedding = await step.run("generate-embedding", async () => {
       await job.setPhase("embeddings");
       jobLog.info("Generating embedding");
 
-      const finalTitle = enrichmentResult.enrichedTitle || extractionResult.title;
-      const finalCompany = enrichmentResult.enrichedCompany || extractionResult.company;
-      const reqTexts = extractionResult.mustHave.slice(0, 5).map((r) => r.text).join(". ");
+      const finalTitle =
+        enrichmentResult.enrichedTitle || extractionResult.title;
+      const finalCompany =
+        enrichmentResult.enrichedCompany || extractionResult.company;
+      const reqTexts = extractionResult.mustHave
+        .slice(0, 5)
+        .map((r) => r.text)
+        .join(". ");
       const embeddingText = `${finalTitle} at ${finalCompany || "Unknown"}. ${reqTexts}`;
 
       return await generateEmbedding(embeddingText);
@@ -274,8 +325,10 @@ export const processOpportunity = inngest.createFunction(
     const opportunity = await step.run("insert-opportunity", async () => {
       jobLog.info("Inserting opportunity");
 
-      const finalTitle = enrichmentResult.enrichedTitle || extractionResult.title;
-      const finalCompany = enrichmentResult.enrichedCompany || extractionResult.company;
+      const finalTitle =
+        enrichmentResult.enrichedTitle || extractionResult.title;
+      const finalCompany =
+        enrichmentResult.enrichedCompany || extractionResult.company;
       const finalDescription =
         enrichmentResult.source === "scraped" && extractionResult.description
           ? extractionResult.description
@@ -317,8 +370,10 @@ export const processOpportunity = inngest.createFunction(
     await step.run("research-company", async () => {
       await job.setPhase("researching");
 
-      const finalCompany = enrichmentResult.enrichedCompany || extractionResult.company;
-      const finalTitle = enrichmentResult.enrichedTitle || extractionResult.title;
+      const finalCompany =
+        enrichmentResult.enrichedCompany || extractionResult.company;
+      const finalTitle =
+        enrichmentResult.enrichedTitle || extractionResult.title;
 
       if (finalCompany) {
         jobLog.info("Researching company", { company: finalCompany });
@@ -328,7 +383,7 @@ export const processOpportunity = inngest.createFunction(
           const insights = await researchCompany(
             finalCompany,
             finalTitle,
-            enrichmentResult.description
+            enrichmentResult.description,
           );
 
           // Store research results
@@ -347,7 +402,9 @@ export const processOpportunity = inngest.createFunction(
             .eq("id", opportunity.id);
 
           if (error) {
-            jobLog.error("Failed to save company research", { error: error.message });
+            jobLog.error("Failed to save company research", {
+              error: error.message,
+            });
           } else {
             jobLog.info("Company research complete", {
               hasNews: insights.recent_news.length > 0,
@@ -357,7 +414,9 @@ export const processOpportunity = inngest.createFunction(
           }
         } catch (err) {
           // Don't fail the job if research fails
-          jobLog.error("Company research failed", { error: err instanceof Error ? err.message : String(err) });
+          jobLog.error("Company research failed", {
+            error: err instanceof Error ? err.message : String(err),
+          });
         }
       }
     });
@@ -375,7 +434,9 @@ export const processOpportunity = inngest.createFunction(
             title: opportunity.title,
             company: opportunity.company,
             source: opportunity.source,
-            requirementsCount: extractionResult.mustHave.length + extractionResult.niceToHave.length,
+            requirementsCount:
+              extractionResult.mustHave.length +
+              extractionResult.niceToHave.length,
           },
           completed_at: new Date().toISOString(),
         })
@@ -394,5 +455,5 @@ export const processOpportunity = inngest.createFunction(
       title: opportunity.title,
       company: opportunity.company,
     };
-  }
+  },
 );

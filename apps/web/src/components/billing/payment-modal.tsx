@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
 );
 
 interface PaymentFormProps {

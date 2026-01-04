@@ -6,7 +6,7 @@
  * strips tracking params from others.
  */
 export function normalizeJobUrl(url: string | null | undefined): string | null {
-  if (!url || url.trim() === '') {
+  if (!url || url.trim() === "") {
     return null;
   }
 
@@ -18,7 +18,7 @@ export function normalizeJobUrl(url: string | null | undefined): string | null {
   }
 
   // LinkedIn: extract job ID
-  if (parsed.hostname.includes('linkedin.com')) {
+  if (parsed.hostname.includes("linkedin.com")) {
     const match = parsed.pathname.match(/\/jobs\/view\/(\d+)/);
     if (match) {
       return `linkedin:${match[1]}`;
@@ -26,7 +26,7 @@ export function normalizeJobUrl(url: string | null | undefined): string | null {
   }
 
   // Greenhouse: extract company + job ID
-  if (parsed.hostname.includes('greenhouse.io')) {
+  if (parsed.hostname.includes("greenhouse.io")) {
     const match = parsed.pathname.match(/\/([^/]+)\/jobs\/(\d+)/);
     if (match) {
       return `greenhouse:${match[1]}:${match[2]}`;
@@ -34,7 +34,7 @@ export function normalizeJobUrl(url: string | null | undefined): string | null {
   }
 
   // Lever: extract company + job ID
-  if (parsed.hostname.includes('lever.co')) {
+  if (parsed.hostname.includes("lever.co")) {
     const match = parsed.pathname.match(/\/([^/]+)\/([a-f0-9-]+)/);
     if (match) {
       return `lever:${match[1]}:${match[2]}`;
@@ -42,6 +42,6 @@ export function normalizeJobUrl(url: string | null | undefined): string | null {
   }
 
   // Other URLs: strip query params, keep hostname + path
-  const path = parsed.pathname.replace(/\/$/, ''); // Remove trailing slash
+  const path = parsed.pathname.replace(/\/$/, ""); // Remove trailing slash
   return `${parsed.hostname}${path}`;
 }

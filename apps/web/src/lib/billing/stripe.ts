@@ -35,7 +35,9 @@ export function getPriceIdForPlan(plan: "pro" | "job_search"): string {
   return priceId;
 }
 
-export function getPlanFromPriceId(priceId: string): "pro" | "job_search" | null {
+export function getPlanFromPriceId(
+  priceId: string,
+): "pro" | "job_search" | null {
   if (priceId === STRIPE_PRICE_IDS.pro) return "pro";
   if (priceId === STRIPE_PRICE_IDS.job_search) return "job_search";
   return null;

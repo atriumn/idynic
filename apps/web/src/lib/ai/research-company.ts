@@ -1,6 +1,6 @@
-import { searchTavily, TavilyResponse } from '@/lib/integrations/tavily';
-import { aiComplete } from './gateway';
-import { getModelConfig } from './config';
+import { searchTavily, TavilyResponse } from "@/lib/integrations/tavily";
+import { aiComplete } from "./gateway";
+import { getModelConfig } from "./config";
 
 export interface CompanyInsights {
   company_url: string | null;
@@ -57,7 +57,7 @@ export async function researchCompany(
   companyName: string,
   jobTitle: string,
   jobDescription: string,
-  options?: { userId?: string; opportunityId?: string }
+  options?: { userId?: string; opportunityId?: string },
 ): Promise<CompanyInsights> {
   // Use quoted company name for more precise matching
   const quotedCompany = `"${companyName}"`;
@@ -66,30 +66,31 @@ export async function researchCompany(
   const [newsResults, infoResults, financeResults] = await Promise.allSettled([
     searchTavily({
       query: `${quotedCompany} company news 2025`,
-      topic: 'news',
-      time_range: 'month',
+      topic: "news",
+      time_range: "month",
       max_results: 5,
     }),
     searchTavily({
       query: `${quotedCompany} company about website headquarters`,
-      topic: 'general',
+      topic: "general",
       max_results: 3,
     }),
     searchTavily({
       query: `${quotedCompany} stock price funding valuation`,
-      topic: 'finance',
+      topic: "finance",
       max_results: 3,
     }),
   ]);
 
   // Extract successful results
-  const news = newsResults.status === 'fulfilled' ? newsResults.value : null;
-  const info = infoResults.status === 'fulfilled' ? infoResults.value : null;
-  const finance = financeResults.status === 'fulfilled' ? financeResults.value : null;
+  const news = newsResults.status === "fulfilled" ? newsResults.value : null;
+  const info = infoResults.status === "fulfilled" ? infoResults.value : null;
+  const finance =
+    financeResults.status === "fulfilled" ? financeResults.value : null;
 
   // If all searches failed, return empty insights
   if (!news && !info && !finance) {
-    console.error('All Tavily searches failed for company:', companyName);
+    console.error("All Tavily searches failed for company:", companyName);
     return emptyInsights();
   }
 
@@ -101,7 +102,7 @@ export async function researchCompany(
     news,
     info,
     finance,
-    options
+    options,
   );
 
   return insights;
@@ -109,11 +110,11 @@ export async function researchCompany(
 
 function formatTavilyResults(response: TavilyResponse | null): string {
   if (!response || !response.results.length) {
-    return 'No results found.';
+    return "No results found.";
   }
   return response.results
     .map((r) => `- ${r.title}: ${r.content.slice(0, 300)}`)
-    .join('\n');
+    .join("\n");
 }
 
 async function synthesizeInsights(
@@ -123,37 +124,37 @@ async function synthesizeInsights(
   newsResults: TavilyResponse | null,
   infoResults: TavilyResponse | null,
   financeResults: TavilyResponse | null,
-  options?: { userId?: string; opportunityId?: string }
+  options?: { userId?: string; opportunityId?: string },
 ): Promise<CompanyInsights> {
-  const prompt = SYNTHESIS_PROMPT
-    .replace('{company}', companyName)
-    .replace('{jobTitle}', jobTitle)
-    .replace('{newsResults}', formatTavilyResults(newsResults))
-    .replace('{infoResults}', formatTavilyResults(infoResults))
-    .replace('{financeResults}', formatTavilyResults(financeResults))
-    .replace('{jobDescription}', jobDescription.slice(0, 1500));
+  const prompt = SYNTHESIS_PROMPT.replace("{company}", companyName)
+    .replace("{jobTitle}", jobTitle)
+    .replace("{newsResults}", formatTavilyResults(newsResults))
+    .replace("{infoResults}", formatTavilyResults(infoResults))
+    .replace("{financeResults}", formatTavilyResults(financeResults))
+    .replace("{jobDescription}", jobDescription.slice(0, 1500));
 
   try {
-    const config = getModelConfig('research_company');
+    const config = getModelConfig("research_company");
     const response = await aiComplete(
       config.provider,
       config.model,
       {
         messages: [
           {
-            role: 'system',
-            content: 'You are a business analyst. Return ONLY valid JSON, no markdown.',
+            role: "system",
+            content:
+              "You are a business analyst. Return ONLY valid JSON, no markdown.",
           },
-          { role: 'user', content: prompt },
+          { role: "user", content: prompt },
         ],
         temperature: 0,
         maxTokens: 1000,
       },
       {
-        operation: 'research_company',
+        operation: "research_company",
         userId: options?.userId,
         opportunityId: options?.opportunityId,
-      }
+      },
     );
 
     const content = response.content;
@@ -162,8 +163,8 @@ async function synthesizeInsights(
     }
 
     const cleaned = content
-      .replace(/```json\n?/g, '')
-      .replace(/```\n?/g, '')
+      .replace(/```json\n?/g, "")
+      .replace(/```\n?/g, "")
       .trim();
 
     const parsed = JSON.parse(cleaned);
@@ -180,7 +181,7 @@ async function synthesizeInsights(
       role_context: parsed.role_context || null,
     };
   } catch (error) {
-    console.error('Failed to synthesize company insights:', error);
+    console.error("Failed to synthesize company insights:", error);
     return emptyInsights();
   }
 }

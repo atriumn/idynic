@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,10 +8,10 @@ import {
   TextInput,
   Alert,
   RefreshControl,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Pencil, Trash2, X, Check } from 'lucide-react-native';
-import { useProfile } from '../../hooks/use-profile';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Plus, Pencil, Trash2, X, Check } from "lucide-react-native";
+import { useProfile } from "../../hooks/use-profile";
 import {
   useUpdateContact,
   useAddWorkHistory,
@@ -24,9 +24,9 @@ import {
   useDeleteSkill,
   useAddVenture,
   WorkHistoryData,
-} from '../../hooks/use-profile-mutations';
-import { WorkHistoryForm } from '../../components/work-history-form';
-import { EducationForm } from '../../components/education-form';
+} from "../../hooks/use-profile-mutations";
+import { WorkHistoryForm } from "../../components/work-history-form";
+import { EducationForm } from "../../components/education-form";
 
 const INITIAL_SKILLS_COUNT = 10;
 
@@ -50,13 +50,13 @@ function ContactEditForm({
   onCancel: () => void;
   isSaving: boolean;
 }) {
-  const [name, setName] = useState(contact.name || '');
-  const [email, setEmail] = useState(contact.email || '');
-  const [phone, setPhone] = useState(contact.phone || '');
-  const [location, setLocation] = useState(contact.location || '');
-  const [linkedin, setLinkedin] = useState(contact.linkedin || '');
-  const [github, setGithub] = useState(contact.github || '');
-  const [website, setWebsite] = useState(contact.website || '');
+  const [name, setName] = useState(contact.name || "");
+  const [email, setEmail] = useState(contact.email || "");
+  const [phone, setPhone] = useState(contact.phone || "");
+  const [location, setLocation] = useState(contact.location || "");
+  const [linkedin, setLinkedin] = useState(contact.linkedin || "");
+  const [github, setGithub] = useState(contact.github || "");
+  const [website, setWebsite] = useState(contact.website || "");
 
   return (
     <View className="bg-slate-800 rounded-xl p-4 mb-6">
@@ -94,7 +94,9 @@ function ContactEditForm({
         />
       </View>
       <View className="mb-3">
-        <Text className="text-xs font-medium text-slate-500 mb-1">Location</Text>
+        <Text className="text-xs font-medium text-slate-500 mb-1">
+          Location
+        </Text>
         <TextInput
           value={location}
           onChangeText={setLocation}
@@ -104,7 +106,9 @@ function ContactEditForm({
         />
       </View>
       <View className="mb-3">
-        <Text className="text-xs font-medium text-slate-500 mb-1">LinkedIn</Text>
+        <Text className="text-xs font-medium text-slate-500 mb-1">
+          LinkedIn
+        </Text>
         <TextInput
           value={linkedin}
           onChangeText={setLinkedin}
@@ -137,7 +141,10 @@ function ContactEditForm({
         />
       </View>
       <View className="flex-row gap-2">
-        <Pressable onPress={onCancel} className="flex-1 py-2 rounded-lg border border-slate-600">
+        <Pressable
+          onPress={onCancel}
+          className="flex-1 py-2 rounded-lg border border-slate-600"
+        >
           <Text className="text-center text-slate-400">Cancel</Text>
         </Pressable>
         <Pressable
@@ -145,7 +152,7 @@ function ContactEditForm({
             onSave({ name, email, phone, location, linkedin, github, website })
           }
           disabled={isSaving}
-          className={`flex-1 py-2 rounded-lg ${isSaving ? 'bg-teal-800' : 'bg-teal-600'}`}
+          className={`flex-1 py-2 rounded-lg ${isSaving ? "bg-teal-800" : "bg-teal-600"}`}
         >
           {isSaving ? (
             <ActivityIndicator color="white" size="small" />
@@ -160,7 +167,7 @@ function ContactEditForm({
 
 // Add Skill Input
 function AddSkillInput({ onAdd }: { onAdd: (label: string) => void }) {
-  const [text, setText] = useState('');
+  const [text, setText] = useState("");
   const [isAdding, setIsAdding] = useState(false);
 
   if (!isAdding) {
@@ -187,7 +194,7 @@ function AddSkillInput({ onAdd }: { onAdd: (label: string) => void }) {
         onSubmitEditing={() => {
           if (text.trim()) {
             onAdd(text.trim());
-            setText('');
+            setText("");
             setIsAdding(false);
           }
         }}
@@ -196,7 +203,7 @@ function AddSkillInput({ onAdd }: { onAdd: (label: string) => void }) {
         onPress={() => {
           if (text.trim()) {
             onAdd(text.trim());
-            setText('');
+            setText("");
             setIsAdding(false);
           }
         }}
@@ -205,7 +212,7 @@ function AddSkillInput({ onAdd }: { onAdd: (label: string) => void }) {
       </Pressable>
       <Pressable
         onPress={() => {
-          setText('');
+          setText("");
           setIsAdding(false);
         }}
       >
@@ -216,7 +223,13 @@ function AddSkillInput({ onAdd }: { onAdd: (label: string) => void }) {
 }
 
 export default function ProfileScreen() {
-  const { data: profile, isLoading, error, refetch, isRefetching } = useProfile();
+  const {
+    data: profile,
+    isLoading,
+    error,
+    refetch,
+    isRefetching,
+  } = useProfile();
   const [showAllSkills, setShowAllSkills] = useState(false);
   const [editingContact, setEditingContact] = useState(false);
   const [workHistoryModal, setWorkHistoryModal] = useState<{
@@ -247,7 +260,10 @@ export default function ProfileScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-slate-900 justify-center items-center" edges={['bottom']}>
+      <SafeAreaView
+        className="flex-1 bg-slate-900 justify-center items-center"
+        edges={["bottom"]}
+      >
         <ActivityIndicator color="#14b8a6" size="large" />
       </SafeAreaView>
     );
@@ -255,7 +271,7 @@ export default function ProfileScreen() {
 
   if (error) {
     return (
-      <SafeAreaView className="flex-1 bg-slate-900 p-4" edges={['bottom']}>
+      <SafeAreaView className="flex-1 bg-slate-900 p-4" edges={["bottom"]}>
         <Text className="text-red-500">Failed to load profile</Text>
         <Text className="text-slate-400 mt-2 text-sm">{error.message}</Text>
       </SafeAreaView>
@@ -272,38 +288,46 @@ export default function ProfileScreen() {
       await updateContact.mutateAsync(data);
       setEditingContact(false);
     } catch (err) {
-      Alert.alert('Error', 'Failed to save contact info');
+      Alert.alert("Error", "Failed to save contact info");
     }
   };
 
   const handleDeleteWorkHistory = (id: string, title: string) => {
-    Alert.alert('Delete Experience', `Are you sure you want to delete "${title}"?`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: () => deleteWorkHistory.mutate(id),
-      },
-    ]);
+    Alert.alert(
+      "Delete Experience",
+      `Are you sure you want to delete "${title}"?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => deleteWorkHistory.mutate(id),
+        },
+      ],
+    );
   };
 
   const handleDeleteEducation = (id: string, text: string) => {
-    Alert.alert('Delete Education', `Are you sure you want to delete this education entry?`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: () => deleteEducation.mutate(id),
-      },
-    ]);
+    Alert.alert(
+      "Delete Education",
+      `Are you sure you want to delete this education entry?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => deleteEducation.mutate(id),
+        },
+      ],
+    );
   };
 
   const handleDeleteSkill = (id: string, label: string) => {
-    Alert.alert('Delete Skill', `Remove "${label}" from your skills?`, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert("Delete Skill", `Remove "${label}" from your skills?`, [
+      { text: "Cancel", style: "cancel" },
       {
-        text: 'Delete',
-        style: 'destructive',
+        text: "Delete",
+        style: "destructive",
         onPress: () => deleteSkill.mutate(id),
       },
     ]);
@@ -312,7 +336,7 @@ export default function ProfileScreen() {
   return (
     <ScrollView
       className="flex-1"
-      style={{ backgroundColor: '#0f172a' }}
+      style={{ backgroundColor: "#0f172a" }}
       refreshControl={
         <RefreshControl
           refreshing={isRefetching}
@@ -325,7 +349,7 @@ export default function ProfileScreen() {
         {/* Contact Info */}
         <View className="flex-row items-center justify-between mb-2">
           <Text className="text-2xl font-bold text-white">
-            {profile?.contact?.name || 'Your Profile'}
+            {profile?.contact?.name || "Your Profile"}
           </Text>
           {!editingContact && (
             <Pressable onPress={() => setEditingContact(true)} className="p-2">
@@ -336,15 +360,17 @@ export default function ProfileScreen() {
 
         {editingContact ? (
           <ContactEditForm
-            contact={profile?.contact || {
-              name: null,
-              email: null,
-              phone: null,
-              location: null,
-              linkedin: null,
-              github: null,
-              website: null,
-            }}
+            contact={
+              profile?.contact || {
+                name: null,
+                email: null,
+                phone: null,
+                location: null,
+                linkedin: null,
+                github: null,
+                website: null,
+              }
+            }
             onSave={handleSaveContact}
             onCancel={() => setEditingContact(false)}
             isSaving={updateContact.isPending}
@@ -352,10 +378,14 @@ export default function ProfileScreen() {
         ) : (
           <View className="mb-6">
             {profile?.contact?.location && (
-              <Text className="text-slate-400 mt-1">{profile.contact.location}</Text>
+              <Text className="text-slate-400 mt-1">
+                {profile.contact.location}
+              </Text>
             )}
             {profile?.contact?.email && (
-              <Text className="text-teal-400 mt-1">{profile.contact.email}</Text>
+              <Text className="text-teal-400 mt-1">
+                {profile.contact.email}
+              </Text>
             )}
           </View>
         )}
@@ -377,10 +407,14 @@ export default function ProfileScreen() {
               <View key={job.id} className="mb-4 bg-slate-800 p-4 rounded-lg">
                 <View className="flex-row items-start justify-between">
                   <View className="flex-1">
-                    <Text className="text-white font-semibold">{job.title}</Text>
+                    <Text className="text-white font-semibold">
+                      {job.title}
+                    </Text>
                     <Text className="text-teal-400">{job.company}</Text>
                     {job.location && (
-                      <Text className="text-slate-400 text-sm">{job.location}</Text>
+                      <Text className="text-slate-400 text-sm">
+                        {job.location}
+                      </Text>
                     )}
                   </View>
                   <View className="flex-row items-center">
@@ -412,12 +446,16 @@ export default function ProfileScreen() {
                   </View>
                 </View>
                 {job.summary && (
-                  <Text className="text-slate-300 mt-2 text-sm">{job.summary}</Text>
+                  <Text className="text-slate-300 mt-2 text-sm">
+                    {job.summary}
+                  </Text>
                 )}
               </View>
             ))
           ) : (
-            <Text className="text-slate-500 italic">No experience added yet</Text>
+            <Text className="text-slate-500 italic">
+              No experience added yet
+            </Text>
           )}
         </View>
 
@@ -427,7 +465,9 @@ export default function ProfileScreen() {
             <View className="flex-row items-center justify-between mb-3">
               <Text className="text-slate-400 text-sm uppercase">Ventures</Text>
               <Pressable
-                onPress={() => setWorkHistoryModal({ visible: true, isVenture: true })}
+                onPress={() =>
+                  setWorkHistoryModal({ visible: true, isVenture: true })
+                }
                 className="flex-row items-center gap-1"
               >
                 <Plus color="#14b8a6" size={16} />
@@ -435,10 +475,15 @@ export default function ProfileScreen() {
               </Pressable>
             </View>
             {profile.ventures.map((venture) => (
-              <View key={venture.id} className="mb-4 bg-slate-800 p-4 rounded-lg">
+              <View
+                key={venture.id}
+                className="mb-4 bg-slate-800 p-4 rounded-lg"
+              >
                 <View className="flex-row items-start justify-between">
                   <View className="flex-1">
-                    <Text className="text-white font-semibold">{venture.title}</Text>
+                    <Text className="text-white font-semibold">
+                      {venture.title}
+                    </Text>
                     <Text className="text-teal-400">{venture.company}</Text>
                   </View>
                   <View className="flex-row items-center">
@@ -463,7 +508,9 @@ export default function ProfileScreen() {
                       <Pencil color="#64748b" size={18} />
                     </Pressable>
                     <Pressable
-                      onPress={() => handleDeleteWorkHistory(venture.id, venture.title)}
+                      onPress={() =>
+                        handleDeleteWorkHistory(venture.id, venture.title)
+                      }
                       className="p-2 ml-2"
                     >
                       <Trash2 color="#ef4444" size={18} />
@@ -471,7 +518,9 @@ export default function ProfileScreen() {
                   </View>
                 </View>
                 {venture.summary && (
-                  <Text className="text-slate-300 mt-2 text-sm">{venture.summary}</Text>
+                  <Text className="text-slate-300 mt-2 text-sm">
+                    {venture.summary}
+                  </Text>
                 )}
               </View>
             ))}
@@ -492,14 +541,17 @@ export default function ProfileScreen() {
           </View>
           {profile?.education && profile.education.length > 0 ? (
             profile.education.map((edu) => {
-              const contextStr = typeof edu.context === 'string' ? edu.context : null;
+              const contextStr =
+                typeof edu.context === "string" ? edu.context : null;
               return (
                 <View key={edu.id} className="mb-4 bg-slate-800 p-4 rounded-lg">
                   <View className="flex-row items-start justify-between">
                     <View className="flex-1">
                       <Text className="text-white">{edu.text}</Text>
                       {contextStr && (
-                        <Text className="text-slate-400 text-sm mt-1">{contextStr}</Text>
+                        <Text className="text-slate-400 text-sm mt-1">
+                          {contextStr}
+                        </Text>
                       )}
                     </View>
                     <View className="flex-row items-center">
@@ -507,7 +559,11 @@ export default function ProfileScreen() {
                         onPress={() =>
                           setEducationModal({
                             visible: true,
-                            data: { id: edu.id, text: edu.text, context: edu.context },
+                            data: {
+                              id: edu.id,
+                              text: edu.text,
+                              context: edu.context,
+                            },
                           })
                         }
                         className="p-2"
@@ -526,7 +582,9 @@ export default function ProfileScreen() {
               );
             })
           ) : (
-            <Text className="text-slate-500 italic">No education added yet</Text>
+            <Text className="text-slate-500 italic">
+              No education added yet
+            </Text>
           )}
         </View>
 
@@ -541,8 +599,12 @@ export default function ProfileScreen() {
                 key={skill.id}
                 className="flex-row items-center bg-teal-900/50 px-3 py-1 rounded-full"
               >
-                <Text className="text-teal-300 text-sm mr-1">{skill.label}</Text>
-                <Pressable onPress={() => handleDeleteSkill(skill.id, skill.label)}>
+                <Text className="text-teal-300 text-sm mr-1">
+                  {skill.label}
+                </Text>
+                <Pressable
+                  onPress={() => handleDeleteSkill(skill.id, skill.label)}
+                >
                   <X color="#5eead4" size={14} />
                 </Pressable>
               </View>
@@ -550,10 +612,13 @@ export default function ProfileScreen() {
             <AddSkillInput onAdd={(label) => addSkill.mutate(label)} />
           </View>
           {hasMoreSkills && (
-            <Pressable onPress={() => setShowAllSkills(!showAllSkills)} className="mt-3">
+            <Pressable
+              onPress={() => setShowAllSkills(!showAllSkills)}
+              className="mt-3"
+            >
               <Text className="text-teal-400 text-sm">
                 {showAllSkills
-                  ? 'Show less'
+                  ? "Show less"
                   : `Show ${(profile?.skills?.length || 0) - INITIAL_SKILLS_COUNT} more`}
               </Text>
             </Pressable>
@@ -581,11 +646,11 @@ export default function ProfileScreen() {
         title={
           workHistoryModal.data?.id
             ? workHistoryModal.isVenture
-              ? 'Edit Venture'
-              : 'Edit Experience'
+              ? "Edit Venture"
+              : "Edit Experience"
             : workHistoryModal.isVenture
-              ? 'Add Venture'
-              : 'Add Experience'
+              ? "Add Venture"
+              : "Add Experience"
         }
         isVenture={workHistoryModal.isVenture}
       />
@@ -605,7 +670,7 @@ export default function ProfileScreen() {
           }
         }}
         initialData={educationModal.data}
-        title={educationModal.data?.id ? 'Edit Education' : 'Add Education'}
+        title={educationModal.data?.id ? "Edit Education" : "Add Education"}
       />
     </ScrollView>
   );

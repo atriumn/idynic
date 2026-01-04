@@ -1,7 +1,7 @@
-import { NextRequest } from 'next/server';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
-import { validateApiKey, isAuthError } from '@/lib/api/auth';
-import { apiSuccess } from '@/lib/api/response';
+import { NextRequest } from "next/server";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
+import { validateApiKey, isAuthError } from "@/lib/api/auth";
+import { apiSuccess } from "@/lib/api/response";
 
 export async function GET(request: NextRequest) {
   // Validate API key
@@ -15,12 +15,13 @@ export async function GET(request: NextRequest) {
 
   // Parse query params
   const { searchParams } = new URL(request.url);
-  const type = searchParams.get('type'); // Filter by type (skill, achievement, attribute, education, certification)
+  const type = searchParams.get("type"); // Filter by type (skill, achievement, attribute, education, certification)
 
   // Build query
   let query = supabase
-    .from('identity_claims')
-    .select(`
+    .from("identity_claims")
+    .select(
+      `
       id,
       type,
       label,
@@ -28,18 +29,19 @@ export async function GET(request: NextRequest) {
       confidence,
       created_at,
       updated_at
-    `)
-    .eq('user_id', userId)
-    .order('confidence', { ascending: false });
+    `,
+    )
+    .eq("user_id", userId)
+    .order("confidence", { ascending: false });
 
   if (type) {
-    query = query.eq('type', type);
+    query = query.eq("type", type);
   }
 
   const { data: claims, error } = await query;
 
   if (error) {
-    console.error('Error fetching claims:', error);
+    console.error("Error fetching claims:", error);
     return apiSuccess([], { count: 0, has_more: false });
   }
 

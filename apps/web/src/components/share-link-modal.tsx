@@ -147,7 +147,9 @@ export function ShareLinkModal({
   const formatExpiry = (date: string) => {
     const d = new Date(date);
     const now = new Date();
-    const diffDays = Math.ceil((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    const diffDays = Math.ceil(
+      (d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+    );
 
     if (diffDays < 0) return "Expired";
     if (diffDays === 0) return "Expires today";
@@ -171,8 +173,8 @@ export function ShareLinkModal({
             {!link
               ? "Create a private link to share this tailored profile with recruiters."
               : isActive
-              ? "Your share link is active. Anyone with this link can view your profile."
-              : "This link is no longer active."}
+                ? "Your share link is active. Anyone with this link can view your profile."
+                : "This link is no longer active."}
           </DialogDescription>
         </DialogHeader>
 
@@ -193,7 +195,11 @@ export function ShareLinkModal({
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={handleCreate} disabled={loading} className="w-full">
+            <Button
+              onClick={handleCreate}
+              disabled={loading}
+              className="w-full"
+            >
               {loading ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (
@@ -208,7 +214,11 @@ export function ShareLinkModal({
             <div className="space-y-2">
               <Label>Share link</Label>
               <div className="flex gap-2">
-                <Input value={shareUrl || ""} readOnly className="font-mono text-sm" />
+                <Input
+                  value={shareUrl || ""}
+                  readOnly
+                  className="font-mono text-sm"
+                />
                 <Button variant="outline" size="icon" onClick={handleCopy}>
                   {copied ? (
                     <Check className="h-4 w-4 text-green-600" />
@@ -224,7 +234,9 @@ export function ShareLinkModal({
                 <Clock className="h-4 w-4" />
                 {formatExpiry(link.expiresAt)}
               </div>
-              <div>{link.viewCount} view{link.viewCount !== 1 ? "s" : ""}</div>
+              <div>
+                {link.viewCount} view{link.viewCount !== 1 ? "s" : ""}
+              </div>
             </div>
 
             <div className="flex gap-2">
@@ -257,7 +269,9 @@ export function ShareLinkModal({
           // Expired or revoked
           <div className="space-y-4">
             <div className="text-center py-4 text-muted-foreground">
-              {isRevoked ? "This link has been revoked." : "This link has expired."}
+              {isRevoked
+                ? "This link has been revoked."
+                : "This link has expired."}
             </div>
             <div className="space-y-2">
               <Label>Create new link expiring in</Label>
@@ -273,7 +287,11 @@ export function ShareLinkModal({
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={handleExtend} disabled={loading} className="w-full">
+            <Button
+              onClick={handleExtend}
+              disabled={loading}
+              className="w-full"
+            >
               {loading ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (

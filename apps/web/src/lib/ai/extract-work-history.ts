@@ -78,7 +78,7 @@ RESUME TEXT:
 
 export async function extractWorkHistory(
   text: string,
-  options: ExtractWorkHistoryOptions = {}
+  options: ExtractWorkHistoryOptions = {},
 ): Promise<ExtractedJob[]> {
   const config = getModelConfig("extract_work_history");
 
@@ -97,7 +97,7 @@ export async function extractWorkHistory(
       operation: "extract_work_history",
       userId: options.userId,
       jobId: options.jobId,
-    }
+    },
   );
 
   const content = response.content;
@@ -137,9 +137,11 @@ export async function extractWorkHistory(
           job.title &&
           typeof job.title === "string" &&
           job.start_date &&
-          typeof job.start_date === "string"
+          typeof job.start_date === "string",
       );
   } catch {
-    throw new Error(`Failed to parse work history: ${cleanedContent.slice(0, 200)}`);
+    throw new Error(
+      `Failed to parse work history: ${cleanedContent.slice(0, 200)}`,
+    );
   }
 }

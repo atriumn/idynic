@@ -246,10 +246,14 @@ export function ResumeDocument({
 
   // Build links line: LinkedIn | GitHub | Website (show clean URLs)
   const links = [
-    linkedin && `LinkedIn: ${linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//, "").replace(/\/$/, "")}`,
-    github && `GitHub: ${github.replace(/^https?:\/\/(www\.)?github\.com\//, "").replace(/\/$/, "")}`,
+    linkedin &&
+      `LinkedIn: ${linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//, "").replace(/\/$/, "")}`,
+    github &&
+      `GitHub: ${github.replace(/^https?:\/\/(www\.)?github\.com\//, "").replace(/\/$/, "")}`,
     website && website.replace(/^https?:\/\//, "").replace(/\/$/, ""),
-  ].filter(Boolean).join(" | ");
+  ]
+    .filter(Boolean)
+    .join(" | ");
 
   return (
     <Document>
@@ -257,7 +261,9 @@ export function ResumeDocument({
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.name}>{name}</Text>
-          {primaryContact && <Text style={styles.contactInfo}>{primaryContact}</Text>}
+          {primaryContact && (
+            <Text style={styles.contactInfo}>{primaryContact}</Text>
+          )}
           {links && <Text style={styles.contactInfo}>{links}</Text>}
         </View>
 
@@ -286,7 +292,10 @@ export function ResumeDocument({
                       )}
                       <View style={styles.jobInfo}>
                         <Text style={styles.jobTitle}>{job.title}</Text>
-                        <Text style={styles.company}>{job.company}{job.location ? ` - ${job.location}` : ""}</Text>
+                        <Text style={styles.company}>
+                          {job.company}
+                          {job.location ? ` - ${job.location}` : ""}
+                        </Text>
                       </View>
                     </View>
                     <Text style={styles.dates}>{job.dates}</Text>
@@ -349,7 +358,9 @@ export function ResumeDocument({
                 </Text>
                 <Text style={styles.ventureRole}>{venture.role}</Text>
                 {venture.description && (
-                  <Text style={styles.ventureDescription}>{venture.description}</Text>
+                  <Text style={styles.ventureDescription}>
+                    {venture.description}
+                  </Text>
                 )}
               </View>
             ))}

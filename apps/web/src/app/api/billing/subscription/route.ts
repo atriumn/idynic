@@ -1,7 +1,11 @@
 import { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { apiSuccess, apiError } from "@/lib/api/response";
-import { PLAN_LIMITS, PlanType, PLAN_DISPLAY_NAMES } from "@/lib/billing/plan-limits";
+import {
+  PLAN_LIMITS,
+  PlanType,
+  PLAN_DISPLAY_NAMES,
+} from "@/lib/billing/plan-limits";
 import { getApiUser } from "@/lib/supabase/api-auth";
 
 export async function GET(request: NextRequest) {
@@ -49,8 +53,10 @@ export async function GET(request: NextRequest) {
       plan_type: planType,
       plan_display_name: PLAN_DISPLAY_NAMES[planType],
       status: subscription?.status || "active",
-      current_period_start: subscription?.current_period_start || periodStartStr,
-      current_period_end: subscription?.current_period_end || periodEnd.toISOString(),
+      current_period_start:
+        subscription?.current_period_start || periodStartStr,
+      current_period_end:
+        subscription?.current_period_end || periodEnd.toISOString(),
       cancel_at_period_end: subscription?.cancel_at_period_end || false,
     },
     usage: {
@@ -60,16 +66,25 @@ export async function GET(request: NextRequest) {
       period_end: periodEnd.toISOString().split("T")[0],
     },
     limits: {
-      uploads_per_month: limits.uploads_per_month === Infinity ? null : limits.uploads_per_month,
-      tailored_profiles_per_month: limits.tailored_profiles_per_month === Infinity ? null : limits.tailored_profiles_per_month,
+      uploads_per_month:
+        limits.uploads_per_month === Infinity ? null : limits.uploads_per_month,
+      tailored_profiles_per_month:
+        limits.tailored_profiles_per_month === Infinity
+          ? null
+          : limits.tailored_profiles_per_month,
     },
     remaining: {
-      uploads: limits.uploads_per_month === Infinity
-        ? null
-        : Math.max(0, limits.uploads_per_month - uploadsCount),
-      tailored_profiles: limits.tailored_profiles_per_month === Infinity
-        ? null
-        : Math.max(0, limits.tailored_profiles_per_month - tailoredProfilesCount),
+      uploads:
+        limits.uploads_per_month === Infinity
+          ? null
+          : Math.max(0, limits.uploads_per_month - uploadsCount),
+      tailored_profiles:
+        limits.tailored_profiles_per_month === Infinity
+          ? null
+          : Math.max(
+              0,
+              limits.tailored_profiles_per_month - tailoredProfilesCount,
+            ),
     },
     features: limits.features,
   });

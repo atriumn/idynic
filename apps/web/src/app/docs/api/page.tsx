@@ -15,7 +15,9 @@ const sections = [
 ];
 
 export default function ApiDocsPage() {
-  const [language, setLanguage] = useState<"curl" | "javascript" | "python">("curl");
+  const [language, setLanguage] = useState<"curl" | "javascript" | "python">(
+    "curl",
+  );
 
   return (
     <div className="flex min-h-screen">
@@ -23,7 +25,10 @@ export default function ApiDocsPage() {
       <aside className="w-64 shrink-0 border-r bg-muted/30 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto hidden lg:block">
         <div className="p-6 space-y-6">
           <div>
-            <Link href="/docs" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link
+              href="/docs"
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
               ← Back to Docs
             </Link>
           </div>
@@ -67,7 +72,11 @@ export default function ApiDocsPage() {
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
-              {lang === "curl" ? "cURL" : lang === "javascript" ? "Node.js" : "Python"}
+              {lang === "curl"
+                ? "cURL"
+                : lang === "javascript"
+                  ? "Node.js"
+                  : "Python"}
             </button>
           ))}
         </div>
@@ -79,19 +88,19 @@ export default function ApiDocsPage() {
             <Left>
               <h1 className="text-3xl font-bold mb-4">Idynic API</h1>
               <p className="text-muted-foreground mb-4">
-                The Idynic API is organized around REST. Our API has predictable resource-oriented
-                URLs, returns JSON-encoded responses, and uses standard HTTP response codes.
+                The Idynic API is organized around REST. Our API has predictable
+                resource-oriented URLs, returns JSON-encoded responses, and uses
+                standard HTTP response codes.
               </p>
               <div className="space-y-2">
                 <h3 className="font-semibold">Base URL</h3>
-                <code className="text-sm bg-muted px-2 py-1 rounded">https://idynic.com/api/v1</code>
+                <code className="text-sm bg-muted px-2 py-1 rounded">
+                  https://idynic.com/api/v1
+                </code>
               </div>
             </Left>
             <Right>
-              <CodeBlock
-                title="Base URL"
-                code="https://idynic.com/api/v1"
-              />
+              <CodeBlock title="Base URL" code="https://idynic.com/api/v1" />
             </Right>
           </Section>
 
@@ -100,19 +109,26 @@ export default function ApiDocsPage() {
             <Left>
               <h2 className="text-2xl font-bold mb-4">Authentication</h2>
               <p className="text-muted-foreground mb-4">
-                The Idynic API uses API keys to authenticate requests. You can manage your API keys
-                in your{" "}
-                <Link href="/settings/api-keys" className="text-primary hover:underline">
+                The Idynic API uses API keys to authenticate requests. You can
+                manage your API keys in your{" "}
+                <Link
+                  href="/settings/api-keys"
+                  className="text-primary hover:underline"
+                >
                   account settings
                 </Link>
                 .
               </p>
               <p className="text-muted-foreground mb-4">
-                Authentication is performed via the <code className="text-sm bg-muted px-1 rounded">Authorization</code> header
-                using Bearer authentication.
+                Authentication is performed via the{" "}
+                <code className="text-sm bg-muted px-1 rounded">
+                  Authorization
+                </code>{" "}
+                header using Bearer authentication.
               </p>
               <p className="text-muted-foreground">
-                All API requests must be made over HTTPS. Calls made over plain HTTP will fail.
+                All API requests must be made over HTTPS. Calls made over plain
+                HTTP will fail.
               </p>
             </Left>
             <Right>
@@ -128,17 +144,32 @@ export default function ApiDocsPage() {
             <Left>
               <h2 className="text-2xl font-bold mb-4">Errors</h2>
               <p className="text-muted-foreground mb-4">
-                Idynic uses conventional HTTP response codes to indicate the success or failure of
-                an API request.
+                Idynic uses conventional HTTP response codes to indicate the
+                success or failure of an API request.
               </p>
               <div className="space-y-3 mt-6">
                 <ErrorCode code="200" desc="OK - Request succeeded" />
                 <ErrorCode code="400" desc="Bad Request - Invalid parameters" />
-                <ErrorCode code="401" desc="Unauthorized - Invalid or missing API key" />
-                <ErrorCode code="403" desc="Forbidden - Not allowed to access resource" />
-                <ErrorCode code="404" desc="Not Found - Resource doesn't exist" />
-                <ErrorCode code="429" desc="Too Many Requests - Rate limit exceeded" />
-                <ErrorCode code="500" desc="Server Error - Something went wrong" />
+                <ErrorCode
+                  code="401"
+                  desc="Unauthorized - Invalid or missing API key"
+                />
+                <ErrorCode
+                  code="403"
+                  desc="Forbidden - Not allowed to access resource"
+                />
+                <ErrorCode
+                  code="404"
+                  desc="Not Found - Resource doesn't exist"
+                />
+                <ErrorCode
+                  code="429"
+                  desc="Too Many Requests - Rate limit exceeded"
+                />
+                <ErrorCode
+                  code="500"
+                  desc="Server Error - Something went wrong"
+                />
               </div>
             </Left>
             <Right>
@@ -160,17 +191,26 @@ export default function ApiDocsPage() {
             <Left>
               <h2 className="text-2xl font-bold mb-4">Profile</h2>
               <p className="text-muted-foreground mb-6">
-                The Profile object contains your contact information and work history.
+                The Profile object contains your contact information and work
+                history.
               </p>
 
-              <Endpoint method="GET" path="/profile" desc="Retrieve your profile" />
+              <Endpoint
+                method="GET"
+                path="/profile"
+                desc="Retrieve your profile"
+              />
               <div className="mt-4 text-sm text-muted-foreground">
-                Returns the current user&apos;s profile including contact info, work history, skills,
-                education, and certifications.
+                Returns the current user&apos;s profile including contact info,
+                work history, skills, education, and certifications.
               </div>
 
               <div className="mt-8">
-                <Endpoint method="PATCH" path="/profile" desc="Update contact info" />
+                <Endpoint
+                  method="PATCH"
+                  path="/profile"
+                  desc="Update contact info"
+                />
                 <div className="mt-4">
                   <h4 className="text-sm font-medium mb-2">Parameters</h4>
                   <ParamList>
@@ -180,7 +220,11 @@ export default function ApiDocsPage() {
                     <Param name="location" type="string" desc="City, State" />
                     <Param name="linkedin" type="string" desc="LinkedIn URL" />
                     <Param name="github" type="string" desc="GitHub URL" />
-                    <Param name="website" type="string" desc="Personal website URL" />
+                    <Param
+                      name="website"
+                      type="string"
+                      desc="Personal website URL"
+                    />
                   </ParamList>
                 </div>
               </div>
@@ -211,8 +255,9 @@ export default function ApiDocsPage() {
             <Left>
               <h2 className="text-2xl font-bold mb-4">Claims</h2>
               <p className="text-muted-foreground mb-6">
-                Claims represent your skills, achievements, education, and certifications—each with
-                a confidence score indicating how well it&apos;s supported by evidence.
+                Claims represent your skills, achievements, education, and
+                certifications—each with a confidence score indicating how well
+                it&apos;s supported by evidence.
               </p>
 
               <Endpoint method="GET" path="/claims" desc="List all claims" />
@@ -251,33 +296,66 @@ export default function ApiDocsPage() {
             <Left>
               <h2 className="text-2xl font-bold mb-4">Opportunities</h2>
               <p className="text-muted-foreground mb-6">
-                Opportunities represent job postings you&apos;re tracking. Add an opportunity, generate
-                a tailored profile, and create shareable links.
+                Opportunities represent job postings you&apos;re tracking. Add
+                an opportunity, generate a tailored profile, and create
+                shareable links.
               </p>
 
-              <Endpoint method="GET" path="/opportunities" desc="List opportunities" />
+              <Endpoint
+                method="GET"
+                path="/opportunities"
+                desc="List opportunities"
+              />
               <div className="mt-2 mb-6">
                 <h4 className="text-sm font-medium mb-2">Query parameters</h4>
                 <ParamList>
-                  <Param name="status" type="string" desc="Filter by: tracking, applied, interviewing, offered, rejected" optional />
+                  <Param
+                    name="status"
+                    type="string"
+                    desc="Filter by: tracking, applied, interviewing, offered, rejected"
+                    optional
+                  />
                 </ParamList>
               </div>
 
-              <Endpoint method="POST" path="/opportunities" desc="Add opportunity" />
+              <Endpoint
+                method="POST"
+                path="/opportunities"
+                desc="Add opportunity"
+              />
               <div className="mt-2 mb-6">
                 <h4 className="text-sm font-medium mb-2">Body parameters</h4>
                 <ParamList>
-                  <Param name="description" type="string" desc="Job description text" required />
-                  <Param name="url" type="string" desc="Job posting URL" optional />
+                  <Param
+                    name="description"
+                    type="string"
+                    desc="Job description text"
+                    required
+                  />
+                  <Param
+                    name="url"
+                    type="string"
+                    desc="Job posting URL"
+                    optional
+                  />
                 </ParamList>
               </div>
 
-              <Endpoint method="POST" path="/opportunities/:id/tailor" desc="Generate tailored profile" />
+              <Endpoint
+                method="POST"
+                path="/opportunities/:id/tailor"
+                desc="Generate tailored profile"
+              />
               <div className="mt-2 mb-6 text-sm text-muted-foreground">
-                Generates a tailored profile for this opportunity based on your identity.
+                Generates a tailored profile for this opportunity based on your
+                identity.
               </div>
 
-              <Endpoint method="POST" path="/opportunities/:id/share" desc="Create share link" />
+              <Endpoint
+                method="POST"
+                path="/opportunities/:id/share"
+                desc="Create share link"
+              />
               <div className="mt-2 mb-6 text-sm text-muted-foreground">
                 Creates a shareable link to your tailored profile.
               </div>
@@ -286,12 +364,20 @@ export default function ApiDocsPage() {
                 <h4 className="font-medium mb-2">Convenience endpoints</h4>
                 <div className="space-y-2 text-sm">
                   <div>
-                    <code className="text-primary">POST /opportunities/add-and-tailor</code>
-                    <p className="text-muted-foreground">Add + generate tailored profile</p>
+                    <code className="text-primary">
+                      POST /opportunities/add-and-tailor
+                    </code>
+                    <p className="text-muted-foreground">
+                      Add + generate tailored profile
+                    </p>
                   </div>
                   <div>
-                    <code className="text-primary">POST /opportunities/add-tailor-share</code>
-                    <p className="text-muted-foreground">Add + tailor + create share link (all-in-one)</p>
+                    <code className="text-primary">
+                      POST /opportunities/add-tailor-share
+                    </code>
+                    <p className="text-muted-foreground">
+                      Add + tailor + create share link (all-in-one)
+                    </p>
                   </div>
                 </div>
               </div>
@@ -327,20 +413,45 @@ export default function ApiDocsPage() {
                 Upload resumes and career stories to build your identity.
               </p>
 
-              <Endpoint method="POST" path="/documents/resume" desc="Upload resume" />
+              <Endpoint
+                method="POST"
+                path="/documents/resume"
+                desc="Upload resume"
+              />
               <div className="mt-2 mb-6">
-                <h4 className="text-sm font-medium mb-2">Body (multipart/form-data)</h4>
+                <h4 className="text-sm font-medium mb-2">
+                  Body (multipart/form-data)
+                </h4>
                 <ParamList>
-                  <Param name="file" type="file" desc="PDF or DOCX file" required />
+                  <Param
+                    name="file"
+                    type="file"
+                    desc="PDF or DOCX file"
+                    required
+                  />
                 </ParamList>
               </div>
 
-              <Endpoint method="POST" path="/documents/story" desc="Add career story" />
+              <Endpoint
+                method="POST"
+                path="/documents/story"
+                desc="Add career story"
+              />
               <div className="mt-2">
                 <h4 className="text-sm font-medium mb-2">Body parameters</h4>
                 <ParamList>
-                  <Param name="content" type="string" desc="Story text (free-form)" required />
-                  <Param name="title" type="string" desc="Optional title" optional />
+                  <Param
+                    name="content"
+                    type="string"
+                    desc="Story text (free-form)"
+                    required
+                  />
+                  <Param
+                    name="title"
+                    type="string"
+                    desc="Optional title"
+                    optional
+                  />
                 </ParamList>
               </div>
             </Left>
@@ -361,17 +472,27 @@ export default function ApiDocsPage() {
             <Left>
               <h2 className="text-2xl font-bold mb-4">Shared Profiles</h2>
               <p className="text-muted-foreground mb-6">
-                Public endpoints for accessing shared profiles. No authentication required.
+                Public endpoints for accessing shared profiles. No
+                authentication required.
               </p>
 
-              <Endpoint method="GET" path="/shared/:token" desc="Get shared profile" />
+              <Endpoint
+                method="GET"
+                path="/shared/:token"
+                desc="Get shared profile"
+              />
               <div className="mt-2 mb-6 text-sm text-muted-foreground">
                 Returns the tailored profile for a share link. No auth required.
               </div>
 
-              <Endpoint method="GET" path="/shared/:token/summary" desc="Get AI summary" />
+              <Endpoint
+                method="GET"
+                path="/shared/:token/summary"
+                desc="Get AI summary"
+              />
               <div className="mt-2 text-sm text-muted-foreground">
-                Returns an AI-generated summary of the candidate for quick review.
+                Returns an AI-generated summary of the candidate for quick
+                review.
               </div>
             </Left>
             <Right>
@@ -416,16 +537,12 @@ function Right({ children }: { children: React.ReactNode }) {
   );
 }
 
-function CodeBlock({
-  title,
-  code,
-}: {
-  title: string;
-  code: string;
-}) {
+function CodeBlock({ title, code }: { title: string; code: string }) {
   return (
     <div className="rounded-lg overflow-hidden">
-      <div className="bg-slate-800 px-4 py-2 text-xs text-slate-400 font-medium">{title}</div>
+      <div className="bg-slate-800 px-4 py-2 text-xs text-slate-400 font-medium">
+        {title}
+      </div>
       <pre className="bg-slate-950 p-4 text-sm overflow-x-auto">
         <code>{code}</code>
       </pre>
@@ -433,7 +550,15 @@ function CodeBlock({
   );
 }
 
-function Endpoint({ method, path, desc }: { method: string; path: string; desc: string }) {
+function Endpoint({
+  method,
+  path,
+  desc,
+}: {
+  method: string;
+  path: string;
+  desc: string;
+}) {
   const colors: Record<string, string> = {
     GET: "bg-green-500/20 text-green-400 border-green-500/30",
     POST: "bg-blue-500/20 text-blue-400 border-blue-500/30",
@@ -443,11 +568,15 @@ function Endpoint({ method, path, desc }: { method: string; path: string; desc: 
 
   return (
     <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
-      <span className={`px-2 py-0.5 text-xs font-mono font-bold rounded border ${colors[method]}`}>
+      <span
+        className={`px-2 py-0.5 text-xs font-mono font-bold rounded border ${colors[method]}`}
+      >
         {method}
       </span>
       <code className="font-mono text-sm">{path}</code>
-      <span className="text-sm text-muted-foreground ml-auto hidden sm:block">{desc}</span>
+      <span className="text-sm text-muted-foreground ml-auto hidden sm:block">
+        {desc}
+      </span>
     </div>
   );
 }
@@ -473,8 +602,12 @@ function Param({
     <div className="flex items-start gap-3 py-1">
       <code className="font-mono text-sm shrink-0">{name}</code>
       <span className="text-muted-foreground text-xs shrink-0">{type}</span>
-      {required && <span className="text-xs text-red-500 shrink-0">required</span>}
-      {optional && <span className="text-xs text-muted-foreground shrink-0">optional</span>}
+      {required && (
+        <span className="text-xs text-red-500 shrink-0">required</span>
+      )}
+      {optional && (
+        <span className="text-xs text-muted-foreground shrink-0">optional</span>
+      )}
       <span className="text-muted-foreground">{desc}</span>
     </div>
   );

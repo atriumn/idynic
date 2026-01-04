@@ -68,7 +68,8 @@ export function ResumePDFViewer({ data }: ResumePDFViewerProps) {
     if (!isClient) return;
 
     const script = document.createElement("script");
-    script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+    script.src =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
     script.async = true;
     script.onload = () => {
       if (window.pdfjsLib) {
@@ -96,7 +97,7 @@ export function ResumePDFViewer({ data }: ResumePDFViewerProps) {
 
         // Wait for pdf.js to load
         while (!window.pdfjsLib) {
-          await new Promise(r => setTimeout(r, 100));
+          await new Promise((r) => setTimeout(r, 100));
           if (cancelled) return;
         }
 
@@ -210,7 +211,7 @@ export function ResumePDFViewer({ data }: ResumePDFViewerProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setPageNum(p => Math.max(1, p - 1))}
+            onClick={() => setPageNum((p) => Math.max(1, p - 1))}
             disabled={pageNum <= 1}
             className="text-white hover:bg-gray-600"
           >
@@ -222,7 +223,7 @@ export function ResumePDFViewer({ data }: ResumePDFViewerProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setPageNum(p => Math.min(numPages, p + 1))}
+            onClick={() => setPageNum((p) => Math.min(numPages, p + 1))}
             disabled={pageNum >= numPages}
             className="text-white hover:bg-gray-600"
           >

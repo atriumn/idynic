@@ -8,7 +8,8 @@ export default function DocsPage() {
         <div className="space-y-4">
           <h1 className="text-4xl font-bold tracking-tight">Documentation</h1>
           <p className="text-xl text-muted-foreground">
-            Build integrations with Idynic using our REST API, MCP server, or Chrome extension.
+            Build integrations with Idynic using our REST API, MCP server, or
+            Chrome extension.
           </p>
         </div>
 
@@ -40,8 +41,8 @@ export default function DocsPage() {
               MCP Server
             </h2>
             <p className="text-muted-foreground">
-              Use Idynic directly from Claude, Cursor, or any MCP-compatible client.
-              Manage your career with natural language.
+              Use Idynic directly from Claude, Cursor, or any MCP-compatible
+              client. Manage your career with natural language.
             </p>
           </Link>
 
@@ -61,7 +62,6 @@ export default function DocsPage() {
             </p>
           </Link>
         </div>
-
       </div>
     </div>
   );

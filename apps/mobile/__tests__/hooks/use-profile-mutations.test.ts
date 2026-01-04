@@ -1,5 +1,5 @@
-import { waitFor, act } from '@testing-library/react-native';
-import { renderHook } from '../test-utils';
+import { waitFor, act } from "@testing-library/react-native";
+import { renderHook } from "../test-utils";
 import {
   useUpdateContact,
   useAddWorkHistory,
@@ -11,19 +11,19 @@ import {
   useAddSkill,
   useDeleteSkill,
   useAddVenture,
-} from '../../hooks/use-profile-mutations';
-import { supabase } from '../../lib/supabase';
-import { api } from '../../lib/api';
-import { mockSession } from '../mocks/api-responses';
+} from "../../hooks/use-profile-mutations";
+import { supabase } from "../../lib/supabase";
+import { api } from "../../lib/api";
+import { mockSession } from "../mocks/api-responses";
 
 // Mock expo-linking
-jest.mock('expo-linking', () => ({
+jest.mock("expo-linking", () => ({
   getInitialURL: jest.fn(() => Promise.resolve(null)),
   addEventListener: jest.fn(() => ({ remove: jest.fn() })),
 }));
 
 // Mock supabase
-jest.mock('../../lib/supabase', () => ({
+jest.mock("../../lib/supabase", () => ({
   supabase: {
     auth: {
       getSession: jest.fn(),
@@ -36,7 +36,7 @@ jest.mock('../../lib/supabase', () => ({
 }));
 
 // Mock api
-jest.mock('../../lib/api', () => ({
+jest.mock("../../lib/api", () => ({
   api: {
     workHistory: {
       create: jest.fn(),
@@ -69,7 +69,7 @@ function setupAuthenticatedSession() {
   // Call auth state change callback synchronously so session is available immediately
   mockOnAuthStateChange.mockImplementation((callback) => {
     // Call immediately (not in setTimeout) so session is set before first render completes
-    callback('SIGNED_IN', mockSession);
+    callback("SIGNED_IN", mockSession);
     return {
       data: {
         subscription: { unsubscribe: jest.fn() },
@@ -92,18 +92,18 @@ function setupUnauthenticatedSession() {
   });
 }
 
-describe('Profile Mutations', () => {
+describe("Profile Mutations", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('useUpdateContact', () => {
-    describe('when authenticated', () => {
+  describe("useUpdateContact", () => {
+    describe("when authenticated", () => {
       beforeEach(() => {
         setupAuthenticatedSession();
       });
 
-      it('updates contact info successfully', async () => {
+      it("updates contact info successfully", async () => {
         const mockUpdate = jest.fn().mockReturnThis();
         const mockEq = jest.fn().mockResolvedValue({ error: null });
 
@@ -121,17 +121,17 @@ describe('Profile Mutations', () => {
         });
 
         await act(async () => {
-          await result.current.mutateAsync({ name: 'Updated Name' });
+          await result.current.mutateAsync({ name: "Updated Name" });
         });
 
-        expect(mockFrom).toHaveBeenCalledWith('profiles');
-        expect(mockUpdate).toHaveBeenCalledWith({ name: 'Updated Name' });
+        expect(mockFrom).toHaveBeenCalledWith("profiles");
+        expect(mockUpdate).toHaveBeenCalledWith({ name: "Updated Name" });
       });
 
-      it('handles database error', async () => {
+      it("handles database error", async () => {
         const mockUpdate = jest.fn().mockReturnThis();
         const mockEq = jest.fn().mockResolvedValue({
-          error: { message: 'Update failed', code: 'PGRST116' },
+          error: { message: "Update failed", code: "PGRST116" },
         });
 
         mockFrom.mockReturnValue({
@@ -147,11 +147,11 @@ describe('Profile Mutations', () => {
         });
 
         await expect(
-          result.current.mutateAsync({ name: 'Test' })
-        ).rejects.toMatchObject({ message: 'Update failed' });
+          result.current.mutateAsync({ name: "Test" }),
+        ).rejects.toMatchObject({ message: "Update failed" });
       });
 
-      it('invalidates profile query on success', async () => {
+      it("invalidates profile query on success", async () => {
         const mockUpdate = jest.fn().mockReturnThis();
         const mockEq = jest.fn().mockResolvedValue({ error: null });
 
@@ -162,26 +162,26 @@ describe('Profile Mutations', () => {
         mockUpdate.mockReturnValue({ eq: mockEq });
 
         const { result, queryClient } = renderHook(() => useUpdateContact());
-        const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
+        const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
 
         await waitFor(() => {
           expect(result.current.isIdle).toBe(true);
         });
 
         await act(async () => {
-          await result.current.mutateAsync({ name: 'Updated' });
+          await result.current.mutateAsync({ name: "Updated" });
         });
 
-        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['profile'] });
+        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["profile"] });
       });
     });
 
-    describe('when not authenticated', () => {
+    describe("when not authenticated", () => {
       beforeEach(() => {
         setupUnauthenticatedSession();
       });
 
-      it('throws error when not authenticated', async () => {
+      it("throws error when not authenticated", async () => {
         const { result } = renderHook(() => useUpdateContact());
 
         await waitFor(() => {
@@ -189,25 +189,25 @@ describe('Profile Mutations', () => {
         });
 
         await expect(
-          result.current.mutateAsync({ name: 'Test' })
-        ).rejects.toThrow('Not authenticated');
+          result.current.mutateAsync({ name: "Test" }),
+        ).rejects.toThrow("Not authenticated");
       });
     });
   });
 
-  describe('useAddWorkHistory', () => {
+  describe("useAddWorkHistory", () => {
     beforeEach(() => {
       setupAuthenticatedSession();
     });
 
-    it('creates work history entry successfully', async () => {
+    it("creates work history entry successfully", async () => {
       const mockWorkHistoryData = {
-        company: 'New Company',
-        title: 'Software Engineer',
-        start_date: '2024-01-01',
+        company: "New Company",
+        title: "Software Engineer",
+        start_date: "2024-01-01",
       };
 
-      (api.workHistory.create as jest.Mock).mockResolvedValue({ id: 'new-id' });
+      (api.workHistory.create as jest.Mock).mockResolvedValue({ id: "new-id" });
 
       const { result } = renderHook(() => useAddWorkHistory());
 
@@ -222,9 +222,9 @@ describe('Profile Mutations', () => {
       expect(api.workHistory.create).toHaveBeenCalledWith(mockWorkHistoryData);
     });
 
-    it('handles API error', async () => {
+    it("handles API error", async () => {
       (api.workHistory.create as jest.Mock).mockRejectedValue(
-        new Error('API error')
+        new Error("API error"),
       );
 
       const { result } = renderHook(() => useAddWorkHistory());
@@ -235,21 +235,23 @@ describe('Profile Mutations', () => {
 
       await expect(
         result.current.mutateAsync({
-          company: 'Test',
-          title: 'Test',
-          start_date: '2024-01-01',
-        })
-      ).rejects.toThrow('API error');
+          company: "Test",
+          title: "Test",
+          start_date: "2024-01-01",
+        }),
+      ).rejects.toThrow("API error");
     });
   });
 
-  describe('useUpdateWorkHistory', () => {
+  describe("useUpdateWorkHistory", () => {
     beforeEach(() => {
       setupAuthenticatedSession();
     });
 
-    it('updates work history entry successfully', async () => {
-      (api.workHistory.update as jest.Mock).mockResolvedValue({ success: true });
+    it("updates work history entry successfully", async () => {
+      (api.workHistory.update as jest.Mock).mockResolvedValue({
+        success: true,
+      });
 
       const { result } = renderHook(() => useUpdateWorkHistory());
 
@@ -259,24 +261,26 @@ describe('Profile Mutations', () => {
 
       await act(async () => {
         await result.current.mutateAsync({
-          id: 'wh-1',
-          data: { title: 'Updated Title' },
+          id: "wh-1",
+          data: { title: "Updated Title" },
         });
       });
 
-      expect(api.workHistory.update).toHaveBeenCalledWith('wh-1', {
-        title: 'Updated Title',
+      expect(api.workHistory.update).toHaveBeenCalledWith("wh-1", {
+        title: "Updated Title",
       });
     });
   });
 
-  describe('useDeleteWorkHistory', () => {
+  describe("useDeleteWorkHistory", () => {
     beforeEach(() => {
       setupAuthenticatedSession();
     });
 
-    it('deletes work history entry successfully', async () => {
-      (api.workHistory.delete as jest.Mock).mockResolvedValue({ success: true });
+    it("deletes work history entry successfully", async () => {
+      (api.workHistory.delete as jest.Mock).mockResolvedValue({
+        success: true,
+      });
 
       const { result } = renderHook(() => useDeleteWorkHistory());
 
@@ -285,20 +289,20 @@ describe('Profile Mutations', () => {
       });
 
       await act(async () => {
-        await result.current.mutateAsync('wh-1');
+        await result.current.mutateAsync("wh-1");
       });
 
-      expect(api.workHistory.delete).toHaveBeenCalledWith('wh-1');
+      expect(api.workHistory.delete).toHaveBeenCalledWith("wh-1");
     });
   });
 
-  describe('useAddEducation', () => {
+  describe("useAddEducation", () => {
     beforeEach(() => {
       setupAuthenticatedSession();
     });
 
-    it('creates education entry successfully', async () => {
-      (api.education.create as jest.Mock).mockResolvedValue({ id: 'edu-new' });
+    it("creates education entry successfully", async () => {
+      (api.education.create as jest.Mock).mockResolvedValue({ id: "edu-new" });
 
       const { result } = renderHook(() => useAddEducation());
 
@@ -307,21 +311,21 @@ describe('Profile Mutations', () => {
       });
 
       await act(async () => {
-        await result.current.mutateAsync({ text: 'BS Computer Science' });
+        await result.current.mutateAsync({ text: "BS Computer Science" });
       });
 
       expect(api.education.create).toHaveBeenCalledWith({
-        text: 'BS Computer Science',
+        text: "BS Computer Science",
       });
     });
   });
 
-  describe('useUpdateEducation', () => {
+  describe("useUpdateEducation", () => {
     beforeEach(() => {
       setupAuthenticatedSession();
     });
 
-    it('updates education entry successfully', async () => {
+    it("updates education entry successfully", async () => {
       (api.education.update as jest.Mock).mockResolvedValue({ success: true });
 
       const { result } = renderHook(() => useUpdateEducation());
@@ -332,23 +336,23 @@ describe('Profile Mutations', () => {
 
       await act(async () => {
         await result.current.mutateAsync({
-          id: 'edu-1',
-          data: { text: 'Updated Education' },
+          id: "edu-1",
+          data: { text: "Updated Education" },
         });
       });
 
-      expect(api.education.update).toHaveBeenCalledWith('edu-1', {
-        text: 'Updated Education',
+      expect(api.education.update).toHaveBeenCalledWith("edu-1", {
+        text: "Updated Education",
       });
     });
   });
 
-  describe('useDeleteEducation', () => {
+  describe("useDeleteEducation", () => {
     beforeEach(() => {
       setupAuthenticatedSession();
     });
 
-    it('deletes education entry successfully', async () => {
+    it("deletes education entry successfully", async () => {
       (api.education.delete as jest.Mock).mockResolvedValue({ success: true });
 
       const { result } = renderHook(() => useDeleteEducation());
@@ -358,20 +362,20 @@ describe('Profile Mutations', () => {
       });
 
       await act(async () => {
-        await result.current.mutateAsync('edu-1');
+        await result.current.mutateAsync("edu-1");
       });
 
-      expect(api.education.delete).toHaveBeenCalledWith('edu-1');
+      expect(api.education.delete).toHaveBeenCalledWith("edu-1");
     });
   });
 
-  describe('useAddSkill', () => {
+  describe("useAddSkill", () => {
     beforeEach(() => {
       setupAuthenticatedSession();
     });
 
-    it('creates skill successfully', async () => {
-      (api.skills.create as jest.Mock).mockResolvedValue({ id: 'skill-new' });
+    it("creates skill successfully", async () => {
+      (api.skills.create as jest.Mock).mockResolvedValue({ id: "skill-new" });
 
       const { result } = renderHook(() => useAddSkill());
 
@@ -380,37 +384,39 @@ describe('Profile Mutations', () => {
       });
 
       await act(async () => {
-        await result.current.mutateAsync('TypeScript');
+        await result.current.mutateAsync("TypeScript");
       });
 
-      expect(api.skills.create).toHaveBeenCalledWith('TypeScript');
+      expect(api.skills.create).toHaveBeenCalledWith("TypeScript");
     });
 
-    it('invalidates both profile and identity-claims queries on success', async () => {
-      (api.skills.create as jest.Mock).mockResolvedValue({ id: 'skill-new' });
+    it("invalidates both profile and identity-claims queries on success", async () => {
+      (api.skills.create as jest.Mock).mockResolvedValue({ id: "skill-new" });
 
       const { result, queryClient } = renderHook(() => useAddSkill());
-      const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
+      const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
 
       await waitFor(() => {
         expect(result.current.isIdle).toBe(true);
       });
 
       await act(async () => {
-        await result.current.mutateAsync('React');
+        await result.current.mutateAsync("React");
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['profile'] });
-      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['identity-claims'] });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["profile"] });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: ["identity-claims"],
+      });
     });
   });
 
-  describe('useDeleteSkill', () => {
+  describe("useDeleteSkill", () => {
     beforeEach(() => {
       setupAuthenticatedSession();
     });
 
-    it('deletes skill successfully', async () => {
+    it("deletes skill successfully", async () => {
       (api.skills.delete as jest.Mock).mockResolvedValue({ success: true });
 
       const { result } = renderHook(() => useDeleteSkill());
@@ -420,20 +426,20 @@ describe('Profile Mutations', () => {
       });
 
       await act(async () => {
-        await result.current.mutateAsync('skill-1');
+        await result.current.mutateAsync("skill-1");
       });
 
-      expect(api.skills.delete).toHaveBeenCalledWith('skill-1');
+      expect(api.skills.delete).toHaveBeenCalledWith("skill-1");
     });
   });
 
-  describe('useAddVenture', () => {
+  describe("useAddVenture", () => {
     beforeEach(() => {
       setupAuthenticatedSession();
     });
 
-    it('creates venture with entry_type set to venture', async () => {
-      (api.workHistory.create as jest.Mock).mockResolvedValue({ id: 'v-new' });
+    it("creates venture with entry_type set to venture", async () => {
+      (api.workHistory.create as jest.Mock).mockResolvedValue({ id: "v-new" });
 
       const { result } = renderHook(() => useAddVenture());
 
@@ -443,17 +449,17 @@ describe('Profile Mutations', () => {
 
       await act(async () => {
         await result.current.mutateAsync({
-          company: 'My Startup',
-          title: 'Founder',
-          start_date: '2023-01-01',
+          company: "My Startup",
+          title: "Founder",
+          start_date: "2023-01-01",
         });
       });
 
       expect(api.workHistory.create).toHaveBeenCalledWith({
-        company: 'My Startup',
-        title: 'Founder',
-        start_date: '2023-01-01',
-        entry_type: 'venture',
+        company: "My Startup",
+        title: "Founder",
+        start_date: "2023-01-01",
+        entry_type: "venture",
       });
     });
   });

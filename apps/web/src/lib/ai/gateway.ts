@@ -62,7 +62,7 @@ export async function aiComplete(
   provider: string,
   model: string,
   request: AICompletionRequest,
-  options: AICallOptions
+  options: AICallOptions,
 ): Promise<AICompletionResponse> {
   const client = getProvider(provider, model);
   const startTime = Date.now();
@@ -84,7 +84,7 @@ export async function aiComplete(
       provider,
       model,
       response?.usage.inputTokens ?? 0,
-      response?.usage.outputTokens ?? 0
+      response?.usage.outputTokens ?? 0,
     );
 
     // Log usage asynchronously (don't await)

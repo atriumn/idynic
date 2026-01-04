@@ -53,23 +53,36 @@ interface Requirement {
 
 const SYSTEM_PROMPT = `You are a career coach helping candidates prepare for job applications. Analyze how a candidate's experience maps to job requirements. Be honest but strategic - find genuine strengths and acknowledge real gaps with constructive mitigation strategies.`;
 
-function buildUserPrompt(requirements: Requirement[], claims: ClaimWithEvidence[]): string {
+function buildUserPrompt(
+  requirements: Requirement[],
+  claims: ClaimWithEvidence[],
+): string {
   return `Analyze this candidate's fit for a role. Return JSON with strengths, gaps, and inferences.
 
 ## Job Requirements
 
 ### Must Have:
-${requirements.filter(r => r.category === "mustHave").map(r => `- ${r.text} (${r.type})`).join("\n")}
+${requirements
+  .filter((r) => r.category === "mustHave")
+  .map((r) => `- ${r.text} (${r.type})`)
+  .join("\n")}
 
 ### Nice to Have:
-${requirements.filter(r => r.category === "niceToHave").map(r => `- ${r.text} (${r.type})`).join("\n")}
+${requirements
+  .filter((r) => r.category === "niceToHave")
+  .map((r) => `- ${r.text} (${r.type})`)
+  .join("\n")}
 
 ## Candidate's Claims (with evidence)
 
-${claims.map(c => `### ${c.label} (${c.type})
+${claims
+  .map(
+    (c) => `### ${c.label} (${c.type})
 ${c.description || ""}
 Evidence:
-${c.evidence.map(e => `- ${e.text}`).join("\n")}`).join("\n\n")}
+${c.evidence.map((e) => `- ${e.text}`).join("\n")}`,
+  )
+  .join("\n\n")}
 
 ## Instructions
 
@@ -128,9 +141,9 @@ IMPORTANT:
 export async function generateTalkingPoints(
   opportunityId: string,
   userId: string,
-  supabase?: SupabaseClient<Database>
+  supabase?: SupabaseClient<Database>,
 ): Promise<TalkingPoints> {
-  const client = supabase || await createClient();
+  const client = supabase || (await createClient());
 
   // Get opportunity requirements
   const { data: opportunity, error: oppError } = await client
@@ -153,8 +166,14 @@ export async function generateTalkingPoints(
   };
 
   const requirements: Requirement[] = [
-    ...(reqs.mustHave || []).map((r) => ({ ...r, category: "mustHave" as const })),
-    ...(reqs.niceToHave || []).map((r) => ({ ...r, category: "niceToHave" as const })),
+    ...(reqs.mustHave || []).map((r) => ({
+      ...r,
+      category: "mustHave" as const,
+    })),
+    ...(reqs.niceToHave || []).map((r) => ({
+      ...r,
+      category: "niceToHave" as const,
+    })),
   ];
 
   if (requirements.length === 0) {
@@ -164,7 +183,8 @@ export async function generateTalkingPoints(
   // Get user's claims with evidence
   const { data: claims, error: claimsError } = await client
     .from("identity_claims")
-    .select(`
+    .select(
+      `
       id,
       label,
       type,
@@ -176,7 +196,8 @@ export async function generateTalkingPoints(
           context
         )
       )
-    `)
+    `,
+    )
     .eq("user_id", userId);
 
   if (claimsError) {
@@ -189,8 +210,19 @@ export async function generateTalkingPoints(
     type: c.type,
     description: c.description,
     evidence: (c.claim_evidence || [])
-      .map((ce: { evidence: { text: string; evidence_type: string; context: unknown } | null }) => ce.evidence)
-      .filter((e): e is { text: string; evidence_type: string; context: unknown } => e !== null)
+      .map(
+        (ce: {
+          evidence: {
+            text: string;
+            evidence_type: string;
+            context: unknown;
+          } | null;
+        }) => ce.evidence,
+      )
+      .filter(
+        (e): e is { text: string; evidence_type: string; context: unknown } =>
+          e !== null,
+      )
       .map((e) => ({
         text: e.text,
         type: e.evidence_type,
@@ -211,7 +243,10 @@ export async function generateTalkingPoints(
     {
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: buildUserPrompt(requirements, claimsWithEvidence) },
+        {
+          role: "user",
+          content: buildUserPrompt(requirements, claimsWithEvidence),
+        },
       ],
       temperature: 0.3,
       maxTokens: 4000,
@@ -221,7 +256,7 @@ export async function generateTalkingPoints(
       operation: "generate_talking_points",
       userId,
       opportunityId,
-    }
+    },
   );
 
   const content = response.content;

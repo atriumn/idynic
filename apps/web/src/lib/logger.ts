@@ -29,7 +29,9 @@ function getAxiomLogger(): AxiomLogger {
       const hasDataset = !!process.env.NEXT_PUBLIC_AXIOM_DATASET;
       const hasToken = !!process.env.NEXT_PUBLIC_AXIOM_TOKEN;
       const hasIngestEndpoint = !!process.env.NEXT_PUBLIC_AXIOM_INGEST_ENDPOINT;
-      console.log(`[AXIOM INIT] dataset=${hasDataset}, token=${hasToken}, ingest=${hasIngestEndpoint}`);
+      console.log(
+        `[AXIOM INIT] dataset=${hasDataset}, token=${hasToken}, ingest=${hasIngestEndpoint}`,
+      );
     }
     axiomLogger = new AxiomLogger();
   }
@@ -52,7 +54,7 @@ function getAxiomLogger(): AxiomLogger {
 function createLogEntry(
   level: LogLevel,
   message: string,
-  data?: LogData
+  data?: LogData,
 ): LogEntry {
   const context = getRequestContext();
 
@@ -82,21 +84,27 @@ function formatForConsole(entry: LogEntry): string {
   // Extract extra data (everything except the standard fields)
   const extraData: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(entry)) {
-    if (!["timestamp", "level", "message", "requestId", "userId", "durationMs"].includes(key)) {
+    if (
+      ![
+        "timestamp",
+        "level",
+        "message",
+        "requestId",
+        "userId",
+        "durationMs",
+      ].includes(key)
+    ) {
       extraData[key] = value;
     }
   }
 
-  const prefix = requestId
-    ? `[${requestId.slice(0, 8)}]`
-    : "";
+  const prefix = requestId ? `[${requestId.slice(0, 8)}]` : "";
 
   const userStr = userId ? ` user=${userId.slice(0, 8)}` : "";
   const durationStr = durationMs !== undefined ? ` +${durationMs}ms` : "";
 
-  const dataStr = Object.keys(extraData).length > 0
-    ? ` ${JSON.stringify(extraData)}`
-    : "";
+  const dataStr =
+    Object.keys(extraData).length > 0 ? ` ${JSON.stringify(extraData)}` : "";
 
   return `${prefix} ${message}${userStr}${durationStr}${dataStr}`;
 }
@@ -140,7 +148,10 @@ function logToConsole(entry: LogEntry): void {
     }
   } catch (axiomError) {
     // Log Axiom errors to console so we can debug
-    console.error("[AXIOM ERROR]", axiomError instanceof Error ? axiomError.message : axiomError);
+    console.error(
+      "[AXIOM ERROR]",
+      axiomError instanceof Error ? axiomError.message : axiomError,
+    );
   }
 }
 
@@ -174,7 +185,10 @@ export const log = {
       try {
         await axiomLogger.flush();
       } catch (flushError) {
-        console.error("[AXIOM FLUSH ERROR]", flushError instanceof Error ? flushError.message : flushError);
+        console.error(
+          "[AXIOM FLUSH ERROR]",
+          flushError instanceof Error ? flushError.message : flushError,
+        );
       }
     } else {
       console.warn("[AXIOM] No logger instance to flush");

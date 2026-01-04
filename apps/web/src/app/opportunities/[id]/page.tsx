@@ -429,16 +429,16 @@ export default async function OpportunityDetailPage({
           <Tabs defaultValue="research" className="w-full">
             <TabsList className="w-full grid grid-cols-2 mb-8 bg-muted/30 p-1.5 h-12 rounded-xl">
               <TabsTrigger
-                value="tailoring"
-                className="h-full text-xs font-bold uppercase tracking-wider rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
-              >
-                Tailored Application
-              </TabsTrigger>
-              <TabsTrigger
                 value="research"
                 className="h-full text-xs font-bold uppercase tracking-wider rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
               >
                 Research & Context
+              </TabsTrigger>
+              <TabsTrigger
+                value="tailoring"
+                className="h-full text-xs font-bold uppercase tracking-wider rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              >
+                Tailored Application
               </TabsTrigger>
             </TabsList>
 

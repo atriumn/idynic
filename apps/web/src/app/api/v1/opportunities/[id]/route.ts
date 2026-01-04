@@ -1,11 +1,11 @@
-import { NextRequest } from 'next/server';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
-import { validateApiKey, isAuthError } from '@/lib/api/auth';
-import { apiSuccess, ApiErrors } from '@/lib/api/response';
+import { NextRequest } from "next/server";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
+import { validateApiKey, isAuthError } from "@/lib/api/auth";
+import { apiSuccess, ApiErrors } from "@/lib/api/response";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const authResult = await validateApiKey(request);
   if (isAuthError(authResult)) {
@@ -17,14 +17,14 @@ export async function GET(
   const supabase = createServiceRoleClient();
 
   const { data: opportunity, error } = await supabase
-    .from('opportunities')
-    .select('*')
-    .eq('id', id)
-    .eq('user_id', userId)
+    .from("opportunities")
+    .select("*")
+    .eq("id", id)
+    .eq("user_id", userId)
     .single();
 
   if (error || !opportunity) {
-    return ApiErrors.notFound('Opportunity');
+    return ApiErrors.notFound("Opportunity");
   }
 
   return apiSuccess({

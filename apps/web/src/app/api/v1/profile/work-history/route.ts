@@ -1,7 +1,7 @@
-import { NextRequest } from 'next/server';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
-import { validateApiKey, isAuthError } from '@/lib/api/auth';
-import { apiSuccess } from '@/lib/api/response';
+import { NextRequest } from "next/server";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
+import { validateApiKey, isAuthError } from "@/lib/api/auth";
+import { apiSuccess } from "@/lib/api/response";
 
 export async function GET(request: NextRequest) {
   const authResult = await validateApiKey(request);
@@ -13,13 +13,13 @@ export async function GET(request: NextRequest) {
   const supabase = createServiceRoleClient();
 
   const { data: workHistory, error } = await supabase
-    .from('work_history')
-    .select('*')
-    .eq('user_id', userId)
-    .order('order_index', { ascending: true });
+    .from("work_history")
+    .select("*")
+    .eq("user_id", userId)
+    .order("order_index", { ascending: true });
 
   if (error) {
-    console.error('Error fetching work history:', error);
+    console.error("Error fetching work history:", error);
     return apiSuccess([], { count: 0, has_more: false });
   }
 

@@ -3,16 +3,30 @@
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSubscription, useCreateCheckoutSession, useCreatePortalSession, useInvalidateSubscription } from "@/hooks/use-subscription";
+import {
+  useSubscription,
+  useCreateCheckoutSession,
+  useCreatePortalSession,
+  useInvalidateSubscription,
+} from "@/hooks/use-subscription";
 import { Check, ExternalLink, Sparkles, Zap } from "lucide-react";
 import { toast } from "sonner";
 
-const PLAN_BADGES: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> = {
+const PLAN_BADGES: Record<
+  string,
+  { label: string; variant: "default" | "secondary" | "outline" }
+> = {
   free: { label: "Free", variant: "secondary" },
   pro: { label: "Pro", variant: "default" },
   job_search: { label: "Job Search", variant: "default" },
@@ -115,7 +129,8 @@ export default function UsagePage() {
         {subscription.cancel_at_period_end && (
           <CardContent>
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 text-sm text-yellow-800 dark:text-yellow-200">
-              Your subscription will be canceled at the end of the current billing period.
+              Your subscription will be canceled at the end of the current
+              billing period.
             </div>
           </CardContent>
         )}
@@ -165,7 +180,11 @@ export default function UsagePage() {
             </div>
             {limits.tailored_profiles_per_month !== null && (
               <Progress
-                value={(usage.tailored_profiles / limits.tailored_profiles_per_month) * 100}
+                value={
+                  (usage.tailored_profiles /
+                    limits.tailored_profiles_per_month) *
+                  100
+                }
                 className="h-2"
               />
             )}
@@ -236,7 +255,9 @@ export default function UsagePage() {
                       <Zap className="h-4 w-4 text-primary" />
                       Job Search
                     </h3>
-                    <p className="text-sm text-muted-foreground">$50 for 3 months</p>
+                    <p className="text-sm text-muted-foreground">
+                      $50 for 3 months
+                    </p>
                   </div>
                   <Button
                     size="sm"

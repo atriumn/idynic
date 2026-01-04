@@ -38,7 +38,7 @@ interface MatchResult {
   strengths: RequirementMatch[];
 }
 
-const MATCH_THRESHOLD = 0.40;
+const MATCH_THRESHOLD = 0.4;
 
 // Claim types that can match each requirement type
 const VALID_CLAIM_TYPES: Record<RequirementType, string[]> = {
@@ -50,7 +50,7 @@ const VALID_CLAIM_TYPES: Record<RequirementType, string[]> = {
 
 export async function computeOpportunityMatches(
   opportunityId: string,
-  userId: string
+  userId: string,
 ): Promise<MatchResult> {
   const supabase = await createClient();
 
@@ -81,7 +81,7 @@ export async function computeOpportunityMatches(
   // Handle both old format (string[]) and new format (ClassifiedRequirement[])
   const normalizeReqs = (
     items: ClassifiedRequirement[] | string[] | undefined,
-    category: "mustHave" | "niceToHave"
+    category: "mustHave" | "niceToHave",
   ): Requirement[] => {
     if (!items) return [];
     return items.map((item) => {
@@ -120,12 +120,15 @@ export async function computeOpportunityMatches(
     const embedding = embeddings[i];
 
     // Call the match_identity_claims function
-    const { data: matches, error } = await supabase.rpc("match_identity_claims", {
-      query_embedding: embedding as unknown as string,
-      match_user_id: userId,
-      match_threshold: MATCH_THRESHOLD,
-      match_count: 10, // Get more candidates, then filter by type
-    });
+    const { data: matches, error } = await supabase.rpc(
+      "match_identity_claims",
+      {
+        query_embedding: embedding as unknown as string,
+        match_user_id: userId,
+        match_threshold: MATCH_THRESHOLD,
+        match_count: 10, // Get more candidates, then filter by type
+      },
+    );
 
     if (error) {
       console.error(`Error matching requirement "${req.text}":`, error);
@@ -136,21 +139,23 @@ export async function computeOpportunityMatches(
     const matchedClaims: MatchedClaim[] = (matches || [])
       .filter((m: { type: string }) => validClaimTypes.includes(m.type))
       .slice(0, 3) // Keep top 3 after filtering
-      .map((m: {
-        id: string;
-        type: string;
-        label: string;
-        description: string | null;
-        confidence: number;
-        similarity: number;
-      }) => ({
-        id: m.id,
-        type: m.type,
-        label: m.label,
-        description: m.description,
-        confidence: m.confidence,
-        similarity: m.similarity,
-      }));
+      .map(
+        (m: {
+          id: string;
+          type: string;
+          label: string;
+          description: string | null;
+          confidence: number;
+          similarity: number;
+        }) => ({
+          id: m.id,
+          type: m.type,
+          label: m.label,
+          description: m.description,
+          confidence: m.confidence,
+          similarity: m.similarity,
+        }),
+      );
 
     requirementMatches.push({
       requirement: req,
@@ -161,25 +166,27 @@ export async function computeOpportunityMatches(
 
   // Calculate scores
   const mustHaveMatches = requirementMatches.filter(
-    (rm) => rm.requirement.category === "mustHave" && rm.bestMatch
+    (rm) => rm.requirement.category === "mustHave" && rm.bestMatch,
   );
   const niceToHaveMatches = requirementMatches.filter(
-    (rm) => rm.requirement.category === "niceToHave" && rm.bestMatch
+    (rm) => rm.requirement.category === "niceToHave" && rm.bestMatch,
   );
 
   const totalMustHave = requirementMatches.filter(
-    (rm) => rm.requirement.category === "mustHave"
+    (rm) => rm.requirement.category === "mustHave",
   ).length;
   const totalNiceToHave = requirementMatches.filter(
-    (rm) => rm.requirement.category === "niceToHave"
+    (rm) => rm.requirement.category === "niceToHave",
   ).length;
 
-  const mustHaveScore = totalMustHave > 0
-    ? Math.round((mustHaveMatches.length / totalMustHave) * 100)
-    : 100;
-  const niceToHaveScore = totalNiceToHave > 0
-    ? Math.round((niceToHaveMatches.length / totalNiceToHave) * 100)
-    : 100;
+  const mustHaveScore =
+    totalMustHave > 0
+      ? Math.round((mustHaveMatches.length / totalMustHave) * 100)
+      : 100;
+  const niceToHaveScore =
+    totalNiceToHave > 0
+      ? Math.round((niceToHaveMatches.length / totalNiceToHave) * 100)
+      : 100;
 
   // Overall score weights must-have more heavily (70/30)
   const overallScore = Math.round(mustHaveScore * 0.7 + niceToHaveScore * 0.3);
@@ -192,7 +199,9 @@ export async function computeOpportunityMatches(
   // Identify strengths (good matches, sorted by similarity)
   const strengths = requirementMatches
     .filter((rm) => rm.bestMatch && rm.bestMatch.similarity > 0.4)
-    .sort((a, b) => (b.bestMatch?.similarity || 0) - (a.bestMatch?.similarity || 0));
+    .sort(
+      (a, b) => (b.bestMatch?.similarity || 0) - (a.bestMatch?.similarity || 0),
+    );
 
   return {
     overallScore,

@@ -14,7 +14,7 @@ import {
 import { cosineSimilarity } from "./eval/rule-checks";
 
 const BATCH_SIZE = 10;
-const SEMANTIC_DEDUPE_THRESHOLD = 0.70; // Catch semantically similar claims like CI/CD variants
+const SEMANTIC_DEDUPE_THRESHOLD = 0.7; // Catch semantically similar claims like CI/CD variants
 
 interface EvidenceItem {
   id: string;
