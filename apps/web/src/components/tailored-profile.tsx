@@ -154,15 +154,19 @@ export function TailoredProfile({
   const [editedFields, setEditedFields] = useState<string[]>([]);
   const [showRegenerateWarning, setShowRegenerateWarning] = useState(false);
   // Onboarding prompt state
-  const [showOpportunityAddedPrompt, setShowOpportunityAddedPrompt] = useState(false);
-  const [showProfileTailoredPrompt, setShowProfileTailoredPrompt] = useState(false);
+  const [showOpportunityAddedPrompt, setShowOpportunityAddedPrompt] =
+    useState(false);
+  const [showProfileTailoredPrompt, setShowProfileTailoredPrompt] =
+    useState(false);
   const hadExistingProfile = useRef(false);
 
   // Fetch existing profile on mount
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch(`/api/generate-profile?opportunityId=${opportunityId}`);
+        const response = await fetch(
+          `/api/generate-profile?opportunityId=${opportunityId}`,
+        );
         if (response.ok) {
           const data = await response.json();
           if (data.profile) {
@@ -295,7 +299,9 @@ export function TailoredProfile({
         <CardContent className="py-12 text-center">
           <SpinnerGap className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
           <p className="text-muted-foreground">Analyzing your profile...</p>
-          <p className="text-sm text-muted-foreground mt-1">This may take 10-20 seconds</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            This may take a moment
+          </p>
         </CardContent>
       </Card>
     );
@@ -317,7 +323,9 @@ export function TailoredProfile({
           <CardContent className="py-8">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="text-center sm:text-left">
-                <h3 className="text-lg font-semibold mb-1">Ready to stand out?</h3>
+                <h3 className="text-lg font-semibold mb-1">
+                  Ready to stand out?
+                </h3>
                 <p className="text-muted-foreground">
                   Generate a tailored resume and talking points for this role.
                 </p>
@@ -359,24 +367,29 @@ export function TailoredProfile({
   const { talking_points, narrative, resume_data } = profile;
 
   // Build PDF document data from resume
-  const pdfData: ResumeDocumentProps | null = resume_data ? {
-    name: userName || "Your Name",
-    email: userEmail,
-    phone: userPhone,
-    location: userLocation,
-    linkedin: userLinkedin,
-    github: userGithub,
-    website: userWebsite,
-    summary: resume_data.summary || "",
-    skills: resume_data.skills || [],
-    experience: resume_data.experience || [],
-    additionalExperience: resume_data.additionalExperience || [],
-    ventures: resume_data.ventures || [],
-    education: resume_data.education || [],
-  } : null;
+  const pdfData: ResumeDocumentProps | null = resume_data
+    ? {
+        name: userName || "Your Name",
+        email: userEmail,
+        phone: userPhone,
+        location: userLocation,
+        linkedin: userLinkedin,
+        github: userGithub,
+        website: userWebsite,
+        summary: resume_data.summary || "",
+        skills: resume_data.skills || [],
+        experience: resume_data.experience || [],
+        additionalExperience: resume_data.additionalExperience || [],
+        ventures: resume_data.ventures || [],
+        education: resume_data.education || [],
+      }
+    : null;
 
   // Check if there are hallucinations to warn about
-  const hasHallucinations = evaluation?.hallucinations && evaluation.hallucinations.length > 0;
+  // Filter to only hallucinations with actual content to display
+  const validHallucinations =
+    evaluation?.hallucinations?.filter((h) => h.field && h.reason) || [];
+  const hasHallucinations = validHallucinations.length > 0;
   const showEvalWarning = hasHallucinations && !evalWarningDismissed;
   const showEvalSuccess = evaluation && !hasHallucinations;
 
@@ -406,19 +419,31 @@ export function TailoredProfile({
         <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex gap-3">
-              <Warning className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" weight="fill" />
+              <Warning
+                className="h-5 w-5 text-amber-600 mt-0.5 shrink-0"
+                weight="fill"
+              />
               <div className="space-y-2">
                 <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
                   Potential accuracy issues detected
                 </p>
                 <p className="text-sm text-amber-700 dark:text-amber-300">
-                  Our AI review flagged {evaluation.hallucinations?.length} item(s) that may not be fully grounded in your uploaded documents. Review the highlighted sections before sharing.
+                  Our AI review flagged {validHallucinations.length} item(s)
+                  that may not be fully grounded in your uploaded documents.
+                  Review the highlighted sections before sharing.
                 </p>
                 <div className="space-y-1.5 mt-3">
-                  {evaluation.hallucinations?.map((h, i) => (
-                    <div key={i} className="text-xs bg-amber-100 dark:bg-amber-900/50 rounded px-2 py-1.5">
-                      <span className="font-medium text-amber-800 dark:text-amber-200">{h.field}:</span>{' '}
-                      <span className="text-amber-700 dark:text-amber-300">{h.reason}</span>
+                  {validHallucinations.map((h, i) => (
+                    <div
+                      key={i}
+                      className="text-xs bg-amber-100 dark:bg-amber-900/50 rounded px-2 py-1.5"
+                    >
+                      <span className="font-medium text-amber-800 dark:text-amber-200">
+                        {h.field}:
+                      </span>{" "}
+                      <span className="text-amber-700 dark:text-amber-300">
+                        {h.reason}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -440,13 +465,17 @@ export function TailoredProfile({
       {showEvalSuccess && (
         <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg p-4">
           <div className="flex gap-3">
-            <Check className="h-5 w-5 text-green-600 mt-0.5 shrink-0" weight="bold" />
+            <Check
+              className="h-5 w-5 text-green-600 mt-0.5 shrink-0"
+              weight="bold"
+            />
             <div>
               <p className="text-sm font-medium text-green-800 dark:text-green-200">
                 Profile verified
               </p>
               <p className="text-sm text-green-700 dark:text-green-300">
-                All content in this profile is grounded in your uploaded documents.
+                All content in this profile is grounded in your uploaded
+                documents.
               </p>
             </div>
           </div>
@@ -465,14 +494,14 @@ export function TailoredProfile({
           {talking_points.strengths.length === 0 &&
             talking_points.gaps.length === 0 &&
             talking_points.inferences.length === 0 && (
-            <Card>
-              <CardContent className="py-8 text-center">
-                <p className="text-muted-foreground">
-                  No talking points generated. Try regenerating the profile.
-                </p>
-              </CardContent>
-            </Card>
-          )}
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <p className="text-muted-foreground">
+                    No talking points generated. Try regenerating the profile.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
           {/* Strengths */}
           {talking_points.strengths.length > 0 && (
@@ -540,7 +569,9 @@ export function TailoredProfile({
                 {talking_points.inferences.map((inf, i) => (
                   <div key={i} className="border-l-2 border-purple-500 pl-3">
                     <p className="font-medium">{inf.inferred_claim}</p>
-                    <p className="text-sm text-muted-foreground">{inf.reasoning}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {inf.reasoning}
+                    </p>
                   </div>
                 ))}
               </CardContent>
@@ -548,10 +579,14 @@ export function TailoredProfile({
           )}
 
           {/* Required Qualifications */}
-          {requirementMatches.filter((rm) => rm.requirement.category === "mustHave").length > 0 && (
+          {requirementMatches.filter(
+            (rm) => rm.requirement.category === "mustHave",
+          ).length > 0 && (
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Required Qualifications</CardTitle>
+                <CardTitle className="text-base">
+                  Required Qualifications
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">
@@ -565,7 +600,11 @@ export function TailoredProfile({
                           <X className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
                         )}
                         <div className="flex-1">
-                          <span className={rm.bestMatch ? "" : "text-muted-foreground"}>
+                          <span
+                            className={
+                              rm.bestMatch ? "" : "text-muted-foreground"
+                            }
+                          >
                             {rm.requirement.text}
                           </span>
                           {rm.bestMatch && (
@@ -582,7 +621,9 @@ export function TailoredProfile({
           )}
 
           {/* Nice to Have */}
-          {requirementMatches.filter((rm) => rm.requirement.category === "niceToHave").length > 0 && (
+          {requirementMatches.filter(
+            (rm) => rm.requirement.category === "niceToHave",
+          ).length > 0 && (
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Nice to Have</CardTitle>
@@ -599,7 +640,11 @@ export function TailoredProfile({
                           <X className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
                         )}
                         <div className="flex-1">
-                          <span className={rm.bestMatch ? "" : "text-muted-foreground"}>
+                          <span
+                            className={
+                              rm.bestMatch ? "" : "text-muted-foreground"
+                            }
+                          >
                             {rm.requirement.text}
                           </span>
                           {rm.bestMatch && (
@@ -619,7 +664,9 @@ export function TailoredProfile({
         <TabsContent value="narrative" className="mt-4">
           <Card>
             <CardHeader className="pb-3 flex flex-row items-center justify-between">
-              <CardTitle className="text-base">Cover Letter Narrative</CardTitle>
+              <CardTitle className="text-base">
+                Cover Letter Narrative
+              </CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
@@ -675,11 +722,15 @@ export function TailoredProfile({
               {/* Summary */}
               <Card>
                 <CardHeader className="pb-3 flex flex-row items-center justify-between">
-                  <CardTitle className="text-base">Professional Summary</CardTitle>
+                  <CardTitle className="text-base">
+                    Professional Summary
+                  </CardTitle>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => copyToClipboard(resume_data.summary, "summary")}
+                    onClick={() =>
+                      copyToClipboard(resume_data.summary, "summary")
+                    }
                   >
                     {copied === "summary" ? (
                       <Check className="h-4 w-4 text-green-500" />
@@ -703,216 +754,246 @@ export function TailoredProfile({
                 </CardContent>
               </Card>
 
-          {/* Experience */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Experience</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {resume_data.experience.map((job, i) => (
-                <div key={i}>
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-start gap-3">
-                      <CompanyLogo
-                        domain={job.companyDomain}
-                        companyName={job.company}
-                        size={32}
-                        className="mt-0.5 shrink-0"
-                      />
-                      <div>
-                        <p className="font-semibold">{job.title}</p>
-                        <p className="text-sm text-muted-foreground">{job.company}</p>
-                      </div>
-                    </div>
-                    <div className="text-right text-sm text-muted-foreground">
-                      <p>{job.dates}</p>
-                      {job.location && <p>{job.location}</p>}
-                    </div>
-                  </div>
-                  {job.bullets.length > 0 && (
-                    <ul className="list-disc list-inside space-y-1 ml-11">
-                      {job.bullets.map((bullet, j) => (
-                        <li key={j} className="text-sm">
-                          <EditableText
-                            value={bullet}
-                            fieldPath={`experience.${i}.bullets.${j}`}
-                            contentType="bullet"
-                            isEdited={editedFields.includes(`experience.${i}.bullets.${j}`)}
-                            opportunityId={opportunityId}
-                            onUpdate={handleContentUpdate}
-                            onRevert={handleRevert}
+              {/* Experience */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Experience</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {resume_data.experience.map((job, i) => (
+                    <div key={i}>
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-start gap-3">
+                          <CompanyLogo
+                            domain={job.companyDomain}
+                            companyName={job.company}
+                            size={32}
+                            className="mt-0.5 shrink-0"
                           />
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Additional Experience - lighter on details, older roles */}
-          {resume_data.additionalExperience?.length > 0 && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Additional Experience</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {resume_data.additionalExperience.map((job, i) => (
-                  <div key={i}>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3">
-                        <CompanyLogo
-                          domain={job.companyDomain}
-                          companyName={job.company}
-                          size={28}
-                          className="mt-0.5 shrink-0"
-                        />
-                        <div>
-                          <p className="font-medium">{job.title}</p>
-                          <p className="text-sm text-muted-foreground">{job.company}</p>
+                          <div>
+                            <p className="font-semibold">{job.title}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {job.company}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right text-sm text-muted-foreground">
+                          <p>{job.dates}</p>
+                          {job.location && <p>{job.location}</p>}
                         </div>
                       </div>
-                      <div className="text-right text-sm text-muted-foreground">
-                        <p>{job.dates}</p>
-                        {job.location && <p>{job.location}</p>}
-                      </div>
-                    </div>
-                    {job.bullets.length > 0 && (
-                      <ul className="list-disc list-inside space-y-1 mt-1 ml-10">
-                        {job.bullets.map((bullet, j) => (
-                          <li key={j} className="text-sm">
-                            <EditableText
-                              value={bullet}
-                              fieldPath={`additionalExperience.${i}.bullets.${j}`}
-                              contentType="bullet"
-                              isEdited={editedFields.includes(`additionalExperience.${i}.bullets.${j}`)}
-                              opportunityId={opportunityId}
-                              onUpdate={handleContentUpdate}
-                              onRevert={handleRevert}
-                            />
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Ventures */}
-          {resume_data.ventures?.length > 0 && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Ventures & Projects</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {resume_data.ventures.map((venture, i) => (
-                  <div key={i} className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{venture.name}</p>
-                        {venture.status && (
-                          <Badge variant="outline" className="text-xs">
-                            {venture.status}
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">{venture.role}</p>
-                      {venture.description && (
-                        <p className="text-sm mt-1">{venture.description}</p>
+                      {job.bullets.length > 0 && (
+                        <ul className="list-disc list-inside space-y-1 ml-11">
+                          {job.bullets.map((bullet, j) => (
+                            <li key={j} className="text-sm">
+                              <EditableText
+                                value={bullet}
+                                fieldPath={`experience.${i}.bullets.${j}`}
+                                contentType="bullet"
+                                isEdited={editedFields.includes(
+                                  `experience.${i}.bullets.${j}`,
+                                )}
+                                opportunityId={opportunityId}
+                                onUpdate={handleContentUpdate}
+                                onRevert={handleRevert}
+                              />
+                            </li>
+                          ))}
+                        </ul>
                       )}
                     </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
+                  ))}
+                </CardContent>
+              </Card>
 
-          {/* Skills - Grid Layout */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Skills</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* Handle both old format (string[]) and new format (SkillCategory[]) */}
-              {Array.isArray(resume_data.skills) && resume_data.skills.length > 0 && (
-                typeof resume_data.skills[0] === "string" ? (
-                  // Old format: flat array of strings - simple grid
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                    {(resume_data.skills as unknown as string[]).map((skill, i) => (
-                      <div
-                        key={i}
-                        className={`px-3 py-1.5 rounded-md text-sm ${
-                          i < 5
-                            ? "bg-primary/10 text-primary font-medium"
-                            : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {skill}
+              {/* Additional Experience - lighter on details, older roles */}
+              {resume_data.additionalExperience?.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">
+                      Additional Experience
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {resume_data.additionalExperience.map((job, i) => (
+                      <div key={i}>
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start gap-3">
+                            <CompanyLogo
+                              domain={job.companyDomain}
+                              companyName={job.company}
+                              size={28}
+                              className="mt-0.5 shrink-0"
+                            />
+                            <div>
+                              <p className="font-medium">{job.title}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {job.company}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right text-sm text-muted-foreground">
+                            <p>{job.dates}</p>
+                            {job.location && <p>{job.location}</p>}
+                          </div>
+                        </div>
+                        {job.bullets.length > 0 && (
+                          <ul className="list-disc list-inside space-y-1 mt-1 ml-10">
+                            {job.bullets.map((bullet, j) => (
+                              <li key={j} className="text-sm">
+                                <EditableText
+                                  value={bullet}
+                                  fieldPath={`additionalExperience.${i}.bullets.${j}`}
+                                  contentType="bullet"
+                                  isEdited={editedFields.includes(
+                                    `additionalExperience.${i}.bullets.${j}`,
+                                  )}
+                                  opportunityId={opportunityId}
+                                  onUpdate={handleContentUpdate}
+                                  onRevert={handleRevert}
+                                />
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
                     ))}
-                  </div>
-                ) : (
-                  // New format: categorized grid
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {(resume_data.skills as SkillCategory[]).map((category, catIndex) => (
-                      <div
-                        key={catIndex}
-                        className={`p-3 rounded-lg border ${
-                          catIndex === 0 ? "bg-primary/5 border-primary/20" : "bg-muted/30 border-border"
-                        }`}
-                      >
-                        <h4 className={`text-xs font-semibold uppercase tracking-wide mb-2 ${
-                          catIndex === 0 ? "text-primary" : "text-muted-foreground"
-                        }`}>
-                          {category.category}
-                        </h4>
-                        <div className="flex flex-wrap gap-1.5">
-                          {category.skills.map((skill, i) => (
-                            <span
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Ventures */}
+              {resume_data.ventures?.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">
+                      Ventures & Projects
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {resume_data.ventures.map((venture, i) => (
+                      <div key={i} className="flex items-start justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium">{venture.name}</p>
+                            {venture.status && (
+                              <Badge variant="outline" className="text-xs">
+                                {venture.status}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {venture.role}
+                          </p>
+                          {venture.description && (
+                            <p className="text-sm mt-1">
+                              {venture.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Skills - Grid Layout */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Skills</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {/* Handle both old format (string[]) and new format (SkillCategory[]) */}
+                  {Array.isArray(resume_data.skills) &&
+                    resume_data.skills.length > 0 &&
+                    (typeof resume_data.skills[0] === "string" ? (
+                      // Old format: flat array of strings - simple grid
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                        {(resume_data.skills as unknown as string[]).map(
+                          (skill, i) => (
+                            <div
                               key={i}
-                              className={`text-xs px-2 py-0.5 rounded ${
-                                catIndex === 0 && i < 3
-                                  ? "bg-primary/15 text-primary font-medium"
-                                  : "bg-background text-foreground/70"
+                              className={`px-3 py-1.5 rounded-md text-sm ${
+                                i < 5
+                                  ? "bg-primary/10 text-primary font-medium"
+                                  : "bg-muted text-muted-foreground"
                               }`}
                             >
                               {skill}
-                            </span>
-                          ))}
-                        </div>
+                            </div>
+                          ),
+                        )}
+                      </div>
+                    ) : (
+                      // New format: categorized grid
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {(resume_data.skills as SkillCategory[]).map(
+                          (category, catIndex) => (
+                            <div
+                              key={catIndex}
+                              className={`p-3 rounded-lg border ${
+                                catIndex === 0
+                                  ? "bg-primary/5 border-primary/20"
+                                  : "bg-muted/30 border-border"
+                              }`}
+                            >
+                              <h4
+                                className={`text-xs font-semibold uppercase tracking-wide mb-2 ${
+                                  catIndex === 0
+                                    ? "text-primary"
+                                    : "text-muted-foreground"
+                                }`}
+                              >
+                                {category.category}
+                              </h4>
+                              <div className="flex flex-wrap gap-1.5">
+                                {category.skills.map((skill, i) => (
+                                  <span
+                                    key={i}
+                                    className={`text-xs px-2 py-0.5 rounded ${
+                                      catIndex === 0 && i < 3
+                                        ? "bg-primary/15 text-primary font-medium"
+                                        : "bg-background text-foreground/70"
+                                    }`}
+                                  >
+                                    {skill}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          ),
+                        )}
                       </div>
                     ))}
-                  </div>
-                )
-              )}
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
 
-          {/* Education */}
-          {resume_data.education.length > 0 && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Education</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {resume_data.education.map((edu, i) => (
-                  <div key={i} className="flex justify-between">
-                    <div>
-                      <p className="font-medium">{edu.degree}</p>
-                      <p className="text-sm text-muted-foreground">{edu.institution}</p>
-                    </div>
-                    {edu.year && (
-                      <p className="text-sm text-muted-foreground">{edu.year}</p>
-                    )}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
-          </>
+              {/* Education */}
+              {resume_data.education.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Education</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {resume_data.education.map((edu, i) => (
+                      <div key={i} className="flex justify-between">
+                        <div>
+                          <p className="font-medium">{edu.degree}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {edu.institution}
+                          </p>
+                        </div>
+                        {edu.year && (
+                          <p className="text-sm text-muted-foreground">
+                            {edu.year}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+            </>
           )}
         </TabsContent>
       </Tabs>

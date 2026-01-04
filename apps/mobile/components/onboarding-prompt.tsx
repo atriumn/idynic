@@ -45,9 +45,8 @@ export function OnboardingPrompt({
   onDismiss,
 }: OnboardingPromptProps) {
   const router = useRouter();
-  const { getPrompt, dismissPrompt, isLoading } = useOnboardingProgress(
-    mobileStorageAdapter
-  );
+  const { getPrompt, dismissPrompt, isLoading } =
+    useOnboardingProgress(mobileStorageAdapter);
 
   const rawPrompt = getPrompt(promptKey);
 

@@ -1,9 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, Pressable, Image, Linking, useWindowDimensions } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import RenderHtml from 'react-native-render-html';
-import * as Clipboard from 'expo-clipboard';
+import { useState, useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  ActivityIndicator,
+  Pressable,
+  Image,
+  Linking,
+} from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import * as Clipboard from "expo-clipboard";
 import {
   ArrowLeft,
   Building2,
@@ -23,7 +30,9 @@ import {
   Check,
   GraduationCap,
   Rocket,
-} from 'lucide-react-native';
+  Cuboid,
+  Target,
+} from "lucide-react-native";
 import {
   useOpportunity,
   useTailoredProfile,
@@ -31,10 +40,10 @@ import {
   ResumeData,
   ResumeExperience,
   SkillCategory,
-} from '../../../hooks/use-opportunity';
-import { getRequirements } from '../../../hooks/use-opportunities';
-import { useCreateSharedLink } from '../../../hooks/use-shared-links';
-import { OnboardingPrompt } from '../../../components/onboarding-prompt';
+} from "../../../hooks/use-opportunity";
+import { getRequirements } from "../../../hooks/use-opportunities";
+import { useCreateSharedLink } from "../../../hooks/use-shared-links";
+import { OnboardingPrompt } from "../../../components/onboarding-prompt";
 
 /**
  * Render markdown bold (**text**) as styled Text elements
@@ -42,26 +51,50 @@ import { OnboardingPrompt } from '../../../components/onboarding-prompt';
 function renderMarkdownBold(text: string): React.ReactNode {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
   return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <Text key={i} className="font-semibold text-white">{part.slice(2, -2)}</Text>;
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <Text key={i} className="font-semibold text-white">
+          {part.slice(2, -2)}
+        </Text>
+      );
     }
     return part;
   });
 }
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  tracking: { bg: 'bg-slate-700', text: 'text-slate-300' },
-  applied: { bg: 'bg-blue-900', text: 'text-blue-300' },
-  interviewing: { bg: 'bg-amber-900', text: 'text-amber-300' },
-  offer: { bg: 'bg-green-900', text: 'text-green-300' },
-  rejected: { bg: 'bg-red-900', text: 'text-red-300' },
-  archived: { bg: 'bg-slate-800', text: 'text-slate-400' },
+  tracking: { bg: "bg-slate-700", text: "text-slate-300" },
+  applied: { bg: "bg-blue-900", text: "text-blue-300" },
+  interviewing: { bg: "bg-amber-900", text: "text-amber-300" },
+  offer: { bg: "bg-green-900", text: "text-green-300" },
+  rejected: { bg: "bg-red-900", text: "text-red-300" },
+  archived: { bg: "bg-slate-800", text: "text-slate-400" },
 };
 
-function formatSalary(min: number | null, max: number | null, currency: string | null): string | null {
+/**
+ * Get logo URL from company domain using logo.dev service
+ */
+function getLogoUrl(companyUrl: string | null | undefined): string | null {
+  if (!companyUrl) return null;
+  try {
+    const url = new URL(companyUrl);
+    const domain = url.hostname.replace(/^www\./, "");
+    return `https://img.logo.dev/${domain}?token=pk_b3U88G0OTNKjNTpAlTU_OQ&retina=true`;
+  } catch {
+    return null;
+  }
+}
+
+function formatSalary(
+  min: number | null,
+  max: number | null,
+  currency: string | null,
+): string | null {
   if (!min && !max) return null;
-  const curr = currency || '$';
-  const formatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+  const curr = currency || "$";
+  const formatter = new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 0,
+  });
   if (min && max) {
     return `${curr}${formatter.format(min)} - ${curr}${formatter.format(max)}`;
   }
@@ -70,30 +103,73 @@ function formatSalary(min: number | null, max: number | null, currency: string |
   return null;
 }
 
-function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+function Section({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <View className="mb-6">
       <View className="flex-row items-center gap-2 mb-3">
         {icon}
-        <Text className="text-sm font-bold text-slate-400 uppercase tracking-wider">{title}</Text>
+        <Text className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+          {title}
+        </Text>
       </View>
       {children}
     </View>
   );
 }
 
-function RequirementsList({ items, label }: { items: string[]; label: string }) {
+function RequirementsList({
+  items,
+  label,
+  requirementMatches = [],
+}: {
+  items: string[];
+  label: string;
+  requirementMatches?: any[];
+}) {
   if (!items || items.length === 0) return null;
 
   return (
-    <View className="mb-4">
-      <Text className="text-xs font-bold text-slate-500 uppercase mb-2">{label}</Text>
-      {items.map((item, index) => (
-        <View key={index} className="flex-row items-start gap-2 mb-2">
-          <View className="h-1.5 w-1.5 rounded-full bg-slate-500 mt-1.5" />
-          <Text className="text-sm text-slate-300 flex-1">{item}</Text>
-        </View>
-      ))}
+    <View className="mb-4 last:mb-0">
+      <Text className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">
+        {label}
+      </Text>
+      {items.map((item, index) => {
+        const match = requirementMatches.find(
+          (rm) => rm.requirement.text === item,
+        );
+        return (
+          <View key={index} className="mb-3">
+            <View className="flex-row items-start gap-2.5">
+              {match?.bestMatch ? (
+                <CheckCircle2 color="#4ade80" size={14} />
+              ) : (
+                <View className="h-1.5 w-1.5 rounded-full bg-slate-600 mt-2" />
+              )}
+              <Text className="text-sm text-slate-300 flex-1 leading-relaxed">
+                {item}
+              </Text>
+            </View>
+            {match?.bestMatch && (
+              <View className="ml-6 mt-1 flex-row items-center gap-1.5">
+                <View className="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 flex-row items-center gap-1">
+                  <Cuboid size={10} color="#3b82f6" />
+                  <Text className="text-[9px] font-bold text-blue-400 uppercase tracking-tight">
+                    {match.bestMatch.label}
+                  </Text>
+                </View>
+              </View>
+            )}
+          </View>
+        );
+      })}
     </View>
   );
 }
@@ -104,84 +180,109 @@ function BulletList({ items, color }: { items: unknown; color: string }) {
   return (
     <View>
       {items.map((item, index) => (
-        <View key={index} className="flex-row items-start gap-2 mb-2">
-          <View className={`h-1.5 w-1.5 rounded-full mt-1.5 ${color}`} />
-          <Text className="text-sm text-slate-300 flex-1">{String(item)}</Text>
+        <View key={index} className="flex-row items-start gap-2.5 mb-2.5">
+          <View className={`h-1 w-1 rounded-full mt-2 ${color}`} />
+          <Text className="text-sm text-slate-300 flex-1 leading-relaxed">
+            {String(item)}
+          </Text>
         </View>
       ))}
     </View>
   );
 }
 
-function TailoredWorkHistory({ experience }: { experience: ResumeExperience[] }) {
+function TailoredWorkHistory({
+  experience,
+  isStrength = false,
+}: {
+  experience: ResumeExperience[];
+  isStrength?: boolean;
+}) {
   if (!experience || experience.length === 0) return null;
+
+  // Helper to get logo URL from domain
+  const getCompanyLogoUrl = (
+    domain: string | null | undefined,
+  ): string | null => {
+    if (!domain) return null;
+    const cleanDomain = domain.replace(/^www\./, "");
+    return `https://img.logo.dev/${cleanDomain}?token=pk_b3U88G0OTNKjNTpAlTU_OQ&retina=true`;
+  };
 
   return (
     <View>
       {experience.map((job, index) => (
-        <View key={index} className="mb-4 last:mb-0">
-          <Text className="text-white font-semibold">{job.title}</Text>
-          <Text className="text-teal-400 text-sm">{job.company}</Text>
-          <View className="flex-row items-center gap-2 mt-0.5">
-            <Text className="text-xs text-slate-500">{job.dates}</Text>
-            {job.location && <Text className="text-xs text-slate-500">• {job.location}</Text>}
-          </View>
-          {job.bullets && job.bullets.length > 0 && (
-            <View className="mt-2">
-              {job.bullets.map((bullet, i) => (
-                <View key={i} className="flex-row items-start gap-2 mb-1">
-                  <View className="h-1 w-1 rounded-full bg-slate-500 mt-2" />
-                  <Text className="text-sm text-slate-300 flex-1">
-                    {renderMarkdownBold(bullet)}
-                  </Text>
+        <View
+          key={index}
+          className="mb-4 last:mb-0 rounded-xl border border-white/5 bg-black/20 overflow-hidden flex-row"
+        >
+          {isStrength && <View className="w-1.5 bg-green-500 shrink-0" />}
+          <View className="p-4 flex-1">
+            <View className="flex-row items-start gap-3 mb-1.5">
+              {getCompanyLogoUrl(job.companyDomain) ? (
+                <View className="h-10 w-10 rounded-lg bg-white items-center justify-center overflow-hidden shrink-0">
+                  <Image
+                    source={{ uri: getCompanyLogoUrl(job.companyDomain)! }}
+                    className="h-8 w-8"
+                    resizeMode="contain"
+                  />
                 </View>
-              ))}
+              ) : (
+                <View className="h-10 w-10 rounded-lg bg-slate-700 items-center justify-center shrink-0">
+                  <Building2 color="#94a3b8" size={20} />
+                </View>
+              )}
+              <View className="flex-1">
+                <Text className="text-base font-bold text-white tracking-tight">
+                  {job.title}
+                </Text>
+                <Text className="text-teal-400 text-xs font-bold">
+                  {job.company}
+                </Text>
+              </View>
             </View>
-          )}
-        </View>
-      ))}
-    </View>
-  );
-}
 
-function TailoredVentures({ ventures }: { ventures: ResumeData['ventures'] }) {
-  if (!ventures || ventures.length === 0) return null;
-
-  return (
-    <View>
-      {ventures.map((venture, index) => (
-        <View key={index} className="mb-3 last:mb-0">
-          <View className="flex-row items-center gap-2">
-            <Text className="text-white font-semibold">{venture.name}</Text>
-            {venture.status && (
-              <View className="bg-amber-900/50 px-2 py-0.5 rounded">
-                <Text className="text-amber-300 text-xs">{venture.status}</Text>
+            {job.bullets && job.bullets.length > 0 && (
+              <View className="space-y-2">
+                {job.bullets.map((bullet, i) => (
+                  <View key={i} className="flex-row items-start gap-2.5">
+                    <View className="h-1 w-1 rounded-full bg-slate-700 mt-2" />
+                    <Text className="text-sm text-slate-300 flex-1 leading-relaxed">
+                      {renderMarkdownBold(bullet)}
+                    </Text>
+                  </View>
+                ))}
               </View>
             )}
           </View>
-          <Text className="text-teal-400 text-sm">{venture.role}</Text>
-          {venture.description && (
-            <Text className="text-slate-300 text-sm mt-1">{venture.description}</Text>
-          )}
         </View>
       ))}
     </View>
   );
 }
 
-function TailoredEducation({ education }: { education: ResumeData['education'] }) {
+function TailoredEducation({
+  education,
+}: {
+  education: ResumeData["education"];
+}) {
   if (!education || education.length === 0) return null;
 
   return (
     <View>
       {education.map((edu, index) => (
-        <View key={index} className="mb-3 last:mb-0 flex-row justify-between">
+        <View
+          key={index}
+          className="mb-3 last:mb-0 flex-row justify-between bg-black/20 border border-white/5 rounded-xl p-4"
+        >
           <View className="flex-1">
-            <Text className="text-white font-semibold">{edu.degree}</Text>
-            <Text className="text-teal-400 text-sm">{edu.institution}</Text>
+            <Text className="text-white font-bold">{edu.degree}</Text>
+            <Text className="text-teal-400 text-xs font-bold mt-1">
+              {edu.institution}
+            </Text>
           </View>
           {edu.year && (
-            <Text className="text-slate-500 text-sm">{edu.year}</Text>
+            <Text className="text-slate-500 text-xs font-mono">{edu.year}</Text>
           )}
         </View>
       ))}
@@ -192,38 +293,43 @@ function TailoredEducation({ education }: { education: ResumeData['education'] }
 function TailoredSkills({ skills }: { skills: SkillCategory[] | string[] }) {
   if (!skills || skills.length === 0) return null;
 
-  // Handle old format (string[])
-  if (typeof skills[0] === 'string') {
+  if (typeof skills[0] === "string") {
     return (
       <View className="flex-row flex-wrap gap-2">
         {(skills as string[]).map((skill, index) => (
-          <View key={index} className="bg-teal-900/50 px-3 py-1 rounded-full">
-            <Text className="text-teal-300 text-sm">{skill}</Text>
+          <View
+            key={index}
+            className="bg-slate-800 border border-white/5 px-3 py-1.5 rounded-lg"
+          >
+            <Text className="text-slate-300 text-sm font-medium">{skill}</Text>
           </View>
         ))}
       </View>
     );
   }
 
-  // Handle new format (SkillCategory[])
   return (
     <View className="gap-4">
       {(skills as SkillCategory[]).map((category, catIndex) => (
         <View key={catIndex}>
-          <Text className="text-xs font-bold text-slate-500 uppercase mb-2">
+          <Text className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2.5">
             {category.category}
           </Text>
           <View className="flex-row flex-wrap gap-2">
             {category.skills.map((skill, index) => (
               <View
                 key={index}
-                className={`px-3 py-1 rounded-full ${
-                  catIndex === 0 && index < 3 ? 'bg-teal-600' : 'bg-slate-700'
+                className={`px-3 py-1.5 rounded-lg border ${
+                  catIndex === 0 && index < 3
+                    ? "bg-teal-500/10 border-teal-500/20"
+                    : "bg-slate-800 border-white/5"
                 }`}
               >
                 <Text
                   className={`text-sm ${
-                    catIndex === 0 && index < 3 ? 'text-white font-medium' : 'text-slate-300'
+                    catIndex === 0 && index < 3
+                      ? "text-teal-400 font-bold"
+                      : "text-slate-300 font-medium"
                   }`}
                 >
                   {skill}
@@ -238,25 +344,28 @@ function TailoredSkills({ skills }: { skills: SkillCategory[] | string[] }) {
 }
 
 export default function OpportunityDetailScreen() {
+  // Simple hooks - no try-catch wrapping
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const [activeTab, setActiveTab] = useState<'tailored' | 'research'>('tailored');
-  const [shareCopied, setShareCopied] = useState(false);
-  const [showOpportunityAddedPrompt, setShowOpportunityAddedPrompt] = useState(false);
-  const [showProfileTailoredPrompt, setShowProfileTailoredPrompt] = useState(false);
 
-  // Track if we've shown the opportunity added prompt for this session
+  const [activeTab, setActiveTab] = useState<"tailored" | "research">(
+    "tailored",
+  );
+  const [shareCopied, setShareCopied] = useState(false);
+  const [showOpportunityAddedPrompt, setShowOpportunityAddedPrompt] =
+    useState(false);
+  const [showProfileTailoredPrompt, setShowProfileTailoredPrompt] =
+    useState(false);
+
   const hasShownOpportunityPrompt = useRef(false);
-  // Track previous tailored profile state to detect when it becomes available
   const hadTailoredProfile = useRef<boolean | null>(null);
 
-  const { data: opportunity, isLoading, error } = useOpportunity(id || '');
-  const { data: tailoredProfile, isLoading: tailoredLoading } = useTailoredProfile(id || '');
-  const generateProfile = useGenerateTailoredProfile(id || '');
+  const { data: opportunity, isLoading, error } = useOpportunity(id || "");
+  const { data: tailoredProfile, isLoading: tailoredLoading } =
+    useTailoredProfile(id || "");
+  const generateProfile = useGenerateTailoredProfile(id || "");
   const createSharedLink = useCreateSharedLink();
 
-  // Show "after_opportunity_added" prompt when landing on an opportunity without a tailored profile
   useEffect(() => {
     if (
       !isLoading &&
@@ -270,16 +379,10 @@ export default function OpportunityDetailScreen() {
     }
   }, [isLoading, tailoredLoading, opportunity, tailoredProfile]);
 
-  // Show "after_profile_tailored" prompt when a tailored profile is newly generated
   useEffect(() => {
-    // Only trigger when we go from no profile to having a profile
-    if (
-      hadTailoredProfile.current === false &&
-      tailoredProfile?.resume_data
-    ) {
+    if (hadTailoredProfile.current === false && tailoredProfile?.resume_data) {
       setShowProfileTailoredPrompt(true);
     }
-    // Update ref with current state (after initial load)
     if (!tailoredLoading) {
       hadTailoredProfile.current = !!tailoredProfile?.resume_data;
     }
@@ -290,17 +393,15 @@ export default function OpportunityDetailScreen() {
   };
 
   const handleOpportunityAddedAction = (action: string) => {
-    if (action === 'generate_tailored_profile') {
+    if (action === "generate_tailored_profile") {
       handleGenerateProfile();
     }
   };
 
   const handleProfileTailoredAction = (action: string) => {
-    if (action === 'share_profile') {
+    if (action === "share_profile") {
       handleShare();
-    } else if (action === 'download_pdf') {
-      // PDF download is not supported in mobile yet
-      // Could open share link or show a message
+    } else if (action === "download_pdf") {
       handleShare();
     }
   };
@@ -316,13 +417,16 @@ export default function OpportunityDetailScreen() {
       setShareCopied(true);
       setTimeout(() => setShareCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to create/copy share link:', err);
+      console.error("Failed to create/copy share link:", err);
     }
   };
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-slate-900 justify-center items-center" edges={['top', 'bottom']}>
+      <SafeAreaView
+        className="flex-1 bg-slate-950 justify-center items-center"
+        edges={["top", "bottom"]}
+      >
         <ActivityIndicator color="#14b8a6" size="large" />
       </SafeAreaView>
     );
@@ -330,51 +434,64 @@ export default function OpportunityDetailScreen() {
 
   if (error || !opportunity) {
     return (
-      <SafeAreaView className="flex-1 bg-slate-900 p-4" edges={['top', 'bottom']}>
-        <Pressable onPress={() => router.push('/opportunities')} className="flex-row items-center mb-4">
+      <SafeAreaView
+        className="flex-1 bg-slate-950 p-4"
+        edges={["top", "bottom"]}
+      >
+        <Pressable
+          onPress={() => router.push("/opportunities")}
+          className="flex-row items-center mb-4"
+        >
           <ArrowLeft color="#94a3b8" size={20} />
-          <Text className="text-slate-400 ml-2">Back</Text>
+          <Text className="text-slate-400 ml-2 font-bold uppercase tracking-tight text-xs">
+            Back
+          </Text>
         </Pressable>
-        <Text className="text-red-500">Failed to load opportunity</Text>
-        <Text className="text-slate-400 mt-2 text-sm">{error?.message || 'Opportunity not found'}</Text>
+        <Text className="text-red-500 font-bold">Failed to load target</Text>
+        <Text className="text-slate-400 mt-2 text-sm">
+          {error?.message || "Target not found"}
+        </Text>
       </SafeAreaView>
     );
   }
 
-  const status = opportunity.status || 'tracking';
+  const status = opportunity.status || "tracking";
   const colors = STATUS_COLORS[status] || STATUS_COLORS.tracking;
-  const salaryStr = formatSalary(opportunity.salary_min, opportunity.salary_max, opportunity.salary_currency);
+  const salaryStr = formatSalary(
+    opportunity.salary_min,
+    opportunity.salary_max,
+    opportunity.salary_currency,
+  );
   const reqs = getRequirements(opportunity.requirements);
 
-  const htmlStyles = {
-    body: { color: '#cbd5e1', fontSize: 14, lineHeight: 22 },
-    p: { marginBottom: 12 },
-    li: { marginBottom: 4 },
-    ul: { paddingLeft: 16 },
-    ol: { paddingLeft: 16 },
-    h1: { color: '#f8fafc', fontSize: 20, fontWeight: '700' as const, marginBottom: 8 },
-    h2: { color: '#f8fafc', fontSize: 18, fontWeight: '700' as const, marginBottom: 8 },
-    h3: { color: '#f8fafc', fontSize: 16, fontWeight: '600' as const, marginBottom: 6 },
-    strong: { color: '#f8fafc', fontWeight: '600' as const },
-    a: { color: '#14b8a6' },
-  };
-
   return (
-    <SafeAreaView className="flex-1 bg-slate-900" edges={['top', 'bottom']}>
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 32 }}>
+    <SafeAreaView className="flex-1 bg-slate-950" edges={["top", "bottom"]}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         {/* Header */}
         <View className="px-4 pt-2">
-          <Pressable onPress={() => router.push('/opportunities')} className="flex-row items-center mb-4 py-2">
+          <Pressable
+            onPress={() => router.push("/opportunities")}
+            className="flex-row items-center mb-4 py-2"
+          >
             <ArrowLeft color="#94a3b8" size={20} />
-            <Text className="text-slate-400 ml-2">Back to Opportunities</Text>
+            <Text className="text-slate-500 ml-2 font-black uppercase tracking-widest text-[10px]">
+              Back to Targets
+            </Text>
           </Pressable>
 
-          {/* Company Logo and Status */}
           <View className="flex-row items-start justify-between mb-4">
-            <View className="h-16 w-16 rounded-2xl bg-white items-center justify-center overflow-hidden">
-              {opportunity.company_logo_url ? (
+            <View className="h-16 w-16 rounded-2xl bg-white items-center justify-center overflow-hidden border-2 border-slate-800">
+              {opportunity.company_logo_url ||
+              getLogoUrl(opportunity.company_url) ? (
                 <Image
-                  source={{ uri: opportunity.company_logo_url }}
+                  source={{
+                    uri:
+                      opportunity.company_logo_url ||
+                      getLogoUrl(opportunity.company_url)!,
+                  }}
                   className="h-14 w-14"
                   resizeMode="contain"
                 />
@@ -382,123 +499,135 @@ export default function OpportunityDetailScreen() {
                 <Building2 color="#94a3b8" size={32} />
               )}
             </View>
-            <View className={`px-3 py-1.5 rounded-lg ${colors.bg}`}>
-              <Text className={`text-xs font-bold uppercase ${colors.text}`}>{status}</Text>
+            <View
+              className={`px-3 py-1.5 rounded-lg border ${colors.bg} border-white/5`}
+            >
+              <Text
+                className={`text-[10px] font-black uppercase tracking-widest ${colors.text}`}
+              >
+                {status}
+              </Text>
             </View>
           </View>
 
-          {/* Title and Company */}
-          <Text className="text-2xl font-bold text-white mb-2">{opportunity.title || 'Untitled Opportunity'}</Text>
-          <View className="flex-row items-center gap-2 mb-4">
-            <Text className="text-lg font-semibold text-teal-400">{opportunity.company || 'Direct Hire'}</Text>
+          <Text className="text-3xl font-black text-white mb-2 tracking-tight leading-tight">
+            {opportunity.title || "Untitled Target"}
+          </Text>
+          <View className="flex-row items-center gap-2 mb-6">
+            <View className="bg-slate-800 px-2 py-0.5 rounded">
+              <Text className="text-base font-bold text-teal-400 tracking-tight">
+                {opportunity.company || "Direct Hire"}
+              </Text>
+            </View>
             {opportunity.company_url && (
-              <Pressable onPress={() => Linking.openURL(opportunity.company_url!)}>
-                <Globe color="#64748b" size={18} />
+              <Pressable
+                onPress={() => Linking.openURL(opportunity.company_url!)}
+              >
+                <Globe color="#475569" size={18} />
               </Pressable>
             )}
           </View>
 
-          {/* Meta Info Pills */}
-          <View className="flex-row flex-wrap gap-2 mb-6">
+          <View className="flex-row flex-wrap gap-2 mb-8">
             {opportunity.location && (
-              <View className="flex-row items-center bg-slate-800 px-3 py-1.5 rounded-lg">
-                <MapPin color="#94a3b8" size={14} />
-                <Text className="text-sm text-slate-300 ml-1.5">{opportunity.location}</Text>
+              <View className="flex-row items-center bg-slate-900 px-3 py-1.5 rounded-lg border border-white/5">
+                <MapPin color="#64748b" size={14} />
+                <Text className="text-xs font-bold text-slate-400 ml-1.5">
+                  {opportunity.location}
+                </Text>
               </View>
             )}
             {opportunity.employment_type && (
-              <View className="flex-row items-center bg-slate-800 px-3 py-1.5 rounded-lg">
-                <Briefcase color="#94a3b8" size={14} />
-                <Text className="text-sm text-slate-300 ml-1.5">{opportunity.employment_type}</Text>
+              <View className="flex-row items-center bg-slate-900 px-3 py-1.5 rounded-lg border border-white/5">
+                <Briefcase color="#64748b" size={14} />
+                <Text className="text-xs font-bold text-slate-400 ml-1.5">
+                  {opportunity.employment_type}
+                </Text>
               </View>
             )}
             {salaryStr && (
-              <View className="flex-row items-center bg-green-900/50 px-3 py-1.5 rounded-lg">
+              <View className="flex-row items-center bg-green-900/20 px-3 py-1.5 rounded-lg border border-green-500/20">
                 <DollarSign color="#4ade80" size={14} />
-                <Text className="text-sm text-green-400 ml-1">{salaryStr}</Text>
+                <Text className="text-xs font-bold text-green-400 ml-1">
+                  {salaryStr}
+                </Text>
               </View>
             )}
           </View>
 
-          {/* Action Buttons */}
-          <View className="flex-row gap-3 mb-6">
-            {/* View Posting Button */}
+          <View className="flex-row gap-3 mb-8">
             {opportunity.url && (
               <Pressable
                 onPress={() => Linking.openURL(opportunity.url!)}
-                className={`py-3 px-4 rounded-xl flex-row items-center justify-center active:bg-teal-700 ${
-                  tailoredProfile?.id ? 'flex-1 bg-teal-600' : 'flex-1 bg-teal-600'
-                }`}
+                className="py-4 px-4 rounded-2xl flex-1 flex-row items-center justify-center bg-teal-600 shadow-lg shadow-teal-900/20"
               >
                 <ExternalLink color="white" size={18} />
-                <Text className="text-white font-bold ml-2">View Posting</Text>
+                <Text className="text-white font-black uppercase tracking-tighter ml-2">
+                  View Posting
+                </Text>
               </Pressable>
             )}
 
-            {/* Share Button - only show when tailored profile exists */}
             {tailoredProfile?.id && (
               <Pressable
                 onPress={handleShare}
                 disabled={createSharedLink.isPending}
-                className={`py-3 px-4 rounded-xl flex-row items-center justify-center ${
+                className={`py-4 px-4 rounded-2xl flex-row items-center justify-center ${
                   shareCopied
-                    ? 'bg-green-600'
-                    : createSharedLink.isPending
-                    ? 'bg-slate-700'
-                    : 'bg-slate-700 active:bg-slate-600'
+                    ? "bg-green-600"
+                    : "bg-slate-800 border border-slate-700"
                 }`}
               >
-                {createSharedLink.isPending ? (
-                  <ActivityIndicator color="white" size="small" />
-                ) : shareCopied ? (
-                  <>
-                    <Check color="white" size={18} />
-                    <Text className="text-white font-bold ml-2">Copied!</Text>
-                  </>
+                {shareCopied ? (
+                  <Check color="white" size={18} />
                 ) : (
-                  <>
-                    <Share2 color="white" size={18} />
-                    <Text className="text-white font-bold ml-2">Share</Text>
-                  </>
+                  <Share2 color="white" size={18} />
                 )}
+                <Text className="text-white font-bold ml-2">
+                  {shareCopied ? "Copied" : "Share"}
+                </Text>
               </Pressable>
             )}
           </View>
 
-          {/* Tab Switcher */}
-          <View className="flex-row bg-slate-800/50 rounded-xl p-1 mb-6">
+          <View className="flex-row bg-slate-900 border border-white/5 rounded-2xl p-1.5 mb-8 h-14">
             <Pressable
-              onPress={() => setActiveTab('tailored')}
-              className={`flex-1 py-3 rounded-lg ${activeTab === 'tailored' ? 'bg-slate-700' : ''}`}
+              onPress={() => setActiveTab("tailored")}
+              className={`flex-1 items-center justify-center rounded-xl ${activeTab === "tailored" ? "bg-slate-800" : ""}`}
             >
-              <Text className={`text-center text-xs font-bold uppercase tracking-wider ${activeTab === 'tailored' ? 'text-white' : 'text-slate-400'}`}>
+              <Text
+                className={`text-[10px] font-black uppercase tracking-[0.15em] ${activeTab === "tailored" ? "text-white" : "text-slate-500"}`}
+              >
                 Tailored Profile
               </Text>
             </Pressable>
             <Pressable
-              onPress={() => setActiveTab('research')}
-              className={`flex-1 py-3 rounded-lg ${activeTab === 'research' ? 'bg-slate-700' : ''}`}
+              onPress={() => setActiveTab("research")}
+              className={`flex-1 items-center justify-center rounded-xl ${activeTab === "research" ? "bg-slate-800" : ""}`}
             >
-              <Text className={`text-center text-xs font-bold uppercase tracking-wider ${activeTab === 'research' ? 'text-white' : 'text-slate-400'}`}>
+              <Text
+                className={`text-[10px] font-black uppercase tracking-[0.15em] ${activeTab === "research" ? "text-white" : "text-slate-500"}`}
+              >
                 Research
               </Text>
             </Pressable>
           </View>
         </View>
 
-        {/* Tab Content */}
-        {activeTab === 'tailored' ? (
+        {activeTab === "tailored" ? (
           <View className="px-4">
             {tailoredLoading ? (
-              <View className="py-8 items-center">
-                <ActivityIndicator color="#14b8a6" size="small" />
+              <View className="py-12 items-center">
+                <ActivityIndicator color="#14b8a6" size="large" />
               </View>
             ) : tailoredProfile && tailoredProfile.resume_data ? (
               <>
-                {/* Summary */}
                 {tailoredProfile.resume_data.summary && (
-                  <Section title="Summary" icon={<User color="#14b8a6" size={18} />}>
-                    <View className="bg-slate-800 rounded-xl p-4">
+                  <Section
+                    title="Professional Summary"
+                    icon={<User color="#14b8a6" size={18} />}
+                  >
+                    <View className="bg-slate-900 border border-white/5 rounded-2xl p-5 shadow-inner">
                       <Text className="text-sm text-slate-300 leading-relaxed">
                         {tailoredProfile.resume_data.summary}
                       </Text>
@@ -506,54 +635,66 @@ export default function OpportunityDetailScreen() {
                   </Section>
                 )}
 
-                {/* Tailored Experience */}
-                {tailoredProfile.resume_data.experience && tailoredProfile.resume_data.experience.length > 0 && (
-                  <Section title="Relevant Experience" icon={<Briefcase color="#14b8a6" size={18} />}>
-                    <View className="bg-slate-800 rounded-xl p-4">
-                      <TailoredWorkHistory experience={tailoredProfile.resume_data.experience} />
-                    </View>
-                  </Section>
-                )}
+                {tailoredProfile.resume_data.experience &&
+                  tailoredProfile.resume_data.experience.length > 0 && (
+                    <Section
+                      title="Experience"
+                      icon={<Cuboid color="#4ade80" size={18} />}
+                    >
+                      <TailoredWorkHistory
+                        experience={tailoredProfile.resume_data.experience}
+                        isStrength={true}
+                      />
+                    </Section>
+                  )}
 
-                {/* Additional Experience */}
-                {tailoredProfile.resume_data.additionalExperience && tailoredProfile.resume_data.additionalExperience.length > 0 && (
-                  <Section title="Additional Experience" icon={<Briefcase color="#94a3b8" size={18} />}>
-                    <View className="bg-slate-800 rounded-xl p-4">
-                      <TailoredWorkHistory experience={tailoredProfile.resume_data.additionalExperience} />
-                    </View>
-                  </Section>
-                )}
+                {tailoredProfile.resume_data.additionalExperience &&
+                  tailoredProfile.resume_data.additionalExperience.length >
+                    0 && (
+                    <Section
+                      title="Additional Experience"
+                      icon={<Briefcase color="#64748b" size={18} />}
+                    >
+                      <TailoredWorkHistory
+                        experience={
+                          tailoredProfile.resume_data.additionalExperience
+                        }
+                        isStrength={false}
+                      />
+                    </Section>
+                  )}
 
-                {/* Ventures */}
-                {tailoredProfile.resume_data.ventures && tailoredProfile.resume_data.ventures.length > 0 && (
-                  <Section title="Ventures & Projects" icon={<Rocket color="#f59e0b" size={18} />}>
-                    <View className="bg-slate-800 rounded-xl p-4">
-                      <TailoredVentures ventures={tailoredProfile.resume_data.ventures} />
-                    </View>
-                  </Section>
-                )}
+                {tailoredProfile.resume_data.skills &&
+                  tailoredProfile.resume_data.skills.length > 0 && (
+                    <Section
+                      title="Skills"
+                      icon={<Sparkles color="#14b8a6" size={18} />}
+                    >
+                      <TailoredSkills
+                        skills={tailoredProfile.resume_data.skills}
+                      />
+                    </Section>
+                  )}
 
-                {/* Tailored Skills */}
-                {tailoredProfile.resume_data.skills && tailoredProfile.resume_data.skills.length > 0 && (
-                  <Section title="Skills" icon={<Sparkles color="#14b8a6" size={18} />}>
-                    <TailoredSkills skills={tailoredProfile.resume_data.skills} />
-                  </Section>
-                )}
+                {tailoredProfile.resume_data.education &&
+                  tailoredProfile.resume_data.education.length > 0 && (
+                    <Section
+                      title="Education"
+                      icon={<GraduationCap color="#14b8a6" size={18} />}
+                    >
+                      <TailoredEducation
+                        education={tailoredProfile.resume_data.education}
+                      />
+                    </Section>
+                  )}
 
-                {/* Education */}
-                {tailoredProfile.resume_data.education && tailoredProfile.resume_data.education.length > 0 && (
-                  <Section title="Education" icon={<GraduationCap color="#14b8a6" size={18} />}>
-                    <View className="bg-slate-800 rounded-xl p-4">
-                      <TailoredEducation education={tailoredProfile.resume_data.education} />
-                    </View>
-                  </Section>
-                )}
-
-                {/* Narrative / Cover Letter */}
                 {tailoredProfile.narrative && (
-                  <Section title="Cover Letter Narrative" icon={<FileText color="#14b8a6" size={18} />}>
-                    <View className="bg-slate-800 rounded-xl p-4">
-                      <Text className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
+                  <Section
+                    title="Narrative"
+                    icon={<FileText color="#14b8a6" size={18} />}
+                  >
+                    <View className="bg-slate-900 border border-white/5 rounded-2xl p-5">
+                      <Text className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap font-medium">
                         {tailoredProfile.narrative}
                       </Text>
                     </View>
@@ -561,94 +702,119 @@ export default function OpportunityDetailScreen() {
                 )}
               </>
             ) : (
-              <View className="bg-slate-800/50 rounded-xl p-6 items-center">
-                <View className="h-16 w-16 rounded-full bg-slate-700 items-center justify-center mb-4">
-                  <Sparkles color="#64748b" size={28} />
+              <View className="bg-slate-900 border border-white/10 border-dashed rounded-3xl p-10 items-center">
+                <View className="h-20 w-20 rounded-2xl bg-teal-500/10 items-center justify-center mb-6 border border-teal-500/20">
+                  <Sparkles color="#14b8a6" size={40} />
                 </View>
-                <Text className="text-lg font-bold text-white mb-2 text-center">No Tailored Profile Yet</Text>
-                <Text className="text-slate-400 text-center text-sm mb-4">
-                  Generate an AI-tailored resume optimized for this opportunity.
+                <Text className="text-2xl font-black text-white mb-3 text-center tracking-tight">
+                  Ready to Assemble?
+                </Text>
+                <Text className="text-slate-400 text-center text-sm mb-8 px-4 leading-relaxed font-medium">
+                  Tailor your Evidence Blocks and generate a high-signal
+                  application for this target.
                 </Text>
                 <Pressable
                   onPress={handleGenerateProfile}
                   disabled={generateProfile.isPending}
-                  className={`py-3 px-6 rounded-xl flex-row items-center justify-center ${
-                    generateProfile.isPending ? 'bg-teal-800' : 'bg-teal-600 active:bg-teal-700'
+                  className={`py-4 px-10 rounded-2xl flex-row items-center justify-center shadow-xl ${
+                    generateProfile.isPending
+                      ? "bg-teal-800"
+                      : "bg-teal-600 active:bg-teal-700 shadow-teal-900/30"
                   }`}
                 >
                   {generateProfile.isPending ? (
                     <>
                       <ActivityIndicator color="white" size="small" />
-                      <Text className="text-white font-bold ml-2">Generating...</Text>
+                      <Text className="text-white font-black uppercase tracking-widest ml-3">
+                        Assembling...
+                      </Text>
                     </>
                   ) : (
                     <>
-                      <Sparkles color="white" size={18} />
-                      <Text className="text-white font-bold ml-2">Generate Tailored Profile</Text>
+                      <Rocket color="white" size={20} />
+                      <Text className="text-white font-black uppercase tracking-widest ml-3">
+                        Assemble now
+                      </Text>
                     </>
                   )}
                 </Pressable>
-                {generateProfile.isError && (
-                  <Text className="text-red-400 text-sm mt-3 text-center">
-                    {generateProfile.error?.message || 'Failed to generate profile'}
-                  </Text>
-                )}
               </View>
             )}
           </View>
         ) : (
           <View className="px-4">
-            {/* Requirements Section */}
             {reqs && (reqs.mustHave?.length || reqs.niceToHave?.length) ? (
-              <Section title="Requirements" icon={<CheckCircle2 color="#14b8a6" size={18} />}>
-                <View className="bg-slate-800 rounded-xl p-4">
-                  <RequirementsList items={reqs.mustHave || []} label="Must Have" />
-                  <RequirementsList items={reqs.niceToHave || []} label="Nice to Have" />
+              <Section
+                title="System Alignment"
+                icon={<Target color="#14b8a6" size={18} />}
+              >
+                <View className="bg-slate-900 border border-white/5 rounded-2xl p-5">
+                  <RequirementsList
+                    items={reqs.mustHave || []}
+                    label="Priority Requirements"
+                  />
+                  <View className="h-px bg-white/5 my-4" />
+                  <RequirementsList
+                    items={reqs.niceToHave || []}
+                    label="Bonus Signals"
+                  />
                 </View>
               </Section>
             ) : null}
 
-            {/* Company Research Section */}
             {opportunity.company_role_context && (
-              <Section title="Strategic Role Intent" icon={<Lightbulb color="#f59e0b" size={18} />}>
-                <View className="bg-amber-900/30 rounded-xl p-4 border border-amber-800/50">
-                  <Text className="text-sm text-amber-200 italic leading-relaxed">
+              <Section
+                title="Strategic Role Intent"
+                icon={<Lightbulb color="#f59e0b" size={18} />}
+              >
+                <View className="bg-amber-900/20 rounded-2xl p-5 border border-amber-500/20">
+                  <Text className="text-sm text-amber-200 italic leading-relaxed font-medium">
                     "{opportunity.company_role_context}"
                   </Text>
                 </View>
               </Section>
             )}
 
-            {Array.isArray(opportunity.company_recent_news) && opportunity.company_recent_news.length > 0 && (
-              <Section title="Market Intelligence" icon={<Newspaper color="#3b82f6" size={18} />}>
-                <View className="bg-slate-800 rounded-xl p-4">
-                  <BulletList items={opportunity.company_recent_news} color="bg-blue-500" />
-                </View>
-              </Section>
-            )}
-
-            {Array.isArray(opportunity.company_challenges) && opportunity.company_challenges.length > 0 && (
-              <Section title="Likely Challenges" icon={<TrendingUp color="#22c55e" size={18} />}>
-                <View className="bg-slate-800 rounded-xl p-4">
-                  <BulletList items={opportunity.company_challenges} color="bg-green-500" />
-                </View>
-              </Section>
-            )}
-
-            {/* Job Description */}
-            {(opportunity.description_html || opportunity.description) && (
-              <Section title="Job Description" icon={<FileText color="#94a3b8" size={18} />}>
-                <View className="bg-slate-800 rounded-xl p-4">
-                  {opportunity.description_html ? (
-                    <RenderHtml
-                      contentWidth={width - 64}
-                      source={{ html: opportunity.description_html }}
-                      tagsStyles={htmlStyles}
-                      ignoredDomTags={['button', 'script', 'style', 'iframe']}
+            {Array.isArray(opportunity.company_recent_news) &&
+              opportunity.company_recent_news.length > 0 && (
+                <Section
+                  title="Market Intelligence"
+                  icon={<Newspaper color="#3b82f6" size={18} />}
+                >
+                  <View className="bg-slate-900 border border-white/5 rounded-2xl p-5">
+                    <BulletList
+                      items={opportunity.company_recent_news}
+                      color="bg-blue-500"
                     />
-                  ) : (
-                    <Text className="text-sm text-slate-300 leading-relaxed">{opportunity.description}</Text>
-                  )}
+                  </View>
+                </Section>
+              )}
+
+            {Array.isArray(opportunity.company_challenges) &&
+              opportunity.company_challenges.length > 0 && (
+                <Section
+                  title="Likely Challenges"
+                  icon={<TrendingUp color="#22c55e" size={18} />}
+                >
+                  <View className="bg-slate-900 border border-white/5 rounded-2xl p-5">
+                    <BulletList
+                      items={opportunity.company_challenges}
+                      color="bg-green-500"
+                    />
+                  </View>
+                </Section>
+              )}
+
+            {(opportunity.description_html || opportunity.description) && (
+              <Section
+                title="Original Posting"
+                icon={<FileText color="#94a3b8" size={18} />}
+              >
+                <View className="bg-slate-900 border border-white/5 rounded-2xl p-5">
+                  {/* DEBUG: Temporarily disabled RenderHtml to test if it's the cause */}
+                  <Text className="text-sm text-slate-400 leading-relaxed font-medium">
+                    {opportunity.description || "No description available"}
+                  </Text>
                 </View>
               </Section>
             )}
@@ -656,7 +822,6 @@ export default function OpportunityDetailScreen() {
         )}
       </ScrollView>
 
-      {/* Onboarding prompts */}
       {showOpportunityAddedPrompt && !tailoredProfile && (
         <OnboardingPrompt
           promptKey="after_opportunity_added"

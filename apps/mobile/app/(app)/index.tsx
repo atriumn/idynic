@@ -12,12 +12,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import {
   ChevronDown,
-  ChevronUp,
   Award,
   Lightbulb,
   GraduationCap,
   BadgeCheck,
-  Sparkles,
+  Cuboid,
   FileText,
   BookOpen,
   Search,
@@ -47,27 +46,46 @@ import { IdentityReflection } from "../../components/identity-reflection";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CLAIM_TYPE_ICONS: Record<string, React.ComponentType<any>> = {
-  skill: Sparkles,
+  skill: Cuboid,
   achievement: Award,
   attribute: Lightbulb,
   education: GraduationCap,
   certification: BadgeCheck,
 };
 
-function ConfidenceBar({ confidence }: { confidence: number | null }) {
+function ConfidenceBar({
+  confidence,
+  color,
+}: {
+  confidence: number | null;
+  color: string;
+}) {
   const value = confidence ?? 0;
   const percentage = Math.round(value * 100);
 
   return (
-    <View className="flex-row items-center gap-2">
-      <View className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+    <View className="items-end gap-1 w-24">
+      <View className="flex-row items-baseline gap-0.5">
+        <Text className="text-base font-bold text-white font-mono leading-none">
+          {percentage}
+        </Text>
+        <Text className="text-[10px] font-bold text-slate-500">%</Text>
+      </View>
+      <View className="w-full h-1 bg-slate-800 rounded-full overflow-hidden border border-white/5">
         <View
-          className="h-full bg-teal-500 rounded-full"
-          style={{ width: `${percentage}%` }}
+          className="h-full rounded-full"
+          style={{
+            width: `${percentage}%`,
+            backgroundColor: color,
+            shadowColor: color,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.5,
+            shadowRadius: 4,
+          }}
         />
       </View>
-      <Text className="text-xs text-slate-300 font-medium w-8">
-        {percentage}%
+      <Text className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter">
+        Confidence
       </Text>
     </View>
   );
@@ -78,39 +96,26 @@ function EvidenceBadge({ evidence }: { evidence: Evidence }) {
   const isStory = evidence.document?.type === "story";
   const Icon = isStory ? BookOpen : FileText;
 
-  // Get document name - use filename if available, otherwise type label
   const getDocumentName = () => {
-    if (!evidence.document) {
-      return evidence.source_type || "Source";
-    }
-    // If we have a filename (like AI-generated story titles), use it
-    if (evidence.document.filename) {
-      return evidence.document.filename;
-    }
-    // Otherwise use type label
-    return evidence.document.type === "resume"
-      ? "Resume"
-      : evidence.document.type === "story"
-        ? "Story"
-        : evidence.document.type || "Document";
-  };
-
-  const handlePress = () => {
-    if (evidence.document?.id) {
-      router.push(`/documents/${evidence.document.id}`);
-    }
+    if (!evidence.document) return evidence.source_type || "Source";
+    if (evidence.document.filename) return evidence.document.filename;
+    return evidence.document.type === "resume" ? "Resume" : "Document";
   };
 
   const badgeContent = (
-    <View className="flex-row items-center gap-1 px-2 py-1 rounded-md border border-slate-600 bg-slate-800/50 mr-1.5 mb-1.5">
-      <Icon color="#64748b" size={12} />
-      <Text className="text-xs text-slate-300">{getDocumentName()}</Text>
+    <View className="flex-row items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800/40 mr-2 mb-2">
+      <Icon color="#94a3b8" size={12} opacity={0.5} />
+      <Text className="text-xs text-slate-300 font-medium" numberOfLines={1}>
+        {getDocumentName().replace(/\s*\(\d{1,2}\/\d{1,2}\/\d{4}\)\s*$/, "")}
+      </Text>
     </View>
   );
 
   if (evidence.document?.id) {
     return (
-      <Pressable onPress={handlePress}>
+      <Pressable
+        onPress={() => router.push(`/documents/${evidence.document?.id}`)}
+      >
         {badgeContent}
       </Pressable>
     );
@@ -123,50 +128,99 @@ function ClaimCard({ claim }: { claim: IdentityClaim }) {
   const [expanded, setExpanded] = useState(false);
   const colors = CLAIM_TYPE_COLORS[claim.type];
   const hasIssues = claim.issues && claim.issues.length > 0;
+  const TypeIcon = CLAIM_TYPE_ICONS[claim.type] || Cuboid;
+  const evidenceCount = claim.evidence.length;
+  const confidence = claim.confidence ?? 0.5;
 
   return (
     <Pressable
       onPress={() => setExpanded(!expanded)}
-      className="mb-3 rounded-xl border overflow-hidden"
+      className="mb-3 rounded-xl border-b-2 border-r border-slate-900 overflow-hidden"
       style={{
         backgroundColor: colors.bgHex,
         borderColor: hasIssues ? "#f59e0b" : colors.borderHex,
+        borderLeftWidth: 6,
+        borderLeftColor: colors.borderHex,
       }}
     >
-      <View className="p-4">
-        <View className="flex-row items-start justify-between mb-2">
-          <View className="flex-row items-center flex-1 mr-2 gap-1.5">
-            {hasIssues && <AlertTriangle color="#f59e0b" size={16} />}
-            <Text
-              className="text-base font-semibold flex-1"
-              style={{ color: colors.textHex }}
-            >
-              {claim.label}
-            </Text>
-          </View>
-          {expanded ? (
-            <ChevronUp color="#64748b" size={20} />
-          ) : (
-            <ChevronDown color="#64748b" size={20} />
-          )}
+      <View className="p-4 flex-row items-center gap-4">
+        {/* Type Icon */}
+        <View className="h-10 w-10 rounded-lg bg-black/20 items-center justify-center border border-white/5">
+          <TypeIcon color={colors.textHex} size={20} />
         </View>
 
-        <ConfidenceBar confidence={claim.confidence} />
+        {/* Label & Badges */}
+        <View className="flex-1">
+          <View className="flex-row items-center gap-1.5 mb-1.5">
+            <Text className="text-base font-bold text-white flex-1 tracking-tight">
+              {claim.label}
+            </Text>
+            {hasIssues && <AlertTriangle color="#f59e0b" size={14} />}
+          </View>
 
-        {claim.description && !expanded && (
-          <Text className="text-sm text-slate-400 mt-2" numberOfLines={2}>
-            {claim.description}
-          </Text>
-        )}
+          <View className="flex-row flex-wrap gap-1.5">
+            {/* Depth Badge */}
+            <View
+              className={`px-1.5 py-0.5 rounded border ${
+                claim.type === "education" || claim.type === "certification"
+                  ? "bg-slate-500/10 border-slate-500/20"
+                  : evidenceCount >= 3
+                    ? "bg-blue-500/10 border-blue-500/20"
+                    : evidenceCount === 1
+                      ? "bg-amber-500/10 border-amber-500/20"
+                      : "bg-slate-500/10 border-slate-500/20"
+              }`}
+            >
+              <Text
+                className={`text-[8px] font-bold uppercase tracking-wider ${
+                  evidenceCount === 1
+                    ? "text-amber-500"
+                    : evidenceCount >= 3
+                      ? "text-blue-400"
+                      : "text-slate-400"
+                }`}
+              >
+                {claim.type === "education" || claim.type === "certification"
+                  ? "STABLE"
+                  : evidenceCount >= 3
+                    ? "STRONG SIGNAL"
+                    : evidenceCount === 1
+                      ? "SINGLE SOURCE"
+                      : "VERIFIED"}
+              </Text>
+            </View>
+
+            {/* Maturity Badge */}
+            {(confidence >= 0.85 || confidence <= 0.4) && (
+              <View
+                className={`px-1.5 py-0.5 rounded border ${
+                  confidence >= 0.85
+                    ? "bg-green-500/10 border-green-500/20"
+                    : "bg-amber-500/10 border-amber-500/20"
+                }`}
+              >
+                <Text
+                  className={`text-[8px] font-bold uppercase tracking-wider ${
+                    confidence >= 0.85 ? "text-green-400" : "text-amber-500"
+                  }`}
+                >
+                  {confidence >= 0.85 ? "RECENT" : "LEGACY"}
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Confidence Diagnostic */}
+        <ConfidenceBar confidence={claim.confidence} color={colors.borderHex} />
       </View>
 
       {expanded && (
-        <View className="px-4 pb-4 border-t border-slate-700/50 pt-3">
-          {/* Show issues if any */}
+        <View className="px-5 pb-5 pt-4 bg-black/20 border-t border-white/5">
           {hasIssues && (
-            <View className="mb-4 p-3 rounded-lg bg-amber-900/30 border border-amber-700/50">
-              <Text className="text-xs font-bold text-amber-400 uppercase mb-2">
-                Issues ({claim.issues.length})
+            <View className="mb-4 p-3 rounded-xl bg-amber-950/40 border border-amber-500/30">
+              <Text className="text-[10px] font-bold text-amber-400 uppercase tracking-widest mb-2">
+                Validation Issues
               </Text>
               {claim.issues.map((issue) => (
                 <View
@@ -174,7 +228,7 @@ function ClaimCard({ claim }: { claim: IdentityClaim }) {
                   className="flex-row items-start gap-2 mb-1"
                 >
                   <AlertTriangle color="#fbbf24" size={12} />
-                  <Text className="text-sm text-amber-200 flex-1">
+                  <Text className="text-sm text-amber-100/90 flex-1 leading-relaxed">
                     {issue.message}
                   </Text>
                 </View>
@@ -183,29 +237,26 @@ function ClaimCard({ claim }: { claim: IdentityClaim }) {
           )}
 
           {claim.description && (
-            <Text className="text-sm text-slate-300 mb-4">
-              {claim.description}
-            </Text>
-          )}
-
-          {claim.evidence.length > 0 && (
-            <View>
-              <Text className="text-xs font-bold text-slate-500 uppercase mb-2">
-                Sources
+            <View className="mb-4">
+              <Text className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+                Context
               </Text>
-              <View className="flex-row flex-wrap">
-                {claim.evidence.map((ev) => (
-                  <EvidenceBadge key={ev.id} evidence={ev} />
-                ))}
-              </View>
+              <Text className="text-sm text-slate-300 leading-relaxed italic">
+                {claim.description}
+              </Text>
             </View>
           )}
 
-          {claim.evidence.length === 0 && (
-            <Text className="text-sm text-slate-500 italic">
-              No supporting evidence
+          <View>
+            <Text className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">
+              Linked Evidence
             </Text>
-          )}
+            <View className="flex-row flex-wrap">
+              {claim.evidence.map((ev) => (
+                <EvidenceBadge key={ev.id} evidence={ev} />
+              ))}
+            </View>
+          </View>
         </View>
       )}
     </Pressable>
@@ -229,33 +280,30 @@ function ClaimTypeSection({
     <View className="mb-6">
       <Pressable
         onPress={() => setCollapsed(!collapsed)}
-        className="flex-row items-center justify-between mb-3"
+        className="flex-row items-center justify-between mb-3 px-1"
       >
         <View className="flex-row items-center gap-2">
-          <Icon color={colors.icon} size={20} />
+          <Icon color={colors.icon} size={18} />
           <Text
-            className="text-sm font-bold uppercase tracking-wider"
+            className="text-xs font-black uppercase tracking-[0.15em]"
             style={{ color: colors.textHex }}
           >
             {CLAIM_TYPE_LABELS[type]}
           </Text>
-          <View
-            className="px-2 py-0.5 rounded-full"
-            style={{ backgroundColor: colors.bgHex }}
-          >
+          <View className="px-2 py-0.5 rounded bg-black/20 border border-white/5">
             <Text
-              className="text-xs font-bold"
+              className="text-[10px] font-bold font-mono"
               style={{ color: colors.textHex }}
             >
               {claims.length}
             </Text>
           </View>
         </View>
-        {collapsed ? (
-          <ChevronDown color="#64748b" size={20} />
-        ) : (
-          <ChevronUp color="#64748b" size={20} />
-        )}
+        <ChevronDown
+          color="#64748b"
+          size={18}
+          style={{ transform: [{ rotate: collapsed ? "0deg" : "180deg" }] }}
+        />
       </Pressable>
 
       {!collapsed &&
@@ -291,28 +339,23 @@ function FilterChip({
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full mr-2 mb-2 border"
+      className="flex-row items-center gap-1.5 px-3 py-2 rounded-full mr-2 mb-2 border"
       style={{
-        backgroundColor: selected ? colors.bgHex : "#1e293b",
-        borderColor: selected ? colors.borderHex : "#334155",
+        backgroundColor: selected ? colors.bgHex : "#0f172a",
+        borderColor: selected ? colors.borderHex : "#1e293b",
       }}
     >
-      <Icon color={selected ? colors.icon : "#64748b"} size={14} />
+      <Icon color={selected ? colors.icon : "#475569"} size={14} />
       <Text
-        className="text-sm"
-        style={{ color: selected ? colors.textHex : "#94a3b8" }}
+        className="text-xs font-bold"
+        style={{ color: selected ? colors.textHex : "#64748b" }}
       >
         {CLAIM_TYPE_LABELS[type]}
       </Text>
-      <View
-        className="px-1.5 py-0.5 rounded-full"
-        style={{
-          backgroundColor: selected ? "rgba(15, 23, 42, 0.3)" : "#334155",
-        }}
-      >
+      <View className="px-1.5 py-0.5 rounded bg-black/20">
         <Text
-          className="text-xs"
-          style={{ color: selected ? colors.textHex : "#94a3b8" }}
+          className="text-[10px] font-bold font-mono"
+          style={{ color: selected ? colors.textHex : "#475569" }}
         >
           {count}
         </Text>
@@ -379,7 +422,6 @@ export default function IdentityScreen() {
   const toggleType = (type: keyof GroupedClaims) => {
     const newSelected = new Set(selectedTypes);
     if (newSelected.has(type)) {
-      // Don't allow deselecting all
       if (newSelected.size > 1) {
         newSelected.delete(type);
       }
@@ -396,7 +438,7 @@ export default function IdentityScreen() {
   if (isLoading) {
     return (
       <SafeAreaView
-        className="flex-1 bg-slate-900 justify-center items-center"
+        className="flex-1 bg-slate-950 justify-center items-center"
         edges={["bottom"]}
       >
         <ActivityIndicator color="#14b8a6" size="large" />
@@ -406,8 +448,8 @@ export default function IdentityScreen() {
 
   if (error) {
     return (
-      <SafeAreaView className="flex-1 bg-slate-900 p-4" edges={["bottom"]}>
-        <Text className="text-red-500">Failed to load identity</Text>
+      <SafeAreaView className="flex-1 bg-slate-950 p-4" edges={["bottom"]}>
+        <Text className="text-red-500">Failed to load Master Record</Text>
         <Text className="text-slate-400 mt-2 text-sm">{error.message}</Text>
       </SafeAreaView>
     );
@@ -418,61 +460,67 @@ export default function IdentityScreen() {
 
     return (
       <ScrollView
-        className="flex-1 bg-slate-900"
+        className="flex-1 bg-slate-950"
         contentContainerStyle={{ padding: 24 }}
       >
         <SafeAreaView edges={["bottom"]}>
           {/* Main CTA */}
           <View className="items-center mb-8">
-            <View className="mb-6">
-              <Logo size={80} />
+            <View className="mb-8 rounded-2xl overflow-hidden border border-slate-800 bg-black/40 w-full aspect-video items-center justify-center">
+              <Logo size={64} />
+              <Text className="text-slate-500 font-mono text-[10px] mt-4 uppercase tracking-[0.3em]">
+                System Initializing
+              </Text>
             </View>
-            <Text className="text-xl font-bold text-white mb-2 text-center">
-              {EMPTY_STATE.title}
+            <Text className="text-2xl font-bold text-white mb-2 text-center">
+              Start your Master Record
             </Text>
-            <Text className="text-slate-400 text-center mb-6">
-              {EMPTY_STATE.subtitle}
+            <Text className="text-slate-400 text-center mb-8 px-4">
+              Upload your resume or add professional stories to extract your
+              first <strong>Evidence Blocks</strong>.
             </Text>
 
-            <View className="w-full">
+            <View className="w-full gap-3">
               <Pressable
                 onPress={() => router.push("/upload-resume")}
-                className="flex-row items-center justify-center gap-2 bg-slate-700 border border-slate-600 py-4 px-6 rounded-xl mb-3"
+                className="flex-row items-center justify-center gap-3 bg-teal-600 py-4 px-6 rounded-xl shadow-lg shadow-teal-900/20"
               >
-                <Upload color="#14b8a6" size={20} />
-                <Text className="text-white font-semibold text-base">
+                <Upload color="white" size={20} />
+                <Text className="text-white font-bold text-base">
                   {EMPTY_STATE.actions.resume.title}
                 </Text>
               </Pressable>
 
               <Pressable
                 onPress={() => router.push("/add-story")}
-                className="flex-row items-center justify-center gap-2 bg-slate-700 border border-slate-600 py-4 px-6 rounded-xl"
+                className="flex-row items-center justify-center gap-3 bg-slate-800 border border-slate-700 py-4 px-6 rounded-xl"
               >
                 <MessageSquarePlus color="#14b8a6" size={20} />
-                <Text className="text-white font-semibold text-base">
+                <Text className="text-white font-bold text-base">
                   {EMPTY_STATE.actions.story.title}
                 </Text>
               </Pressable>
             </View>
           </View>
 
-          {/* What claims unlock */}
+          {/* What blocks unlock */}
           <View className="mb-8">
             {EMPTY_STATE.features.map((feature, i) => {
               const Icon = featureIcons[i];
               return (
                 <View
                   key={feature.title}
-                  className="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-3"
+                  className="bg-slate-900/50 border border-white/5 rounded-xl p-5 mb-3"
                 >
-                  <View className="flex-row items-center gap-2 mb-2">
-                    <Icon color="#14b8a6" size={20} />
-                    <Text className="text-white font-semibold">
+                  <View className="flex-row items-center gap-3 mb-2">
+                    <View className="h-8 w-8 rounded bg-teal-500/10 items-center justify-center border border-teal-500/20">
+                      <Icon color="#14b8a6" size={18} />
+                    </View>
+                    <Text className="text-white font-bold tracking-tight">
                       {feature.title}
                     </Text>
                   </View>
-                  <Text className="text-slate-400 text-sm">
+                  <Text className="text-slate-400 text-sm leading-relaxed">
                     {feature.description}
                   </Text>
                 </View>
@@ -492,7 +540,7 @@ export default function IdentityScreen() {
   return (
     <ScrollView
       className="flex-1"
-      style={{ backgroundColor: "#0f172a" }}
+      style={{ backgroundColor: "#020617" }} // Deepest slate (slate-950)
       keyboardShouldPersistTaps="handled"
       refreshControl={
         <RefreshControl
@@ -504,29 +552,35 @@ export default function IdentityScreen() {
     >
       <View className="p-4">
         {/* Header */}
-        <View className="mb-4">
-          <View className="flex-row items-center gap-3 mb-1">
-            <Logo size={32} />
-            <Text className="text-2xl font-bold text-white">Your Identity</Text>
-          </View>
-          <View className="flex-row items-center justify-between mt-1">
-            <Text className="text-slate-400">
-              {isFiltered
-                ? `${filteredTotal} of ${totalClaims} claims`
-                : `${totalClaims} claim${totalClaims !== 1 ? "s" : ""} extracted from your experience`}
+        <View className="mb-6">
+          <View className="flex-row items-center gap-3 mb-2">
+            <Logo size={28} />
+            <Text className="text-2xl font-bold text-white tracking-tight">
+              Master Record
             </Text>
+          </View>
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center gap-2">
+              <Text className="text-slate-500 text-xs font-mono uppercase tracking-wider">
+                {isFiltered
+                  ? `${filteredTotal} / ${totalClaims} Blocks`
+                  : `${totalClaims} Evidence Blocks`}
+              </Text>
+            </View>
             {totalClaims > 0 &&
               (claimsWithIssues > 0 ? (
-                <View className="flex-row items-center gap-1 px-2 py-1 rounded-full bg-amber-900/30">
-                  <AlertTriangle color="#fbbf24" size={14} />
-                  <Text className="text-xs text-amber-400">
-                    {claimsWithIssues} issue{claimsWithIssues !== 1 ? "s" : ""}
+                <View className="flex-row items-center gap-1.5 px-2 py-1 rounded bg-amber-900/20 border border-amber-500/20">
+                  <AlertTriangle color="#fbbf24" size={12} />
+                  <Text className="text-[10px] font-bold text-amber-500 uppercase tracking-tighter">
+                    {claimsWithIssues} Issue{claimsWithIssues !== 1 ? "s" : ""}
                   </Text>
                 </View>
               ) : (
-                <View className="flex-row items-center gap-1 px-2 py-1 rounded-full bg-green-900/30">
-                  <CheckCircle2 color="#4ade80" size={14} />
-                  <Text className="text-xs text-green-400">All verified</Text>
+                <View className="flex-row items-center gap-1.5 px-2 py-1 rounded bg-green-900/20 border border-green-500/20">
+                  <CheckCircle2 color="#4ade80" size={12} />
+                  <Text className="text-[10px] font-bold text-green-500 uppercase tracking-tighter">
+                    Verified
+                  </Text>
                 </View>
               ))}
           </View>
@@ -539,24 +593,24 @@ export default function IdentityScreen() {
         />
 
         {/* Search */}
-        <View className="flex-row items-center bg-slate-800 rounded-xl px-3 mb-4">
-          <Search color="#64748b" size={18} />
+        <View className="flex-row items-center bg-slate-900 border border-slate-800 rounded-xl px-3 mb-4 shadow-inner">
+          <Search color="#475569" size={18} />
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholder="Search claims..."
-            placeholderTextColor="#64748b"
-            className="flex-1 py-3 px-2 text-white"
+            placeholder="Search evidence..."
+            placeholderTextColor="#475569"
+            className="flex-1 py-3 px-2 text-white font-mono text-sm"
           />
           {searchQuery ? (
             <Pressable onPress={() => setSearchQuery("")}>
-              <X color="#64748b" size={18} />
+              <X color="#475569" size={18} />
             </Pressable>
           ) : null}
         </View>
 
         {/* Type Filters */}
-        <View className="flex-row flex-wrap mb-4">
+        <View className="flex-row flex-wrap mb-6">
           {CLAIM_TYPES.map((type) => (
             <FilterChip
               key={type}
@@ -569,18 +623,18 @@ export default function IdentityScreen() {
           {selectedTypes.size < CLAIM_TYPES.length && (
             <Pressable
               onPress={selectAllTypes}
-              className="px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 mb-2"
+              className="px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 mb-2"
             >
-              <Text className="text-sm text-slate-400">Show All</Text>
+              <Text className="text-xs font-bold text-slate-500">Show All</Text>
             </Pressable>
           )}
         </View>
 
-        {/* Claims */}
+        {/* Blocks */}
         {filteredTotal === 0 ? (
-          <View className="bg-slate-800/50 rounded-xl p-8 items-center">
-            <Text className="text-slate-400 text-center">
-              No claims match your search
+          <View className="bg-slate-900/50 rounded-2xl p-12 items-center border border-white/5 border-dashed">
+            <Text className="text-slate-500 font-bold text-center uppercase tracking-widest text-xs">
+              No blocks match your search
             </Text>
           </View>
         ) : (

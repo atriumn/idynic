@@ -1,21 +1,47 @@
-import { View, Text, FlatList, ActivityIndicator, Pressable, Image, RefreshControl } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Briefcase, MapPin, Clock, Building2 } from 'lucide-react-native';
-import { useOpportunities, Opportunity, getRequirements } from '../../hooks/use-opportunities';
-import { formatDistanceToNow } from 'date-fns';
+import {
+  View,
+  Text,
+  FlatList,
+  ActivityIndicator,
+  Pressable,
+  Image,
+  RefreshControl,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { Briefcase, MapPin, Clock, Building2 } from "lucide-react-native";
+import {
+  useOpportunities,
+  Opportunity,
+  getRequirements,
+} from "../../hooks/use-opportunities";
+import { formatDistanceToNow } from "date-fns";
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  tracking: { bg: 'bg-slate-700', text: 'text-slate-300' },
-  applied: { bg: 'bg-blue-900', text: 'text-blue-300' },
-  interviewing: { bg: 'bg-amber-900', text: 'text-amber-300' },
-  offer: { bg: 'bg-green-900', text: 'text-green-300' },
-  rejected: { bg: 'bg-red-900', text: 'text-red-300' },
-  archived: { bg: 'bg-slate-800', text: 'text-slate-400' },
+  tracking: { bg: "bg-slate-700", text: "text-slate-300" },
+  applied: { bg: "bg-blue-900", text: "text-blue-300" },
+  interviewing: { bg: "bg-amber-900", text: "text-amber-300" },
+  offer: { bg: "bg-green-900", text: "text-green-300" },
+  rejected: { bg: "bg-red-900", text: "text-red-300" },
+  archived: { bg: "bg-slate-800", text: "text-slate-400" },
 };
+
+/**
+ * Get logo URL from company domain using logo.dev service
+ */
+function getLogoUrl(companyUrl: string | null | undefined): string | null {
+  if (!companyUrl) return null;
+  try {
+    const url = new URL(companyUrl);
+    const domain = url.hostname.replace(/^www\./, "");
+    return `https://img.logo.dev/${domain}?token=pk_b3U88G0OTNKjNTpAlTU_OQ&retina=true`;
+  } catch {
+    return null;
+  }
+}
 
 function OpportunityCard({ opportunity }: { opportunity: Opportunity }) {
   const router = useRouter();
-  const status = opportunity.status || 'tracking';
+  const status = opportunity.status || "tracking";
   const colors = STATUS_COLORS[status] || STATUS_COLORS.tracking;
 
   const reqs = getRequirements(opportunity.requirements);
@@ -31,9 +57,14 @@ function OpportunityCard({ opportunity }: { opportunity: Opportunity }) {
       <View className="p-4">
         <View className="flex-row items-start justify-between mb-3">
           <View className="h-12 w-12 rounded-xl bg-white items-center justify-center overflow-hidden">
-            {opportunity.company_logo_url ? (
+            {opportunity.company_logo_url ||
+            getLogoUrl(opportunity.company_url) ? (
               <Image
-                source={{ uri: opportunity.company_logo_url }}
+                source={{
+                  uri:
+                    opportunity.company_logo_url ||
+                    getLogoUrl(opportunity.company_url)!,
+                }}
                 className="h-10 w-10"
                 resizeMode="contain"
               />
@@ -49,10 +80,10 @@ function OpportunityCard({ opportunity }: { opportunity: Opportunity }) {
         </View>
 
         <Text className="text-lg font-bold text-white mb-1" numberOfLines={2}>
-          {opportunity.title || 'Untitled Opportunity'}
+          {opportunity.title || "Untitled Opportunity"}
         </Text>
         <Text className="text-sm font-semibold text-slate-400 uppercase">
-          {opportunity.company || 'Direct Hire'}
+          {opportunity.company || "Direct Hire"}
         </Text>
       </View>
 
@@ -61,13 +92,17 @@ function OpportunityCard({ opportunity }: { opportunity: Opportunity }) {
         {opportunity.location && (
           <View className="flex-row items-center bg-slate-700/50 px-2 py-1 rounded">
             <MapPin color="#94a3b8" size={12} />
-            <Text className="text-xs text-slate-400 ml-1">{opportunity.location}</Text>
+            <Text className="text-xs text-slate-400 ml-1">
+              {opportunity.location}
+            </Text>
           </View>
         )}
         {opportunity.employment_type && (
           <View className="flex-row items-center bg-slate-700/50 px-2 py-1 rounded">
             <Briefcase color="#94a3b8" size={12} />
-            <Text className="text-xs text-slate-400 ml-1">{opportunity.employment_type}</Text>
+            <Text className="text-xs text-slate-400 ml-1">
+              {opportunity.employment_type}
+            </Text>
           </View>
         )}
       </View>
@@ -77,13 +112,17 @@ function OpportunityCard({ opportunity }: { opportunity: Opportunity }) {
         <View className="px-4 pb-4 flex-row gap-4">
           {mustHaveCount > 0 && (
             <View>
-              <Text className="text-lg font-bold text-white">{mustHaveCount}</Text>
+              <Text className="text-lg font-bold text-white">
+                {mustHaveCount}
+              </Text>
               <Text className="text-xs text-slate-500 uppercase">Required</Text>
             </View>
           )}
           {niceToHaveCount > 0 && (
             <View>
-              <Text className="text-lg font-bold text-slate-400">{niceToHaveCount}</Text>
+              <Text className="text-lg font-bold text-slate-400">
+                {niceToHaveCount}
+              </Text>
               <Text className="text-xs text-slate-500 uppercase">Bonus</Text>
             </View>
           )}
@@ -95,8 +134,10 @@ function OpportunityCard({ opportunity }: { opportunity: Opportunity }) {
         <Clock color="#64748b" size={12} />
         <Text className="text-xs text-slate-500 ml-1.5 uppercase font-semibold">
           {opportunity.created_at
-            ? formatDistanceToNow(new Date(opportunity.created_at), { addSuffix: true })
-            : 'Just now'}
+            ? formatDistanceToNow(new Date(opportunity.created_at), {
+                addSuffix: true,
+              })
+            : "Just now"}
         </Text>
       </View>
     </Pressable>
@@ -104,7 +145,13 @@ function OpportunityCard({ opportunity }: { opportunity: Opportunity }) {
 }
 
 export default function OpportunitiesScreen() {
-  const { data: opportunities, isLoading, error, refetch, isRefetching } = useOpportunities();
+  const {
+    data: opportunities,
+    isLoading,
+    error,
+    refetch,
+    isRefetching,
+  } = useOpportunities();
 
   if (isLoading) {
     return (
@@ -133,14 +180,15 @@ export default function OpportunitiesScreen() {
           No opportunities yet
         </Text>
         <Text className="text-slate-400 text-center">
-          Start tracking your job search by adding opportunities from the web app.
+          Start tracking your job search by adding opportunities from the web
+          app.
         </Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-1" style={{ backgroundColor: '#0f172a' }}>
+    <View className="flex-1" style={{ backgroundColor: "#0f172a" }}>
       <FlatList
         data={opportunities}
         keyExtractor={(item) => item.id}

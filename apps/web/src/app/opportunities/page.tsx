@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { AddOpportunityDialog } from "@/components/add-opportunity-dialog";
 import { OpportunityList } from "@/components/opportunities/opportunity-list";
-import { Briefcase } from "lucide-react";
+import Image from "next/image";
 
 export default async function OpportunitiesPage() {
   const supabase = await createClient();
@@ -22,12 +22,13 @@ export default async function OpportunitiesPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-12">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Opportunities</h1>
-          <p className="text-muted-foreground mt-1">
-            Track and manage your job applications and tailored profiles.
+          <h1 className="text-4xl font-black tracking-tight">Target Roles</h1>
+          <p className="text-muted-foreground mt-2 text-lg">
+            Track your targets and assemble tailored evidence for every
+            application.
           </p>
         </div>
         <AddOpportunityDialog />
@@ -36,13 +37,19 @@ export default async function OpportunitiesPage() {
       {opportunities && opportunities.length > 0 ? (
         <OpportunityList initialOpportunities={opportunities} />
       ) : (
-        <div className="flex flex-col items-center justify-center py-24 text-center border rounded-xl bg-muted/10 border-dashed">
-          <div className="h-20 w-20 rounded-full bg-muted/30 flex items-center justify-center mb-6">
-            <Briefcase className="h-10 w-10 text-muted-foreground" />
+        <div className="flex flex-col items-center justify-center py-24 text-center border-2 rounded-3xl bg-muted/10 border-dashed">
+          <div className="relative h-48 w-80 mb-10 rounded-2xl overflow-hidden border bg-slate-950 shadow-2xl">
+            <Image
+              src="/images/how-it-works-3.png"
+              alt="Assembly of tailored profiles"
+              fill
+              className="object-cover"
+            />
           </div>
-          <h2 className="text-xl font-semibold mb-2">No opportunities yet</h2>
-          <p className="text-muted-foreground mb-8 max-w-md">
-            Start tracking your job search by adding your first opportunity. We&apos;ll help you analyze the fit and tailor your profile.
+          <h2 className="text-2xl font-black mb-3">No targets yet</h2>
+          <p className="text-muted-foreground mb-10 max-w-md text-lg">
+            Add your first target role to see how your Master Record matches up
+            and assemble a perfect application.
           </p>
           <AddOpportunityDialog />
         </div>

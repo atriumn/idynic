@@ -1,9 +1,9 @@
-import { Tabs } from 'expo-router';
-import { User, Briefcase, Settings } from 'lucide-react-native';
-import { View, ActivityIndicator } from 'react-native';
-import { Logo } from '../../components/logo';
-import { useBetaAccess } from '../../lib/use-beta-access';
-import { BetaGate } from '../../components/beta-gate';
+import { Tabs } from "expo-router";
+import { User, Briefcase, Settings } from "lucide-react-native";
+import { View, ActivityIndicator } from "react-native";
+import { Logo } from "../../components/logo";
+import { useBetaAccess } from "../../lib/use-beta-access";
+import { BetaGate } from "../../components/beta-gate";
 
 export default function AppLayout() {
   const { hasAccess, loading, refetch } = useBetaAccess();
@@ -23,45 +23,49 @@ export default function AppLayout() {
   return (
     <Tabs
       screenOptions={{
-        sceneStyle: { backgroundColor: '#0f172a' },
+        sceneStyle: { backgroundColor: "#0f172a" },
         tabBarStyle: {
-          backgroundColor: '#0f172a',
-          borderTopColor: '#1e293b',
+          backgroundColor: "#0f172a",
+          borderTopColor: "#1e293b",
         },
-        tabBarActiveTintColor: '#14b8a6',
-        tabBarInactiveTintColor: '#64748b',
+        tabBarActiveTintColor: "#14b8a6",
+        tabBarInactiveTintColor: "#64748b",
         headerStyle: {
-          backgroundColor: '#0f172a',
+          backgroundColor: "#0f172a",
         },
-        headerTintColor: '#fff',
+        headerTintColor: "#fff",
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Identity',
+          title: "Identity",
           tabBarIcon: ({ color, size }) => <Logo size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: "Profile",
           tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
         }}
       />
       <Tabs.Screen
         name="opportunities"
         options={{
-          title: 'Opportunities',
-          tabBarIcon: ({ color, size }) => <Briefcase color={color} size={size} />,
+          title: "Targets",
+          tabBarIcon: ({ color, size }) => (
+            <Briefcase color={color} size={size} />
+          ),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
-          tabBarIcon: ({ color, size }) => <Settings color={color} size={size} />,
+          title: "Settings",
+          tabBarIcon: ({ color, size }) => (
+            <Settings color={color} size={size} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -75,7 +79,7 @@ export default function AppLayout() {
         name="shared-links"
         options={{
           href: null,
-          title: 'Shared Links',
+          title: "Shared Links",
           headerShown: true,
         }}
       />
@@ -83,7 +87,7 @@ export default function AppLayout() {
         name="upload-resume"
         options={{
           href: null,
-          title: 'Upload Resume',
+          title: "Upload Resume",
           headerShown: true,
         }}
       />
@@ -91,7 +95,7 @@ export default function AppLayout() {
         name="add-story"
         options={{
           href: null,
-          title: 'Add Story',
+          title: "Add Story",
           headerShown: true,
         }}
       />
@@ -99,7 +103,7 @@ export default function AppLayout() {
         name="add-opportunity"
         options={{
           href: null,
-          title: 'Add Opportunity',
+          title: "Add Opportunity",
           headerShown: true,
         }}
       />
@@ -107,7 +111,7 @@ export default function AppLayout() {
         name="help"
         options={{
           href: null,
-          title: 'Help Center',
+          title: "Help Center",
           headerShown: false,
         }}
       />
@@ -115,7 +119,7 @@ export default function AppLayout() {
         name="documents"
         options={{
           href: null,
-          title: 'My Documents',
+          title: "My Documents",
           headerShown: true,
         }}
       />
