@@ -1,5 +1,22 @@
 # Claims List Redesign Implementation Plan
 
+**Status:** Not Started
+
+## Progress (Last reviewed: 2026-01-04)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Task 1: Create Lollipop UI Component | ⏳ Not Started | |
+| Task 2: Add Sortable Column Header | ⏳ Not Started | |
+| Task 3: Rewrite Claims List Component | ⏳ Not Started | |
+| Task 4: Update Tests | ⏳ Not Started | |
+| Task 5: Final Cleanup | ⏳ Not Started | |
+
+### Drift Notes
+No implementation progress. Design approved, plan ready for execution.
+
+---
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Replace card-based claims list with compact sortable table featuring lollipop confidence visualization.

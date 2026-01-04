@@ -5,6 +5,17 @@
 **Status**: Not Started
 **Goal**: Raise web test coverage from 43% to 65%+
 
+## Progress (Last reviewed: 2026-01-04)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase A: Quick Wins (Tier 3) | ⏳ Not Started | 11 simple components |
+| Phase B: Medium Components (Tier 2) | ⏳ Not Started | 10 medium components |
+| Phase C: Complex Components (Tier 1) | ⏳ Not Started | 7 complex components |
+
+### Drift Notes
+No implementation progress. Current coverage: 43.71% (as of PR #107 coverage report).
+
 ## Overview
 
 28 components in `apps/web/src/components/` have zero test coverage. This plan prioritizes them by complexity and user impact, targeting the highest-value tests first.

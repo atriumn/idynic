@@ -1,7 +1,22 @@
 # Content Strategy Overhaul: "From Magic to Modules"
 
 **Date:** 2026-01-03
+**Status:** Not Started
 **Goal:** Clarify the "Magic Step" (Resume -> Graph -> Profile), remove unnecessary "scary" tech jargon without losing the unique "Infrastructure" value proposition, and establish a safe, clear visual metaphor.
+
+## Progress (Last reviewed: 2026-01-04)
+
+| Section | Status | Notes |
+|---------|--------|-------|
+| Core Terminology Shift | ⏳ Not Started | Waiting for strategy selection |
+| Visual Metaphor Design | ⏳ Not Started | "Data Blocks" concept defined |
+| Strategy Selection | ⏳ Not Started | A (Modular) recommended |
+| Home Page Rewrite | ⏳ Not Started | Depends on strategy choice |
+| Trust & Methodology Page | ⏳ Not Started | New page required |
+| Blog Setup | ⏳ Not Started | `/blog` route |
+
+### Drift Notes
+This is a content/copy strategy plan. No implementation has started. Awaiting decision on Strategy A vs B.
 
 ---
 
