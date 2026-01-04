@@ -1,7 +1,20 @@
 # Claims List Redesign: Compact Table with Lollipop Confidence
 
 **Date:** 2026-01-02
-**Status:** Approved for Implementation
+**Status:** Done
+
+## Progress (Last reviewed: 2026-01-03)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Create Lollipop UI component | ✅ Complete | `9db115b5` |
+| Create SortableHeader component | ✅ Complete | `cd1b2685` |
+| Rewrite claims list to table | ✅ Complete | `72f3fbfe` |
+| Add sorting tests | ✅ Complete | `5ec3f1b7` |
+| Description deduplication | ✅ Complete | `5ec3f1b7` |
+
+### Notes
+All implementation tasks completed. Ready to archive.
 
 ## Problem Statement
 
