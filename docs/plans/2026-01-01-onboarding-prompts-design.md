@@ -2,6 +2,18 @@
 
 > Created 2026-01-01 - Lightweight "next steps" prompts for new users
 
+## Progress (Last reviewed: 2026-01-02)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Phase 1: Shared Foundation | ✅ Complete | PR #79 |
+| Phase 2: Web Integration | ✅ Complete | PR #82 |
+| Phase 3: Mobile Integration | ✅ Complete | PR #84 |
+| Phase 4: Testing & Polish | ⏳ Not Started | Manual testing required |
+
+### Drift Notes
+- Mobile uses `expo-secure-store` instead of `AsyncStorage` as originally planned (security improvement)
+
 ## Problem Statement
 
 New users complete an action (upload resume, add story, add opportunity) but don't know what to do next. The empty state guides them to start, but there's no guidance after each milestone to keep them progressing toward value (seeing a tailored profile).
@@ -453,28 +465,28 @@ const handleComplete = () => {
 
 ## Implementation Plan
 
-### Phase 1: Shared Foundation
-- [ ] Create `packages/shared/src/content/onboarding.ts` with prompt copy
-- [ ] Create `packages/shared/src/hooks/useOnboardingProgress.ts` with storage adapter pattern
-- [ ] Export from `packages/shared/src/index.ts`
+### Phase 1: Shared Foundation ✅ (PR #79)
+- [x] Create `packages/shared/src/content/onboarding.ts` with prompt copy
+- [x] Create `packages/shared/src/hooks/useOnboardingProgress.ts` with storage adapter pattern
+- [x] Export from `packages/shared/src/index.ts`
 
-### Phase 2: Web Integration
-- [ ] Create `apps/web/src/lib/storage-adapter.ts`
-- [ ] Create `apps/web/src/components/onboarding-prompt.tsx`
-- [ ] Wire up trigger points:
-  - [ ] upload-resume-modal.tsx
-  - [ ] add-story-modal.tsx
-  - [ ] opportunities/[id]/page.tsx (for tailoring prompts)
+### Phase 2: Web Integration ✅ (PR #82)
+- [x] Create `apps/web/src/lib/storage-adapter.ts`
+- [x] Create `apps/web/src/components/onboarding-prompt.tsx`
+- [x] Wire up trigger points:
+  - [x] upload-resume-modal.tsx
+  - [x] add-story-modal.tsx
+  - [x] opportunities/[id]/page.tsx (for tailoring prompts)
 
-### Phase 3: Mobile Integration
-- [ ] Create `apps/mobile/lib/storage-adapter.ts` with AsyncStorage
-- [ ] Create `apps/mobile/components/onboarding-prompt.tsx`
-- [ ] Wire up trigger points:
-  - [ ] upload-resume.tsx
-  - [ ] add-story.tsx
-  - [ ] opportunities/[id].tsx
+### Phase 3: Mobile Integration ✅ (PR #84)
+- [x] Create `apps/mobile/lib/storage-adapter.ts` with SecureStore
+- [x] Create `apps/mobile/components/onboarding-prompt.tsx`
+- [x] Wire up trigger points:
+  - [x] upload-resume.tsx
+  - [x] add-story.tsx
+  - [x] opportunities/[id].tsx
 
-### Phase 4: Testing & Polish
+### Phase 4: Testing & Polish ⏳
 - [ ] Manual test all 4 prompt scenarios on web
 - [ ] Manual test all 4 prompt scenarios on mobile
 - [ ] Verify prompts don't reappear after dismissal
