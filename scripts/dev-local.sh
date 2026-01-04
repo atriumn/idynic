@@ -32,31 +32,20 @@ if [ -f ".env.local" ] && [ ! -f ".env.local.prod" ]; then
     cp .env.local .env.local.prod
 fi
 
-# Copy local Supabase env, preserving API keys from prod
+# Build .env.local: local Supabase + all other vars from prod
 if [ -f ".env.local.prod" ]; then
-    echo -e "${GREEN}Setting up local environment with your API keys...${NC}"
+    echo -e "${GREEN}Setting up local environment with prod API keys + local Supabase...${NC}"
 
     # Start with local Supabase config
     cp .env.local.supabase .env.local
 
-    # Copy over API keys from prod env
-    OPENAI_KEY=$(grep "^OPENAI_API_KEY=" .env.local.prod 2>/dev/null | cut -d'=' -f2-)
-    GOOGLE_KEY=$(grep "^GOOGLE_AI_API_KEY=" .env.local.prod 2>/dev/null | cut -d'=' -f2-)
-    ANTHROPIC_KEY=$(grep "^ANTHROPIC_API_KEY=" .env.local.prod 2>/dev/null | cut -d'=' -f2-)
+    # Append ALL non-Supabase vars from prod (API keys, Stripe, Inngest, Sentry, etc.)
+    grep -v '^#' .env.local.prod | grep -v 'SUPABASE' | grep '=' >> .env.local
 
-    # Update .env.local with actual API keys
-    if [ -n "$OPENAI_KEY" ]; then
-        sed -i '' "s|^OPENAI_API_KEY=.*|OPENAI_API_KEY=$OPENAI_KEY|" .env.local
-    fi
-    if [ -n "$GOOGLE_KEY" ]; then
-        sed -i '' "s|^# GOOGLE_AI_API_KEY=.*|GOOGLE_AI_API_KEY=$GOOGLE_KEY|" .env.local
-    fi
-    if [ -n "$ANTHROPIC_KEY" ]; then
-        sed -i '' "s|^# ANTHROPIC_API_KEY=.*|ANTHROPIC_API_KEY=$ANTHROPIC_KEY|" .env.local
-    fi
+    echo -e "${GREEN}Merged $(grep -v '^#' .env.local.prod | grep -v 'SUPABASE' | grep '=' | wc -l | tr -d ' ') vars from prod${NC}"
 else
     echo -e "${YELLOW}Warning: No .env.local.prod found. Using .env.local.supabase as-is.${NC}"
-    echo -e "${YELLOW}You may need to add your OPENAI_API_KEY manually.${NC}"
+    echo -e "${YELLOW}Run 'vercel env pull .env.local.prod' to get prod vars.${NC}"
     cp .env.local.supabase .env.local
 fi
 
