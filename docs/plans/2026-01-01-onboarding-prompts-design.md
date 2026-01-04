@@ -1,5 +1,21 @@
 # Onboarding Prompts Design
 
+**Status:** In Progress (Phase 4 remaining)
+
+## Progress (Last reviewed: 2026-01-04)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1: Shared Foundation | ✅ Complete | PR #79 |
+| Phase 2: Web Integration | ✅ Complete | PR #82 |
+| Phase 3: Mobile Integration | ✅ Complete | PR #84 |
+| Phase 4: Testing & Polish | ⏳ Not Started | |
+
+### Drift Notes
+Implementation matches design. Phases 1-3 merged 2026-01-01. Awaiting Phase 4 for testing.
+
+---
+
 > Created 2026-01-01 - Lightweight "next steps" prompts for new users
 
 ## Problem Statement

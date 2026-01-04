@@ -1,7 +1,19 @@
 # Claims List Redesign: Compact Table with Lollipop Confidence
 
 **Date:** 2026-01-02
-**Status:** Approved for Implementation
+**Status:** Not Started
+
+## Progress (Last reviewed: 2026-01-04)
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Lollipop UI Component | ⏳ Not Started | New `ui/lollipop.tsx` |
+| Sortable Header Component | ⏳ Not Started | Column sorting |
+| Claims List Rewrite | ⏳ Not Started | Table layout |
+| Description Deduplication | ⏳ Not Started | Jaro-Winkler check |
+
+### Drift Notes
+No implementation progress. Design approved, awaiting execution.
 
 ## Problem Statement
 

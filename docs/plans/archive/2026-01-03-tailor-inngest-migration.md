@@ -1,5 +1,23 @@
 # Migrate Tailoring Profile to Inngest
 
+**Status:** Done
+**Completed:** 2026-01-03 (PR #100)
+
+## Progress (Last reviewed: 2026-01-04)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Database Migration | ✅ Complete | `20260103000000_tailor_job_type.sql` |
+| Inngest Event Type | ✅ Complete | `tailor/process` in client.ts |
+| Inngest Function | ✅ Complete | `process-tailor.ts` with 8 steps |
+| API Refactor | ✅ Complete | All 3 endpoints migrated |
+| Shared Types | ✅ Complete | TAILOR_PHASES, ticker messages |
+
+### Drift Notes
+Implementation matches design exactly. All endpoints now return job_id for async, cached profiles return sync.
+
+---
+
 ## Overview
 
 Migrate the tailoring profile endpoint from synchronous processing to async background processing via Inngest, matching the pattern used by resume, story, and opportunity processing.

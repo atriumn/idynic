@@ -1,5 +1,22 @@
 # Documents Page Design
 
+**Status:** Done
+**Completed:** 2026-01-03 (PR #95)
+
+## Progress (Last reviewed: 2026-01-04)
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Documents List View | ✅ Complete | `/documents` route with table layout |
+| Document Detail View | ✅ Complete | `/documents/[id]` with content + evidence |
+| Identity Page Links | ✅ Complete | Clickable source badges on claims |
+| Evidence Section | ✅ Complete | Shows extracted evidence from document |
+
+### Drift Notes
+Implementation matches design. Documents page fully functional with source linking.
+
+---
+
 ## Overview
 
 A simple documents page that lets users view all their uploaded documents (resumes and stories) and see what evidence was extracted from each one.
