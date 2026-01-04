@@ -8,6 +8,21 @@
 
 **Tech Stack:** React, TypeScript, Tailwind CSS, Vitest
 
+**Status:** Done
+
+## Progress (Last reviewed: 2026-01-03)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Create Lollipop UI Component | ✅ Complete | `ui/lollipop.tsx` + tests |
+| Task 2: Add Sortable Column Header Component | ✅ Complete | `ui/sortable-header.tsx` + tests |
+| Task 3: Rewrite Claims List Component | ✅ Complete | Table layout implemented |
+| Task 4: Update Tests for New Behavior | ✅ Complete | Sorting + dedup tests added |
+| Task 5: Final Cleanup and Verification | ✅ Complete | All tests pass |
+
+### Drift Notes
+None - implementation followed the plan exactly.
+
 ---
 
 ## Task 1: Create Lollipop UI Component

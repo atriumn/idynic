@@ -8,6 +8,26 @@
 
 **Tech Stack:** Inngest, Supabase, Next.js API routes, TypeScript
 
+**Status:** Done
+
+## Progress (Last reviewed: 2026-01-03)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Task 1: Database Migration | ✅ Complete | PR #100 - `20260103000000_tailor_job_type.sql` |
+| Task 2: Add Inngest Event Type | ✅ Complete | PR #100 - `tailor/process` event added |
+| Task 3: Add Ticker Messages for Tailor Phases | ✅ Complete | PR #100 - analyzing/generating/evaluating phases |
+| Task 4: Create Process Tailor Inngest Function | ✅ Complete | PR #100 - `process-tailor.ts` with 8 steps |
+| Task 5: Export Process Tailor Function | ✅ Complete | PR #100 - exported in `inngest/index.ts` |
+| Task 6: Refactor Tailor Endpoint | ✅ Complete | PR #100 - async with cached profile bypass |
+| Task 7: Refactor Add-and-Tailor Endpoint | ✅ Complete | PR #100 - returns job_id |
+| Task 8: Refactor Add-Tailor-Share Endpoint | ✅ Complete | PR #100 - returns job_id |
+| Task 9: Update Tests | ✅ Complete | PR #100 - tests updated for async pattern |
+| Task 10: Run Tests and Verify | ✅ Complete | PR #100 merged 2026-01-03 |
+
+### Drift Notes
+None - implementation followed the plan exactly.
+
 ---
 
 ## Task 1: Database Migration

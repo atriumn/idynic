@@ -1,5 +1,24 @@
 # Documents Page Design
 
+**Status:** Done
+
+## Progress (Last reviewed: 2026-01-03)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Documents List View (Web) | ✅ Complete | PR #95 |
+| Document Detail View (Web) | ✅ Complete | PR #95 |
+| REST API Endpoints | ✅ Complete | PR #95 - GET/DELETE |
+| Clickable Source Badges | ✅ Complete | PR #95 |
+| My Documents Button | ✅ Complete | PR #95 |
+| Mobile Documents List | ✅ Complete | PR #95 |
+| Mobile Document Detail | ✅ Complete | PR #95 |
+| React Query Hooks | ✅ Complete | PR #95 - web + mobile |
+| Tests | ✅ Complete | PR #95 - mobile tests added |
+
+### Drift Notes
+None - implementation followed design exactly.
+
 ## Overview
 
 A simple documents page that lets users view all their uploaded documents (resumes and stories) and see what evidence was extracted from each one.
