@@ -4,7 +4,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mail, Phone, MapPin, Linkedin, Github, Building2 } from "lucide-react";
 import Image from "next/image";
 import { SharedProfileResume } from "@/components/shared-profile-resume";
-import { RecruiterWaitlistCTA } from "@/components/recruiter-waitlist-cta";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 import { CompanyLogo } from "@/components/company-logo";
 
 interface SkillCategory {
@@ -502,7 +504,12 @@ export default async function SharedProfilePage({
               <Image src="/logo.svg" alt="Idynic" width={20} height={20} />
               Powered by Idynic
             </div>
-            <RecruiterWaitlistCTA />
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/recruiters">
+                Hiring? Get early access
+                <ArrowRight className="h-4 w-4 ml-1" />
+              </Link>
+            </Button>
           </div>
         </div>
       </footer>

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RotatingScenarios } from "@/components/rotating-scenarios";
+import { WaitlistForm } from "@/components/waitlist-form";
 import { createClient } from "@/lib/supabase/server";
 
 import { MeshBackground } from "@/components/ui/mesh-background";
@@ -372,6 +373,17 @@ export default async function Home() {
             >
               <Link href="/pricing">View Plans</Link>
             </Button>
+          </div>
+          <div className="pt-8 border-t mt-8">
+            <p className="text-sm text-muted-foreground mb-4">
+              Not ready yet? Get notified when we launch new features.
+            </p>
+            <div className="max-w-sm mx-auto">
+              <WaitlistForm
+                source="homepage"
+                submitLabel="Get Early Access"
+              />
+            </div>
           </div>
         </div>
       </section>

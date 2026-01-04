@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { BookOpen, Code, Rocket, ShieldCheck, Layout } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { WaitlistForm } from "@/components/waitlist-form";
 
 export default function StudentsPage() {
   return (
@@ -118,6 +119,18 @@ export default function StudentsPage() {
           >
             <Link href="/login">Get Started Free</Link>
           </Button>
+          <div className="pt-4 border-t border-primary-foreground/20 mt-8">
+            <p className="text-sm opacity-80 mb-4">
+              Not ready yet? Join the waitlist.
+            </p>
+            <div className="max-w-sm mx-auto bg-background text-foreground rounded-lg p-6">
+              <WaitlistForm
+                source="students"
+                emailPlaceholder="you@university.edu"
+                submitLabel="Join the Waitlist"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

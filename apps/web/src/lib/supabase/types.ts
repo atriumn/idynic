@@ -1272,6 +1272,14 @@ export type Database = {
           type: string;
         }[];
       };
+      upsert_waitlist: {
+        Args: {
+          p_email: string;
+          p_source: string;
+          p_interests: string[];
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       [_ in never]: never;

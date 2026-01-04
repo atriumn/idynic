@@ -1,4 +1,4 @@
-import { RecruiterWaitlistForm } from "@/components/recruiter-waitlist-form";
+import { WaitlistForm } from "@/components/waitlist-form";
 import { Briefcase, FileCheck, Users, Zap } from "lucide-react";
 import Image from "next/image";
 
@@ -20,7 +20,12 @@ export default function RecruitersPage() {
             <div className="pt-4 max-w-md">
               <div className="bg-background p-6 rounded-lg border shadow-sm">
                 <h3 className="font-semibold mb-4">Join the waitlist</h3>
-                <RecruiterWaitlistForm />
+                <WaitlistForm
+                  source="recruiters"
+                  emailLabel="Work email"
+                  emailPlaceholder="you@company.com"
+                  submitLabel="Get Early Access"
+                />
               </div>
             </div>
           </div>
@@ -159,7 +164,12 @@ export default function RecruitersPage() {
             Join the waitlist for early access.
           </p>
           <div className="max-w-md mx-auto bg-background p-6 rounded-lg text-foreground">
-            <RecruiterWaitlistForm />
+            <WaitlistForm
+              source="recruiters"
+              emailLabel="Work email"
+              emailPlaceholder="you@company.com"
+              submitLabel="Get Early Access"
+            />
           </div>
         </div>
       </section>
