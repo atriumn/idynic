@@ -14,6 +14,7 @@ vi.mock("@idynic/shared", () => ({
     dismissPrompt: mockDismissPrompt,
     isLoading: false,
   }),
+  CONTEXTUAL_HELP: {},
 }));
 
 vi.mock("@/lib/storage-adapter", () => ({

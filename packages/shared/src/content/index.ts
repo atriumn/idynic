@@ -249,9 +249,29 @@ export type HelpDocs = typeof HELP_DOCS;
  */
 export const CONTEXTUAL_HELP = {
   // Identity page
+  masterRecord: {
+    title: "Master Record",
+    content: "Your Master Record is a verified database of your career history. These **Evidence Blocks** are the modular components used to assemble tailored profiles instantly.",
+  },
+  evidenceBlocks: {
+    title: "Evidence Blocks",
+    content: "Atomic, reusable facts extracted from your documents. Each block represents a specific skill, achievement, or win, and can be used in multiple contexts.",
+  },
   claimConfidence: {
     title: "Confidence Score",
-    content: "Shows how much **evidence** supports this claim. Add more stories or documents to **increase confidence**.",
+    content: "Calculated based on **evidence quality** and **recency**. Older skills 'decay' over time unless new evidence is added to your record.",
+  },
+  singleSource: {
+    title: "Single Source",
+    content: "This block is only backed by one document. Add a story or another document to **strengthen the signal** and increase confidence.",
+  },
+  strongSignal: {
+    title: "Strong Signal",
+    content: "A core strength backed by **3 or more independent sources**. This represents a highly verified part of your professional identity.",
+  },
+  recencyDecay: {
+    title: "Recency Decay",
+    content: "Technology and market context change. Our algorithm ensures your **current capabilities** carry more weight than older experience.",
   },
   claimEvidence: {
     title: "Supporting Evidence",

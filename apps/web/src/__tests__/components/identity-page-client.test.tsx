@@ -148,6 +148,12 @@ vi.mock("@idynic/shared", () => ({
       q3: { title: "Is it secure?", content: "Yes, **encrypted**" },
     },
   },
+  CONTEXTUAL_HELP: {
+    claimConfidence: {
+      title: "Confidence Score",
+      content: "Shows how much evidence supports this claim.",
+    },
+  },
 }));
 
 describe("IdentityPageClient", () => {

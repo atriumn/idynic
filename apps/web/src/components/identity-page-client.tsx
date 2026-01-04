@@ -28,10 +28,12 @@ import { ClaimDetailPanel } from "@/components/claim-detail-panel";
 import { UploadResumeModal } from "@/components/upload-resume-modal";
 import { AddStoryModal } from "@/components/add-story-modal";
 import { IdentityReflection } from "@/components/identity/identity-reflection";
+import { HelpTooltip } from "@/components/help-tooltip";
 import { useIdentityGraph } from "@/lib/hooks/use-identity-graph";
 import { useIdentityReflection } from "@/lib/hooks/use-identity-reflection";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { createClient } from "@/lib/supabase/client";
 import { BetaGate } from "@/components/beta-gate";
 import { EMPTY_STATE } from "@idynic/shared";
@@ -144,12 +146,16 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
   }
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)]">
-      {/* Header */}
-      <div className="border-b bg-background">
+    <TooltipProvider delayDuration={200}>
+      <div className="flex flex-col min-h-[calc(100vh-4rem)]">
+        {/* Header */}
+        <div className="border-b bg-background">
         <div className="container mx-auto px-4 py-4 max-w-5xl flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold">Master Record</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold">Master Record</h1>
+              <HelpTooltip helpKey="masterRecord" iconSize={16} />
+            </div>
             {claimCount > 0 && (
               <Badge variant="secondary" className="gap-1">
                 <Cuboid className="w-3 h-3" />
@@ -417,5 +423,6 @@ export function IdentityPageClient({ hasAnyClaims }: IdentityPageClientProps) {
         onClose={() => setSelectedClaimId(null)}
       />
     </div>
+    </TooltipProvider>
   );
 }

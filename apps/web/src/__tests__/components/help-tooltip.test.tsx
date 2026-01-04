@@ -1,7 +1,9 @@
+import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HelpTooltip } from "@/components/help-tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 // Mock the shared package
 vi.mock("@idynic/shared", () => ({
@@ -17,32 +19,37 @@ vi.mock("@idynic/shared", () => ({
   },
 }));
 
+const renderWithProvider = (ui: React.ReactElement) => {
+  return render(<TooltipProvider>{ui}</TooltipProvider>);
+};
+
 describe("HelpTooltip", () => {
   it("renders help icon button", () => {
-    render(<HelpTooltip helpKey="claimConfidence" />);
+    renderWithProvider(<HelpTooltip helpKey="claimConfidence" />);
 
     const button = screen.getByRole("button");
     expect(button).toBeInTheDocument();
   });
 
   it("has correct aria-label", () => {
-    render(<HelpTooltip helpKey="claimConfidence" />);
+    renderWithProvider(<HelpTooltip helpKey="claimConfidence" />);
 
     const button = screen.getByLabelText("Help: Confidence Score");
     expect(button).toBeInTheDocument();
   });
 
   it("returns null for invalid help key", () => {
-    const { container } = render(
+    renderWithProvider(
       <HelpTooltip helpKey={"invalid-key" as "claimConfidence"} />,
     );
 
-    expect(container.firstChild).toBeNull();
+    // Should not render any button for invalid key
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 
   it("shows tooltip content on hover", async () => {
     const user = userEvent.setup();
-    render(<HelpTooltip helpKey="claimConfidence" />);
+    renderWithProvider(<HelpTooltip helpKey="claimConfidence" />);
 
     const button = screen.getByRole("button");
     await user.hover(button);
@@ -53,14 +60,16 @@ describe("HelpTooltip", () => {
   });
 
   it("applies custom className", () => {
-    render(<HelpTooltip helpKey="claimConfidence" className="custom-class" />);
+    renderWithProvider(
+      <HelpTooltip helpKey="claimConfidence" className="custom-class" />,
+    );
 
     const button = screen.getByRole("button");
     expect(button).toHaveClass("custom-class");
   });
 
   it("uses custom icon size", () => {
-    render(<HelpTooltip helpKey="claimConfidence" iconSize={20} />);
+    renderWithProvider(<HelpTooltip helpKey="claimConfidence" iconSize={20} />);
 
     const button = screen.getByRole("button");
     expect(button).toBeInTheDocument();

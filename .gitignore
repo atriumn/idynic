@@ -31,6 +31,7 @@ yarn-error.log*
 # local env files
 .env*.local
 apps/mobile/.env
+supabase/.env
 
 # vercel
 .vercel
